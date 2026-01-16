@@ -216,7 +216,7 @@ kotlin-js-store/
 application.conf.local
 
 # Docker
-.dockerignore
+# .dockerignore - should be tracked in repository
 
 # Local configuration
 local.properties

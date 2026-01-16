@@ -9,20 +9,20 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # Copy Gradle wrapper and build files
-COPY flagent/gradlew ./flagent/
-COPY flagent/gradlew.bat ./flagent/
-COPY flagent/gradle ./flagent/gradle
-COPY flagent/gradle.properties ./flagent/
-COPY flagent/build.gradle.kts ./flagent/
-COPY flagent/settings.gradle.kts ./flagent/
-COPY flagent/gradle/libs.versions.toml ./flagent/gradle/
+COPY gradlew ./
+COPY gradlew.bat ./
+COPY gradle ./gradle
+COPY gradle.properties ./
+COPY build.gradle.kts ./
+COPY settings.gradle.kts ./
+COPY gradle/libs.versions.toml ./gradle/
 
 # Copy source code
-COPY flagent/shared ./flagent/shared
-COPY flagent/backend ./flagent/backend
+COPY shared ./shared
+COPY backend ./backend
 
 # Build the application
-WORKDIR /app/flagent
+WORKDIR /app
 RUN chmod +x ./gradlew && \
     ./gradlew :backend:installDist --no-daemon --stacktrace
 
@@ -39,7 +39,7 @@ RUN apk add --no-cache tzdata && \
     adduser -S appuser -G appgroup
 
 # Copy built application from build stage
-COPY --from=build /app/flagent/backend/build/install/backend ./backend
+COPY --from=build /app/backend/build/install/backend ./backend
 
 # Set ownership
 RUN chown -R appuser:appgroup /app

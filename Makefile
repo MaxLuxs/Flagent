@@ -1,6 +1,3 @@
-PWD := $(shell pwd)
-FLAGENT_DIR := $(PWD)/flagent
-
 ################################
 ### Public targets
 ################################
@@ -11,24 +8,24 @@ all: build test
 .PHONY: build
 build:
 	@echo "Building Flagent..."
-	@cd $(FLAGENT_DIR) && ./gradlew build --no-daemon
+	@./gradlew build --no-daemon
 
 .PHONY: test
 test:
 	@echo "Running tests..."
-	@cd $(FLAGENT_DIR) && ./gradlew test --no-daemon
+	@./gradlew test --no-daemon
 
 .PHONY: clean
 clean:
 	@echo "Cleaning up..."
-	@cd $(FLAGENT_DIR) && ./gradlew clean --no-daemon
+	@./gradlew clean --no-daemon
 	@find . -name '*.log' -type f -delete
 	@find . -name 'build' -type d -exec rm -rf {} + 2>/dev/null || true
 
 .PHONY: run
 run:
 	@echo "Running Flagent server..."
-	@cd $(FLAGENT_DIR) && ./gradlew :backend:run --no-daemon
+	@./gradlew :backend:run --no-daemon
 
 .PHONY: docker-build
 docker-build:
@@ -43,14 +40,14 @@ docker-run:
 .PHONY: lint
 lint:
 	@echo "Running linters..."
-	@cd $(FLAGENT_DIR) && ./gradlew detekt --no-daemon || echo "detekt not configured, skipping"
-	@cd $(FLAGENT_DIR) && ./gradlew ktlintCheck --no-daemon || echo "ktlint not configured, skipping"
+	@./gradlew detekt --no-daemon || echo "detekt not configured, skipping"
+	@./gradlew ktlintCheck --no-daemon || echo "ktlint not configured, skipping"
 
 .PHONY: test-coverage
 test-coverage:
 	@echo "Generating test coverage report..."
-	@cd $(FLAGENT_DIR) && ./gradlew test jacocoTestReport --no-daemon
-	@echo "Coverage report generated at: $(FLAGENT_DIR)/backend/build/reports/jacoco/test/html/index.html"
+	@./gradlew test jacocoTestReport --no-daemon
+	@echo "Coverage report generated at: backend/build/reports/jacoco/test/html/index.html"
 
 .PHONY: serve-docs
 serve-docs:
