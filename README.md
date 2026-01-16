@@ -3,13 +3,13 @@
         <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build Status">
     </a>
     <a href="https://codecov.io/gh/MaxLuxs/Flagent">
-        <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg?token=YOUR_TOKEN" alt="Code Coverage">
+        <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg" alt="Code Coverage">
     </a>
     <a href="https://github.com/MaxLuxs/Flagent/releases" target="_blank">
         <img src="https://img.shields.io/github/release/MaxLuxs/Flagent.svg?style=flat&color=green" alt="Release">
     </a>
-    <a href="https://img.shields.io/badge/kotlin-1.9.22-blue.svg?logo=kotlin" target="_blank">
-        <img src="https://img.shields.io/badge/kotlin-1.9.22-blue.svg?logo=kotlin" alt="Kotlin Version">
+    <a href="https://img.shields.io/badge/kotlin-2.0.21-blue.svg?logo=kotlin" target="_blank">
+        <img src="https://img.shields.io/badge/kotlin-2.0.21-blue.svg?logo=kotlin" alt="Kotlin Version">
     </a>
     <a href="LICENSE" target="_blank">
         <img src="https://img.shields.io/badge/license-Apache%202.0-green.svg" alt="License">
@@ -17,8 +17,8 @@
     <a href="https://img.shields.io/badge/JDK-21+-orange.svg" target="_blank">
         <img src="https://img.shields.io/badge/JDK-21+-orange.svg" alt="JDK">
     </a>
-    <a href="https://img.shields.io/badge/Gradle-8.14+-green.svg" target="_blank">
-        <img src="https://img.shields.io/badge/Gradle-8.14+-green.svg" alt="Gradle">
+    <a href="https://img.shields.io/badge/Gradle-9.0-green.svg" target="_blank">
+        <img src="https://img.shields.io/badge/Gradle-9.0-green.svg" alt="Gradle">
     </a>
 </p>
 
@@ -116,7 +116,7 @@ Flagent provides official SDK clients:
 ### Requirements
 
 - JDK 21+
-- Gradle 8.14+
+- Gradle 9.0
 
 ### Build
 
