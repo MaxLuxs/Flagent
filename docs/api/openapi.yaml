@@ -1829,7 +1829,7 @@ components:
           nullable: true
           description: Git commit hash
       example:
-        version: "1.1.19"
+        version: "1.0.0"
         buildTime: "2024-01-01T00:00:00Z"
         gitCommit: "abc123"
 
