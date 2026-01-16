@@ -29,9 +29,14 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
         freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
     }
+}
+
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 tasks.test {
