@@ -36,6 +36,6 @@ $GENERATOR_CMD generate \
     -i "$OPENAPI_SPEC" \
     -g typescript-axios \
     -o "$OUTPUT_DIR" \
-    --additional-properties=npmName=@flagent/client,npmVersion=1.1.19,withInterfaces=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=api,sourceFolder=src
+    --additional-properties=npmName=@flagent/client,npmVersion=1.0.0,withInterfaces=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=api,sourceFolder=src
 
 echo "JavaScript/TypeScript SDK generated successfully in $OUTPUT_DIR"

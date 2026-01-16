@@ -6,7 +6,7 @@ Debug UI library for Flagent Enhanced SDK using Compose Multiplatform.
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:flagent-kotlin-debug-ui:1.1.19")
+    implementation("com.flagent:flagent-kotlin-debug-ui:1.0.0")
 }
 ```
 

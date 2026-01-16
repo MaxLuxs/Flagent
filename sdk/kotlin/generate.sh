@@ -36,6 +36,6 @@ $GENERATOR_CMD generate \
     -i "$OPENAPI_SPEC" \
     -g kotlin \
     -o "$OUTPUT_DIR" \
-    --additional-properties=library=jvm-ktor,packageName=com.flagent.client,groupId=com.flagent,artifactId=flagent-kotlin-client,artifactVersion=1.1.19,serializationLibrary=kotlinx_serialization,dateLibrary=kotlinx-datetime,sourceFolder=src/main/kotlin
+    --additional-properties=library=jvm-ktor,packageName=com.flagent.client,groupId=com.flagent,artifactId=flagent-kotlin-client,artifactVersion=1.0.0,serializationLibrary=kotlinx_serialization,dateLibrary=kotlinx-datetime,sourceFolder=src/main/kotlin
 
 echo "Kotlin SDK generated successfully in $OUTPUT_DIR"

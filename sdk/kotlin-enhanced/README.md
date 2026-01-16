@@ -13,7 +13,7 @@ Enhanced Kotlin client library for Flagent API with caching, management, and con
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:flagent-kotlin-enhanced-client:1.1.19")
+    implementation("com.flagent:flagent-kotlin-enhanced-client:1.0.0")
 }
 ```
 

@@ -110,7 +110,7 @@ Users can use:
 
 ## API Compatibility
 
-All SDKs are generated from the OpenAPI specification (available at `http://localhost:18000/api/v1/openapi.yaml` when server is running) and are compatible with Flagent API version 1.1.x.
+All SDKs are generated from the OpenAPI specification (available at `http://localhost:18000/api/v1/openapi.yaml` when server is running) and are compatible with Flagent API version 1.0.x.
 
 ## Generation
 

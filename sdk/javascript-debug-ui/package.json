@@ -1,6 +1,6 @@
 {
   "name": "@flagent/debug-ui",
-  "version": "1.1.19",
+  "version": "1.0.0",
   "description": "Debug UI library for Flagent Enhanced SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
   "author": "Flagent Team",
   "license": "Apache-2.0",
   "dependencies": {
-    "@flagent/enhanced-client": "^1.1.19",
+    "@flagent/enhanced-client": "^1.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },

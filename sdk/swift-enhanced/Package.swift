@@ -15,7 +15,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        // Base SDK dependency - in production, use: .package(url: "...", from: "1.1.19")
+        // Base SDK dependency - in production, use: .package(url: "...", from: "1.0.0")
         .package(path: "../swift"),
     ],
     targets: [

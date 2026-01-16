@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.flagent"
-version = "1.1.19"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,7 @@ dependencies {
     if (findProject(":kotlin-client") != null) {
         implementation(project(":kotlin-client"))
     } else {
-        implementation("com.flagent:flagent-kotlin-client:1.1.19")
+        implementation("com.flagent:flagent-kotlin-client:1.0.0")
     }
     
     // Coroutines
