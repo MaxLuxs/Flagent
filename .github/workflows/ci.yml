@@ -40,6 +40,16 @@ jobs:
       - name: Generate test coverage
         run: ./gradlew :backend:jacocoTestReport --no-daemon
       
+      - name: Verify coverage file exists
+        run: |
+          if [ ! -f ./backend/build/reports/jacoco/test/jacocoTestReport.xml ]; then
+            echo "Coverage file not found!"
+            find ./backend/build -name "*.xml" -type f || echo "No XML files found in build directory"
+            exit 1
+          fi
+          echo "Coverage file found:"
+          ls -lh ./backend/build/reports/jacoco/test/jacocoTestReport.xml
+      
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -48,6 +58,7 @@ jobs:
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+          verbose: true
   
   integration_test:
     runs-on: ubuntu-latest
