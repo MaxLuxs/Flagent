@@ -1,5 +1,7 @@
 package io.ktor.flagent
 
+import flagent.api.model.EvaluationRequest
+import flagent.api.model.EvaluationResponse
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap

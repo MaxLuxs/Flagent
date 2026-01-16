@@ -1,6 +1,7 @@
 package com.flagent.debug.ui
 
-import androidx.compose.runtime.Composable
+// TODO: Implement with Compose Multiplatform when ready
+// import androidx.compose.runtime.Composable
 import com.flagent.enhanced.manager.FlagentManager
 
 /**
@@ -9,8 +10,9 @@ import com.flagent.enhanced.manager.FlagentManager
 object FlagentDebugUI {
     /**
      * Get debug screen composable
+     * TODO: Uncomment when Compose Multiplatform is configured
      */
-    @Composable
+    // @Composable
     fun DebugScreen(manager: FlagentManager) {
         FlagentDebugScreen(manager = manager)
     }

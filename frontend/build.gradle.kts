@@ -17,39 +17,21 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(compose.runtime)
-            }
+        jsMain.dependencies {
+            implementation(project(":shared"))
+            implementation(compose.runtime)
+            implementation(compose.html.core)
+            implementation(compose.html.svg)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.js)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.coroutines.core)
         }
 
-        val jsMain by getting {
-            dependencies {
-                // Shared models
-                implementation(project(":shared"))
-
-                implementation(compose.runtime)
-                implementation(compose.html.core)
-                implementation(compose.html.svg)
-
-                // Ktor Client for API
-                implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.js)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json)
-
-                // Kotlinx Serialization
-                implementation(libs.kotlinx.serialization.json)
-
-                // Coroutines
-                implementation(libs.kotlinx.coroutines.core)
-            }
-        }
-
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-            }
+        jsTest.dependencies {
+            implementation(kotlin("test"))
         }
     }
 }

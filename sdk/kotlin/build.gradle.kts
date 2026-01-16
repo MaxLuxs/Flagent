@@ -25,6 +25,7 @@ dependencies {
     // Testing
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.2")
 }
 
 tasks.withType<KotlinCompile> {

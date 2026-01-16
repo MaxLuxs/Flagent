@@ -38,7 +38,7 @@ data class EvaluationEntity (
     val entityType: kotlin.String? = null,
 
     @Contextual @SerialName(value = "entityContext")
-    val entityContext: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null
+    val entityContext: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonObject>? = null
 
 ) {
 

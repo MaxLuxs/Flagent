@@ -5,8 +5,14 @@ import io.ktor.server.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
 import io.ktor.http.*
+import flagent.api.model.EvaluationRequest
+import flagent.api.model.EvaluationResponse
+import flagent.api.model.EvaluationBatchRequest
+import flagent.api.model.EvaluationBatchResponse
+import io.ktor.util.AttributeKey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -122,54 +128,50 @@ val FlagentPlugin = createApplicationPlugin(
                         call.receive<EvaluationRequest>()
                     } catch (e: Exception) {
                         logger.error(e) { "Failed to parse evaluation request" }
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid request format: ${e.message}"))
+                        val errorMsg = (e.message as? String) ?: "Invalid request format"
+                        call.respond(HttpStatusCode.BadRequest, mapOf<String, String>("error" to "Invalid request format: $errorMsg"))
                         return@post
                     }
                     
                     // Validate that either flagID or flagKey is provided
                     if (request.flagID == null && request.flagKey == null) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Either flagID or flagKey must be provided"))
+                        call.respond(HttpStatusCode.BadRequest, mapOf<String, String>("error" to "Either flagID or flagKey must be provided"))
                         return@post
                     }
                     
                     val cacheKey = cache?.generateKey(request)
                     var fromCache = false
                     
-                    val duration = kotlin.time.measureTime {
-                        // Try cache first
-                        if (cache != null && cacheKey != null) {
-                            val cached = cache.get(cacheKey)
-                            if (cached != null) {
+                    // Try cache first
+                    if (cache != null && cacheKey != null) {
+                        val cached = cache.get(cacheKey)
+                        if (cached != null) {
+                            fromCache = true
+                            metrics?.recordEvaluation(
+                                flagID = request.flagID,
+                                flagKey = request.flagKey,
+                                duration = kotlin.time.Duration.ZERO,
                                 fromCache = true
-                                metrics?.recordEvaluation(
-                                    flagID = request.flagID,
-                                    flagKey = request.flagKey,
-                                    duration = kotlin.time.Duration.ZERO,
-                                    fromCache = true
-                                )
-                                call.respond(cached)
-                                return@post
-                            }
+                            )
+                            call.respond(cached)
+                            return@post
                         }
-                        
+                    }
+                    
+                    var response: EvaluationResponse? = null
+                    val duration = kotlin.time.measureTime {
                         try {
                             // Evaluate via client
-                            val response = client.evaluate(request)
+                            response = client.evaluate(request)
                             
                             // Cache result
-                            if (cache != null && cacheKey != null) {
-                                cache.put(cacheKey, response)
+                            if (cache != null && cacheKey != null && response != null) {
+                                cache.put(cacheKey, response!!)
                             }
                             
-                            // Record metrics
-                            metrics?.recordEvaluation(
-                                flagID = response.flagID,
-                                flagKey = response.flagKey,
-                                duration = duration,
-                                fromCache = false
-                            )
-                            
-                            call.respond(response)
+                            if (response != null) {
+                                call.respond(response!!)
+                            }
                         } catch (e: FlagentException) {
                             logger.error(e) { "Failed to evaluate flag" }
                             metrics?.recordEvaluationError(
@@ -177,7 +179,8 @@ val FlagentPlugin = createApplicationPlugin(
                                 flagKey = request.flagKey,
                                 errorType = e.javaClass.simpleName
                             )
-                            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to e.message ?: "Unknown error"))
+                            val errorMsg = (e.message as? String) ?: "Unknown error"
+                            call.respond(HttpStatusCode.InternalServerError, mapOf<String, String>("error" to errorMsg))
                         } catch (e: Exception) {
                             logger.error(e) { "Failed to evaluate flag" }
                             metrics?.recordEvaluationError(
@@ -185,8 +188,19 @@ val FlagentPlugin = createApplicationPlugin(
                                 flagKey = request.flagKey,
                                 errorType = e.javaClass.simpleName
                             )
-                            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to e.message ?: "Unknown error"))
+                            val errorMsg = (e.message as? String) ?: "Unknown error"
+                            call.respond(HttpStatusCode.InternalServerError, mapOf<String, String>("error" to errorMsg))
                         }
+                    }
+                    
+                    // Record metrics after duration is measured
+                    if (response != null) {
+                        metrics?.recordEvaluation(
+                            flagID = response!!.flagID,
+                            flagKey = response!!.flagKey,
+                            duration = duration,
+                            fromCache = false
+                        )
                     }
                 }
                 
@@ -196,49 +210,55 @@ val FlagentPlugin = createApplicationPlugin(
                         call.receive<EvaluationBatchRequest>()
                     } catch (e: Exception) {
                         logger.error(e) { "Failed to parse batch evaluation request" }
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid request format: ${e.message}"))
+                        val errorMsg = (e.message as? String) ?: "Invalid request format"
+                        call.respond(HttpStatusCode.BadRequest, mapOf<String, String>("error" to "Invalid request format: $errorMsg"))
                         return@post
                     }
                     
                     // Validate that at least one entity is provided
                     if (request.entities.isEmpty()) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "At least one entity must be provided"))
+                        call.respond(HttpStatusCode.BadRequest, mapOf<String, String>("error" to "At least one entity must be provided"))
                         return@post
                     }
                     
                     // Validate that at least one flag identifier is provided
                     if (request.flagIDs.isEmpty() && request.flagKeys.isEmpty() && request.flagTags.isEmpty()) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "At least one of flagIDs, flagKeys, or flagTags must be provided"))
+                        call.respond(HttpStatusCode.BadRequest, mapOf<String, String>("error" to "At least one of flagIDs, flagKeys, or flagTags must be provided"))
                         return@post
                     }
                     
+                    var batchResponse: EvaluationBatchResponse? = null
+                    var batchError: Exception? = null
                     val duration = kotlin.time.measureTime {
                         try {
                             // For batch requests, we don't use cache as the request format is different
                             // and caching would be complex. The Flagent server should handle caching internally.
-                            val response = client.evaluateBatch(request)
-                            
-                            // Record batch metrics
-                            metrics?.recordBatchEvaluation(
-                                count = response.evaluationResults.size,
-                                duration = duration,
-                                errors = 0
-                            )
-                            
-                            call.respond(response)
+                            batchResponse = client.evaluateBatch(request)
+                            call.respond(batchResponse!!)
                         } catch (e: Exception) {
                             logger.error(e) { "Failed to evaluate flags batch" }
-                            val entityCount = request.entities.size
-                            val flagCount = request.flagIDs.size + request.flagKeys.size + request.flagTags.size
-                            val totalRequests = entityCount * flagCount
-                            
-                            metrics?.recordBatchEvaluation(
-                                count = totalRequests,
-                                duration = duration,
-                                errors = totalRequests
-                            )
-                            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to e.message ?: "Unknown error"))
+                            batchError = e
+                            val errorMsg = (e.message as? String) ?: "Unknown error"
+                            call.respond(HttpStatusCode.InternalServerError, mapOf<String, String>("error" to errorMsg))
                         }
+                    }
+                    
+                    // Record batch metrics after duration is measured
+                    if (batchResponse != null) {
+                        metrics?.recordBatchEvaluation(
+                            count = batchResponse!!.evaluationResults.size,
+                            duration = duration,
+                            errors = 0
+                        )
+                    } else if (batchError != null) {
+                        val entityCount = request.entities.size
+                        val flagCount = request.flagIDs.size + request.flagKeys.size + request.flagTags.size
+                        val totalRequests = entityCount * flagCount
+                        metrics?.recordBatchEvaluation(
+                            count = totalRequests,
+                            duration = duration,
+                            errors = totalRequests
+                        )
                     }
                 }
             }
@@ -248,7 +268,9 @@ val FlagentPlugin = createApplicationPlugin(
     // Cleanup on shutdown
     application.environment.monitor.subscribe(io.ktor.server.application.ApplicationStopped) {
         client.close()
-        cache?.clear()
+        runBlocking {
+            cache?.clear()
+        }
     }
 }
 

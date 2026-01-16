@@ -6,6 +6,7 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -26,9 +27,9 @@ class FlagentClient(
     private val requestTimeoutMs: Long = 10000
 ) {
     private val client = HttpClient(CIO) {
-        engine {
-            requestTimeout = requestTimeoutMs
-            connectTimeout = connectTimeoutMs
+        install(io.ktor.client.plugins.HttpTimeout) {
+            requestTimeoutMillis = requestTimeoutMs
+            connectTimeoutMillis = connectTimeoutMs
         }
         install(ContentNegotiation) {
             json(Json {

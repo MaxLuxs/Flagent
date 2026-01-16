@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.compile.JavaCompile
 
 plugins {
     kotlin("jvm")
@@ -23,17 +24,26 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
     
+    // Serialization
+    implementation(libs.kotlinx.serialization.json)
+    
     // Testing
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
+    testImplementation(libs.ktor.client.core)
 }
 
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
+}
+
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 tasks.test {

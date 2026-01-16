@@ -48,83 +48,26 @@
     
     config.optimization = config.optimization || {};
     config.optimization.splitChunks = false;
+    config.optimization.minimize = false; // Disable minification to avoid terser errors
+    
+    // Disable source maps for production to avoid SourceMapDevToolPlugin errors
+    if (config.devtool) {
+        delete config.devtool;
+    }
+    config.devtool = false;
+    
+    // Remove SourceMapDevToolPlugin if present
+    if (config.plugins) {
+        config.plugins = config.plugins.filter(plugin => {
+            return plugin && plugin.constructor && plugin.constructor.name !== 'SourceMapDevToolPlugin';
+        });
+    }
     
     // CRITICAL: Create plugin to expose modules as globals
     config.plugins = config.plugins || [];
     
-    class ExposeKotlinModulesPlugin {
-        apply(compiler) {
-            compiler.hooks.compilation.tap('ExposeKotlinModulesPlugin', (compilation) => {
-                compilation.hooks.processAssets.tap(
-                    {
-                        name: 'ExposeKotlinModulesPlugin',
-                        stage: compilation.PROCESS_ASSETS_STAGE_OPTIMIZE
-                    },
-                    (assets) => {
-                        // After webpack processes modules, inject code to expose them as globals
-                        Object.keys(assets).forEach(filename => {
-                            if (filename.endsWith('.js') && !filename.endsWith('.map')) {
-                                const asset = assets[filename];
-                                let source = asset.source();
-                                
-                                // Extract module names from webpack's module registry
-                                // and create global variables for UMD fallback
-                                const moduleExports = [];
-                                const moduleRegex = /__webpack_require__\.r\(exports\);/g;
-                                
-                                // Find all module exports and create globals
-                                // This is a simplified approach - we'll inject code at the end
-                                const injectCode = `
-// Expose Kotlin modules as globals for UMD fallback
-(function() {
-    if (typeof __webpack_require__ !== 'undefined' && __webpack_require__.cache) {
-        const moduleMap = {
-            './kotlin/ktor-ktor-client-content-negotiation.js': 'ktor-ktor-client-content-negotiation',
-            './kotlin/kotlin-kotlin-stdlib.js': 'kotlin-kotlin-stdlib',
-            './kotlin/ktor-ktor-http.js': 'ktor-ktor-http',
-            './kotlin/ktor-ktor-utils.js': 'ktor-ktor-utils',
-            './kotlin/ktor-ktor-client-core.js': 'ktor-ktor-client-core',
-            './kotlin/ktor-ktor-serialization.js': 'ktor-ktor-serialization',
-            './kotlin/ktor-ktor-io.js': 'ktor-ktor-io',
-            './kotlin/kotlinx-serialization-kotlinx-serialization-json.js': 'kotlinx-serialization-kotlinx-serialization-json',
-            './kotlin/ktor-ktor-serialization-kotlinx-json.js': 'ktor-ktor-serialization-kotlinx-json',
-            './kotlin/flagent-shared.js': 'flagent-shared',
-            './kotlin/compose-multiplatform-core-compose-runtime-runtime.js': 'compose-multiplatform-core-compose-runtime-runtime',
-            './kotlin/html-html-core.js': 'html-html-core',
-            './kotlin/kotlinx-coroutines-core.js': 'kotlinx-coroutines-core',
-            './kotlin/html-internal-html-core-runtime.js': 'html-internal-html-core-runtime'
-        };
-        
-        Object.keys(moduleMap).forEach(modulePath => {
-            const globalName = moduleMap[modulePath];
-            try {
-                const module = __webpack_require__(modulePath);
-                if (module && typeof this !== 'undefined') {
-                    this[globalName] = module;
-                }
-            } catch (e) {
-                // Module not found, skip
-            }
-        });
-    }
-})();
-`;
-                                
-                                // Inject at the beginning, before any module code runs
-                                source = injectCode + source;
-                                compilation.updateAsset(filename, {
-                                    source: () => source,
-                                    size: () => source.length
-                                });
-                            }
-                        });
-                    }
-                );
-            });
-        }
-    }
-    
-    config.plugins.push(new ExposeKotlinModulesPlugin());
+    // Simplified: Don't modify assets in plugin to avoid source map issues
+    // Kotlin/JS modules should work without global exposure in webpack
     
     // Fix dev server static paths
     const kotlinSourceDir = path.resolve(__dirname, '../../build/js/packages/flagent-frontend/kotlin');

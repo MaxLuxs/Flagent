@@ -34,7 +34,7 @@ data class PutVariantRequest (
     val key: kotlin.String,
 
     @Contextual @SerialName(value = "attachment")
-    val attachment: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null
+    val attachment: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonObject>? = null
 
 ) {
 

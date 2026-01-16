@@ -25,8 +25,7 @@ class FlagentPluginTest {
             }
         }
         
-        // Plugin should be installed without errors
-        assertNotNull(application)
+        // Plugin should be installed without errors - testApplication validates this
     }
     
     @Test

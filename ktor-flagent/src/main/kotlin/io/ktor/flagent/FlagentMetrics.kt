@@ -2,6 +2,8 @@ package io.ktor.flagent
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
+import io.ktor.server.response.*
+import io.ktor.http.*
 import io.ktor.server.metrics.micrometer.*
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
@@ -94,7 +96,7 @@ class FlagentMetrics(
     fun recordEvaluation(flagID: Int?, flagKey: String?, duration: kotlin.time.Duration, fromCache: Boolean = false) {
         // Prometheus metrics
         evaluationCounter?.increment()
-        evaluationTimer?.record(duration)
+        evaluationTimer?.record(java.time.Duration.ofMillis(duration.inWholeMilliseconds))
         
         if (fromCache) {
             cacheHitCounter?.increment()
@@ -125,13 +127,18 @@ class FlagentMetrics(
      */
     fun recordEvaluationError(flagID: Int?, flagKey: String?, errorType: String = "unknown") {
         // Prometheus metrics
-        evaluationErrorCounter?.increment(
-            io.micrometer.core.instrument.Tags.of(
-                "error_type", errorType,
-                "flag_id", flagID?.toString() ?: "unknown",
-                "flag_key", flagKey ?: "unknown"
-            )
+        val tags = io.micrometer.core.instrument.Tags.of(
+            "error_type", errorType,
+            "flag_id", flagID?.toString() ?: "unknown",
+            "flag_key", flagKey ?: "unknown"
         )
+        prometheusRegistry?.let { registry ->
+            Counter.builder("flagent.evaluations.errors")
+                .description("Total number of evaluation errors")
+                .tags(tags)
+                .register(registry)
+                .increment()
+        }
         
         // StatsD metrics
         statsdClient?.let { client ->
@@ -201,13 +208,13 @@ fun Application.configureFlagentMetrics(config: FlagentMetricsConfig): FlagentMe
         }
         
         // Ensure Routing plugin is installed
-        if (application.pluginOrNull(Routing) == null) {
-            application.install(Routing)
+        if (this.pluginOrNull(Routing) == null) {
+            install(Routing)
         }
         
-        application.routing {
+        routing {
             get(config.prometheusPath) {
-                call.respond(registry.scrape())
+                call.respondText(registry.scrape(), ContentType.Text.Plain)
             }
         }
         
