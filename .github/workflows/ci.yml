@@ -50,6 +50,7 @@ jobs:
           files: ./flagent/backend/build/reports/jacoco/test/jacocoTestReport.xml
           flags: unittests
           name: codecov-umbrella
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
   
   integration_test:
