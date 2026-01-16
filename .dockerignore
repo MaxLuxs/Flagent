@@ -1,0 +1,75 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+docs/
+*.md
+LICENSE
+CHANGELOG.md
+README.md
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# Build artifacts
+build/
+out/
+target/
+dist/
+*.class
+*.jar
+*.war
+
+# Gradle
+.gradle/
+gradle-app.setting
+.gradletasknamecache
+!gradle/wrapper/gradle-wrapper.jar
+
+# Node modules (for frontend if built separately)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test files
+coverage/
+.nyc_output/
+test-results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# CI/CD
+.github/
+
+# Inspiration (reference project)
+inspiration/
+
+# Local config
+local.properties
