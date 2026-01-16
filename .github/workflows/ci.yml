@@ -1,0 +1,102 @@
+name: ci
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+
+jobs:
+  unit_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      
+      - name: Grant execute permission for gradlew
+        working-directory: ./flagent
+        run: chmod +x gradlew
+      
+      - name: Build with Gradle
+        working-directory: ./flagent
+        run: ./gradlew build --no-daemon -x test
+      
+      - name: Run tests
+        working-directory: ./flagent
+        run: ./gradlew test --no-daemon
+      
+      - name: Generate test coverage
+        working-directory: ./flagent
+        run: ./gradlew jacocoTestReport --no-daemon
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./flagent/backend/build/reports/jacoco/test/jacocoTestReport.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+  
+  integration_test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: flagent_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      
+      - name: Grant execute permission for gradlew
+        working-directory: ./flagent
+        run: chmod +x gradlew
+      
+      - name: Run integration tests
+        working-directory: ./flagent
+        env:
+          FLAGENT_DB_DBDRIVER: postgresql
+          FLAGENT_DB_DBCONNECTIONSTR: jdbc:postgresql://localhost:5432/flagent_test?user=test&password=test
+        run: ./gradlew :backend:test --no-daemon --tests "*IntegrationTest"
+  
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
