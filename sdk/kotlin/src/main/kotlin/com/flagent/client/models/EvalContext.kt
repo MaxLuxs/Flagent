@@ -19,6 +19,7 @@ package com.flagent.client.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.json.JsonObject
 
 /**
  * 
@@ -43,8 +44,8 @@ data class EvalContext (
     @SerialName(value = "entityType")
     val entityType: kotlin.String? = null,
 
-    @Contextual @SerialName(value = "entityContext")
-    val entityContext: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null,
+    @SerialName(value = "entityContext")
+    val entityContext: JsonObject? = null,
 
     @SerialName(value = "enableDebug")
     val enableDebug: kotlin.Boolean? = false,

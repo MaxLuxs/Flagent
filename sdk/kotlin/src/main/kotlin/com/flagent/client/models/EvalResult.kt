@@ -21,6 +21,9 @@ import com.flagent.client.models.EvalDebugLog
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.json.JsonObject
+import kotlinx.datetime.Instant
+import kotlinx.serialization.json.JsonObject
 
 /**
  * 
@@ -62,14 +65,14 @@ data class EvalResult (
     @SerialName(value = "variantKey")
     val variantKey: kotlin.String? = null,
 
-    @Contextual @SerialName(value = "variantAttachment")
-    val variantAttachment: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null,
+    @SerialName(value = "variantAttachment")
+    val variantAttachment: JsonObject? = null,
 
     @SerialName(value = "evalContext")
     val evalContext: EvalContext? = null,
 
     @Contextual @SerialName(value = "timestamp")
-    val timestamp: kotlin.time.Instant? = null,
+    val timestamp: Instant? = null,
 
     @SerialName(value = "evalDebugLog")
     val evalDebugLog: EvalDebugLog? = null

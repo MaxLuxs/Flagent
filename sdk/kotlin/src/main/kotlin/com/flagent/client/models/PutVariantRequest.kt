@@ -19,6 +19,7 @@ package com.flagent.client.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.json.JsonObject
 
 /**
  * 
@@ -33,8 +34,8 @@ data class PutVariantRequest (
     @SerialName(value = "key")
     val key: kotlin.String,
 
-    @Contextual @SerialName(value = "attachment")
-    val attachment: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null
+    @SerialName(value = "attachment")
+    val attachment: JsonObject? = null
 
 ) {
 

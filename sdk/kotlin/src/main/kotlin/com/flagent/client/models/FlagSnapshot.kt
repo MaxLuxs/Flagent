@@ -20,6 +20,7 @@ import com.flagent.client.models.Flag
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.datetime.Instant
 
 /**
  * 
@@ -40,7 +41,7 @@ data class FlagSnapshot (
     val flag: Flag,
 
     @Contextual @SerialName(value = "updatedAt")
-    val updatedAt: kotlin.time.Instant,
+    val updatedAt: Instant,
 
     @SerialName(value = "updatedBy")
     val updatedBy: kotlin.String? = null
