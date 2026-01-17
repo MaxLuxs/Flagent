@@ -18,13 +18,13 @@ rootProject.name = "Flagent Android Sample"
 
 // Include SDK modules first
 include(":kotlin-client")
-project(":kotlin-client").projectDir = file("../kotlin")
+project(":kotlin-client").projectDir = file("../../sdk/kotlin")
 
 include(":kotlin-enhanced")
-project(":kotlin-enhanced").projectDir = file("../kotlin-enhanced")
+project(":kotlin-enhanced").projectDir = file("../../sdk/kotlin-enhanced")
 
 include(":kotlin-debug-ui")
-project(":kotlin-debug-ui").projectDir = file("../kotlin-debug-ui")
+project(":kotlin-debug-ui").projectDir = file("../../sdk/kotlin-debug-ui")
 
 // Include app
 include(":app")

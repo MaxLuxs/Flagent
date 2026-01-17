@@ -10,18 +10,18 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct PutFlagRequest: Codable, JSONEncodable, Hashable {
+public struct PutFlagRequest: Codable, JSONEncodable, Hashable {
 
-    internal static let descriptionRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal var description: String?
-    internal var key: String?
+    public static let descriptionRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public var description: String?
+    public var key: String?
     /** Enabled data records will get data logging in the metrics pipeline */
-    internal var dataRecordsEnabled: Bool?
+    public var dataRecordsEnabled: Bool?
     /** It will overwrite entityType into evaluation logs if it's not empty */
-    internal var entityType: String?
-    internal var notes: String?
+    public var entityType: String?
+    public var notes: String?
 
-    internal init(description: String? = nil, key: String? = nil, dataRecordsEnabled: Bool? = nil, entityType: String? = nil, notes: String? = nil) {
+    public init(description: String? = nil, key: String? = nil, dataRecordsEnabled: Bool? = nil, entityType: String? = nil, notes: String? = nil) {
         self.description = description
         self.key = key
         self.dataRecordsEnabled = dataRecordsEnabled
@@ -29,7 +29,7 @@ internal struct PutFlagRequest: Codable, JSONEncodable, Hashable {
         self.notes = notes
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case description
         case key
         case dataRecordsEnabled
@@ -39,7 +39,7 @@ internal struct PutFlagRequest: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(description, forKey: .description)
         try container.encodeIfPresent(key, forKey: .key)

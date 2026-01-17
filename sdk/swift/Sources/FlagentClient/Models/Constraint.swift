@@ -10,9 +10,9 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct Constraint: Codable, JSONEncodable, Hashable {
+public struct Constraint: Codable, JSONEncodable, Hashable {
 
-    internal enum Operator: String, Codable, CaseIterable {
+    public enum Operator: String, Codable, CaseIterable {
         case eq = "EQ"
         case neq = "NEQ"
         case lt = "LT"
@@ -26,16 +26,16 @@ internal struct Constraint: Codable, JSONEncodable, Hashable {
         case contains = "CONTAINS"
         case notcontains = "NOTCONTAINS"
     }
-    internal static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal static let propertyRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal static let valueRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal var id: Int64
-    internal var segmentID: Int64
-    internal var property: String
-    internal var _operator: Operator
-    internal var value: String
+    public static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public static let propertyRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public static let valueRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public var id: Int64
+    public var segmentID: Int64
+    public var property: String
+    public var _operator: Operator
+    public var value: String
 
-    internal init(id: Int64, segmentID: Int64, property: String, _operator: Operator, value: String) {
+    public init(id: Int64, segmentID: Int64, property: String, _operator: Operator, value: String) {
         self.id = id
         self.segmentID = segmentID
         self.property = property
@@ -43,7 +43,7 @@ internal struct Constraint: Codable, JSONEncodable, Hashable {
         self.value = value
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case segmentID
         case property
@@ -53,7 +53,7 @@ internal struct Constraint: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(segmentID, forKey: .segmentID)

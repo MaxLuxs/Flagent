@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class TagAPI {
+open class TagAPI {
 
     /**
      Create tag and associate with flag
@@ -24,7 +24,7 @@ internal class TagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func createFlagTag(flagId: Int64, createTagRequest: CreateTagRequest) -> AnyPublisher<Tag, Error> {
+    open class func createFlagTag(flagId: Int64, createTagRequest: CreateTagRequest) -> AnyPublisher<Tag, Error> {
         let requestBuilder = createFlagTagWithRequestBuilder(flagId: flagId, createTagRequest: createTagRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Tag, Error> { promise in
@@ -52,7 +52,7 @@ internal class TagAPI {
      - parameter createTagRequest: (body)  
      - returns: RequestBuilder<Tag> 
      */
-    internal class func createFlagTagWithRequestBuilder(flagId: Int64, createTagRequest: CreateTagRequest) -> RequestBuilder<Tag> {
+    open class func createFlagTagWithRequestBuilder(flagId: Int64, createTagRequest: CreateTagRequest) -> RequestBuilder<Tag> {
         var localVariablePath = "/flags/{flagId}/tags"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -82,7 +82,7 @@ internal class TagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func deleteFlagTag(flagId: Int64, tagId: Int64) -> AnyPublisher<Void, Error> {
+    open class func deleteFlagTag(flagId: Int64, tagId: Int64) -> AnyPublisher<Void, Error> {
         let requestBuilder = deleteFlagTagWithRequestBuilder(flagId: flagId, tagId: tagId)
         let requestTask = requestBuilder.requestTask
         return Future<Void, Error> { promise in
@@ -109,7 +109,7 @@ internal class TagAPI {
      - parameter tagId: (path) Numeric ID of the tag 
      - returns: RequestBuilder<Void> 
      */
-    internal class func deleteFlagTagWithRequestBuilder(flagId: Int64, tagId: Int64) -> RequestBuilder<Void> {
+    open class func deleteFlagTagWithRequestBuilder(flagId: Int64, tagId: Int64) -> RequestBuilder<Void> {
         var localVariablePath = "/flags/{flagId}/tags/{tagId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -143,7 +143,7 @@ internal class TagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func findAllTags(limit: Int64? = nil, offset: Int64? = nil, valueLike: String? = nil) -> AnyPublisher<[Tag], Error> {
+    open class func findAllTags(limit: Int64? = nil, offset: Int64? = nil, valueLike: String? = nil) -> AnyPublisher<[Tag], Error> {
         let requestBuilder = findAllTagsWithRequestBuilder(limit: limit, offset: offset, valueLike: valueLike)
         let requestTask = requestBuilder.requestTask
         return Future<[Tag], Error> { promise in
@@ -171,7 +171,7 @@ internal class TagAPI {
      - parameter valueLike: (query) Return tags partially matching given value (optional)
      - returns: RequestBuilder<[Tag]> 
      */
-    internal class func findAllTagsWithRequestBuilder(limit: Int64? = nil, offset: Int64? = nil, valueLike: String? = nil) -> RequestBuilder<[Tag]> {
+    open class func findAllTagsWithRequestBuilder(limit: Int64? = nil, offset: Int64? = nil, valueLike: String? = nil) -> RequestBuilder<[Tag]> {
         let localVariablePath = "/tags"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -202,7 +202,7 @@ internal class TagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func findFlagTags(flagId: Int64) -> AnyPublisher<[Tag], Error> {
+    open class func findFlagTags(flagId: Int64) -> AnyPublisher<[Tag], Error> {
         let requestBuilder = findFlagTagsWithRequestBuilder(flagId: flagId)
         let requestTask = requestBuilder.requestTask
         return Future<[Tag], Error> { promise in
@@ -228,7 +228,7 @@ internal class TagAPI {
      - parameter flagId: (path) Numeric ID of the flag 
      - returns: RequestBuilder<[Tag]> 
      */
-    internal class func findFlagTagsWithRequestBuilder(flagId: Int64) -> RequestBuilder<[Tag]> {
+    open class func findFlagTagsWithRequestBuilder(flagId: Int64) -> RequestBuilder<[Tag]> {
         var localVariablePath = "/flags/{flagId}/tags"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

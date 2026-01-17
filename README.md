@@ -74,6 +74,46 @@ curl --request POST \
 
 Flagent maintains high performance with Kotlin Coroutines for asynchronous evaluation. The evaluation engine is designed for scalability and low latency.
 
+## Performance Metrics
+
+Flagent automatically collects performance metrics using Micrometer and Prometheus. Metrics are collected for all HTTP requests without any additional code.
+
+### Automatic HTTP Metrics
+
+The following metrics are automatically collected by the MicrometerMetrics plugin:
+
+- **`http.server.requests`** - Total count of HTTP requests with tags: `method`, `uri`, `status`
+- **`http.server.requests.duration`** - Request duration histogram with tags: `method`, `uri`, `status`
+- **JVM metrics** - Memory usage, thread counts, garbage collection
+
+### Enabling Metrics
+
+To enable Prometheus metrics endpoint, set the environment variable:
+
+```bash
+export FLAGENT_PROMETHEUS_ENABLED=true
+export FLAGENT_PROMETHEUS_PATH=/metrics  # optional, defaults to /metrics
+```
+
+After starting the server, metrics are available at:
+
+```bash
+curl http://localhost:18000/metrics
+```
+
+### StatsD Metrics
+
+StatsD metrics can also be enabled for integration with Datadog, Graphite, etc.:
+
+```bash
+export FLAGENT_STATSD_ENABLED=true
+export FLAGENT_STATSD_HOST=127.0.0.1
+export FLAGENT_STATSD_PORT=8125
+export FLAGENT_STATSD_PREFIX=flagent.
+```
+
+See [AppConfig.kt](./flagent/backend/src/main/kotlin/flagent/config/AppConfig.kt) for all metrics configuration options.
+
 ## Flagent UI
 
 The UI is built with Compose for Web and provides a modern, intuitive interface for managing feature flags and experiments.
@@ -107,9 +147,9 @@ Flagent provides official SDK clients:
 
 | Language | SDK | Status |
 | ---------- | --- | ------ |
-| Kotlin | [Flagent Kotlin SDK](./flagent/sdk/kotlin/) | ✅ Available |
-| JavaScript/TypeScript | [Flagent JavaScript SDK](./flagent/sdk/javascript/) | ✅ Available |
-| Swift | [Flagent Swift SDK](./flagent/sdk/swift/) | ✅ Available |
+| Kotlin | [Flagent Kotlin SDK](./sdk/kotlin/) | ✅ Available |
+| JavaScript/TypeScript | [Flagent JavaScript SDK](./sdk/javascript/) | ✅ Available |
+| Swift | [Flagent Swift SDK](./sdk/swift/) | ✅ Available |
 
 ## Development
 

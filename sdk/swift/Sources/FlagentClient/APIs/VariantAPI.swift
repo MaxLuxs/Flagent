@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class VariantAPI {
+open class VariantAPI {
 
     /**
      Create variant
@@ -24,7 +24,7 @@ internal class VariantAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func createVariant(flagId: Int64, createVariantRequest: CreateVariantRequest) -> AnyPublisher<Variant, Error> {
+    open class func createVariant(flagId: Int64, createVariantRequest: CreateVariantRequest) -> AnyPublisher<Variant, Error> {
         let requestBuilder = createVariantWithRequestBuilder(flagId: flagId, createVariantRequest: createVariantRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Variant, Error> { promise in
@@ -52,7 +52,7 @@ internal class VariantAPI {
      - parameter createVariantRequest: (body)  
      - returns: RequestBuilder<Variant> 
      */
-    internal class func createVariantWithRequestBuilder(flagId: Int64, createVariantRequest: CreateVariantRequest) -> RequestBuilder<Variant> {
+    open class func createVariantWithRequestBuilder(flagId: Int64, createVariantRequest: CreateVariantRequest) -> RequestBuilder<Variant> {
         var localVariablePath = "/flags/{flagId}/variants"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -82,7 +82,7 @@ internal class VariantAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func deleteVariant(flagId: Int64, variantId: Int64) -> AnyPublisher<Void, Error> {
+    open class func deleteVariant(flagId: Int64, variantId: Int64) -> AnyPublisher<Void, Error> {
         let requestBuilder = deleteVariantWithRequestBuilder(flagId: flagId, variantId: variantId)
         let requestTask = requestBuilder.requestTask
         return Future<Void, Error> { promise in
@@ -110,7 +110,7 @@ internal class VariantAPI {
      - parameter variantId: (path) Numeric ID of the variant 
      - returns: RequestBuilder<Void> 
      */
-    internal class func deleteVariantWithRequestBuilder(flagId: Int64, variantId: Int64) -> RequestBuilder<Void> {
+    open class func deleteVariantWithRequestBuilder(flagId: Int64, variantId: Int64) -> RequestBuilder<Void> {
         var localVariablePath = "/flags/{flagId}/variants/{variantId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -142,7 +142,7 @@ internal class VariantAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func findVariants(flagId: Int64) -> AnyPublisher<[Variant], Error> {
+    open class func findVariants(flagId: Int64) -> AnyPublisher<[Variant], Error> {
         let requestBuilder = findVariantsWithRequestBuilder(flagId: flagId)
         let requestTask = requestBuilder.requestTask
         return Future<[Variant], Error> { promise in
@@ -168,7 +168,7 @@ internal class VariantAPI {
      - parameter flagId: (path) Numeric ID of the flag 
      - returns: RequestBuilder<[Variant]> 
      */
-    internal class func findVariantsWithRequestBuilder(flagId: Int64) -> RequestBuilder<[Variant]> {
+    open class func findVariantsWithRequestBuilder(flagId: Int64) -> RequestBuilder<[Variant]> {
         var localVariablePath = "/flags/{flagId}/variants"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -199,7 +199,7 @@ internal class VariantAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func putVariant(flagId: Int64, variantId: Int64, putVariantRequest: PutVariantRequest) -> AnyPublisher<Variant, Error> {
+    open class func putVariant(flagId: Int64, variantId: Int64, putVariantRequest: PutVariantRequest) -> AnyPublisher<Variant, Error> {
         let requestBuilder = putVariantWithRequestBuilder(flagId: flagId, variantId: variantId, putVariantRequest: putVariantRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Variant, Error> { promise in
@@ -227,7 +227,7 @@ internal class VariantAPI {
      - parameter putVariantRequest: (body)  
      - returns: RequestBuilder<Variant> 
      */
-    internal class func putVariantWithRequestBuilder(flagId: Int64, variantId: Int64, putVariantRequest: PutVariantRequest) -> RequestBuilder<Variant> {
+    open class func putVariantWithRequestBuilder(flagId: Int64, variantId: Int64, putVariantRequest: PutVariantRequest) -> RequestBuilder<Variant> {
         var localVariablePath = "/flags/{flagId}/variants/{variantId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

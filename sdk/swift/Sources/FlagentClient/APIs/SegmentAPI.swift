@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class SegmentAPI {
+open class SegmentAPI {
 
     /**
      Create segment
@@ -24,7 +24,7 @@ internal class SegmentAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func createSegment(flagId: Int64, createSegmentRequest: CreateSegmentRequest) -> AnyPublisher<Segment, Error> {
+    open class func createSegment(flagId: Int64, createSegmentRequest: CreateSegmentRequest) -> AnyPublisher<Segment, Error> {
         let requestBuilder = createSegmentWithRequestBuilder(flagId: flagId, createSegmentRequest: createSegmentRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Segment, Error> { promise in
@@ -52,7 +52,7 @@ internal class SegmentAPI {
      - parameter createSegmentRequest: (body)  
      - returns: RequestBuilder<Segment> 
      */
-    internal class func createSegmentWithRequestBuilder(flagId: Int64, createSegmentRequest: CreateSegmentRequest) -> RequestBuilder<Segment> {
+    open class func createSegmentWithRequestBuilder(flagId: Int64, createSegmentRequest: CreateSegmentRequest) -> RequestBuilder<Segment> {
         var localVariablePath = "/flags/{flagId}/segments"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -82,7 +82,7 @@ internal class SegmentAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func deleteSegment(flagId: Int64, segmentId: Int64) -> AnyPublisher<Void, Error> {
+    open class func deleteSegment(flagId: Int64, segmentId: Int64) -> AnyPublisher<Void, Error> {
         let requestBuilder = deleteSegmentWithRequestBuilder(flagId: flagId, segmentId: segmentId)
         let requestTask = requestBuilder.requestTask
         return Future<Void, Error> { promise in
@@ -110,7 +110,7 @@ internal class SegmentAPI {
      - parameter segmentId: (path) Numeric ID of the segment 
      - returns: RequestBuilder<Void> 
      */
-    internal class func deleteSegmentWithRequestBuilder(flagId: Int64, segmentId: Int64) -> RequestBuilder<Void> {
+    open class func deleteSegmentWithRequestBuilder(flagId: Int64, segmentId: Int64) -> RequestBuilder<Void> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -142,7 +142,7 @@ internal class SegmentAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func findSegments(flagId: Int64) -> AnyPublisher<[Segment], Error> {
+    open class func findSegments(flagId: Int64) -> AnyPublisher<[Segment], Error> {
         let requestBuilder = findSegmentsWithRequestBuilder(flagId: flagId)
         let requestTask = requestBuilder.requestTask
         return Future<[Segment], Error> { promise in
@@ -168,7 +168,7 @@ internal class SegmentAPI {
      - parameter flagId: (path) Numeric ID of the flag 
      - returns: RequestBuilder<[Segment]> 
      */
-    internal class func findSegmentsWithRequestBuilder(flagId: Int64) -> RequestBuilder<[Segment]> {
+    open class func findSegmentsWithRequestBuilder(flagId: Int64) -> RequestBuilder<[Segment]> {
         var localVariablePath = "/flags/{flagId}/segments"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -199,7 +199,7 @@ internal class SegmentAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func putSegment(flagId: Int64, segmentId: Int64, putSegmentRequest: PutSegmentRequest) -> AnyPublisher<Segment, Error> {
+    open class func putSegment(flagId: Int64, segmentId: Int64, putSegmentRequest: PutSegmentRequest) -> AnyPublisher<Segment, Error> {
         let requestBuilder = putSegmentWithRequestBuilder(flagId: flagId, segmentId: segmentId, putSegmentRequest: putSegmentRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Segment, Error> { promise in
@@ -227,7 +227,7 @@ internal class SegmentAPI {
      - parameter putSegmentRequest: (body)  
      - returns: RequestBuilder<Segment> 
      */
-    internal class func putSegmentWithRequestBuilder(flagId: Int64, segmentId: Int64, putSegmentRequest: PutSegmentRequest) -> RequestBuilder<Segment> {
+    open class func putSegmentWithRequestBuilder(flagId: Int64, segmentId: Int64, putSegmentRequest: PutSegmentRequest) -> RequestBuilder<Segment> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -260,7 +260,7 @@ internal class SegmentAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func putSegmentReorder(flagId: Int64, putSegmentReorderRequest: PutSegmentReorderRequest) -> AnyPublisher<Void, Error> {
+    open class func putSegmentReorder(flagId: Int64, putSegmentReorderRequest: PutSegmentReorderRequest) -> AnyPublisher<Void, Error> {
         let requestBuilder = putSegmentReorderWithRequestBuilder(flagId: flagId, putSegmentReorderRequest: putSegmentReorderRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Void, Error> { promise in
@@ -287,7 +287,7 @@ internal class SegmentAPI {
      - parameter putSegmentReorderRequest: (body)  
      - returns: RequestBuilder<Void> 
      */
-    internal class func putSegmentReorderWithRequestBuilder(flagId: Int64, putSegmentReorderRequest: PutSegmentReorderRequest) -> RequestBuilder<Void> {
+    open class func putSegmentReorderWithRequestBuilder(flagId: Int64, putSegmentReorderRequest: PutSegmentReorderRequest) -> RequestBuilder<Void> {
         var localVariablePath = "/flags/{flagId}/segments/reorder"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

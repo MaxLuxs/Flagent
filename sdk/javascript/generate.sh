@@ -6,7 +6,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 OPENAPI_SPEC="$PROJECT_ROOT/docs/api/openapi.yaml"
 OUTPUT_DIR="$SCRIPT_DIR"
 
@@ -36,6 +36,6 @@ $GENERATOR_CMD generate \
     -i "$OPENAPI_SPEC" \
     -g typescript-axios \
     -o "$OUTPUT_DIR" \
-    --additional-properties=npmName=@flagent/client,npmVersion=1.0.0,withInterfaces=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=api,sourceFolder=src
+    --additional-properties=npmName=@flagent/client,npmVersion=1.0.1,withInterfaces=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=api,sourceFolder=src
 
 echo "JavaScript/TypeScript SDK generated successfully in $OUTPUT_DIR"

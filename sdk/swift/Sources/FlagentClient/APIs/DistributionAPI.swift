@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class DistributionAPI {
+open class DistributionAPI {
 
     /**
      Get distributions for segment
@@ -24,7 +24,7 @@ internal class DistributionAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func findDistributions(flagId: Int64, segmentId: Int64) -> AnyPublisher<[Distribution], Error> {
+    open class func findDistributions(flagId: Int64, segmentId: Int64) -> AnyPublisher<[Distribution], Error> {
         let requestBuilder = findDistributionsWithRequestBuilder(flagId: flagId, segmentId: segmentId)
         let requestTask = requestBuilder.requestTask
         return Future<[Distribution], Error> { promise in
@@ -51,7 +51,7 @@ internal class DistributionAPI {
      - parameter segmentId: (path) Numeric ID of the segment 
      - returns: RequestBuilder<[Distribution]> 
      */
-    internal class func findDistributionsWithRequestBuilder(flagId: Int64, segmentId: Int64) -> RequestBuilder<[Distribution]> {
+    open class func findDistributionsWithRequestBuilder(flagId: Int64, segmentId: Int64) -> RequestBuilder<[Distribution]> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}/distributions"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -85,7 +85,7 @@ internal class DistributionAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func putDistributions(flagId: Int64, segmentId: Int64, putDistributionsRequest: PutDistributionsRequest) -> AnyPublisher<[Distribution], Error> {
+    open class func putDistributions(flagId: Int64, segmentId: Int64, putDistributionsRequest: PutDistributionsRequest) -> AnyPublisher<[Distribution], Error> {
         let requestBuilder = putDistributionsWithRequestBuilder(flagId: flagId, segmentId: segmentId, putDistributionsRequest: putDistributionsRequest)
         let requestTask = requestBuilder.requestTask
         return Future<[Distribution], Error> { promise in
@@ -114,7 +114,7 @@ internal class DistributionAPI {
      - parameter putDistributionsRequest: (body)  
      - returns: RequestBuilder<[Distribution]> 
      */
-    internal class func putDistributionsWithRequestBuilder(flagId: Int64, segmentId: Int64, putDistributionsRequest: PutDistributionsRequest) -> RequestBuilder<[Distribution]> {
+    open class func putDistributionsWithRequestBuilder(flagId: Int64, segmentId: Int64, putDistributionsRequest: PutDistributionsRequest) -> RequestBuilder<[Distribution]> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}/distributions"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

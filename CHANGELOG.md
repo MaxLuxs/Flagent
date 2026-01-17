@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2024-01-17
+
+### Fixed
+- Fixed all broken links in README files
+- Generated SDK documentation (JavaScript, Swift, Kotlin)
+- Fixed SDK generation scripts to use correct project root path
+- Updated .gitignore to include SDK documentation
+
+### Changed
+- SDK documentation is now included in repository for better discoverability
+
+## [1.0.0] - 2024-XX-XX
+
 ### Added
 - Professional CI/CD infrastructure with GitHub Actions
 - Docker multi-stage build support
@@ -40,5 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenAPI/Swagger documentation
 - Kotlin and JavaScript SDKs
 
-[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/MaxLuxs/Flagent/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/MaxLuxs/Flagent/releases/tag/v1.0.0

@@ -8,27 +8,27 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-internal class FlagentClientAPI {
-    internal static var basePath = "http://localhost:18000/api/v1"
-    internal static var customHeaders: [String: String] = [:]
-    internal static var credential: URLCredential?
-    internal static var requestBuilderFactory: RequestBuilderFactory = URLSessionRequestBuilderFactory()
-    internal static var apiResponseQueue: DispatchQueue = .main
+open class FlagentClientAPI {
+    public static var basePath = "http://localhost:18000/api/v1"
+    public static var customHeaders: [String: String] = [:]
+    public static var credential: URLCredential?
+    public static var requestBuilderFactory: RequestBuilderFactory = URLSessionRequestBuilderFactory()
+    public static var apiResponseQueue: DispatchQueue = .main
 }
 
-internal class RequestBuilder<T> {
+open class RequestBuilder<T> {
     var credential: URLCredential?
     var headers: [String: String]
-    internal let parameters: [String: Any]?
-    internal let method: String
-    internal let URLString: String
-    internal let requestTask: RequestTask = RequestTask()
-    internal let requiresAuthentication: Bool
+    public let parameters: [String: Any]?
+    public let method: String
+    public let URLString: String
+    public let requestTask: RequestTask = RequestTask()
+    public let requiresAuthentication: Bool
 
     /// Optional block to obtain a reference to the request's progress instance when available.
-    internal var onProgressReady: ((Progress) -> Void)?
+    public var onProgressReady: ((Progress) -> Void)?
 
-    required internal init(method: String, URLString: String, parameters: [String: Any]?, headers: [String: String] = [:], requiresAuthentication: Bool) {
+    required public init(method: String, URLString: String, parameters: [String: Any]?, headers: [String: String] = [:], requiresAuthentication: Bool) {
         self.method = method
         self.URLString = URLString
         self.parameters = parameters
@@ -39,30 +39,30 @@ internal class RequestBuilder<T> {
         addCredential()
     }
 
-    internal func addHeaders(_ aHeaders: [String: String]) {
+    open func addHeaders(_ aHeaders: [String: String]) {
         for (header, value) in aHeaders {
             headers[header] = value
         }
     }
 
     @discardableResult
-    internal func execute(_ apiResponseQueue: DispatchQueue = FlagentClientAPI.apiResponseQueue, _ completion: @escaping (_ result: Swift.Result<Response<T>, ErrorResponse>) -> Void) -> RequestTask {
+    open func execute(_ apiResponseQueue: DispatchQueue = FlagentClientAPI.apiResponseQueue, _ completion: @escaping (_ result: Swift.Result<Response<T>, ErrorResponse>) -> Void) -> RequestTask {
         return requestTask
     }
 
-    internal func addHeader(name: String, value: String) -> Self {
+    public func addHeader(name: String, value: String) -> Self {
         if !value.isEmpty {
             headers[name] = value
         }
         return self
     }
 
-    internal func addCredential() {
+    open func addCredential() {
         credential = FlagentClientAPI.credential
     }
 }
 
-internal protocol RequestBuilderFactory {
+public protocol RequestBuilderFactory {
     func getNonDecodableBuilder<T>() -> RequestBuilder<T>.Type
     func getBuilder<T: Decodable>() -> RequestBuilder<T>.Type
 }

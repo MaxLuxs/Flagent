@@ -10,22 +10,22 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct Info: Codable, JSONEncodable, Hashable {
+public struct Info: Codable, JSONEncodable, Hashable {
 
     /** Application version */
-    internal var version: String?
+    public var version: String?
     /** Build timestamp */
-    internal var buildTime: String?
+    public var buildTime: String?
     /** Git commit hash */
-    internal var gitCommit: String?
+    public var gitCommit: String?
 
-    internal init(version: String? = nil, buildTime: String? = nil, gitCommit: String? = nil) {
+    public init(version: String? = nil, buildTime: String? = nil, gitCommit: String? = nil) {
         self.version = version
         self.buildTime = buildTime
         self.gitCommit = gitCommit
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case version
         case buildTime
         case gitCommit
@@ -33,7 +33,7 @@ internal struct Info: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(version, forKey: .version)
         try container.encodeIfPresent(buildTime, forKey: .buildTime)

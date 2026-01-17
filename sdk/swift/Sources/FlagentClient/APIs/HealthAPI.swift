@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class HealthAPI {
+open class HealthAPI {
 
     /**
      Health check
@@ -22,7 +22,7 @@ internal class HealthAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func getHealth() -> AnyPublisher<Health, Error> {
+    open class func getHealth() -> AnyPublisher<Health, Error> {
         let requestBuilder = getHealthWithRequestBuilder()
         let requestTask = requestBuilder.requestTask
         return Future<Health, Error> { promise in
@@ -48,7 +48,7 @@ internal class HealthAPI {
      - Check if Flagent is healthy
      - returns: RequestBuilder<Health> 
      */
-    internal class func getHealthWithRequestBuilder() -> RequestBuilder<Health> {
+    open class func getHealthWithRequestBuilder() -> RequestBuilder<Health> {
         let localVariablePath = "/health"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -73,7 +73,7 @@ internal class HealthAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func getInfo() -> AnyPublisher<Info, Error> {
+    open class func getInfo() -> AnyPublisher<Info, Error> {
         let requestBuilder = getInfoWithRequestBuilder()
         let requestTask = requestBuilder.requestTask
         return Future<Info, Error> { promise in
@@ -98,7 +98,7 @@ internal class HealthAPI {
      - GET /info
      - returns: RequestBuilder<Info> 
      */
-    internal class func getInfoWithRequestBuilder() -> RequestBuilder<Info> {
+    open class func getInfoWithRequestBuilder() -> RequestBuilder<Info> {
         let localVariablePath = "/info"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil

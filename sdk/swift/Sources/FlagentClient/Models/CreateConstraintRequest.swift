@@ -10,21 +10,21 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct CreateConstraintRequest: Codable, JSONEncodable, Hashable {
+public struct CreateConstraintRequest: Codable, JSONEncodable, Hashable {
 
-    internal static let propertyRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal static let valueRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal var property: String
-    internal var _operator: String
-    internal var value: String
+    public static let propertyRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public static let valueRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public var property: String
+    public var _operator: String
+    public var value: String
 
-    internal init(property: String, _operator: String, value: String) {
+    public init(property: String, _operator: String, value: String) {
         self.property = property
         self._operator = _operator
         self.value = value
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case property
         case _operator = "operator"
         case value
@@ -32,7 +32,7 @@ internal struct CreateConstraintRequest: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(property, forKey: .property)
         try container.encode(_operator, forKey: ._operator)

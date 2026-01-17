@@ -10,21 +10,21 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct EvalResult: Codable, JSONEncodable, Hashable {
+public struct EvalResult: Codable, JSONEncodable, Hashable {
 
-    internal var flagID: Int64?
-    internal var flagKey: String?
-    internal var flagSnapshotID: Int64?
-    internal var flagTags: [String]?
-    internal var segmentID: Int64?
-    internal var variantID: Int64?
-    internal var variantKey: String?
-    internal var variantAttachment: [String: AnyCodable]?
-    internal var evalContext: EvalContext?
-    internal var timestamp: Date?
-    internal var evalDebugLog: EvalDebugLog?
+    public var flagID: Int64?
+    public var flagKey: String?
+    public var flagSnapshotID: Int64?
+    public var flagTags: [String]?
+    public var segmentID: Int64?
+    public var variantID: Int64?
+    public var variantKey: String?
+    public var variantAttachment: [String: AnyCodable]?
+    public var evalContext: EvalContext?
+    public var timestamp: Date?
+    public var evalDebugLog: EvalDebugLog?
 
-    internal init(flagID: Int64? = nil, flagKey: String? = nil, flagSnapshotID: Int64? = nil, flagTags: [String]? = nil, segmentID: Int64? = nil, variantID: Int64? = nil, variantKey: String? = nil, variantAttachment: [String: AnyCodable]? = nil, evalContext: EvalContext? = nil, timestamp: Date? = nil, evalDebugLog: EvalDebugLog? = nil) {
+    public init(flagID: Int64? = nil, flagKey: String? = nil, flagSnapshotID: Int64? = nil, flagTags: [String]? = nil, segmentID: Int64? = nil, variantID: Int64? = nil, variantKey: String? = nil, variantAttachment: [String: AnyCodable]? = nil, evalContext: EvalContext? = nil, timestamp: Date? = nil, evalDebugLog: EvalDebugLog? = nil) {
         self.flagID = flagID
         self.flagKey = flagKey
         self.flagSnapshotID = flagSnapshotID
@@ -38,7 +38,7 @@ internal struct EvalResult: Codable, JSONEncodable, Hashable {
         self.evalDebugLog = evalDebugLog
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case flagID
         case flagKey
         case flagSnapshotID
@@ -54,7 +54,7 @@ internal struct EvalResult: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(flagID, forKey: .flagID)
         try container.encodeIfPresent(flagKey, forKey: .flagKey)

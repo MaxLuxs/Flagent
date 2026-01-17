@@ -10,26 +10,26 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct PutSegmentRequest: Codable, JSONEncodable, Hashable {
+public struct PutSegmentRequest: Codable, JSONEncodable, Hashable {
 
-    internal static let descriptionRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal static let rolloutPercentRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: 100, exclusiveMaximum: false, multipleOf: nil)
-    internal var description: String
-    internal var rolloutPercent: Int64
+    public static let descriptionRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public static let rolloutPercentRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: 100, exclusiveMaximum: false, multipleOf: nil)
+    public var description: String
+    public var rolloutPercent: Int64
 
-    internal init(description: String, rolloutPercent: Int64) {
+    public init(description: String, rolloutPercent: Int64) {
         self.description = description
         self.rolloutPercent = rolloutPercent
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case description
         case rolloutPercent
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(description, forKey: .description)
         try container.encode(rolloutPercent, forKey: .rolloutPercent)

@@ -10,22 +10,22 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct FlagSnapshot: Codable, JSONEncodable, Hashable {
+public struct FlagSnapshot: Codable, JSONEncodable, Hashable {
 
-    internal static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal var id: Int64
-    internal var updatedBy: String?
-    internal var flag: Flag
-    internal var updatedAt: Date
+    public static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public var id: Int64
+    public var updatedBy: String?
+    public var flag: Flag
+    public var updatedAt: Date
 
-    internal init(id: Int64, updatedBy: String? = nil, flag: Flag, updatedAt: Date) {
+    public init(id: Int64, updatedBy: String? = nil, flag: Flag, updatedAt: Date) {
         self.id = id
         self.updatedBy = updatedBy
         self.flag = flag
         self.updatedAt = updatedAt
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case updatedBy
         case flag
@@ -34,7 +34,7 @@ internal struct FlagSnapshot: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(updatedBy, forKey: .updatedBy)

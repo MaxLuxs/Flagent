@@ -10,20 +10,20 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct Segment: Codable, JSONEncodable, Hashable {
+public struct Segment: Codable, JSONEncodable, Hashable {
 
-    internal static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal static let rankRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal static let rolloutPercentRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: 100, exclusiveMaximum: false, multipleOf: nil)
-    internal var id: Int64
-    internal var flagID: Int64
-    internal var description: String
-    internal var rank: Int64
-    internal var rolloutPercent: Int64
-    internal var constraints: [Constraint]?
-    internal var distributions: [Distribution]?
+    public static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public static let rankRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public static let rolloutPercentRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: 100, exclusiveMaximum: false, multipleOf: nil)
+    public var id: Int64
+    public var flagID: Int64
+    public var description: String
+    public var rank: Int64
+    public var rolloutPercent: Int64
+    public var constraints: [Constraint]?
+    public var distributions: [Distribution]?
 
-    internal init(id: Int64, flagID: Int64, description: String, rank: Int64, rolloutPercent: Int64, constraints: [Constraint]? = nil, distributions: [Distribution]? = nil) {
+    public init(id: Int64, flagID: Int64, description: String, rank: Int64, rolloutPercent: Int64, constraints: [Constraint]? = nil, distributions: [Distribution]? = nil) {
         self.id = id
         self.flagID = flagID
         self.description = description
@@ -33,7 +33,7 @@ internal struct Segment: Codable, JSONEncodable, Hashable {
         self.distributions = distributions
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case flagID
         case description
@@ -45,7 +45,7 @@ internal struct Segment: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(flagID, forKey: .flagID)

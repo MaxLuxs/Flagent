@@ -10,22 +10,22 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct Health: Codable, JSONEncodable, Hashable {
+public struct Health: Codable, JSONEncodable, Hashable {
 
     /** Health status of the service */
-    internal var status: String?
+    public var status: String?
 
-    internal init(status: String? = nil) {
+    public init(status: String? = nil) {
         self.status = status
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case status
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(status, forKey: .status)
     }

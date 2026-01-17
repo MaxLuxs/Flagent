@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class ConstraintAPI {
+open class ConstraintAPI {
 
     /**
      Create constraint
@@ -25,7 +25,7 @@ internal class ConstraintAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func createConstraint(flagId: Int64, segmentId: Int64, createConstraintRequest: CreateConstraintRequest) -> AnyPublisher<Constraint, Error> {
+    open class func createConstraint(flagId: Int64, segmentId: Int64, createConstraintRequest: CreateConstraintRequest) -> AnyPublisher<Constraint, Error> {
         let requestBuilder = createConstraintWithRequestBuilder(flagId: flagId, segmentId: segmentId, createConstraintRequest: createConstraintRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Constraint, Error> { promise in
@@ -54,7 +54,7 @@ internal class ConstraintAPI {
      - parameter createConstraintRequest: (body)  
      - returns: RequestBuilder<Constraint> 
      */
-    internal class func createConstraintWithRequestBuilder(flagId: Int64, segmentId: Int64, createConstraintRequest: CreateConstraintRequest) -> RequestBuilder<Constraint> {
+    open class func createConstraintWithRequestBuilder(flagId: Int64, segmentId: Int64, createConstraintRequest: CreateConstraintRequest) -> RequestBuilder<Constraint> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}/constraints"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -88,7 +88,7 @@ internal class ConstraintAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func deleteConstraint(flagId: Int64, segmentId: Int64, constraintId: Int64) -> AnyPublisher<Void, Error> {
+    open class func deleteConstraint(flagId: Int64, segmentId: Int64, constraintId: Int64) -> AnyPublisher<Void, Error> {
         let requestBuilder = deleteConstraintWithRequestBuilder(flagId: flagId, segmentId: segmentId, constraintId: constraintId)
         let requestTask = requestBuilder.requestTask
         return Future<Void, Error> { promise in
@@ -117,7 +117,7 @@ internal class ConstraintAPI {
      - parameter constraintId: (path) Numeric ID of the constraint 
      - returns: RequestBuilder<Void> 
      */
-    internal class func deleteConstraintWithRequestBuilder(flagId: Int64, segmentId: Int64, constraintId: Int64) -> RequestBuilder<Void> {
+    open class func deleteConstraintWithRequestBuilder(flagId: Int64, segmentId: Int64, constraintId: Int64) -> RequestBuilder<Void> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}/constraints/{constraintId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -153,7 +153,7 @@ internal class ConstraintAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func findConstraints(flagId: Int64, segmentId: Int64) -> AnyPublisher<[Constraint], Error> {
+    open class func findConstraints(flagId: Int64, segmentId: Int64) -> AnyPublisher<[Constraint], Error> {
         let requestBuilder = findConstraintsWithRequestBuilder(flagId: flagId, segmentId: segmentId)
         let requestTask = requestBuilder.requestTask
         return Future<[Constraint], Error> { promise in
@@ -180,7 +180,7 @@ internal class ConstraintAPI {
      - parameter segmentId: (path) Numeric ID of the segment 
      - returns: RequestBuilder<[Constraint]> 
      */
-    internal class func findConstraintsWithRequestBuilder(flagId: Int64, segmentId: Int64) -> RequestBuilder<[Constraint]> {
+    open class func findConstraintsWithRequestBuilder(flagId: Int64, segmentId: Int64) -> RequestBuilder<[Constraint]> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}/constraints"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -215,7 +215,7 @@ internal class ConstraintAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func putConstraint(flagId: Int64, segmentId: Int64, constraintId: Int64, putConstraintRequest: PutConstraintRequest) -> AnyPublisher<Constraint, Error> {
+    open class func putConstraint(flagId: Int64, segmentId: Int64, constraintId: Int64, putConstraintRequest: PutConstraintRequest) -> AnyPublisher<Constraint, Error> {
         let requestBuilder = putConstraintWithRequestBuilder(flagId: flagId, segmentId: segmentId, constraintId: constraintId, putConstraintRequest: putConstraintRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Constraint, Error> { promise in
@@ -244,7 +244,7 @@ internal class ConstraintAPI {
      - parameter putConstraintRequest: (body)  
      - returns: RequestBuilder<Constraint> 
      */
-    internal class func putConstraintWithRequestBuilder(flagId: Int64, segmentId: Int64, constraintId: Int64, putConstraintRequest: PutConstraintRequest) -> RequestBuilder<Constraint> {
+    open class func putConstraintWithRequestBuilder(flagId: Int64, segmentId: Int64, constraintId: Int64, putConstraintRequest: PutConstraintRequest) -> RequestBuilder<Constraint> {
         var localVariablePath = "/flags/{flagId}/segments/{segmentId}/constraints/{constraintId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

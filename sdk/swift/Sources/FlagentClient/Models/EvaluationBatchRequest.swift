@@ -10,25 +10,25 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct EvaluationBatchRequest: Codable, JSONEncodable, Hashable {
+public struct EvaluationBatchRequest: Codable, JSONEncodable, Hashable {
 
-    internal enum FlagTagsOperator: String, Codable, CaseIterable {
+    public enum FlagTagsOperator: String, Codable, CaseIterable {
         case any = "ANY"
         case all = "ALL"
     }
-    internal static let entitiesRule = ArrayRule(minItems: 1, maxItems: nil, uniqueItems: false)
-    internal var entities: [EvaluationEntity]
-    internal var enableDebug: Bool? = false
+    public static let entitiesRule = ArrayRule(minItems: 1, maxItems: nil, uniqueItems: false)
+    public var entities: [EvaluationEntity]
+    public var enableDebug: Bool? = false
     /** FlagIDs. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results. */
-    internal var flagIDs: [Int]?
+    public var flagIDs: [Int]?
     /** FlagKeys. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results. */
-    internal var flagKeys: [String]?
+    public var flagKeys: [String]?
     /** FlagTags. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results. */
-    internal var flagTags: [String]?
+    public var flagTags: [String]?
     /** Determine how flagTags is used to filter flags to be evaluated. */
-    internal var flagTagsOperator: FlagTagsOperator? = .any
+    public var flagTagsOperator: FlagTagsOperator? = .any
 
-    internal init(entities: [EvaluationEntity], enableDebug: Bool? = false, flagIDs: [Int]? = nil, flagKeys: [String]? = nil, flagTags: [String]? = nil, flagTagsOperator: FlagTagsOperator? = .any) {
+    public init(entities: [EvaluationEntity], enableDebug: Bool? = false, flagIDs: [Int]? = nil, flagKeys: [String]? = nil, flagTags: [String]? = nil, flagTagsOperator: FlagTagsOperator? = .any) {
         self.entities = entities
         self.enableDebug = enableDebug
         self.flagIDs = flagIDs
@@ -37,7 +37,7 @@ internal struct EvaluationBatchRequest: Codable, JSONEncodable, Hashable {
         self.flagTagsOperator = flagTagsOperator
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case entities
         case enableDebug
         case flagIDs
@@ -48,7 +48,7 @@ internal struct EvaluationBatchRequest: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(entities, forKey: .entities)
         try container.encodeIfPresent(enableDebug, forKey: .enableDebug)

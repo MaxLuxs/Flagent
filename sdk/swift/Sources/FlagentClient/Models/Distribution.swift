@@ -10,18 +10,18 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct Distribution: Codable, JSONEncodable, Hashable {
+public struct Distribution: Codable, JSONEncodable, Hashable {
 
-    internal static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal static let variantIDRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal static let percentRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: 100, exclusiveMaximum: false, multipleOf: nil)
-    internal var id: Int64
-    internal var segmentID: Int64
-    internal var variantID: Int64
-    internal var variantKey: String?
-    internal var percent: Int64
+    public static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public static let variantIDRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public static let percentRule = NumericRule<Int64>(minimum: 0, exclusiveMinimum: false, maximum: 100, exclusiveMaximum: false, multipleOf: nil)
+    public var id: Int64
+    public var segmentID: Int64
+    public var variantID: Int64
+    public var variantKey: String?
+    public var percent: Int64
 
-    internal init(id: Int64, segmentID: Int64, variantID: Int64, variantKey: String? = nil, percent: Int64) {
+    public init(id: Int64, segmentID: Int64, variantID: Int64, variantKey: String? = nil, percent: Int64) {
         self.id = id
         self.segmentID = segmentID
         self.variantID = variantID
@@ -29,7 +29,7 @@ internal struct Distribution: Codable, JSONEncodable, Hashable {
         self.percent = percent
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case segmentID
         case variantID
@@ -39,7 +39,7 @@ internal struct Distribution: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(segmentID, forKey: .segmentID)

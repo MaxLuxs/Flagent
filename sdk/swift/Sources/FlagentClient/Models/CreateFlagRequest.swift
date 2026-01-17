@@ -10,22 +10,22 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct CreateFlagRequest: Codable, JSONEncodable, Hashable {
+public struct CreateFlagRequest: Codable, JSONEncodable, Hashable {
 
-    internal static let descriptionRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal var description: String
+    public static let descriptionRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public var description: String
     /** Unique key representation of the flag */
-    internal var key: String?
+    public var key: String?
     /** Template for flag creation */
-    internal var template: String?
+    public var template: String?
 
-    internal init(description: String, key: String? = nil, template: String? = nil) {
+    public init(description: String, key: String? = nil, template: String? = nil) {
         self.description = description
         self.key = key
         self.template = template
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case description
         case key
         case template
@@ -33,7 +33,7 @@ internal struct CreateFlagRequest: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(description, forKey: .description)
         try container.encodeIfPresent(key, forKey: .key)

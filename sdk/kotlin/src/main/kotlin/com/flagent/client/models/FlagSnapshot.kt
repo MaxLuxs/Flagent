@@ -40,7 +40,7 @@ data class FlagSnapshot (
     val flag: Flag,
 
     @Contextual @SerialName(value = "updatedAt")
-    val updatedAt: java.time.Instant,
+    val updatedAt: kotlin.time.Instant,
 
     @SerialName(value = "updatedBy")
     val updatedBy: kotlin.String? = null

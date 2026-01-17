@@ -10,21 +10,21 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct EvaluationBatchResponse: Codable, JSONEncodable, Hashable {
+public struct EvaluationBatchResponse: Codable, JSONEncodable, Hashable {
 
-    internal var evaluationResults: [EvalResult]
+    public var evaluationResults: [EvalResult]
 
-    internal init(evaluationResults: [EvalResult]) {
+    public init(evaluationResults: [EvalResult]) {
         self.evaluationResults = evaluationResults
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case evaluationResults
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(evaluationResults, forKey: .evaluationResults)
     }

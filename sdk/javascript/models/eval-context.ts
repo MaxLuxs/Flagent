@@ -16,7 +16,7 @@
 
 export interface EvalContext {
     /**
-     * EntityID is used to deterministically at random to evaluate the flag result. If it\'s empty, flagent will randomly generate one.
+     * EntityID is used to deterministically at random to evaluate the flag result. If it\'s empty, Flagent will randomly generate one.
      */
     'entityID'?: string;
     'entityType'?: string;

@@ -1,4 +1,4 @@
-## @flagent/client@1.0.0
+## @flagent/client@1.0.1
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
@@ -36,7 +36,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @flagent/client@1.0.0 --save
+npm install @flagent/client@1.0.1 --save
 ```
 
 _unPublished (not recommended):_
@@ -107,7 +107,7 @@ Class | Method | HTTP request | Description
  - [FlagSnapshot](docs/FlagSnapshot.md)
  - [Health](docs/Health.md)
  - [Info](docs/Info.md)
- - [ModelError](docs/ModelError.md)
+ - [ModelError](docs/Error.md)
  - [PutConstraintRequest](docs/PutConstraintRequest.md)
  - [PutDistributionsRequest](docs/PutDistributionsRequest.md)
  - [PutFlagRequest](docs/PutFlagRequest.md)

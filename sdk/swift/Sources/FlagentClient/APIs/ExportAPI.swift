@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class ExportAPI {
+open class ExportAPI {
 
     /**
      Export eval cache as JSON
@@ -22,7 +22,7 @@ internal class ExportAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func getExportEvalCacheJSON() -> AnyPublisher<[String: AnyCodable], Error> {
+    open class func getExportEvalCacheJSON() -> AnyPublisher<[String: AnyCodable], Error> {
         let requestBuilder = getExportEvalCacheJSONWithRequestBuilder()
         let requestTask = requestBuilder.requestTask
         return Future<[String: AnyCodable], Error> { promise in
@@ -48,7 +48,7 @@ internal class ExportAPI {
      - Export JSON format of the eval cache dump. This endpoint exports the current state of the evaluation cache in JSON format.
      - returns: RequestBuilder<[String: AnyCodable]> 
      */
-    internal class func getExportEvalCacheJSONWithRequestBuilder() -> RequestBuilder<[String: AnyCodable]> {
+    open class func getExportEvalCacheJSONWithRequestBuilder() -> RequestBuilder<[String: AnyCodable]> {
         let localVariablePath = "/export/eval_cache/json"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -74,7 +74,7 @@ internal class ExportAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func getExportSQLite(excludeSnapshots: Bool? = nil) -> AnyPublisher<URL, Error> {
+    open class func getExportSQLite(excludeSnapshots: Bool? = nil) -> AnyPublisher<URL, Error> {
         let requestBuilder = getExportSQLiteWithRequestBuilder(excludeSnapshots: excludeSnapshots)
         let requestTask = requestBuilder.requestTask
         return Future<URL, Error> { promise in
@@ -101,7 +101,7 @@ internal class ExportAPI {
      - parameter excludeSnapshots: (query) Export without snapshots data - useful for smaller db without snapshots (optional, default to false)
      - returns: RequestBuilder<URL> 
      */
-    internal class func getExportSQLiteWithRequestBuilder(excludeSnapshots: Bool? = nil) -> RequestBuilder<URL> {
+    open class func getExportSQLiteWithRequestBuilder(excludeSnapshots: Bool? = nil) -> RequestBuilder<URL> {
         let localVariablePath = "/export/sqlite"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil

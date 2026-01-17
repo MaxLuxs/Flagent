@@ -10,22 +10,22 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct PutSegmentReorderRequest: Codable, JSONEncodable, Hashable {
+public struct PutSegmentReorderRequest: Codable, JSONEncodable, Hashable {
 
-    internal static let segmentIDsRule = ArrayRule(minItems: 1, maxItems: nil, uniqueItems: false)
-    internal var segmentIDs: [Int64]
+    public static let segmentIDsRule = ArrayRule(minItems: 1, maxItems: nil, uniqueItems: false)
+    public var segmentIDs: [Int64]
 
-    internal init(segmentIDs: [Int64]) {
+    public init(segmentIDs: [Int64]) {
         self.segmentIDs = segmentIDs
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case segmentIDs
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(segmentIDs, forKey: .segmentIDs)
     }

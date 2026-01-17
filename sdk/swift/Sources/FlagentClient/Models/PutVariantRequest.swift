@@ -10,25 +10,25 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct PutVariantRequest: Codable, JSONEncodable, Hashable {
+public struct PutVariantRequest: Codable, JSONEncodable, Hashable {
 
-    internal static let keyRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal var key: String
-    internal var attachment: [String: AnyCodable]?
+    public static let keyRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public var key: String
+    public var attachment: [String: AnyCodable]?
 
-    internal init(key: String, attachment: [String: AnyCodable]? = nil) {
+    public init(key: String, attachment: [String: AnyCodable]? = nil) {
         self.key = key
         self.attachment = attachment
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case key
         case attachment
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(key, forKey: .key)
         try container.encodeIfPresent(attachment, forKey: .attachment)

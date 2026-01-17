@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class EvaluationAPI {
+open class EvaluationAPI {
 
     /**
      Evaluate flag
@@ -23,7 +23,7 @@ internal class EvaluationAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func postEvaluation(evalContext: EvalContext) -> AnyPublisher<EvalResult, Error> {
+    open class func postEvaluation(evalContext: EvalContext) -> AnyPublisher<EvalResult, Error> {
         let requestBuilder = postEvaluationWithRequestBuilder(evalContext: evalContext)
         let requestTask = requestBuilder.requestTask
         return Future<EvalResult, Error> { promise in
@@ -49,7 +49,7 @@ internal class EvaluationAPI {
      - parameter evalContext: (body)  
      - returns: RequestBuilder<EvalResult> 
      */
-    internal class func postEvaluationWithRequestBuilder(evalContext: EvalContext) -> RequestBuilder<EvalResult> {
+    open class func postEvaluationWithRequestBuilder(evalContext: EvalContext) -> RequestBuilder<EvalResult> {
         let localVariablePath = "/evaluation"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: evalContext)
@@ -75,7 +75,7 @@ internal class EvaluationAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func postEvaluationBatch(evaluationBatchRequest: EvaluationBatchRequest) -> AnyPublisher<EvaluationBatchResponse, Error> {
+    open class func postEvaluationBatch(evaluationBatchRequest: EvaluationBatchRequest) -> AnyPublisher<EvaluationBatchResponse, Error> {
         let requestBuilder = postEvaluationBatchWithRequestBuilder(evaluationBatchRequest: evaluationBatchRequest)
         let requestTask = requestBuilder.requestTask
         return Future<EvaluationBatchResponse, Error> { promise in
@@ -102,7 +102,7 @@ internal class EvaluationAPI {
      - parameter evaluationBatchRequest: (body)  
      - returns: RequestBuilder<EvaluationBatchResponse> 
      */
-    internal class func postEvaluationBatchWithRequestBuilder(evaluationBatchRequest: EvaluationBatchRequest) -> RequestBuilder<EvaluationBatchResponse> {
+    open class func postEvaluationBatchWithRequestBuilder(evaluationBatchRequest: EvaluationBatchRequest) -> RequestBuilder<EvaluationBatchResponse> {
         let localVariablePath = "/evaluation/batch"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: evaluationBatchRequest)

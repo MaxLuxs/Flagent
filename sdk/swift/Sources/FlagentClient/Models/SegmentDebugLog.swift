@@ -10,25 +10,25 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct SegmentDebugLog: Codable, JSONEncodable, Hashable {
+public struct SegmentDebugLog: Codable, JSONEncodable, Hashable {
 
-    internal static let segmentIDRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal var segmentID: Int64?
-    internal var msg: String?
+    public static let segmentIDRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public var segmentID: Int64?
+    public var msg: String?
 
-    internal init(segmentID: Int64? = nil, msg: String? = nil) {
+    public init(segmentID: Int64? = nil, msg: String? = nil) {
         self.segmentID = segmentID
         self.msg = msg
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case segmentID
         case msg
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(segmentID, forKey: .segmentID)
         try container.encodeIfPresent(msg, forKey: .msg)

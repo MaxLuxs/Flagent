@@ -10,26 +10,26 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct Tag: Codable, JSONEncodable, Hashable {
+public struct Tag: Codable, JSONEncodable, Hashable {
 
-    internal static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal static let valueRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
-    internal var id: Int64
-    internal var value: String
+    public static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public static let valueRule = StringRule(minLength: 1, maxLength: nil, pattern: nil)
+    public var id: Int64
+    public var value: String
 
-    internal init(id: Int64, value: String) {
+    public init(id: Int64, value: String) {
         self.id = id
         self.value = value
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case value
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(value, forKey: .value)

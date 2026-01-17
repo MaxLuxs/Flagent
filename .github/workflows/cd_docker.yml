@@ -20,6 +20,7 @@ jobs:
         else
           echo "RELEASE_VERSION=${{ github.event.release.tag_name }}" >> "$GITHUB_ENV"
         fi
+        echo "REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
     
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -42,7 +43,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}:latest
-          ghcr.io/${{ github.repository }}:${{ env.RELEASE_VERSION }}
+          ghcr.io/${{ env.REPO_NAME }}:latest
+          ghcr.io/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }}
         cache-from: type=gha
         cache-to: type=gha,mode=max

@@ -10,28 +10,28 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct Flag: Codable, JSONEncodable, Hashable {
+public struct Flag: Codable, JSONEncodable, Hashable {
 
-    internal static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    internal var id: Int64
+    public static let idRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public var id: Int64
     /** Unique key representation of the flag */
-    internal var key: String
-    internal var description: String
-    internal var enabled: Bool
-    internal var snapshotID: Int64?
+    public var key: String
+    public var description: String
+    public var enabled: Bool
+    public var snapshotID: Int64?
     /** Enabled data records will get data logging in the metrics pipeline */
-    internal var dataRecordsEnabled: Bool
+    public var dataRecordsEnabled: Bool
     /** It will override the entityType in the evaluation logs if it's not empty */
-    internal var entityType: String?
+    public var entityType: String?
     /** Flag usage details in markdown format */
-    internal var notes: String?
-    internal var createdBy: String?
-    internal var updatedBy: String?
-    internal var segments: [Segment]?
-    internal var variants: [Variant]?
-    internal var tags: [Tag]?
+    public var notes: String?
+    public var createdBy: String?
+    public var updatedBy: String?
+    public var segments: [Segment]?
+    public var variants: [Variant]?
+    public var tags: [Tag]?
 
-    internal init(id: Int64, key: String, description: String, enabled: Bool, snapshotID: Int64? = nil, dataRecordsEnabled: Bool, entityType: String? = nil, notes: String? = nil, createdBy: String? = nil, updatedBy: String? = nil, segments: [Segment]? = nil, variants: [Variant]? = nil, tags: [Tag]? = nil) {
+    public init(id: Int64, key: String, description: String, enabled: Bool, snapshotID: Int64? = nil, dataRecordsEnabled: Bool, entityType: String? = nil, notes: String? = nil, createdBy: String? = nil, updatedBy: String? = nil, segments: [Segment]? = nil, variants: [Variant]? = nil, tags: [Tag]? = nil) {
         self.id = id
         self.key = key
         self.description = description
@@ -47,7 +47,7 @@ internal struct Flag: Codable, JSONEncodable, Hashable {
         self.tags = tags
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case key
         case description
@@ -65,7 +65,7 @@ internal struct Flag: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(key, forKey: .key)

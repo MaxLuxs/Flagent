@@ -10,24 +10,24 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct EvalDebugLog: Codable, JSONEncodable, Hashable {
+public struct EvalDebugLog: Codable, JSONEncodable, Hashable {
 
-    internal var msg: String?
-    internal var segmentDebugLogs: [SegmentDebugLog]?
+    public var msg: String?
+    public var segmentDebugLogs: [SegmentDebugLog]?
 
-    internal init(msg: String? = nil, segmentDebugLogs: [SegmentDebugLog]? = nil) {
+    public init(msg: String? = nil, segmentDebugLogs: [SegmentDebugLog]? = nil) {
         self.msg = msg
         self.segmentDebugLogs = segmentDebugLogs
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case msg
         case segmentDebugLogs
     }
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(msg, forKey: .msg)
         try container.encodeIfPresent(segmentDebugLogs, forKey: .segmentDebugLogs)

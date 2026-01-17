@@ -13,7 +13,7 @@ import Combine
 import AnyCodable
 #endif
 
-internal class FlagAPI {
+open class FlagAPI {
 
     /**
      Create a new flag
@@ -23,7 +23,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func createFlag(createFlagRequest: CreateFlagRequest) -> AnyPublisher<Flag, Error> {
+    open class func createFlag(createFlagRequest: CreateFlagRequest) -> AnyPublisher<Flag, Error> {
         let requestBuilder = createFlagWithRequestBuilder(createFlagRequest: createFlagRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Flag, Error> { promise in
@@ -49,7 +49,7 @@ internal class FlagAPI {
      - parameter createFlagRequest: (body)  
      - returns: RequestBuilder<Flag> 
      */
-    internal class func createFlagWithRequestBuilder(createFlagRequest: CreateFlagRequest) -> RequestBuilder<Flag> {
+    open class func createFlagWithRequestBuilder(createFlagRequest: CreateFlagRequest) -> RequestBuilder<Flag> {
         let localVariablePath = "/flags"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: createFlagRequest)
@@ -75,7 +75,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func deleteFlag(flagId: Int64) -> AnyPublisher<Void, Error> {
+    open class func deleteFlag(flagId: Int64) -> AnyPublisher<Void, Error> {
         let requestBuilder = deleteFlagWithRequestBuilder(flagId: flagId)
         let requestTask = requestBuilder.requestTask
         return Future<Void, Error> { promise in
@@ -101,7 +101,7 @@ internal class FlagAPI {
      - parameter flagId: (path) Numeric ID of the flag 
      - returns: RequestBuilder<Void> 
      */
-    internal class func deleteFlagWithRequestBuilder(flagId: Int64) -> RequestBuilder<Void> {
+    open class func deleteFlagWithRequestBuilder(flagId: Int64) -> RequestBuilder<Void> {
         var localVariablePath = "/flags/{flagId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -138,7 +138,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func findFlags(limit: Int64? = nil, offset: Int64? = nil, enabled: Bool? = nil, description: String? = nil, key: String? = nil, descriptionLike: String? = nil, preload: Bool? = nil, deleted: Bool? = nil, tags: String? = nil) -> AnyPublisher<[Flag], Error> {
+    open class func findFlags(limit: Int64? = nil, offset: Int64? = nil, enabled: Bool? = nil, description: String? = nil, key: String? = nil, descriptionLike: String? = nil, preload: Bool? = nil, deleted: Bool? = nil, tags: String? = nil) -> AnyPublisher<[Flag], Error> {
         let requestBuilder = findFlagsWithRequestBuilder(limit: limit, offset: offset, enabled: enabled, description: description, key: key, descriptionLike: descriptionLike, preload: preload, deleted: deleted, tags: tags)
         let requestTask = requestBuilder.requestTask
         return Future<[Flag], Error> { promise in
@@ -172,7 +172,7 @@ internal class FlagAPI {
      - parameter tags: (query) Filter flags by tags (comma-separated) (optional)
      - returns: RequestBuilder<[Flag]> 
      */
-    internal class func findFlagsWithRequestBuilder(limit: Int64? = nil, offset: Int64? = nil, enabled: Bool? = nil, description: String? = nil, key: String? = nil, descriptionLike: String? = nil, preload: Bool? = nil, deleted: Bool? = nil, tags: String? = nil) -> RequestBuilder<[Flag]> {
+    open class func findFlagsWithRequestBuilder(limit: Int64? = nil, offset: Int64? = nil, enabled: Bool? = nil, description: String? = nil, key: String? = nil, descriptionLike: String? = nil, preload: Bool? = nil, deleted: Bool? = nil, tags: String? = nil) -> RequestBuilder<[Flag]> {
         let localVariablePath = "/flags"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -209,7 +209,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func getFlag(flagId: Int64) -> AnyPublisher<Flag, Error> {
+    open class func getFlag(flagId: Int64) -> AnyPublisher<Flag, Error> {
         let requestBuilder = getFlagWithRequestBuilder(flagId: flagId)
         let requestTask = requestBuilder.requestTask
         return Future<Flag, Error> { promise in
@@ -235,7 +235,7 @@ internal class FlagAPI {
      - parameter flagId: (path) Numeric ID of the flag 
      - returns: RequestBuilder<Flag> 
      */
-    internal class func getFlagWithRequestBuilder(flagId: Int64) -> RequestBuilder<Flag> {
+    open class func getFlagWithRequestBuilder(flagId: Int64) -> RequestBuilder<Flag> {
         var localVariablePath = "/flags/{flagId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -263,7 +263,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func getFlagEntityTypes() -> AnyPublisher<[String], Error> {
+    open class func getFlagEntityTypes() -> AnyPublisher<[String], Error> {
         let requestBuilder = getFlagEntityTypesWithRequestBuilder()
         let requestTask = requestBuilder.requestTask
         return Future<[String], Error> { promise in
@@ -288,7 +288,7 @@ internal class FlagAPI {
      - GET /flags/entity_types
      - returns: RequestBuilder<[String]> 
      */
-    internal class func getFlagEntityTypesWithRequestBuilder() -> RequestBuilder<[String]> {
+    open class func getFlagEntityTypesWithRequestBuilder() -> RequestBuilder<[String]> {
         let localVariablePath = "/flags/entity_types"
         let localVariableURLString = FlagentClientAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -309,7 +309,7 @@ internal class FlagAPI {
     /**
      * enum for parameter sort
      */
-    internal enum Sort_getFlagSnapshots: String, CaseIterable {
+    public enum Sort_getFlagSnapshots: String, CaseIterable {
         case asc = "ASC"
         case desc = "DESC"
     }
@@ -325,7 +325,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func getFlagSnapshots(flagId: Int64, limit: Int64? = nil, offset: Int64? = nil, sort: Sort_getFlagSnapshots? = nil) -> AnyPublisher<[FlagSnapshot], Error> {
+    open class func getFlagSnapshots(flagId: Int64, limit: Int64? = nil, offset: Int64? = nil, sort: Sort_getFlagSnapshots? = nil) -> AnyPublisher<[FlagSnapshot], Error> {
         let requestBuilder = getFlagSnapshotsWithRequestBuilder(flagId: flagId, limit: limit, offset: offset, sort: sort)
         let requestTask = requestBuilder.requestTask
         return Future<[FlagSnapshot], Error> { promise in
@@ -354,7 +354,7 @@ internal class FlagAPI {
      - parameter sort: (query) Sort order (optional)
      - returns: RequestBuilder<[FlagSnapshot]> 
      */
-    internal class func getFlagSnapshotsWithRequestBuilder(flagId: Int64, limit: Int64? = nil, offset: Int64? = nil, sort: Sort_getFlagSnapshots? = nil) -> RequestBuilder<[FlagSnapshot]> {
+    open class func getFlagSnapshotsWithRequestBuilder(flagId: Int64, limit: Int64? = nil, offset: Int64? = nil, sort: Sort_getFlagSnapshots? = nil) -> RequestBuilder<[FlagSnapshot]> {
         var localVariablePath = "/flags/{flagId}/snapshots"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -389,7 +389,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func putFlag(flagId: Int64, putFlagRequest: PutFlagRequest) -> AnyPublisher<Flag, Error> {
+    open class func putFlag(flagId: Int64, putFlagRequest: PutFlagRequest) -> AnyPublisher<Flag, Error> {
         let requestBuilder = putFlagWithRequestBuilder(flagId: flagId, putFlagRequest: putFlagRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Flag, Error> { promise in
@@ -416,7 +416,7 @@ internal class FlagAPI {
      - parameter putFlagRequest: (body)  
      - returns: RequestBuilder<Flag> 
      */
-    internal class func putFlagWithRequestBuilder(flagId: Int64, putFlagRequest: PutFlagRequest) -> RequestBuilder<Flag> {
+    open class func putFlagWithRequestBuilder(flagId: Int64, putFlagRequest: PutFlagRequest) -> RequestBuilder<Flag> {
         var localVariablePath = "/flags/{flagId}"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -445,7 +445,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func restoreFlag(flagId: Int64) -> AnyPublisher<Flag, Error> {
+    open class func restoreFlag(flagId: Int64) -> AnyPublisher<Flag, Error> {
         let requestBuilder = restoreFlagWithRequestBuilder(flagId: flagId)
         let requestTask = requestBuilder.requestTask
         return Future<Flag, Error> { promise in
@@ -471,7 +471,7 @@ internal class FlagAPI {
      - parameter flagId: (path) Numeric ID of the flag 
      - returns: RequestBuilder<Flag> 
      */
-    internal class func restoreFlagWithRequestBuilder(flagId: Int64) -> RequestBuilder<Flag> {
+    open class func restoreFlagWithRequestBuilder(flagId: Int64) -> RequestBuilder<Flag> {
         var localVariablePath = "/flags/{flagId}/restore"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -501,7 +501,7 @@ internal class FlagAPI {
      */
     #if canImport(Combine)
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    internal class func setFlagEnabled(flagId: Int64, setFlagEnabledRequest: SetFlagEnabledRequest) -> AnyPublisher<Flag, Error> {
+    open class func setFlagEnabled(flagId: Int64, setFlagEnabledRequest: SetFlagEnabledRequest) -> AnyPublisher<Flag, Error> {
         let requestBuilder = setFlagEnabledWithRequestBuilder(flagId: flagId, setFlagEnabledRequest: setFlagEnabledRequest)
         let requestTask = requestBuilder.requestTask
         return Future<Flag, Error> { promise in
@@ -528,7 +528,7 @@ internal class FlagAPI {
      - parameter setFlagEnabledRequest: (body)  
      - returns: RequestBuilder<Flag> 
      */
-    internal class func setFlagEnabledWithRequestBuilder(flagId: Int64, setFlagEnabledRequest: SetFlagEnabledRequest) -> RequestBuilder<Flag> {
+    open class func setFlagEnabledWithRequestBuilder(flagId: Int64, setFlagEnabledRequest: SetFlagEnabledRequest) -> RequestBuilder<Flag> {
         var localVariablePath = "/flags/{flagId}/enabled"
         let flagIdPreEscape = "\(APIHelper.mapValueToPathItem(flagId))"
         let flagIdPostEscape = flagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

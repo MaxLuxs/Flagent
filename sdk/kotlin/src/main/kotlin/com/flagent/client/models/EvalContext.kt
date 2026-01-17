@@ -44,7 +44,7 @@ data class EvalContext (
     val entityType: kotlin.String? = null,
 
     @Contextual @SerialName(value = "entityContext")
-    val entityContext: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonObject>? = null,
+    val entityContext: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null,
 
     @SerialName(value = "enableDebug")
     val enableDebug: kotlin.Boolean? = false,

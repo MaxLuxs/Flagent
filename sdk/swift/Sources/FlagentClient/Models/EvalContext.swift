@@ -10,28 +10,28 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct EvalContext: Codable, JSONEncodable, Hashable {
+public struct EvalContext: Codable, JSONEncodable, Hashable {
 
-    internal enum FlagTagsOperator: String, Codable, CaseIterable {
+    public enum FlagTagsOperator: String, Codable, CaseIterable {
         case any = "ANY"
         case all = "ALL"
     }
-    internal static let flagIDRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
-    /** EntityID is used to deterministically at random to evaluate the flag result. If it's empty, flagent will randomly generate one. */
-    internal var entityID: String?
-    internal var entityType: String?
-    internal var entityContext: [String: AnyCodable]?
-    internal var enableDebug: Bool? = false
+    public static let flagIDRule = NumericRule<Int64>(minimum: 1, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    /** EntityID is used to deterministically at random to evaluate the flag result. If it's empty, Flagent will randomly generate one. */
+    public var entityID: String?
+    public var entityType: String?
+    public var entityContext: [String: AnyCodable]?
+    public var enableDebug: Bool? = false
     /** FlagID. flagID or flagKey will resolve to the same flag. Either works. */
-    internal var flagID: Int64?
+    public var flagID: Int64?
     /** FlagKey. flagID or flagKey will resolve to the same flag. Either works. */
-    internal var flagKey: String?
+    public var flagKey: String?
     /** FlagTags. flagTags looks up flags by tag. Either works. */
-    internal var flagTags: [String]?
+    public var flagTags: [String]?
     /** Determine how flagTags is used to filter flags to be evaluated. OR extends the evaluation to those which contains at least one of the provided flagTags or AND limit the evaluation to those which contains all the flagTags. */
-    internal var flagTagsOperator: FlagTagsOperator? = .any
+    public var flagTagsOperator: FlagTagsOperator? = .any
 
-    internal init(entityID: String? = nil, entityType: String? = nil, entityContext: [String: AnyCodable]? = nil, enableDebug: Bool? = false, flagID: Int64? = nil, flagKey: String? = nil, flagTags: [String]? = nil, flagTagsOperator: FlagTagsOperator? = .any) {
+    public init(entityID: String? = nil, entityType: String? = nil, entityContext: [String: AnyCodable]? = nil, enableDebug: Bool? = false, flagID: Int64? = nil, flagKey: String? = nil, flagTags: [String]? = nil, flagTagsOperator: FlagTagsOperator? = .any) {
         self.entityID = entityID
         self.entityType = entityType
         self.entityContext = entityContext
@@ -42,7 +42,7 @@ internal struct EvalContext: Codable, JSONEncodable, Hashable {
         self.flagTagsOperator = flagTagsOperator
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case entityID
         case entityType
         case entityContext
@@ -55,7 +55,7 @@ internal struct EvalContext: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(entityID, forKey: .entityID)
         try container.encodeIfPresent(entityType, forKey: .entityType)

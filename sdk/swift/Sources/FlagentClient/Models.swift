@@ -21,7 +21,7 @@ extension CaseIterableDefaultsLast {
     /// Initializes an enum such that if a known raw value is found, then it is decoded.
     /// Otherwise the last case is used.
     /// - Parameter decoder: A decoder.
-    internal init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         if let value = try Self(rawValue: decoder.singleValueContainer().decode(RawValue.self)) {
             self = value
         } else if let lastValue = Self.allCases.last {
@@ -37,14 +37,14 @@ extension CaseIterableDefaultsLast {
 
 /// A flexible type that can be encoded (`.encodeNull` or `.encodeValue`)
 /// or not encoded (`.encodeNothing`). Intended for request payloads.
-internal enum NullEncodable<Wrapped: Hashable>: Hashable {
+public enum NullEncodable<Wrapped: Hashable>: Hashable {
     case encodeNothing
     case encodeNull
     case encodeValue(Wrapped)
 }
 
 extension NullEncodable: Codable where Wrapped: Codable {
-    internal init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let value = try? container.decode(Wrapped.self) {
             self = .encodeValue(value)
@@ -55,7 +55,7 @@ extension NullEncodable: Codable where Wrapped: Codable {
         }
     }
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
         case .encodeNothing: return
@@ -65,11 +65,11 @@ extension NullEncodable: Codable where Wrapped: Codable {
     }
 }
 
-internal enum ErrorResponse: Error {
+public enum ErrorResponse: Error {
     case error(Int, Data?, URLResponse?, Error)
 }
 
-internal enum DownloadException: Error {
+public enum DownloadException: Error {
     case responseDataMissing
     case responseFailed
     case requestMissing
@@ -77,7 +77,7 @@ internal enum DownloadException: Error {
     case requestMissingURL
 }
 
-internal enum DecodableRequestBuilderError: Error {
+public enum DecodableRequestBuilderError: Error {
     case emptyDataResponse
     case nilHTTPResponse
     case unsuccessfulHTTPStatusCode
@@ -85,20 +85,20 @@ internal enum DecodableRequestBuilderError: Error {
     case generalError(Error)
 }
 
-internal class Response<T> {
-    internal let statusCode: Int
-    internal let header: [String: String]
-    internal let body: T
-    internal let bodyData: Data?
+open class Response<T> {
+    public let statusCode: Int
+    public let header: [String: String]
+    public let body: T
+    public let bodyData: Data?
 
-    internal init(statusCode: Int, header: [String: String], body: T, bodyData: Data?) {
+    public init(statusCode: Int, header: [String: String], body: T, bodyData: Data?) {
         self.statusCode = statusCode
         self.header = header
         self.body = body
         self.bodyData = bodyData
     }
 
-    internal convenience init(response: HTTPURLResponse, body: T, bodyData: Data?) {
+    public convenience init(response: HTTPURLResponse, body: T, bodyData: Data?) {
         let rawHeader = response.allHeaderFields
         var responseHeader = [String: String]()
         for (key, value) in rawHeader {
@@ -110,7 +110,7 @@ internal class Response<T> {
     }
 }
 
-internal final class RequestTask {
+public final class RequestTask {
     private let lock = NSRecursiveLock()
     private var task: URLSessionDataTaskProtocol?
 
@@ -120,7 +120,7 @@ internal final class RequestTask {
         self.task = task
     }
 
-    internal func cancel() {
+    public func cancel() {
         lock.lock()
         defer { lock.unlock() }
         task?.cancel()

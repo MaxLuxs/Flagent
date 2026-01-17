@@ -10,19 +10,19 @@ import Foundation
 import AnyCodable
 #endif
 
-internal struct EvaluationEntity: Codable, JSONEncodable, Hashable {
+public struct EvaluationEntity: Codable, JSONEncodable, Hashable {
 
-    internal var entityID: String?
-    internal var entityType: String?
-    internal var entityContext: [String: AnyCodable]?
+    public var entityID: String?
+    public var entityType: String?
+    public var entityContext: [String: AnyCodable]?
 
-    internal init(entityID: String? = nil, entityType: String? = nil, entityContext: [String: AnyCodable]? = nil) {
+    public init(entityID: String? = nil, entityType: String? = nil, entityContext: [String: AnyCodable]? = nil) {
         self.entityID = entityID
         self.entityType = entityType
         self.entityContext = entityContext
     }
 
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
+    public enum CodingKeys: String, CodingKey, CaseIterable {
         case entityID
         case entityType
         case entityContext
@@ -30,7 +30,7 @@ internal struct EvaluationEntity: Codable, JSONEncodable, Hashable {
 
     // Encodable protocol methods
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(entityID, forKey: .entityID)
         try container.encodeIfPresent(entityType, forKey: .entityType)
