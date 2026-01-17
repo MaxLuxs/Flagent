@@ -15,8 +15,8 @@
 
 package com.flagent.client.apis
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.ShouldSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.core.spec.style.ShouldSpec
 
 import com.flagent.client.apis.ConstraintApi
 import com.flagent.client.models.Constraint

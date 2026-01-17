@@ -25,28 +25,25 @@ dependencies {
     // Testing
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.kotlinx.coroutines.test)
+    // Updated from deprecated kotlintest to kotest (compatible)
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = "17"
         freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
     }
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    if (name == "compileTestKotlin") {
-        enabled = false // Disable test compilation - all tests are auto-generated and commented out
-    }
-}
-
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "21"
-    targetCompatibility = "21"
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
 }
 
 tasks.test {
-    enabled = false // Auto-generated tests are all commented out, so skip them
+    useJUnitPlatform()
 }
 
 java {
