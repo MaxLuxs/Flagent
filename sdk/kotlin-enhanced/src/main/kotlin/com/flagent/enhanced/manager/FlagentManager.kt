@@ -15,6 +15,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * Enhanced Flagent Manager with caching and convenient API.
@@ -89,10 +90,18 @@ class FlagentManager(
             }
 
             // Evaluate via API
-            val jsonEntityContext: Map<String, JsonObject>? = entityContext?.let { ctx ->
-                ctx.mapValues { (_, value) ->
-                    buildJsonObject { put("value", value.toString()) }
-                }.toMap()
+            val jsonEntityContext: JsonObject? = entityContext?.let { ctx ->
+                buildJsonObject {
+                    ctx.forEach { (key, value) ->
+                        put(key, when (value) {
+                            is String -> JsonPrimitive(value)
+                            is Number -> JsonPrimitive(value)
+                            is Boolean -> JsonPrimitive(value)
+                            is JsonElement -> value
+                            else -> JsonPrimitive(value.toString())
+                        })
+                    }
+                }
             }
             val evalContext = EvalContext(
                 flagKey = flagKey,
