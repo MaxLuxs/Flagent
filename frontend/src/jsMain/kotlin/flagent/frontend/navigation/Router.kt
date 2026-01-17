@@ -22,7 +22,7 @@ sealed class Route {
     }
 
     data class DebugConsole(val flagKey: String? = null) : Route() {
-        fun path() = if (flagKey != null) "/debug?flagKey=$flagKey" else "/debug"
+        fun path() = if (flagKey != null && flagKey.isNotBlank()) "/debug?flagKey=$flagKey" else "/debug"
     }
 
     data class FlagHistory(val flagId: Int) : Route() {
