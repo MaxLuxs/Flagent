@@ -112,7 +112,7 @@ export FLAGENT_STATSD_PORT=8125
 export FLAGENT_STATSD_PREFIX=flagent.
 ```
 
-See [AppConfig.kt](./flagent/backend/src/main/kotlin/flagent/config/AppConfig.kt) for all metrics configuration options.
+See [AppConfig.kt](flagent/backend/src/main/kotlin/flagent/config/AppConfig.kt) for all metrics configuration options.
 
 ## Flagent UI
 
@@ -167,7 +167,7 @@ cd flagent
 
 ### Configuration
 
-All settings are configured via environment variables. See [AppConfig.kt](./flagent/backend/src/main/kotlin/flagent/config/AppConfig.kt) for the full list of options.
+All settings are configured via environment variables. See [AppConfig.kt](flagent/backend/src/main/kotlin/flagent/config/AppConfig.kt) for the full list of options.
 
 Example:
 
