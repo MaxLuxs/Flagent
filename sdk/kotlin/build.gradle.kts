@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.flagent"
-version = "1.0.1"
+version = "1.0.0"
 
 repositories {
     mavenCentral()

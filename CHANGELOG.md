@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.1] - 2024-01-17
-
 ### Fixed
 - Fixed all broken links in README files
 - Generated SDK documentation (JavaScript, Swift, Kotlin)
@@ -53,6 +51,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenAPI/Swagger documentation
 - Kotlin and JavaScript SDKs
 
-[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v1.0.1...HEAD
-[1.0.1]: https://github.com/MaxLuxs/Flagent/compare/v1.0.0...v1.0.1
+[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/MaxLuxs/Flagent/releases/tag/v1.0.0
