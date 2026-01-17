@@ -15,17 +15,3 @@ allprojects {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
-
-// Configure Java toolchain repositories for auto-download
-java {
-    toolchains {
-        download {
-            enabled = true
-            downloadRepositories {
-                maven {
-                    url = uri("https://api.adoptium.net/v3/binary/version/jdk-21.0.10+12/mac/aarch64/jdk/hotspot/normal/eclipse")
-                }
-            }
-        }
-    }
-}
