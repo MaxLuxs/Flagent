@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Flagent - Open source feature flagging, A/B testing, and dynamic configuration microservice in Kotlin/Ktor">
-    <title>Flagent - Feature Management Platform | Feature Flags for Enterprise</title>
+    <title data-i18n="title">Flagent - Feature Management Platform | Open Source Feature Flags</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,17 +19,21 @@
                     <span class="logo-text">Flagent</span>
                 </div>
                 <div class="nav-links">
-                    <a href="#features">Features</a>
-                    <a href="#solutions">Solutions</a>
-                    <a href="#docs">Docs</a>
-                    <a href="#community">Community</a>
+                    <a href="#features" data-i18n="nav.features">Features</a>
+                    <a href="#api" data-i18n="nav.api">API</a>
+                    <a href="#docs" data-i18n="nav.docs">Docs</a>
+                    <a href="#community" data-i18n="nav.community">Community</a>
+                    <div class="lang-switcher">
+                        <button class="lang-btn active" data-lang="ru">RU</button>
+                        <button class="lang-btn" data-lang="en">EN</button>
+                    </div>
                     <a href="https://github.com/MaxLuxs/Flagent" class="nav-github" target="_blank" rel="noopener">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>
                         GitHub
                     </a>
-                    <a href="#get-started" class="btn-primary">Get Started</a>
+                    <a href="#get-started" class="btn-primary" data-i18n="nav.get-started">Get Started</a>
                 </div>
             </div>
         </div>
@@ -40,256 +44,256 @@
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title">
-                    Feature Management Platform
-                    <span class="gradient-text">for Enterprise</span>
+                    <span data-i18n="hero.title1">Feature Management Platform</span>
+                    <span class="gradient-text" data-i18n="hero.title2">Open Source</span>
                 </h1>
-                <p class="hero-subtitle">
-                    Откройте безопасное управление релизами, A/B тестирование и динамическую конфигурацию с Flagent. 
-                    Open source решение на Kotlin/Ktor для современных команд.
+                <p class="hero-subtitle" data-i18n="hero.subtitle">
+                    Flagent - это open source сервис на Kotlin/Ktor для управления feature flags, A/B тестирования и динамической конфигурации. 
+                    Безопасные релизы, эксперименты и контроль функциональности для современных команд.
                 </p>
                 <div class="hero-buttons">
                     <a href="https://github.com/MaxLuxs/Flagent" class="btn-primary-large" target="_blank" rel="noopener">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>
-                        Star on GitHub
+                        <span data-i18n="hero.github">Star on GitHub</span>
                     </a>
-                    <a href="home.html" class="btn-secondary-large">View Docs</a>
+                    <a href="home.html" class="btn-secondary-large" data-i18n="hero.docs">View Docs</a>
                 </div>
                 <div class="hero-stats">
                     <div class="stat-item">
-                        <div class="stat-number">100+</div>
-                        <div class="stat-label">GitHub Stars</div>
+                        <div class="stat-number" data-i18n="hero.stats.open-source">100%</div>
+                        <div class="stat-label" data-i18n="hero.stats.open-source-label">Open Source</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">10K+</div>
-                        <div class="stat-label">Docker Pulls</div>
+                        <div class="stat-number">Kotlin</div>
+                        <div class="stat-label" data-i18n="hero.stats.stack">Modern Stack</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Open Source</div>
+                        <div class="stat-number">Apache 2.0</div>
+                        <div class="stat-label" data-i18n="hero.stats.license">License</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Testimonials -->
-    <section class="testimonials">
-        <div class="container">
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <p class="testimonial-text">
-                        "Flagent превратил наши релизы из стрессовых событий в обычный рабочий процесс. 
-                        Мы теперь деплоим в продакшн несколько раз в день, получаем быструю обратную связь 
-                        и экспериментируем с уверенностью."
-                    </p>
-                    <div class="testimonial-author">
-                        <div class="author-info">
-                            <div class="author-name">Сергей Иванов</div>
-                            <div class="author-role">Lead Engineer, Tech Corp</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <p class="testimonial-text">
-                        "Мы перешли с самописного решения на Flagent и сразу увидели разницу - масштабируемость, 
-                        производительность и надежность из коробки. Плюс это обошлось нам в разы дешевле."
-                    </p>
-                    <div class="testimonial-author">
-                        <div class="author-info">
-                            <div class="author-name">Анна Петрова</div>
-                            <div class="author-role">Head of Platform Engineering</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <p class="testimonial-text">
-                        "Нам нужна была enterprise-решение с безопасностью, детальным RBAC и интеграцией. 
-                        Flagent предоставил все это, плюс мощные возможности для экспериментов."
-                    </p>
-                    <div class="testimonial-author">
-                        <div class="author-info">
-                            <div class="author-name">Дмитрий Сидоров</div>
-                            <div class="author-role">CTO, Enterprise Solutions</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Why Choose Flagent -->
-    <section class="why-section" id="solutions">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Почему выбирают Flagent</h2>
-                <p class="section-subtitle">
-                    Flagent дает разработчикам инструменты для эффективной работы, 
-                    а предприятия получают ведущие на рынке возможности управления данными, безопасности и соответствия требованиям.
-                </p>
-            </div>
-            <div class="why-grid">
-                <div class="why-card">
-                    <div class="why-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                            <path d="M2 17l10 5 10-5"></path>
-                            <path d="M2 12l10 5 10-5"></path>
-                        </svg>
-                    </div>
-                    <h3 class="why-title">Для Разработчиков</h3>
-                    <ul class="why-list">
-                        <li>Open source - исследуйте и кастомизируйте</li>
-                        <li>Создано разработчиками для разработчиков</li>
-                        <li>Все возможности feature flags из коробки</li>
-                        <li>Kotlin/Ktor - современный стек</li>
-                    </ul>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                    </div>
-                    <h3 class="why-title">Для Предприятий</h3>
-                    <ul class="why-list">
-                        <li>RBAC, аудит, запросы на изменение</li>
-                        <li>Данные не покидают вашу инфраструктуру</li>
-                        <li>Поддержка air-gapped окружений</li>
-                        <li>Enterprise-безопасность и соответствие</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Problems Solved -->
-    <section class="problems-section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Какие проблемы решает Flagent?</h2>
-            </div>
-            <div class="problems-grid">
-                <div class="problem-card">
-                    <div class="problem-icon">⚠️</div>
-                    <h3 class="problem-title">Риск простоев</h3>
-                    <p class="problem-description">
-                        Нестабильные фичи вызывают простои. В среднем простой приложения стоит организациям 
-                        $400,000 в час. Flagent позволяет мгновенно откатить изменения.
-                    </p>
-                    <a href="features/advanced-rollback.html" class="problem-link">Узнать больше →</a>
-                </div>
-                <div class="problem-card">
-                    <div class="problem-icon">🚀</div>
-                    <h3 class="problem-title">Снижение инноваций</h3>
-                    <p class="problem-description">
-                        Когда разработчики вынуждены использовать сложные процессы и редкие релизы, 
-                        инновации снижаются на 50%. Flagent ускоряет разработку.
-                    </p>
-                    <a href="features/" class="problem-link">Изучить возможности →</a>
-                </div>
-                <div class="problem-card">
-                    <div class="problem-icon">📈</div>
-                    <h3 class="problem-title">Самописные решения не масштабируются</h3>
-                    <p class="problem-description">
-                        Многие пытаются создать собственное решение, но часто не хватает функций, 
-                        UX оставляет желать лучшего, а поддержка ложится тяжелым грузом.
-                    </p>
-                    <a href="overview.html" class="problem-link">Сравнить решения →</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features -->
+    <!-- Features Section -->
     <section class="features-section" id="features">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Возможности Flagent</h2>
+                <h2 class="section-title" data-i18n="features.title">Features</h2>
+                <p class="section-subtitle" data-i18n="features.subtitle">
+                    Flagent предоставляет полный набор возможностей для управления feature flags, A/B тестирования и динамической конфигурации.
+                </p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <h3 class="feature-title">Снижение рисков релизов</h3>
-                    <p class="feature-description">
-                        Постепенные релизы, мгновенный откат и kill switches
+                    <h3 class="feature-title" data-i18n="features.flags.title">Feature Flags</h3>
+                    <p class="feature-description" data-i18n="features.flags.desc">
+                        Управление feature flags с возможностью мгновенного включения/отключения функциональности
                     </p>
                 </div>
                 <div class="feature-card">
-                    <h3 class="feature-title">Ускорение инноваций</h3>
-                    <p class="feature-description">
-                        Упрощение процесса релизов и ускорение разработки
+                    <h3 class="feature-title" data-i18n="features.ab.title">A/B Testing</h3>
+                    <p class="feature-description" data-i18n="features.ab.desc">
+                        Проведение экспериментов и A/B тестов с сегментацией пользователей и распределением вариантов
                     </p>
                 </div>
                 <div class="feature-card">
-                    <h3 class="feature-title">Увеличение выручки</h3>
-                    <p class="feature-description">
-                        Оптимизация пользовательского опыта через A/B тестирование
+                    <h3 class="feature-title" data-i18n="features.config.title">Dynamic Configuration</h3>
+                    <p class="feature-description" data-i18n="features.config.desc">
+                        Динамическая конфигурация без перезапуска приложения через API
                     </p>
                 </div>
                 <div class="feature-card">
-                    <h3 class="feature-title">Безопасность и соответствие</h3>
-                    <p class="feature-description">
-                        Защита данных и соответствие корпоративным стандартам
+                    <h3 class="feature-title" data-i18n="features.targeting.title">Targeting & Segmentation</h3>
+                    <p class="feature-description" data-i18n="features.targeting.desc">
+                        Тонкая сегментация пользователей с правилами на основе контекста и ограничений
                     </p>
                 </div>
                 <div class="feature-card">
-                    <h3 class="feature-title">Feature Flags</h3>
-                    <p class="feature-description">
-                        Безопасные и масштабируемые feature flags
+                    <h3 class="feature-title" data-i18n="features.databases.title">Multiple Databases</h3>
+                    <p class="feature-description" data-i18n="features.databases.desc">
+                        Поддержка PostgreSQL, MySQL, SQLite для гибкости развертывания
                     </p>
                 </div>
                 <div class="feature-card">
-                    <h3 class="feature-title">A/B Тестирование</h3>
-                    <p class="feature-description">
-                        Полноценные эксперименты и анализ результатов
+                    <h3 class="feature-title" data-i18n="features.auth.title">Authentication</h3>
+                    <p class="feature-description" data-i18n="features.auth.desc">
+                        JWT, Basic Auth, Header, Cookie аутентификация для безопасности
                     </p>
                 </div>
                 <div class="feature-card">
-                    <h3 class="feature-title">Постепенные релизы</h3>
-                    <p class="feature-description">
-                        Прогрессивные и канареечные релизы
+                    <h3 class="feature-title" data-i18n="features.recording.title">Data Recording</h3>
+                    <p class="feature-description" data-i18n="features.recording.desc">
+                        Экспорт данных о evaluations в Kafka, AWS Kinesis, Google Pub/Sub
                     </p>
                 </div>
                 <div class="feature-card">
-                    <h3 class="feature-title">Kill Switches</h3>
-                    <p class="feature-description">
-                        Мгновенное отключение функциональности при проблемах
+                    <h3 class="feature-title" data-i18n="features.ui.title">Modern UI</h3>
+                    <p class="feature-description" data-i18n="features.ui.desc">
+                        Современный веб-интерфейс на Compose for Web для управления флагами
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Community -->
+    <!-- API Section -->
+    <section class="api-section" id="api">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="api.title">API Documentation</h2>
+                <p class="section-subtitle" data-i18n="api.subtitle">
+                    Flagent предоставляет REST API для управления флагами и их оценки. Доступна интерактивная Swagger документация.
+                </p>
+            </div>
+            <div class="api-grid">
+                <div class="api-card">
+                    <div class="api-icon">📖</div>
+                    <h3 class="api-title" data-i18n="api.swagger.title">Swagger UI</h3>
+                    <p class="api-description" data-i18n="api.swagger.desc">
+                        Интерактивная документация API доступна по адресу <code>/docs</code> когда сервер запущен
+                    </p>
+                    <a href="http://localhost:18000/docs" class="api-link" target="_blank" rel="noopener" data-i18n="api.swagger.link">
+                        Open Swagger UI →
+                    </a>
+                    <small class="api-note" data-i18n="api.swagger.note">
+                        (требуется запущенный сервер на localhost:18000)
+                    </small>
+                </div>
+                <div class="api-card">
+                    <div class="api-icon">📄</div>
+                    <h3 class="api-title" data-i18n="api.openapi.title">OpenAPI Specification</h3>
+                    <p class="api-description" data-i18n="api.openapi.desc">
+                        OpenAPI 3.0 спецификация доступна в YAML и JSON форматах
+                    </p>
+                    <div class="api-links">
+                        <a href="api/openapi.yaml" class="api-link" data-i18n="api.openapi.yaml">OpenAPI YAML</a>
+                        <a href="http://localhost:18000/api/v1/openapi.yaml" class="api-link" target="_blank" rel="noopener" data-i18n="api.openapi.server">
+                            Server YAML
+                        </a>
+                    </div>
+                </div>
+                <div class="api-card">
+                    <div class="api-icon">🔧</div>
+                    <h3 class="api-title" data-i18n="api.endpoints.title">API Endpoints</h3>
+                    <p class="api-description" data-i18n="api.endpoints.desc">
+                        Полная документация всех endpoints доступна в разделе API
+                    </p>
+                    <a href="api/endpoints.html" class="api-link" data-i18n="api.endpoints.link">
+                        View Endpoints →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start -->
+    <section class="quickstart-section" id="get-started">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="quickstart.title">Quick Start</h2>
+                <p class="section-subtitle" data-i18n="quickstart.subtitle">
+                    Запустите Flagent за 5 минут с помощью Docker
+                </p>
+            </div>
+            <div class="quickstart-content">
+                <div class="quickstart-code">
+                    <pre><code># Pull Docker image
+docker pull ghcr.io/maxluxs/flagent
+
+# Run container
+docker run -it -p 18000:18000 ghcr.io/maxluxs/flagent
+
+# Open in browser
+open http://localhost:18000</code></pre>
+                </div>
+                <div class="quickstart-info">
+                    <h3 data-i18n="quickstart.default.title">Default Configuration</h3>
+                    <ul>
+                        <li data-i18n="quickstart.default.port">Port: 18000</li>
+                        <li data-i18n="quickstart.default.db">Database: SQLite (in-memory)</li>
+                        <li data-i18n="quickstart.default.ui">UI available at: http://localhost:18000</li>
+                        <li data-i18n="quickstart.default.api">API at: http://localhost:18000/api/v1</li>
+                    </ul>
+                    <a href="home.html#quick-start" class="btn-primary" data-i18n="quickstart.more">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SDKs Section -->
+    <section class="sdks-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="sdks.title">Client SDKs</h2>
+                <p class="section-subtitle" data-i18n="sdks.subtitle">
+                    Flagent предоставляет официальные SDK для различных платформ
+                </p>
+            </div>
+            <div class="sdks-grid">
+                <div class="sdk-card">
+                    <div class="sdk-icon">☕</div>
+                    <h3 class="sdk-title">Kotlin SDK</h3>
+                    <p class="sdk-description" data-i18n="sdks.kotlin.desc">
+                        Официальный Kotlin SDK для JVM приложений
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/kotlin" class="sdk-link" target="_blank" rel="noopener" data-i18n="sdks.kotlin.link">
+                        View SDK →
+                    </a>
+                </div>
+                <div class="sdk-card">
+                    <div class="sdk-icon">📦</div>
+                    <h3 class="sdk-title">JavaScript/TypeScript</h3>
+                    <p class="sdk-description" data-i18n="sdks.js.desc">
+                        Node.js и браузерный SDK на TypeScript
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/javascript" class="sdk-link" target="_blank" rel="noopener" data-i18n="sdks.js.link">
+                        View SDK →
+                    </a>
+                </div>
+                <div class="sdk-card">
+                    <div class="sdk-icon">🍎</div>
+                    <h3 class="sdk-title">Swift SDK</h3>
+                    <p class="sdk-description" data-i18n="sdks.swift.desc">
+                        Native Swift SDK для iOS и macOS приложений
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/swift" class="sdk-link" target="_blank" rel="noopener" data-i18n="sdks.swift.link">
+                        View SDK →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
     <section class="community-section" id="community">
         <div class="container">
             <div class="community-content">
-                <h2 class="community-title">Присоединяйтесь к растущему сообществу</h2>
-                <p class="community-subtitle">
-                    Self-hosted или cloud-hosted - выбор за вами. Быстрая и простая настройка. 
-                    Начните работу в 2 шага и получите полный контроль над релизами вашего ПО.
+                <h2 class="community-title" data-i18n="community.title">Join the Community</h2>
+                <p class="community-subtitle" data-i18n="community.subtitle">
+                    Flagent - это open source проект. Вклад, вопросы и обратная связь приветствуются!
                 </p>
                 <div class="community-buttons">
-                    <a href="https://github.com/MaxLuxs/Flagent" class="btn-primary-large" target="_blank" rel="noopener">
-                        Начать работу
+                    <a href="https://github.com/MaxLuxs/Flagent" class="btn-primary-large" target="_blank" rel="noopener" data-i18n="community.github">
+                        View on GitHub
                     </a>
-                    <a href="home.html" class="btn-secondary-large">Документация</a>
+                    <a href="home.html" class="btn-secondary-large" data-i18n="community.docs">Documentation</a>
                 </div>
-                <div class="community-stats">
-                    <div class="community-stat">
-                        <div class="community-stat-number">100+</div>
-                        <div class="community-stat-label">GitHub Stars</div>
-                    </div>
-                    <div class="community-stat">
-                        <div class="community-stat-number">10K+</div>
-                        <div class="community-stat-label">Docker Pulls</div>
-                    </div>
-                    <div class="community-stat">
-                        <div class="community-stat-number">5+</div>
-                        <div class="community-stat-label">Active Contributors</div>
-                    </div>
+                <div class="community-links">
+                    <a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener" data-i18n="community.issues">
+                        Report Issues
+                    </a>
+                    <a href="https://github.com/MaxLuxs/Flagent/discussions" target="_blank" rel="noopener" data-i18n="community.discussions">
+                        Discussions
+                    </a>
+                    <a href="https://github.com/MaxLuxs/Flagent/blob/main/flagent/README.md" target="_blank" rel="noopener" data-i18n="community.contributing">
+                        Contributing
+                    </a>
                 </div>
             </div>
         </div>
@@ -301,41 +305,41 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h4 class="footer-title">Flagent</h4>
-                    <p class="footer-description">
+                    <p class="footer-description" data-i18n="footer.description">
                         Open source feature flagging, A/B testing, and dynamic configuration 
                         microservice в Kotlin/Ktor.
                     </p>
                 </div>
                 <div class="footer-section">
-                    <h4 class="footer-title">Продукт</h4>
+                    <h4 class="footer-title" data-i18n="footer.product">Продукт</h4>
                     <ul class="footer-links">
-                        <li><a href="home.html">Документация</a></li>
-                        <li><a href="features/">Возможности</a></li>
-                        <li><a href="deployment.html">Развертывание</a></li>
-                        <li><a href="enterprise.html">Enterprise</a></li>
+                        <li><a href="home.html" data-i18n="footer.docs">Документация</a></li>
+                        <li><a href="features/" data-i18n="footer.features">Возможности</a></li>
+                        <li><a href="deployment.html" data-i18n="footer.deployment">Развертывание</a></li>
+                        <li><a href="api/endpoints.html" data-i18n="footer.api">API Reference</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4 class="footer-title">Ресурсы</h4>
+                    <h4 class="footer-title" data-i18n="footer.resources">Ресурсы</h4>
                     <ul class="footer-links">
-                        <li><a href="https://github.com/MaxLuxs/Flagent">GitHub</a></li>
-                        <li><a href="https://github.com/MaxLuxs/Flagent/issues">Issues</a></li>
-                        <li><a href="contributing.html">Contributing</a></li>
-                        <li><a href="api/endpoints.html">API Reference</a></li>
+                        <li><a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a></li>
+                        <li><a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener" data-i18n="footer.issues">Issues</a></li>
+                        <li><a href="https://github.com/MaxLuxs/Flagent/blob/main/flagent/README.md" target="_blank" rel="noopener" data-i18n="footer.contributing">Contributing</a></li>
+                        <li><a href="api/openapi.yaml" data-i18n="footer.openapi">OpenAPI Spec</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4 class="footer-title">Сообщество</h4>
+                    <h4 class="footer-title" data-i18n="footer.learn">Узнать больше</h4>
                     <ul class="footer-links">
-                        <li><a href="https://github.com/MaxLuxs/Flagent/discussions">Discussions</a></li>
-                        <li><a href="https://github.com/MaxLuxs/Flagent/stargazers">Stars</a></li>
-                        <li><a href="examples/">Примеры</a></li>
-                        <li><a href="road-to-unleash.html">Roadmap</a></li>
+                        <li><a href="overview.html" data-i18n="footer.overview">Обзор</a></li>
+                        <li><a href="architecture/backend.html" data-i18n="footer.architecture">Архитектура</a></li>
+                        <li><a href="examples/" data-i18n="footer.examples">Примеры</a></li>
+                        <li><a href="road-to-unleash.html" data-i18n="footer.roadmap">Roadmap</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Flagent. Open source под Apache 2.0</p>
+                <p>&copy; 2025 Flagent. <span data-i18n="footer.license">Open source под Apache 2.0</span></p>
                 <div class="footer-social">
                     <a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener" aria-label="GitHub">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
