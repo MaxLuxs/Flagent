@@ -91,8 +91,8 @@ const translations = {
         'footer.swagger': 'Swagger UI',
         // SDK page
         'sdk.title': 'Flagent SDKs - Client Libraries',
-        'header.title': 'Flagent SDK Clients',
-        'header.subtitle': 'Client libraries (SDK) for Flagent API - feature flagging, A/B testing and dynamic configuration microservice',
+        'sdk.header.title': 'Flagent SDK Clients',
+        'sdk.header.subtitle': 'Client libraries (SDK) for Flagent API - feature flagging, A/B testing and dynamic configuration microservice',
         'overview.title': 'SDK Structure',
         'overview.desc': 'Flagent предоставляет несколько типов SDK для различных платформ и случаев использования. Все SDK генерируются из OpenAPI спецификации и совместимы с Flagent API версии 1.0.x.',
         'overview.base.title': 'Base SDK',
@@ -287,8 +287,8 @@ const translations = {
         'footer.swagger': 'Swagger UI',
         // SDK page
         'sdk.title': 'Flagent SDKs - Client Libraries',
-        'header.title': 'Flagent SDK Clients',
-        'header.subtitle': 'Client libraries (SDK) for Flagent API - feature flagging, A/B testing and dynamic configuration microservice',
+        'sdk.header.title': 'Flagent SDK Clients',
+        'sdk.header.subtitle': 'Client libraries (SDK) for Flagent API - feature flagging, A/B testing and dynamic configuration microservice',
         'overview.title': 'SDK Structure',
         'overview.desc': 'Flagent provides several types of SDKs for different platforms and use cases. All SDKs are generated from OpenAPI specification and are compatible with Flagent API version 1.0.x.',
         'overview.base.title': 'Base SDK',
