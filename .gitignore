@@ -212,6 +212,9 @@ kotlin-js-store/
 *.kjsm
 *.ktsm
 
+# Kotlin metadata (build artifacts)
+.kotlin/
+
 # Ktor
 application.conf.local
 
