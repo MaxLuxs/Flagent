@@ -265,4 +265,174 @@ class FlagRepositoryTest {
         assertNotNull(flagWithPreload.segments)
         assertNotNull(flagWithPreload.variants)
     }
+    
+    @Test
+    fun testFindAll_WithTagsFilter() = runBlocking {
+        // Note: This test requires Tag and FlagsTags tables to be set up
+        // For now, test that it doesn't crash with empty result
+        val result = repository.findAll(tags = "non_existent_tag")
+        assertTrue(result.isEmpty())
+    }
+    
+    @Test
+    fun testFindAll_WithMultipleFilters() = runBlocking {
+        repository.create(Flag(key = "flag1", description = "Test flag one", enabled = true))
+        repository.create(Flag(key = "flag2", description = "Test flag two", enabled = false))
+        repository.create(Flag(key = "flag3", description = "Other description", enabled = true))
+        
+        // Combined filters: enabled=true AND descriptionLike="test"
+        val found = repository.findAll(
+            enabled = true,
+            descriptionLike = "test"
+        )
+        
+        assertTrue(found.all { it.enabled })
+        assertTrue(found.all { it.description.lowercase().contains("test") })
+    }
+    
+    @Test
+    fun testFindAll_WithDescriptionAndKeyFilter() = runBlocking {
+        repository.create(Flag(key = "specific_flag", description = "Specific description", enabled = true))
+        repository.create(Flag(key = "other_flag", description = "Specific description", enabled = true))
+        
+        val found = repository.findAll(
+            description = "Specific description",
+            key = "specific_flag"
+        )
+        
+        assertEquals(1, found.size)
+        assertEquals("specific_flag", found[0].key)
+        assertEquals("Specific description", found[0].description)
+    }
+    
+    @Test
+    fun testFindAll_WithDeletedFilter() = runBlocking {
+        val flag1 = repository.create(Flag(key = "flag1", description = "Flag 1", enabled = true))
+        val flag2 = repository.create(Flag(key = "flag2", description = "Flag 2", enabled = true))
+        
+        // Delete one flag
+        repository.delete(flag1.id)
+        
+        // Find non-deleted
+        val active = repository.findAll(deleted = false)
+        assertFalse(active.any { it.id == flag1.id })
+        assertTrue(active.any { it.id == flag2.id })
+        
+        // Find deleted
+        val deleted = repository.findAll(deleted = true)
+        assertTrue(deleted.any { it.id == flag1.id })
+        assertFalse(deleted.any { it.id == flag2.id })
+    }
+    
+    @Test
+    fun testFindAll_WithLimitAndOffset() = runBlocking {
+        // Create multiple flags
+        repeat(5) { i ->
+            repository.create(Flag(key = "flag_$i", description = "Flag $i", enabled = true))
+        }
+        
+        // Test pagination
+        val firstPage = repository.findAll(limit = 2, offset = 0)
+        assertEquals(2, firstPage.size)
+        
+        val secondPage = repository.findAll(limit = 2, offset = 2)
+        assertEquals(2, secondPage.size)
+        
+        // Ensure different results
+        assertTrue(firstPage.map { it.id }.intersect(secondPage.map { it.id }).isEmpty())
+    }
+    
+    @Test
+    fun testFindByTags() = runBlocking {
+        // Test empty tags list
+        val empty = repository.findByTags(emptyList())
+        assertTrue(empty.isEmpty())
+        
+        // Test with non-existent tags
+        val nonExistent = repository.findByTags(listOf("non_existent_tag"))
+        assertTrue(nonExistent.isEmpty())
+    }
+    
+    @Test
+    fun testUpdateFlag_UpdatesAllFields() = runBlocking {
+        val flag = Flag(
+            key = "test_flag",
+            description = "Original description",
+            enabled = true,
+            notes = "Original notes",
+            entityType = "user",
+            dataRecordsEnabled = false
+        )
+        
+        val created = repository.create(flag)
+        val updated = repository.update(created.copy(
+            description = "Updated description",
+            enabled = false,
+            notes = "Updated notes",
+            entityType = "order",
+            dataRecordsEnabled = true
+        ))
+        
+        val found = repository.findById(created.id)
+        assertNotNull(found)
+        assertEquals("Updated description", found.description)
+        assertFalse(found.enabled)
+        assertEquals("Updated notes", found.notes)
+        assertEquals("order", found.entityType)
+        assertTrue(found.dataRecordsEnabled)
+    }
+    
+    @Test
+    fun testRestoreFlag_AfterDelete() = runBlocking {
+        val flag = Flag(key = "test_flag", description = "Test flag", enabled = true)
+        val created = repository.create(flag)
+        
+        // Delete
+        repository.delete(created.id)
+        val afterDelete = repository.findById(created.id)
+        assertNull(afterDelete)
+        
+        // Restore
+        val restored = repository.restore(created.id)
+        assertNotNull(restored)
+        
+        // Verify restored
+        val afterRestore = repository.findById(created.id)
+        assertNotNull(afterRestore)
+        assertEquals(created.id, afterRestore.id)
+        assertEquals("test_flag", afterRestore.key)
+    }
+    
+    @Test
+    fun testFindAll_WithEmptyResult() = runBlocking {
+        // Search for non-existent key
+        val result = repository.findAll(key = "definitely_non_existent_key_12345")
+        assertTrue(result.isEmpty())
+    }
+    
+    @Test
+    fun testFindAll_NoFilters_ReturnsAllNonDeleted() = runBlocking {
+        val flag1 = repository.create(Flag(key = "flag1", description = "Flag 1", enabled = true))
+        val flag2 = repository.create(Flag(key = "flag2", description = "Flag 2", enabled = false))
+        
+        // Delete one
+        repository.delete(flag1.id)
+        
+        val all = repository.findAll()
+        // Should not include deleted flag1
+        assertFalse(all.any { it.id == flag1.id })
+        assertTrue(all.any { it.id == flag2.id })
+    }
+    
+    @Test
+    fun testFindAll_WithLargeOffset() = runBlocking {
+        // Create a few flags
+        repeat(3) { i ->
+            repository.create(Flag(key = "flag_$i", description = "Flag $i", enabled = true))
+        }
+        
+        // Offset beyond available records
+        val result = repository.findAll(limit = 10, offset = 100)
+        assertTrue(result.isEmpty())
+    }
 }

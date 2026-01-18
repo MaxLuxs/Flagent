@@ -1,6 +1,6 @@
 [versions]
 # Kotlin
-kotlin = "1.9.22"
+kotlin = "2.0.21"
 kotlin-android = "2.2.20"
 
 # Ktor
@@ -10,12 +10,12 @@ ktor = "2.3.7"
 exposed = "0.44.1"
 
 # Kotlinx Libraries
-kotlinx-serialization-json = "1.6.2"
+kotlinx-serialization-json = "1.7.0"
 kotlinx-datetime = "0.6.2"
-kotlinx-coroutines = "1.7.3"
+kotlinx-coroutines = "1.8.0"
 
 # Compose
-compose = "1.6.1"
+compose = "1.8.0"
 compose-bom = "2024.02.00"
 
 # Database Drivers
@@ -47,7 +47,7 @@ commons-lang3 = "3.14.0"
 jackson = "2.15.4"
 
 # Testing
-kotlin-test = "1.9.22"
+kotlin-test = "2.0.21"
 mockk = "1.13.8"
 testcontainers = "1.19.3"
 junit = "4.13.2"
@@ -63,7 +63,7 @@ navigation-compose = "2.7.6"
 lifecycle = "2.7.0"
 activity-compose = "1.8.2"
 datastore = "1.0.0"
-compose-compiler = "1.5.8"
+compose-compiler = "1.5.14"
 jvm-target = "17"
 jvm-target-android = "17"
 
@@ -173,6 +173,7 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-android" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 

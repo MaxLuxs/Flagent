@@ -283,4 +283,106 @@ class FlagSnapshotServiceTest {
         coVerify { flagRepository.findById(flagId) }
         coVerify(exactly = 0) { flagSnapshotRepository.findByFlagId(any(), any(), any(), any()) }
     }
+    
+    @Test
+    fun testFindSnapshotsByFlagId_WithLimit() = runBlocking {
+        val flagId = 1
+        val flag = Flag(id = flagId, key = "test-flag", description = "Test")
+        val snapshots = listOf(
+            FlagSnapshot(id = 1, flagId = flagId, updatedBy = "user1", flag = "{}"),
+            FlagSnapshot(id = 2, flagId = flagId, updatedBy = "user2", flag = "{}")
+        )
+        
+        coEvery { flagRepository.findById(flagId) } returns flag
+        coEvery { flagSnapshotRepository.findByFlagId(flagId, 2, 0, true) } returns snapshots
+        
+        val result = flagSnapshotService.findSnapshotsByFlagId(flagId, limit = 2)
+        
+        assertEquals(2, result.size)
+        coVerify { flagSnapshotRepository.findByFlagId(flagId, 2, 0, true) }
+    }
+    
+    @Test
+    fun testFindSnapshotsByFlagId_WithOffset() = runBlocking {
+        val flagId = 1
+        val flag = Flag(id = flagId, key = "test-flag", description = "Test")
+        val snapshots = listOf(
+            FlagSnapshot(id = 2, flagId = flagId, updatedBy = "user2", flag = "{}")
+        )
+        
+        coEvery { flagRepository.findById(flagId) } returns flag
+        coEvery { flagSnapshotRepository.findByFlagId(flagId, null, 1, true) } returns snapshots
+        
+        val result = flagSnapshotService.findSnapshotsByFlagId(flagId, offset = 1)
+        
+        assertEquals(1, result.size)
+        coVerify { flagSnapshotRepository.findByFlagId(flagId, null, 1, true) }
+    }
+    
+    @Test
+    fun testFindSnapshotsByFlagId_WithSortAsc() = runBlocking {
+        val flagId = 1
+        val flag = Flag(id = flagId, key = "test-flag", description = "Test")
+        val snapshots = listOf(
+            FlagSnapshot(id = 1, flagId = flagId, updatedBy = "user1", flag = "{}"),
+            FlagSnapshot(id = 2, flagId = flagId, updatedBy = "user2", flag = "{}")
+        )
+        
+        coEvery { flagRepository.findById(flagId) } returns flag
+        coEvery { flagSnapshotRepository.findByFlagId(flagId, null, 0, false) } returns snapshots
+        
+        val result = flagSnapshotService.findSnapshotsByFlagId(flagId, sort = "ASC")
+        
+        assertEquals(2, result.size)
+        coVerify { flagSnapshotRepository.findByFlagId(flagId, null, 0, false) }
+    }
+    
+    @Test
+    fun testFindSnapshotsByFlagId_WithSortDesc() = runBlocking {
+        val flagId = 1
+        val flag = Flag(id = flagId, key = "test-flag", description = "Test")
+        val snapshots = listOf(
+            FlagSnapshot(id = 2, flagId = flagId, updatedBy = "user2", flag = "{}"),
+            FlagSnapshot(id = 1, flagId = flagId, updatedBy = "user1", flag = "{}")
+        )
+        
+        coEvery { flagRepository.findById(flagId) } returns flag
+        coEvery { flagSnapshotRepository.findByFlagId(flagId, null, 0, true) } returns snapshots
+        
+        val result = flagSnapshotService.findSnapshotsByFlagId(flagId, sort = "DESC")
+        
+        assertEquals(2, result.size)
+        coVerify { flagSnapshotRepository.findByFlagId(flagId, null, 0, true) }
+    }
+    
+    @Test
+    fun testFindSnapshotsByFlagId_WithLimitOffsetAndSort() = runBlocking {
+        val flagId = 1
+        val flag = Flag(id = flagId, key = "test-flag", description = "Test")
+        val snapshots = listOf(
+            FlagSnapshot(id = 2, flagId = flagId, updatedBy = "user2", flag = "{}")
+        )
+        
+        coEvery { flagRepository.findById(flagId) } returns flag
+        coEvery { flagSnapshotRepository.findByFlagId(flagId, 1, 1, false) } returns snapshots
+        
+        val result = flagSnapshotService.findSnapshotsByFlagId(flagId, limit = 1, offset = 1, sort = "ASC")
+        
+        assertEquals(1, result.size)
+        coVerify { flagSnapshotRepository.findByFlagId(flagId, 1, 1, false) }
+    }
+    
+    @Test
+    fun testFindSnapshotsByFlagId_ReturnsEmptyList_WhenNoSnapshots() = runBlocking {
+        val flagId = 1
+        val flag = Flag(id = flagId, key = "test-flag", description = "Test")
+        
+        coEvery { flagRepository.findById(flagId) } returns flag
+        coEvery { flagSnapshotRepository.findByFlagId(flagId, null, 0, true) } returns emptyList()
+        
+        val result = flagSnapshotService.findSnapshotsByFlagId(flagId)
+        
+        assertTrue(result.isEmpty())
+        coVerify { flagSnapshotRepository.findByFlagId(flagId, null, 0, true) }
+    }
 }

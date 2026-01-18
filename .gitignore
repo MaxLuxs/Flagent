@@ -259,9 +259,6 @@ tools/
 _data
 vendor/
 
-# Reference/inspiration projects (not part of main codebase)
-inspiration/
-
 # Cursor IDE files (completely ignore Cursor directory)
 .cursor/
 
@@ -278,5 +275,3 @@ DOCUMENTATION_RU.md
 # Personal TODO files (development notes)
 **/TODO.md
 TODO.md
-flagent/
-!flagent/README.md

@@ -1,7 +1,8 @@
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("org.jetbrains.compose")
+    alias(libs.plugins.compose)
+    alias(libs.plugins.kotlin.plugin.compose)
 }
 
 kotlin {

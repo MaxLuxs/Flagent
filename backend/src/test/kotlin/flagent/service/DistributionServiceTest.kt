@@ -12,11 +12,14 @@ class DistributionServiceTest {
     private lateinit var flagRepository: IFlagRepository
     private lateinit var distributionService: DistributionService
     
+    private lateinit var flagSnapshotService: FlagSnapshotService
+    
     @BeforeTest
     fun setup() {
         distributionRepository = mockk()
         flagRepository = mockk()
-        distributionService = DistributionService(distributionRepository, flagRepository)
+        flagSnapshotService = mockk()
+        distributionService = DistributionService(distributionRepository, flagRepository, flagSnapshotService)
     }
     
     @Test
@@ -117,11 +120,95 @@ class DistributionServiceTest {
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
         distributionService.updateDistributions(1, 1, distributions)
         
         coVerify { flagRepository.findById(1) }
         coVerify { distributionRepository.updateDistributions(1, distributions) }
+        coVerify { flagSnapshotService.saveFlagSnapshot(1, null) }
+    }
+    
+    @Test
+    fun testUpdateDistributions_WithUpdatedBy() = runBlocking {
+        val flag = Flag(
+            id = 1,
+            key = "test-flag",
+            description = "Test",
+            variants = listOf(
+                Variant(id = 1, flagId = 1, key = "variant1"),
+                Variant(id = 2, flagId = 1, key = "variant2")
+            )
+        )
+        val distributions = listOf(
+            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 60),
+            Distribution(segmentId = 1, variantId = 2, variantKey = "variant2", percent = 40)
+        )
+        
+        coEvery { flagRepository.findById(1) } returns flag
+        coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
+        
+        distributionService.updateDistributions(1, 1, distributions, updatedBy = "test-user")
+        
+        coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
+    }
+    
+    @Test
+    fun testUpdateDistributions_WithThreeVariants() = runBlocking {
+        val flag = Flag(
+            id = 1,
+            key = "test-flag",
+            description = "Test",
+            variants = listOf(
+                Variant(id = 1, flagId = 1, key = "variant1"),
+                Variant(id = 2, flagId = 1, key = "variant2"),
+                Variant(id = 3, flagId = 1, key = "variant3")
+            )
+        )
+        val distributions = listOf(
+            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 40),
+            Distribution(segmentId = 1, variantId = 2, variantKey = "variant2", percent = 35),
+            Distribution(segmentId = 1, variantId = 3, variantKey = "variant3", percent = 25)
+        )
+        
+        coEvery { flagRepository.findById(1) } returns flag
+        coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
+        
+        distributionService.updateDistributions(1, 1, distributions)
+        
+        coVerify { distributionRepository.updateDistributions(1, distributions) }
+    }
+    
+    @Test
+    fun testUpdateDistributions_WithSingleDistribution100Percent() = runBlocking {
+        val flag = Flag(
+            id = 1,
+            key = "test-flag",
+            description = "Test",
+            variants = listOf(Variant(id = 1, flagId = 1, key = "variant1"))
+        )
+        val distributions = listOf(
+            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 100)
+        )
+        
+        coEvery { flagRepository.findById(1) } returns flag
+        coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
+        
+        distributionService.updateDistributions(1, 1, distributions)
+        
+        coVerify { distributionRepository.updateDistributions(1, distributions) }
+    }
+    
+    @Test
+    fun testFindDistributionsBySegmentId_ReturnsEmptyList_WhenNoDistributions() = runBlocking {
+        coEvery { distributionRepository.findBySegmentId(999) } returns emptyList()
+        
+        val result = distributionService.findDistributionsBySegmentId(999)
+        
+        assertTrue(result.isEmpty())
     }
     
     @Test

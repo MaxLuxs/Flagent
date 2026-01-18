@@ -78,4 +78,60 @@ class FlagEntityTypeServiceTest {
             service.createOrGet(longKey)
         }
     }
+    
+    @Test
+    fun testCreateOrGet_AcceptsValidKeys() = runBlocking {
+        val validKeys = listOf("user", "session", "device", "user-type", "user_type", "user.type", "user:type", "user/type", "user123")
+        
+        validKeys.forEach { key ->
+            coEvery { repository.findByKey(key) } returns null
+            coEvery { repository.create(any()) } returns FlagEntityType(id = 1, key = key)
+            
+            val result = service.createOrGet(key)
+            
+            assertEquals(key, result.key)
+            coVerify { repository.findByKey(key) }
+            coVerify { repository.create(match { it.key == key }) }
+        }
+    }
+    
+    @Test
+    fun testCreateOrGet_AcceptsKeyAtMaxLength() = runBlocking {
+        val key63 = "a".repeat(63)
+        
+        coEvery { repository.findByKey(key63) } returns null
+        coEvery { repository.create(any()) } returns FlagEntityType(id = 1, key = key63)
+        
+        val result = service.createOrGet(key63)
+        
+        assertEquals(key63, result.key)
+    }
+    
+    @Test
+    fun testCreateOrGet_ThrowsException_WhenKeyHasSpaces() = runBlocking {
+        assertFailsWith<IllegalArgumentException> {
+            service.createOrGet("user type")
+        }
+    }
+    
+    @Test
+    fun testCreateOrGet_ThrowsException_WhenKeyHasSpecialInvalidCharacters() = runBlocking {
+        val invalidKeys = listOf("user@type", "user#type", "user\$type", "user%type", "user&type")
+        
+        invalidKeys.forEach { key ->
+            assertFailsWith<IllegalArgumentException> {
+                service.createOrGet(key)
+            }
+        }
+    }
+    
+    @Test
+    fun testFindAllEntityTypes_ReturnsEmptyList_WhenNoTypes() = runBlocking {
+        coEvery { repository.findAll() } returns emptyList()
+        
+        val result = service.findAllEntityTypes()
+        
+        assertTrue(result.isEmpty())
+        coVerify { repository.findAll() }
+    }
 }

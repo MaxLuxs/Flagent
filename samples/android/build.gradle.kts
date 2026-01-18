@@ -1,10 +1,5 @@
 // Top-level build file for Android Sample App
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+// This file is now managed by the root project
 
 plugins {
     alias(libs.plugins.android.application) apply false
