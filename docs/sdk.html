@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Flagent SDK Clients - Kotlin, JavaScript, Swift client libraries">
+    <title data-i18n="sdk.title">Flagent SDKs - Client Libraries</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <a href="index.html" style="text-decoration: none;"><span class="logo-text">Flagent</span></a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html#features" data-i18n="nav.features">Features</a>
+                    <a href="index.html#api" data-i18n="nav.api">API</a>
+                    <a href="home.html" data-i18n="nav.docs">Docs</a>
+                    <div class="lang-switcher">
+                        <button class="lang-btn active" data-lang="ru">RU</button>
+                        <button class="lang-btn" data-lang="en">EN</button>
+                    </div>
+                    <a href="https://github.com/MaxLuxs/Flagent" class="nav-github" target="_blank" rel="noopener">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title" data-i18n="sdk.header.title">Flagent SDK Clients</h1>
+            <p class="page-subtitle" data-i18n="sdk.header.subtitle">
+                Client libraries (SDK) for Flagent API - feature flagging, A/B testing and dynamic configuration microservice
+            </p>
+        </div>
+    </section>
+
+    <!-- Overview -->
+    <section class="content-section">
+        <div class="container">
+            <div class="content-box">
+                <h2 data-i18n="overview.title">SDK Structure</h2>
+                <p data-i18n="overview.desc">
+                    Flagent предоставляет несколько типов SDK для различных платформ и случаев использования. 
+                    Все SDK генерируются из OpenAPI спецификации и совместимы с Flagent API версии 1.0.x.
+                </p>
+                <div class="sdk-types">
+                    <div class="sdk-type-card">
+                        <h3 data-i18n="overview.base.title">Base SDK</h3>
+                        <p data-i18n="overview.base.desc">
+                            Генерируется автоматически из OpenAPI спецификации. 
+                            Предоставляет низкоуровневый доступ к API с типизированными моделями.
+                        </p>
+                    </div>
+                    <div class="sdk-type-card">
+                        <h3 data-i18n="overview.enhanced.title">Enhanced SDK</h3>
+                        <p data-i18n="overview.enhanced.desc">
+                            Нативная реализация с кэшированием, удобным API и поддержкой offline режима.
+                        </p>
+                    </div>
+                    <div class="sdk-type-card">
+                        <h3 data-i18n="overview.debug.title">Debug UI</h3>
+                        <p data-i18n="overview.debug.desc">
+                            Опциональные библиотеки для визуальной отладки в процессе разработки.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Base SDKs -->
+    <section class="content-section bg-alt">
+        <div class="container">
+            <h2 class="section-title" data-i18n="base.title">Base SDKs</h2>
+            <p class="section-subtitle" data-i18n="base.subtitle">
+                Автоматически сгенерированные SDK из OpenAPI спецификации
+            </p>
+            
+            <div class="sdk-details">
+                <!-- Kotlin SDK -->
+                <div class="sdk-detail-card">
+                    <div class="sdk-header">
+                        <div class="sdk-icon">☕</div>
+                        <div>
+                            <h3>Kotlin SDK</h3>
+                            <span class="sdk-badge" data-i18n="sdk.status.available">Available</span>
+                        </div>
+                    </div>
+                    <p class="sdk-description" data-i18n="sdk.kotlin.desc">
+                        Kotlin/JVM клиентская библиотека для Android и серверных JVM приложений
+                    </p>
+                    <div class="sdk-info">
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.requires">Requires:</strong>
+                            <span>Kotlin 2.2.20+, Gradle 8.14+</span>
+                        </div>
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.platforms">Platforms:</strong>
+                            <span>JVM, Android</span>
+                        </div>
+                    </div>
+                    <div class="sdk-links">
+                        <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/kotlin" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                            Documentation
+                        </a>
+                    </div>
+                </div>
+
+                <!-- JavaScript SDK -->
+                <div class="sdk-detail-card">
+                    <div class="sdk-header">
+                        <div class="sdk-icon">📦</div>
+                        <div>
+                            <h3>JavaScript/TypeScript SDK</h3>
+                            <span class="sdk-badge" data-i18n="sdk.status.available">Available</span>
+                        </div>
+                    </div>
+                    <p class="sdk-description" data-i18n="sdk.js.desc">
+                        TypeScript/JavaScript клиентская библиотека для Node.js, браузеров и React Native
+                    </p>
+                    <div class="sdk-info">
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.installation">Installation:</strong>
+                            <code>npm install @flagent/client</code>
+                        </div>
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.platforms">Platforms:</strong>
+                            <span>Node.js, Browser, React Native</span>
+                        </div>
+                    </div>
+                    <div class="sdk-links">
+                        <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/javascript" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                            Documentation
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Swift SDK -->
+                <div class="sdk-detail-card">
+                    <div class="sdk-header">
+                        <div class="sdk-icon">🍎</div>
+                        <div>
+                            <h3>Swift SDK</h3>
+                            <span class="sdk-badge" data-i18n="sdk.status.available">Available</span>
+                        </div>
+                    </div>
+                    <p class="sdk-description" data-i18n="sdk.swift.desc">
+                        Native Swift клиентская библиотека для iOS и macOS приложений
+                    </p>
+                    <div class="sdk-info">
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.installation">Installation:</strong>
+                            <span>Swift Package Manager, Carthage, CocoaPods</span>
+                        </div>
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.platforms">Platforms:</strong>
+                            <span>iOS, macOS</span>
+                        </div>
+                    </div>
+                    <div class="sdk-links">
+                        <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/swift" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                            Documentation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced SDKs -->
+    <section class="content-section">
+        <div class="container">
+            <h2 class="section-title" data-i18n="enhanced.title">Enhanced SDKs</h2>
+            <p class="section-subtitle" data-i18n="enhanced.subtitle">
+                Улучшенные SDK с кэшированием, удобным API и поддержкой offline режима
+            </p>
+            
+            <div class="enhanced-features">
+                <div class="feature-item">
+                    <h4 data-i18n="enhanced.cache.title">Caching Layer</h4>
+                    <p data-i18n="enhanced.cache.desc">
+                        Автоматическое кэширование evaluations для повышения производительности и работы в offline режиме
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4 data-i18n="enhanced.api.title">Convenient API</h4>
+                    <p data-i18n="enhanced.api.desc">
+                        Удобный высокоуровневый API с методами для работы с флагами и экспериментами
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4 data-i18n="enhanced.offline.title">Offline Support</h4>
+                    <p data-i18n="enhanced.offline.desc">
+                        Поддержка работы без интернета с автоматической синхронизацией при восстановлении связи
+                    </p>
+                </div>
+            </div>
+
+            <div class="sdk-details">
+                <div class="sdk-detail-card">
+                    <h3>Kotlin Enhanced</h3>
+                    <p data-i18n="enhanced.kotlin.desc">
+                        Улучшенная версия Kotlin SDK с кэшированием и удобным API
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/kotlin-enhanced" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                        Documentation
+                    </a>
+                </div>
+                <div class="sdk-detail-card">
+                    <h3>JavaScript Enhanced</h3>
+                    <p data-i18n="enhanced.js.desc">
+                        Улучшенная версия JavaScript SDK с кэшированием и удобным API
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/javascript-enhanced" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                        Documentation
+                    </a>
+                </div>
+                <div class="sdk-detail-card">
+                    <h3>Swift Enhanced</h3>
+                    <p data-i18n="enhanced.swift.desc">
+                        Улучшенная версия Swift SDK с кэшированием и удобным API
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/swift-enhanced" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                        Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Debug UI -->
+    <section class="content-section bg-alt">
+        <div class="container">
+            <h2 class="section-title" data-i18n="debug.title">Debug UI Libraries</h2>
+            <p class="section-subtitle" data-i18n="debug.subtitle">
+                Опциональные библиотеки для визуальной отладки в процессе разработки
+            </p>
+            
+            <div class="debug-features">
+                <div class="feature-item">
+                    <h4 data-i18n="debug.visual.title">Visual Debugging</h4>
+                    <p data-i18n="debug.visual.desc">
+                        Визуальный интерфейс для просмотра всех флагов, их состояния и evaluations
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4 data-i18n="debug.override.title">Local Overrides</h4>
+                    <p data-i18n="debug.override.desc">
+                        Возможность локально переопределять значения флагов для тестирования
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4 data-i18n="debug.logs.title">Evaluation Logs</h4>
+                    <p data-i18n="debug.logs.desc">
+                        Просмотр логов evaluations для отладки и понимания поведения флагов
+                    </p>
+                </div>
+            </div>
+
+            <div class="sdk-details">
+                <div class="sdk-detail-card">
+                    <h3>Kotlin Debug UI</h3>
+                    <p data-i18n="debug.kotlin.desc">
+                        Compose Debug UI для Android приложений
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/kotlin-debug-ui" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                        Documentation
+                    </a>
+                </div>
+                <div class="sdk-detail-card">
+                    <h3>JavaScript Debug UI</h3>
+                    <p data-i18n="debug.js.desc">
+                        React Debug UI для веб-приложений
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/javascript-debug-ui" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                        Documentation
+                    </a>
+                </div>
+                <div class="sdk-detail-card">
+                    <h3>Swift Debug UI</h3>
+                    <p data-i18n="debug.swift.desc">
+                        SwiftUI Debug UI для iOS приложений
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/flagent/sdk/swift-debug-ui" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                        Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Compatibility -->
+    <section class="content-section">
+        <div class="container">
+            <div class="content-box">
+                <h2 data-i18n="compatibility.title">API Compatibility</h2>
+                <p data-i18n="compatibility.desc">
+                    Все SDK генерируются из OpenAPI спецификации и совместимы с Flagent API версии 1.0.x. 
+                    OpenAPI спецификация доступна по адресу <code>http://localhost:18000/api/v1/openapi.yaml</code> когда сервер запущен.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Flagent</h4>
+                    <p class="footer-description" data-i18n="footer.description">
+                        Open source feature flagging, A/B testing, and dynamic configuration microservice в Kotlin/Ktor.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer.product">Продукт</h4>
+                    <ul class="footer-links">
+                        <li><a href="home.html" data-i18n="footer.docs">Документация</a></li>
+                        <li><a href="index.html#features" data-i18n="footer.features">Возможности</a></li>
+                        <li><a href="quickstart.html" data-i18n="footer.quickstart">Quick Start</a></li>
+                        <li><a href="sdk.html" data-i18n="footer.sdk">SDKs</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer.resources">Ресурсы</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a></li>
+                        <li><a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener" data-i18n="footer.issues">Issues</a></li>
+                        <li><a href="api/openapi.yaml" data-i18n="footer.openapi">OpenAPI Spec</a></li>
+                        <li><a href="api/endpoints.html" data-i18n="footer.api">API Reference</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Flagent. <span data-i18n="footer.license">Open source под Apache 2.0</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
