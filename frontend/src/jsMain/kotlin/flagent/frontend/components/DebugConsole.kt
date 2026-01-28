@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import flagent.api.model.EvaluationRequest
 import flagent.api.model.EvaluationResponse
@@ -27,7 +28,6 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun DebugConsole(initialFlagKey: String? = null) {
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     val activeSection = remember { mutableStateOf("single") } // "single" or "batch"
     
     Div({
@@ -66,12 +66,12 @@ fun DebugConsole(initialFlagKey: String? = null) {
                     fontWeight("700")
                 }
             }) {
-                Text("Debug Console")
+                Text(LocalizedStrings.debugConsole)
             }
             InfoTooltip(
-                title = "Debug Console",
-                description = "The Debug Console allows you to test flag evaluation in real-time. Enter an entity ID, type, and context to see which variant would be assigned and why.",
-                details = "Use this to verify that your segments, constraints, and distributions are working correctly before deploying to production. Enable debug mode to see detailed evaluation information."
+                title = LocalizedStrings.debugConsole,
+                description = LocalizedStrings.debugConsoleTooltipDescription,
+                details = LocalizedStrings.debugConsoleTooltipDetails
             )
         }
         
@@ -121,7 +121,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
                     size = 18.px,
                     color = if (activeSection.value == "single") FlagentTheme.Primary else FlagentTheme.TextLight
                 )
-                Text("Evaluation")
+                Text(LocalizedStrings.evaluation)
             }
             Button({
                 onClick { activeSection.value = "batch" }
@@ -159,13 +159,13 @@ fun DebugConsole(initialFlagKey: String? = null) {
                     size = 18.px,
                     color = if (activeSection.value == "batch") FlagentTheme.Primary else FlagentTheme.TextLight
                 )
-                Text("Batch Evaluation")
+                Text(LocalizedStrings.batchEvaluation)
             }
         }
         
         when (activeSection.value) {
-            "single" -> SingleEvaluationSection(apiClient, initialFlagKey)
-            "batch" -> BatchEvaluationSection(apiClient, initialFlagKey)
+            "single" -> SingleEvaluationSection(initialFlagKey)
+            "batch" -> BatchEvaluationSection(initialFlagKey)
         }
     }
 }
@@ -174,7 +174,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
  * Single Evaluation Section
  */
 @Composable
-private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String?) {
+private fun SingleEvaluationSection(initialFlagKey: String?) {
     val flagKey = remember { mutableStateOf(initialFlagKey ?: "") }
     val entityID = remember { mutableStateOf("a1234") }
     val entityType = remember { mutableStateOf("report") }
@@ -221,7 +221,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                 }
             }) {
                 Span {
-                    Text("Request")
+                    Text(LocalizedStrings.request)
                 }
                 Button({
                     onClick {
@@ -252,7 +252,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                                     flagKey = flagKey.value,
                                     enableDebug = enableDebug.value
                                 )
-                                val evalResult = apiClient.evaluate(evalRequest)
+                                val evalResult = ApiClient.evaluate(evalRequest)
                                 result.value = formatJson(Json.encodeToString(EvaluationResponse.serializer(), evalResult))
                             } catch (e: Exception) {
                                 error.value = e.message ?: "Failed to evaluate flag"
@@ -314,7 +314,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                 }
             }) {
                 Label {
-                    Text("Flag Key:")
+                    Text(LocalizedStrings.flagKeyWithColon)
                     Input(InputType.Text) {
                         value(flagKey.value)
                         onInput { event -> flagKey.value = event.value }
@@ -331,7 +331,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                     }
                 }
                 Label {
-                    Text("Entity ID:")
+                    Text(LocalizedStrings.entityIdWithColon)
                     Input(InputType.Text) {
                         value(entityID.value)
                         onInput { event -> entityID.value = event.value }
@@ -348,7 +348,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                     }
                 }
                 Label {
-                    Text("Entity Type:")
+                    Text(LocalizedStrings.entityType)
                     Input(InputType.Text) {
                         value(entityType.value)
                         onInput { event -> entityType.value = event.value }
@@ -365,7 +365,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                     }
                 }
                 Label {
-                    Text("Entity Context (JSON):")
+                    Text(LocalizedStrings.entityContextJsonWithColon)
                     TextArea {
                         value(entityContextJson.value)
                         onInput { event -> entityContextJson.value = event.value }
@@ -402,7 +402,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                                 cursor("pointer")
                             }
                         }
-                        Text("Enable Debug")
+                        Text(LocalizedStrings.enableDebug)
                     }
                 }
             }
@@ -420,7 +420,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                     display(DisplayStyle.Block)
                 }
             }) {
-                Text("Response")
+                Text(LocalizedStrings.response)
             }
             if (loading.value) {
                 Spinner()
@@ -433,7 +433,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                         borderRadius(5.px)
                     }
                 }) {
-                    Text("Error: ${error.value}")
+                    Text("${LocalizedStrings.error}: ${error.value}")
                 }
             } else if (result.value != null) {
                 Pre({
@@ -471,7 +471,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
                         color(FlagentTheme.TextLight)
                     }
                 }) {
-                    Text("No response yet")
+                    Text(LocalizedStrings.noResponseYet)
                 }
             }
         }
@@ -482,7 +482,7 @@ private fun SingleEvaluationSection(apiClient: ApiClient, initialFlagKey: String
  * Batch Evaluation Section
  */
 @Composable
-private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?) {
+private fun BatchEvaluationSection(initialFlagKey: String?) {
     val entitiesJson = remember { mutableStateOf("""[
   {
     "entityID": "a1234",
@@ -543,7 +543,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                 }
             }) {
                 Span {
-                    Text("Request")
+                    Text(LocalizedStrings.request)
                 }
                 Button({
                     onClick {
@@ -596,7 +596,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                                     enableDebug = enableDebug.value
                                 )
                                 
-                                val batchResult = apiClient.evaluateBatch(batchRequest)
+                                val batchResult = ApiClient.evaluateBatch(batchRequest)
                                 result.value = formatJson(Json.encodeToString(EvaluationBatchResponse.serializer(), batchResult))
                             } catch (e: Exception) {
                                 error.value = e.message ?: "Failed to evaluate batch"
@@ -633,7 +633,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                 }
             }) {
                 Label {
-                    Text("Entities (JSON array):")
+                    Text(LocalizedStrings.entitiesJsonArrayWithColon)
                     TextArea {
                         value(entitiesJson.value)
                         onInput { event -> entitiesJson.value = event.value }
@@ -653,7 +653,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                     }
                 }
                 Label {
-                    Text("Flag IDs (comma-separated):")
+                    Text(LocalizedStrings.flagIdsCommaSeparated)
                     Input(InputType.Text) {
                         attr("placeholder", "1, 2, 3")
                         value(flagIDs.value)
@@ -671,7 +671,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                     }
                 }
                 Label {
-                    Text("Flag Keys (comma-separated):")
+                    Text(LocalizedStrings.flagKeysCommaSeparated)
                     Input(InputType.Text) {
                         attr("placeholder", "flag1, flag2")
                         value(flagKeys.value)
@@ -706,7 +706,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                                 cursor("pointer")
                             }
                         }
-                        Text("Enable Debug")
+                        Text(LocalizedStrings.enableDebug)
                     }
                 }
             }
@@ -724,7 +724,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                     display(DisplayStyle.Block)
                 }
             }) {
-                Text("Response")
+                Text(LocalizedStrings.response)
             }
             if (loading.value) {
                 Spinner()
@@ -737,7 +737,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                         borderRadius(5.px)
                     }
                 }) {
-                    Text("Error: ${error.value}")
+                    Text("${LocalizedStrings.error}: ${error.value}")
                 }
             } else if (result.value != null) {
                 Pre({
@@ -775,7 +775,7 @@ private fun BatchEvaluationSection(apiClient: ApiClient, initialFlagKey: String?
                         color(FlagentTheme.TextLight)
                     }
                 }) {
-                    Text("No response yet")
+                    Text(LocalizedStrings.noResponseYet)
                 }
             }
         }

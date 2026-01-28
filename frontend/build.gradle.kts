@@ -20,15 +20,16 @@ kotlin {
     sourceSets {
         jsMain.dependencies {
             implementation(project(":shared"))
-            implementation(compose.runtime)
-            implementation(compose.html.core)
-            implementation(compose.html.svg)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.html.core)
+            implementation(libs.compose.html.svg)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.js)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
         }
 
         jsTest.dependencies {

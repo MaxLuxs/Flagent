@@ -99,11 +99,7 @@ val FlagentPlugin = createApplicationPlugin(
     
     // Configure routes if evaluation is enabled
     if (config.enableEvaluation) {
-        // Ensure Routing plugin is installed
-        if (application.pluginOrNull(Routing) == null) {
-            application.install(Routing)
-        }
-        
+        // Routing plugin is installed automatically in Ktor 3.x
         application.routing {
             route("/flagent") {
                 // Health check endpoint

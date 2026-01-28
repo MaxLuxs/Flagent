@@ -9,13 +9,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.io.File
+import java.time.LocalDateTime
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
@@ -86,14 +87,14 @@ class ExportService(
     private suspend fun exportFlags(tempDb: Database) = withContext(Dispatchers.IO) {
         val flags = flagRepository.findAll()
         
-        newSuspendedTransaction(Dispatchers.IO, tempDb) {
+        suspendTransaction(tempDb) {
             // First, collect all unique tags and insert them
             val allTags = flags.flatMap { it.tags }.distinctBy { it.id }
             allTags.forEach { tag ->
                 Tags.insert {
                     it[id] = EntityID(tag.id, Tags)
                     it[value] = tag.value
-                    it[createdAt] = java.time.Instant.now()
+                    it[createdAt] = LocalDateTime.now()
                 }
             }
             
@@ -111,7 +112,7 @@ class ExportService(
                     it[notes] = flag.notes
                     it[dataRecordsEnabled] = flag.dataRecordsEnabled
                     it[entityType] = flag.entityType
-                    it[createdAt] = java.time.Instant.now()
+                    it[createdAt] = LocalDateTime.now()
                     it[updatedAt] = null
                     it[deletedAt] = null
                 }
@@ -126,7 +127,7 @@ class ExportService(
                         it[flagId] = flag.id
                         it[key] = variant.key
                         it[attachment] = attachmentJson
-                        it[createdAt] = java.time.Instant.now()
+                        it[createdAt] = LocalDateTime.now()
                         it[updatedAt] = null
                         it[deletedAt] = null
                     }
@@ -140,7 +141,7 @@ class ExportService(
                         it[description] = segment.description
                         it[rank] = segment.rank
                         it[rolloutPercent] = segment.rolloutPercent
-                        it[createdAt] = java.time.Instant.now()
+                        it[createdAt] = LocalDateTime.now()
                         it[updatedAt] = null
                         it[deletedAt] = null
                     }
@@ -157,7 +158,7 @@ class ExportService(
                             it[property] = constraint.property
                             it[operator] = constraint.operator
                             it[value] = constraint.value
-                            it[createdAt] = java.time.Instant.now()
+                            it[createdAt] = LocalDateTime.now()
                             it[updatedAt] = null
                             it[deletedAt] = null
                         }
@@ -175,7 +176,7 @@ class ExportService(
                             it[variantId] = distribution.variantId
                             it[variantKey] = distribution.variantKey
                             it[percent] = distribution.percent
-                            it[createdAt] = java.time.Instant.now()
+                            it[createdAt] = LocalDateTime.now()
                             it[updatedAt] = null
                             it[deletedAt] = null
                         }
@@ -200,14 +201,14 @@ class ExportService(
     private suspend fun exportFlagSnapshots(tempDb: Database) = withContext(Dispatchers.IO) {
         val snapshots = flagSnapshotRepository.findAll()
         
-        newSuspendedTransaction(Dispatchers.IO, tempDb) {
+        suspendTransaction(tempDb) {
             snapshots.forEach { snapshot ->
                 FlagSnapshots.insert {
                     it[id] = EntityID(snapshot.id, FlagSnapshots)
                     it[FlagSnapshots.flagId] = snapshot.flagId
                     it[FlagSnapshots.updatedBy] = snapshot.updatedBy
                     it[FlagSnapshots.flag] = snapshot.flag
-                    it[FlagSnapshots.createdAt] = java.time.Instant.now()
+                    it[FlagSnapshots.createdAt] = LocalDateTime.now()
                     it[FlagSnapshots.updatedAt] = null
                     it[FlagSnapshots.deletedAt] = null
                 }
@@ -220,12 +221,12 @@ class ExportService(
     private suspend fun exportFlagEntityTypes(tempDb: Database) = withContext(Dispatchers.IO) {
         val entityTypes = flagEntityTypeRepository.findAll()
         
-        newSuspendedTransaction(Dispatchers.IO, tempDb) {
+        suspendTransaction(tempDb) {
             entityTypes.forEach { entityType ->
                 FlagEntityTypes.insert {
                     it[id] = EntityID(entityType.id, FlagEntityTypes)
                     it[FlagEntityTypes.key] = entityType.key
-                    it[FlagEntityTypes.createdAt] = java.time.Instant.now()
+                    it[FlagEntityTypes.createdAt] = LocalDateTime.now()
                     it[FlagEntityTypes.updatedAt] = null
                     it[FlagEntityTypes.deletedAt] = null
                 }

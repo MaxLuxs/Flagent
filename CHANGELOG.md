@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - SDK documentation is now included in repository for better discoverability
 
-## [1.0.0] - 2024-XX-XX
+## [1.0.0] - 18-01-2025
 
 ### Added
 - Professional CI/CD infrastructure with GitHub Actions

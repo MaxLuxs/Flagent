@@ -1,6 +1,7 @@
 package flagent.frontend.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,9 +9,12 @@ import androidx.compose.runtime.remember
 import flagent.api.model.CreateFlagRequest
 import flagent.api.model.FlagResponse
 import flagent.frontend.api.ApiClient
+import flagent.frontend.config.AppConfig
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.components.Icon
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.service.RealtimeService
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,18 +41,16 @@ fun FlagsList() {
     val newFlagDescription = remember { mutableStateOf("") }
     val creatingFlag = remember { mutableStateOf(false) }
 
-    val apiClient = remember { ApiClient("http://localhost:18000") }
-
     fun loadFlags() {
         CoroutineScope(Dispatchers.Main).launch {
             loading.value = true
             error.value = null
             try {
-                val fetchedFlags = apiClient.getFlags()
+                val fetchedFlags = ApiClient.getFlags()
                 flags.clear()
                 flags.addAll(fetchedFlags.reversed()) // Reverse to show newest first
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to load flags"
+                error.value = e.message ?: LocalizedStrings.failedToLoadFlags
             } finally {
                 loading.value = false
             }
@@ -59,12 +61,18 @@ fun FlagsList() {
         CoroutineScope(Dispatchers.Main).launch {
             deletedFlagsLoading.value = true
             try {
-                val fetchedDeletedFlags = apiClient.getDeletedFlags()
+                val fetchedDeletedFlags = ApiClient.getDeletedFlags()
                 deletedFlags.clear()
                 deletedFlags.addAll(fetchedDeletedFlags.reversed())
             } catch (e: Exception) {
                 // Silent fail for deleted flags
-                error.value = "Failed to load deleted flags: ${e.message}"
+                error.value = buildString {
+                    append(LocalizedStrings.failedToLoadDeletedFlags)
+                    e.message?.let {
+                        append(": ")
+                        append(it)
+                    }
+                }
             } finally {
                 deletedFlagsLoading.value = false
             }
@@ -74,11 +82,17 @@ fun FlagsList() {
     fun restoreFlag(flag: FlagResponse) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                val restoredFlag = apiClient.restoreFlag(flag.id)
+                val restoredFlag = ApiClient.restoreFlag(flag.id)
                 deletedFlags.removeAll { it.id == flag.id }
                 flags.add(0, restoredFlag)
             } catch (e: Exception) {
-                error.value = "Failed to restore flag: ${e.message}"
+                error.value = buildString {
+                    append(LocalizedStrings.failedToRestoreFlag)
+                    e.message?.let {
+                        append(": ")
+                        append(it)
+                    }
+                }
             }
         }
     }
@@ -90,7 +104,7 @@ fun FlagsList() {
             creatingFlag.value = true
             error.value = null
             try {
-                val newFlag = apiClient.createFlag(
+                val newFlag = ApiClient.createFlag(
                     CreateFlagRequest(
                         description = newFlagDescription.value,
                         template = template
@@ -100,7 +114,13 @@ fun FlagsList() {
                 flags.add(0, newFlag)
                 Router.navigateTo(Route.FlagDetail(newFlag.id))
             } catch (e: Exception) {
-                error.value = "Failed to create flag: ${e.message}"
+                error.value = buildString {
+                    append(LocalizedStrings.failedToCreateFlag)
+                    e.message?.let {
+                        append(": ")
+                        append(it)
+                    }
+                }
             } finally {
                 creatingFlag.value = false
             }
@@ -116,8 +136,29 @@ fun FlagsList() {
         }
     }
 
+    // Real-time refresh trigger: when SSE fires, increment to trigger loadFlags
+    val realtimeRefreshTrigger = remember { mutableStateOf(0) }
+    
     LaunchedEffect(Unit) {
         loadFlags()
+    }
+    
+    // Real-time auto-refresh: connect to SSE and reload flags on any flag event
+    DisposableEffect(AppConfig.Features.enableRealtime) {
+        if (AppConfig.Features.enableRealtime) {
+            val service = RealtimeService(
+                onEvent = { realtimeRefreshTrigger.value++ },
+                onConnectionChange = { }
+            )
+            service.connect(flagKeys = emptyList(), flagIds = emptyList())
+            onDispose { service.disconnect() }
+        } else {
+            onDispose { }
+        }
+    }
+    
+    LaunchedEffect(realtimeRefreshTrigger.value) {
+        if (realtimeRefreshTrigger.value > 0) loadFlags()
     }
 
     Div({
@@ -173,12 +214,12 @@ fun FlagsList() {
                         fontWeight("600")
                     }
                 }) {
-                    Text("Create New Flag")
+                    Text(LocalizedStrings.createNewFlag)
                 }
                 InfoTooltip(
-                    title = "Feature Flags",
-                    description = "Feature flags (feature toggles) allow you to control the rollout of new features, run A/B tests, and safely rollback changes without deploying new code.",
-                    details = "Create a flag by entering a description. The system will generate a unique key automatically. You can enable/disable flags, create segments for targeting, and set up distributions for gradual rollouts."
+                    title = LocalizedStrings.featureFlagsTooltipTitle,
+                    description = LocalizedStrings.featureFlagsTooltipDescription,
+                    details = LocalizedStrings.featureFlagsTooltipDetails
                 )
             }
             Div({
@@ -189,7 +230,7 @@ fun FlagsList() {
                 }
             }) {
                 Input(InputType.Text) {
-                    attr("placeholder", "Enter flag description...")
+                    attr("placeholder", LocalizedStrings.enterFlagDescriptionPlaceholder)
                     value(newFlagDescription.value)
                     onInput { event -> newFlagDescription.value = event.value }
                     style {
@@ -253,7 +294,7 @@ fun FlagsList() {
                         size = 18.px,
                         color = FlagentTheme.Background
                     )
-                    Text(if (creatingFlag.value) "Creating..." else "Create Flag")
+                    Text(if (creatingFlag.value) LocalizedStrings.creating else LocalizedStrings.createFlag)
                 }
                 Select({
                     onChange { event ->
@@ -278,8 +319,8 @@ fun FlagsList() {
                         cursor("pointer")
                     }
                 }) {
-                    Option(value = "") { Text("More options...") }
-                    Option(value = "simple_boolean_flag") { Text("Create Simple Boolean Flag") }
+                    Option(value = "") { Text(LocalizedStrings.moreOptions) }
+                    Option(value = "simple_boolean_flag") { Text(LocalizedStrings.createSimpleBooleanFlag) }
                 }
             }
         }
@@ -308,7 +349,7 @@ fun FlagsList() {
                 color = FlagentTheme.TextLight
             )
             Input(InputType.Text) {
-                attr("placeholder", "Search flags by ID, key, description, or tags...")
+                attr("placeholder", LocalizedStrings.searchFlagsDetailedPlaceholder)
                 value(searchQuery.value)
                 onInput { event -> searchQuery.value = event.value }
                 style {
@@ -353,10 +394,24 @@ fun FlagsList() {
                     minWidth(140.px)
                 }
             }) {
-                Option(value = "all") { Text("All Status") }
-                Option(value = "enabled") { Text("Enabled") }
-                Option(value = "disabled") { Text("Disabled") }
+                Option(value = "all") { Text(LocalizedStrings.allStatus) }
+                Option(value = "enabled") { Text(LocalizedStrings.enabledFlags) }
+                Option(value = "disabled") { Text(LocalizedStrings.disabledFlags) }
             }
+        }
+        P({
+            style {
+                display(DisplayStyle.Flex)
+                alignItems(AlignItems.Center)
+                gap(6.px)
+                marginTop(8.px)
+                marginBottom(0.px)
+                fontSize(13.px)
+                color(FlagentTheme.TextLight)
+            }
+        }) {
+            Icon("info", size = 16.px, color = FlagentTheme.TextLight)
+            Text(LocalizedStrings.flagsListKeyHint)
         }
 
         if (loading.value) {
@@ -370,7 +425,7 @@ fun FlagsList() {
                     borderRadius(5.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         } else {
             // Filter and sort flags
@@ -438,7 +493,7 @@ fun FlagsList() {
                             fontWeight("500")
                         }
                     }) {
-                        Text("No flags found")
+                        Text(LocalizedStrings.noFlags)
                     }
                     Div({
                         style {
@@ -447,7 +502,7 @@ fun FlagsList() {
                             opacity(0.7)
                         }
                     }) {
-                        Text("Try adjusting your search or filters")
+                        Text(LocalizedStrings.tryAdjustingSearchOrFilters)
                     }
                 }
             } else {
@@ -511,7 +566,7 @@ fun FlagsList() {
                                                 size = 16.px,
                                                 color = FlagentTheme.Text
                                             )
-                                            Text("Flag ID")
+                                            Text(LocalizedStrings.flagId)
                                         if (sortColumn.value == "id") {
                                             Span({
                                                 style {
@@ -545,7 +600,7 @@ fun FlagsList() {
                                             size = 16.px,
                                             color = FlagentTheme.Text
                                         )
-                                        Text("Description")
+                                        Text(LocalizedStrings.description)
                                     }
                                 }
                                 Th({
@@ -569,7 +624,7 @@ fun FlagsList() {
                                             size = 16.px,
                                             color = FlagentTheme.Text
                                         )
-                                        Text("Tags")
+                                        Text(LocalizedStrings.tags)
                                     }
                                 }
                                 Th({
@@ -603,7 +658,7 @@ fun FlagsList() {
                                                 size = 16.px,
                                                 color = FlagentTheme.Text
                                             )
-                                            Text("Last Updated By")
+                                            Text(LocalizedStrings.lastUpdatedBy)
                                         if (sortColumn.value == "updatedBy") {
                                             Span({
                                                 style {
@@ -647,7 +702,7 @@ fun FlagsList() {
                                                 size = 16.px,
                                                 color = FlagentTheme.Text
                                             )
-                                            Text("Updated At")
+                                            Text(LocalizedStrings.updatedAt)
                                         if (sortColumn.value == "updatedAt") {
                                             Span({
                                                 style {
@@ -682,7 +737,7 @@ fun FlagsList() {
                                             size = 16.px,
                                             color = FlagentTheme.Text
                                         )
-                                        Text("Status")
+                                        Text(LocalizedStrings.status)
                                     }
                                 }
                             }
@@ -699,7 +754,7 @@ fun FlagsList() {
                                     }
                                     onMouseEnter {
                                         val element = it.target as org.w3c.dom.HTMLElement
-                                        element.style.backgroundColor = FlagentTheme.PrimaryLight.toString()
+                                        element.style.backgroundColor = FlagentTheme.BackgroundDark.toString()
                                         element.style.setProperty("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
                                         element.style.transform = "translateY(-1px)"
                                     }
@@ -771,7 +826,7 @@ fun FlagsList() {
                                                     fontStyle("italic")
                                                 }
                                             }) {
-                                                Text("No tags")
+                                                Text(LocalizedStrings.noTags)
                                             }
                                         } else {
                                             flag.tags.forEach { tag ->
@@ -904,7 +959,7 @@ fun FlagsList() {
                         size = 20.px,
                         color = FlagentTheme.Background
                     )
-                    Text(if (showDeletedFlags.value) "Deleted Flags" else "Show Deleted Flags")
+                    Text(if (showDeletedFlags.value) LocalizedStrings.deletedFlags else LocalizedStrings.showDeletedFlags)
                 }
 
                 if (showDeletedFlags.value) {
@@ -930,7 +985,7 @@ fun FlagsList() {
                                     fontSize(14.px)
                                 }
                             }) {
-                                Text("No deleted flags")
+                                Text(LocalizedStrings.noDeletedFlags)
                             }
                         }
                     } else {
@@ -969,7 +1024,7 @@ fun FlagsList() {
                                                 color(FlagentTheme.Border)
                                             }
                                         }
-                                    }) { Text("Flag ID") }
+                                    }) { Text(LocalizedStrings.flagId) }
                                     Th({
                                         style {
                                             padding(10.px)
@@ -979,7 +1034,7 @@ fun FlagsList() {
                                                 color(FlagentTheme.Border)
                                             }
                                         }
-                                    }) { Text("Description") }
+                                    }) { Text(LocalizedStrings.description) }
                                     Th({
                                         style {
                                             padding(10.px)
@@ -989,7 +1044,7 @@ fun FlagsList() {
                                                 color(FlagentTheme.Border)
                                             }
                                         }
-                                    }) { Text("Tags") }
+                                    }) { Text(LocalizedStrings.tags) }
                                     Th({
                                         style {
                                             padding(10.px)
@@ -999,7 +1054,7 @@ fun FlagsList() {
                                                 color(FlagentTheme.Border)
                                             }
                                         }
-                                    }) { Text("Last Updated By") }
+                                    }) { Text(LocalizedStrings.lastUpdatedBy) }
                                     Th({
                                         style {
                                             padding(10.px)
@@ -1009,7 +1064,7 @@ fun FlagsList() {
                                                 color(FlagentTheme.Border)
                                             }
                                         }
-                                    }) { Text("Updated At (UTC)") }
+                                    }) { Text(LocalizedStrings.updatedAtUtc) }
                                     Th({
                                         style {
                                             padding(10.px)
@@ -1020,7 +1075,7 @@ fun FlagsList() {
                                                 color(FlagentTheme.Border)
                                             }
                                         }
-                                    }) { Text("Action") }
+                                    }) { Text(LocalizedStrings.action) }
                                 }
                             }
                             Tbody {
@@ -1144,7 +1199,7 @@ fun FlagsList() {
                                                     size = 18.px,
                                                     color = FlagentTheme.Background
                                                 )
-                                                Text("Restore")
+                                                Text(LocalizedStrings.restore)
                                             }
                                         }
                                     }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.frontend.api.ApiClient
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.theme.FlagentTheme
@@ -18,14 +19,13 @@ import org.jetbrains.compose.web.dom.*
 fun Breadcrumbs() {
     val route = Router.currentRoute
     val flagKey = remember { mutableStateOf<String?>(null) }
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     
     // Load flag key for FlagDetail and FlagHistory routes
     LaunchedEffect(route) {
         when (route) {
             is Route.FlagDetail -> {
                 try {
-                    val flag = apiClient.getFlag(route.flagId)
+                    val flag = ApiClient.getFlag(route.flagId)
                     flagKey.value = flag.key
                 } catch (e: Exception) {
                     flagKey.value = null
@@ -33,7 +33,7 @@ fun Breadcrumbs() {
             }
             is Route.FlagHistory -> {
                 try {
-                    val flag = apiClient.getFlag(route.flagId)
+                    val flag = ApiClient.getFlag(route.flagId)
                     flagKey.value = flag.key
                 } catch (e: Exception) {
                     flagKey.value = null
@@ -77,7 +77,7 @@ fun Breadcrumbs() {
                     element.style.color = FlagentTheme.Primary.toString()
                 }
             }) {
-                Text("Home")
+                Text(LocalizedStrings.home)
             }
             
             when (route) {
@@ -104,7 +104,7 @@ fun Breadcrumbs() {
                             element.style.color = FlagentTheme.Primary.toString()
                         }
                     }) {
-                        Text(flagKey.value ?: "Flag #${route.flagId}")
+                        Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
                     }
                 }
                 is Route.CreateFlag -> {
@@ -115,7 +115,7 @@ fun Breadcrumbs() {
                             fontWeight("500")
                         }
                     }) {
-                        Text("Create Flag")
+                        Text(LocalizedStrings.createFlag)
                     }
                 }
                 is Route.DebugConsole -> {
@@ -126,7 +126,7 @@ fun Breadcrumbs() {
                             fontWeight("500")
                         }
                     }) {
-                        Text("Debug Console")
+                        Text(LocalizedStrings.debugConsole)
                     }
                 }
                 is Route.FlagHistory -> {
@@ -153,7 +153,7 @@ fun Breadcrumbs() {
                                 element.style.color = FlagentTheme.Primary.toString()
                             }
                         }) {
-                            Text(flagKey.value ?: "Flag #${route.flagId}")
+                            Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
                         }
                         BreadcrumbSeparator()
                     }
@@ -163,7 +163,7 @@ fun Breadcrumbs() {
                             fontWeight("500")
                         }
                     }) {
-                        Text("History")
+                        Text(LocalizedStrings.history)
                     }
                 }
                 else -> {}

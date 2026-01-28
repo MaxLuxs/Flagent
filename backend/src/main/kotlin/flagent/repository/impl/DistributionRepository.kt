@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.Distribution
 import flagent.domain.repository.IDistributionRepository
@@ -6,14 +7,13 @@ import flagent.repository.Database
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.*
 
 class DistributionRepository : IDistributionRepository {
     
     override suspend fun findBySegmentId(segmentId: Int): List<Distribution> = withContext(Dispatchers.IO) {
         Database.transaction {
-            Distributions.select { Distributions.segmentId eq segmentId }
+            Distributions.selectAll().where { Distributions.segmentId eq segmentId }
                 .orderBy(Distributions.variantId, SortOrder.ASC)
                 .map { mapRowToDistribution(it) }
         }
@@ -34,7 +34,7 @@ class DistributionRepository : IDistributionRepository {
                     it[variantId] = distribution.variantId
                     it[variantKey] = distribution.variantKey
                     it[percent] = distribution.percent
-                    it[createdAt] = java.time.Instant.now()
+                    it[createdAt] = java.time.LocalDateTime.now()
                 }
             }
         }
@@ -44,7 +44,7 @@ class DistributionRepository : IDistributionRepository {
         Database.transaction {
             Distributions.update({ Distributions.variantId eq variantId }) {
                 it[Distributions.variantKey] = variantKey
-                it[updatedAt] = java.time.Instant.now()
+                it[updatedAt] = java.time.LocalDateTime.now()
             }
         }
         Unit

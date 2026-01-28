@@ -6,7 +6,7 @@ import io.ktor.client.statement.*
 import io.ktor.server.application.*
 import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.testing.*
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.*
 import kotlin.test.*
 import kotlinx.serialization.json.*

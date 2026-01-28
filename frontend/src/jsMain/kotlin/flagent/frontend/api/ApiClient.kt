@@ -2,37 +2,89 @@ package flagent.frontend.api
 
 import flagent.api.model.*
 import flagent.api.model.PutSegmentReorderRequest
+import flagent.frontend.config.AppConfig
+import flagent.frontend.util.AppLogger
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.browser.localStorage
+import kotlinx.browser.window
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
- * API Client for Flagent backend
+ * API Client for Flagent backend (Singleton)
  */
-class ApiClient(
-    private val baseUrl: String = ""
-) {
-    private val client = HttpClient {
+private const val AUTH_TOKEN_KEY = "auth_token"
+private const val USER_KEY = "current_user"
+
+object ApiClient {
+    private const val TAG = "ApiClient"
+    
+    internal val client = HttpClient {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
                 encodeDefaults = true
             })
         }
+        
+        install(HttpTimeout) {
+            requestTimeoutMillis = AppConfig.apiTimeout
+            connectTimeoutMillis = AppConfig.apiTimeout
+        }
+        
+        defaultRequest {
+            val token = getAuthToken()
+            if (token != null) {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            val tenantId = getTenantId()
+            if (tenantId != null) {
+                header("X-Tenant-ID", tenantId)
+            }
+        }
+        
+        HttpResponseValidator {
+            handleResponseExceptionWithRequest { exception, _ ->
+                val ex = exception as? ClientRequestException ?: return@handleResponseExceptionWithRequest
+                if (ex.response.status == HttpStatusCode.Unauthorized) {
+                    localStorage.removeItem(AUTH_TOKEN_KEY)
+                    localStorage.removeItem(USER_KEY)
+                    window.location.href = "/login"
+                    return@handleResponseExceptionWithRequest
+                }
+                throw exception
+            }
+        }
     }
     
-    private fun getApiPath(path: String): String {
-        return if (baseUrl.isEmpty()) {
+    internal fun getApiPath(path: String): String {
+        val baseUrl = AppConfig.apiBaseUrl
+        return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
             "/api/v1$path"
         } else {
             "$baseUrl/api/v1$path"
         }
     }
+    
+    /** Admin API path (no /api/v1 prefix) for tenants, etc. */
+    internal fun getAdminPath(path: String): String {
+        val baseUrl = AppConfig.apiBaseUrl
+        return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
+            "/admin$path"
+        } else {
+            "$baseUrl/admin$path"
+        }
+    }
+    
+    private fun getAuthToken(): String? = localStorage.getItem(AUTH_TOKEN_KEY)
+    
+    private fun getTenantId(): String? = null
     
     /**
      * Get all flags
@@ -237,5 +289,146 @@ class ApiClient(
             contentType(ContentType.Application.Json)
             setBody(SetFlagEnabledRequest(enabled))
         }.body()
+    }
+    
+    // ========== Tenants (Admin API) ==========
+    
+    suspend fun getTenants(includeDeleted: Boolean = false): List<TenantResponse> {
+        val url = getAdminPath("/tenants") + if (includeDeleted) "?includeDeleted=true" else ""
+        return client.get(url).body()
+    }
+    
+    suspend fun getTenant(key: String): TenantResponse {
+        return client.get(getAdminPath("/tenants/$key")).body()
+    }
+    
+    suspend fun createTenant(request: CreateTenantRequest): CreateTenantResponse {
+        return client.post(getAdminPath("/tenants")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+    
+    suspend fun deleteTenant(id: Long, immediate: Boolean = false) {
+        val url = getAdminPath("/tenants/$id") + if (immediate) "?immediate=true" else ""
+        client.delete(url)
+    }
+    
+    // ========== Billing (Enterprise, requires auth) ==========
+    
+    internal fun getBillingPath(path: String): String {
+        val baseUrl = AppConfig.apiBaseUrl
+        return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
+            "/api/billing$path"
+        } else {
+            "$baseUrl/api/billing$path"
+        }
+    }
+    
+    suspend fun createBillingCheckout(request: CreateCheckoutSessionRequest): CreateCheckoutSessionResponse {
+        return client.post(getBillingPath("/checkout")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+    
+    suspend fun createBillingPortal(request: CreatePortalSessionRequest): CreatePortalSessionResponse {
+        return client.post(getBillingPath("/portal")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+    
+    suspend fun getBillingSubscription(): SubscriptionResponse? {
+        return try {
+            client.get(getBillingPath("/subscription")).body<SubscriptionResponse>()
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    suspend fun getBillingInvoices(limit: Int = 10): List<InvoiceResponse> {
+        return client.get(getBillingPath("/invoices?limit=$limit")).body()
+    }
+    
+    suspend fun getBillingUsage(startTime: String? = null, endTime: String? = null): UsageStatsResponse {
+        val params = mutableListOf<String>()
+        startTime?.let { params.add("startTime=$it") }
+        endTime?.let { params.add("endTime=$it") }
+        val query = if (params.isEmpty()) "" else "?${params.joinToString("&")}"
+        return client.get(getBillingPath("/usage$query")).body()
+    }
+    
+    suspend fun cancelBillingSubscription(cancelAtPeriodEnd: Boolean = true) {
+        client.post(getBillingPath("/subscription/cancel?cancelAtPeriodEnd=$cancelAtPeriodEnd"))
+    }
+    
+    // ========== SSO (Enterprise, requires tenant context) ==========
+    
+    internal fun getSsoPath(path: String): String {
+        val baseUrl = AppConfig.apiBaseUrl
+        return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
+            "/sso/providers$path"
+        } else {
+            "$baseUrl/sso/providers$path"
+        }
+    }
+
+    internal fun getSsoAuthPath(path: String): String {
+        val baseUrl = AppConfig.apiBaseUrl
+        return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
+            "/sso$path"
+        } else {
+            "$baseUrl/sso$path"
+        }
+    }
+
+    suspend fun ssoLogout() {
+        client.post(getSsoAuthPath("/logout"))
+    }
+    
+    suspend fun getSsoProviders(): List<SsoProviderResponse> {
+        return client.get(getSsoPath("")).body()
+    }
+    
+    suspend fun createSsoProvider(request: CreateSsoProviderRequest): SsoProviderResponse {
+        return client.post(getSsoPath("")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+    
+    // ========== Slack (Enterprise, webhook via env) ==========
+    
+    suspend fun getSlackStatus(): SlackStatusResponse {
+        return client.get(getApiPath("/slack/status")).body()
+    }
+    
+    suspend fun sendSlackTestNotification(): SlackTestResponse {
+        return client.post(getApiPath("/slack/test")).body()
+    }
+
+    // ========== Metrics overview (global aggregates) ==========
+
+    /**
+     * Get global metrics overview: time series (evaluations per bucket) and top flags.
+     * @param startTime start of range (ms), default last 24h
+     * @param endTime end of range (ms), default now
+     * @param bucketMinutes bucket size in minutes (default 60)
+     * @param topFlagsLimit max top flags (default 10)
+     */
+    suspend fun getMetricsOverview(
+        startTime: Long? = null,
+        endTime: Long? = null,
+        bucketMinutes: Int = 60,
+        topFlagsLimit: Int = 10
+    ): GlobalMetricsOverviewResponse {
+        val url = buildString {
+            append(getApiPath("/metrics/overview"))
+            append("?bucket_minutes=$bucketMinutes&top_flags_limit=$topFlagsLimit")
+            startTime?.let { append("&start_time=$it") }
+            endTime?.let { append("&end_time=$it") }
+        }
+        return client.get(url).body()
     }
 }

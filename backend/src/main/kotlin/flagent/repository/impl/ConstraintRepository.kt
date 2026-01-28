@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.Constraint
 import flagent.domain.repository.IConstraintRepository
@@ -6,14 +7,13 @@ import flagent.repository.Database
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.*
 
 class ConstraintRepository : IConstraintRepository {
     
     override suspend fun findBySegmentId(segmentId: Int): List<Constraint> = withContext(Dispatchers.IO) {
         Database.transaction {
-            Constraints.select { Constraints.segmentId eq segmentId }
+            Constraints.selectAll().where { Constraints.segmentId eq segmentId }
                 .orderBy(Constraints.createdAt, SortOrder.ASC)
                 .map { mapRowToConstraint(it) }
         }
@@ -21,7 +21,7 @@ class ConstraintRepository : IConstraintRepository {
     
     override suspend fun findById(id: Int): Constraint? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Constraints.select { Constraints.id eq id }
+            Constraints.selectAll().where { Constraints.id eq id }
                 .firstOrNull()
                 ?.let { mapRowToConstraint(it) }
         }
@@ -34,7 +34,7 @@ class ConstraintRepository : IConstraintRepository {
                 it[property] = constraint.property
                 it[operator] = constraint.operator
                 it[value] = constraint.value
-                it[createdAt] = java.time.Instant.now()
+                it[createdAt] = java.time.LocalDateTime.now()
             }[Constraints.id].value
             
             constraint.copy(id = id)
@@ -47,7 +47,7 @@ class ConstraintRepository : IConstraintRepository {
                 it[property] = constraint.property
                 it[operator] = constraint.operator
                 it[value] = constraint.value
-                it[updatedAt] = java.time.Instant.now()
+                it[updatedAt] = java.time.LocalDateTime.now()
             }
             constraint
         }
@@ -56,7 +56,7 @@ class ConstraintRepository : IConstraintRepository {
     override suspend fun delete(id: Int): Unit = withContext(Dispatchers.IO) {
         Database.transaction {
             Constraints.update({ Constraints.id eq id }) {
-                it[deletedAt] = java.time.Instant.now()
+                it[deletedAt] = java.time.LocalDateTime.now()
             }
         }
         Unit

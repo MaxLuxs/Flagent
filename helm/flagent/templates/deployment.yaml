@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flagent.fullname" . }}
+  labels:
+    {{- include "flagent.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "flagent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "flagent.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      containers:
+      - name: flagent
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.config.port }}
+          protocol: TCP
+        env:
+        - name: FLAGENT_HOST
+          value: {{ .Values.config.host | quote }}
+        - name: FLAGENT_PORT
+          value: {{ .Values.config.port | quote }}
+        - name: FLAGENT_DB_DRIVER
+          value: {{ .Values.config.database.driver | quote }}
+        - name: FLAGENT_DB_HOST
+          value: {{ .Values.config.database.host | quote }}
+        - name: FLAGENT_DB_PORT
+          value: {{ .Values.config.database.port | quote }}
+        - name: FLAGENT_DB_DATABASE
+          value: {{ .Values.config.database.name | quote }}
+        - name: FLAGENT_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "flagent.fullname" . }}-secret
+              key: db-user
+        - name: FLAGENT_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "flagent.fullname" . }}-secret
+              key: db-password
+        - name: FLAGENT_EVAL_CACHE_REFRESH_INTERVAL
+          value: {{ .Values.config.evalCache.refreshInterval | quote }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        livenessProbe:
+          {{- toYaml .Values.livenessProbe | nindent 12 }}
+        readinessProbe:
+          {{- toYaml .Values.readinessProbe | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

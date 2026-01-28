@@ -1,6 +1,7 @@
 package flagent.frontend.components
 
 import androidx.compose.runtime.Composable
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -34,8 +35,8 @@ fun Modal(
     title: String,
     onClose: () -> Unit,
     onConfirm: (() -> Unit)? = null,
-    confirmText: String = "Save",
-    cancelText: String = "Cancel",
+    confirmText: String = LocalizedStrings.save,
+    cancelText: String = LocalizedStrings.cancel,
     showCancel: Boolean = true,
     confirmDisabled: Boolean = false,
     confirmLoading: Boolean = false,
@@ -238,7 +239,7 @@ fun Modal(
                                         property("animation", "spin 0.8s linear infinite")
                                     }
                                 }) {}
-                                Text("Saving...")
+                                Text(LocalizedStrings.saving)
                             }
                         } else {
                             Text(confirmText)

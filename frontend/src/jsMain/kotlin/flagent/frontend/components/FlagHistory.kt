@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.api.model.FlagSnapshotResponse
 import flagent.frontend.api.ApiClient
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.browser.document
 import kotlinx.serialization.json.Json
@@ -18,7 +19,6 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun FlagHistory(flagId: Int) {
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     val history = remember { mutableStateListOf<FlagSnapshotResponse>() }
     val loading = remember { mutableStateOf(true) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -27,11 +27,11 @@ fun FlagHistory(flagId: Int) {
         loading.value = true
         error.value = null
         try {
-            val snapshots = apiClient.getFlagSnapshots(flagId, limit = 50)
+            val snapshots = ApiClient.getFlagSnapshots(flagId, limit = 50)
             history.clear()
             history.addAll(snapshots)
         } catch (e: Exception) {
-            error.value = e.message ?: "Failed to load flag history"
+            error.value = e.message ?: LocalizedStrings.failedToLoadFlagHistory
         } finally {
             loading.value = false
         }
@@ -47,12 +47,12 @@ fun FlagHistory(flagId: Int) {
                 margin(0.px, 0.px, 20.px, 0.px)
             }
         }) {
-            Text("Flag History")
+            Text(LocalizedStrings.flagHistory)
         }
         InfoTooltip(
-            title = "Flag History",
-            description = "Flag History shows all changes made to a feature flag over time. Each snapshot represents the state of the flag at a specific point in time.",
-            details = "You can compare any two snapshots to see what changed. This is useful for auditing changes, understanding rollouts, and debugging issues."
+            title = LocalizedStrings.flagHistory,
+            description = LocalizedStrings.flagHistoryTooltipDescription,
+            details = LocalizedStrings.flagHistoryTooltipDetails
         )
 
         if (loading.value) {
@@ -66,7 +66,7 @@ fun FlagHistory(flagId: Int) {
                     borderRadius(5.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         } else if (history.isEmpty()) {
             Div({
@@ -76,7 +76,7 @@ fun FlagHistory(flagId: Int) {
                     color(FlagentTheme.TextLight)
                 }
             }) {
-                Text("No history available")
+                Text(LocalizedStrings.noHistory)
             }
         } else {
             // Create diffs between snapshots
@@ -159,7 +159,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                         fontSize(12.px)
                     }
                 }) {
-                    Text("Snapshot ID: ${diff.oldSnapshot?.id ?: "NULL"}")
+                    Text("${LocalizedStrings.snapshotId}: ${diff.oldSnapshot?.id ?: "NULL"}")
                 }
                 Span({
                     style {
@@ -178,7 +178,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                         fontSize(12.px)
                     }
                 }) {
-                    Text("Snapshot ID: ${diff.newSnapshot.id}")
+                    Text("${LocalizedStrings.snapshotId}: ${diff.newSnapshot.id}")
                 }
             }
             Div({
@@ -203,7 +203,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                             marginTop(5.px)
                         }
                     }) {
-                        Text("UPDATED BY: $updatedBy")
+                        Text("${LocalizedStrings.updatedByUpper}: $updatedBy")
                     }
                 }
             }
@@ -219,7 +219,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                     color(FlagentTheme.TextLight)
                 }
             }) {
-                Text("No changes")
+                Text(LocalizedStrings.noChanges)
             }
         } else {
             Div({

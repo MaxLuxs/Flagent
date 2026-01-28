@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.frontend.api.ApiClient
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import flagent.api.model.DistributionRequest
 import flagent.api.model.PutDistributionsRequest
@@ -22,7 +23,6 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantResponse>) {
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     val distributions = remember { mutableStateMapOf<Int, Int>() }
     val loading = remember { mutableStateOf(true) }
     val saving = remember { mutableStateOf(false) }
@@ -34,13 +34,13 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
         loading.value = true
         error.value = null
         try {
-            val existingDistributions = apiClient.getDistributions(flagId, segmentId)
+            val existingDistributions = ApiClient.getDistributions(flagId, segmentId)
             distributions.clear()
             existingDistributions.forEach { dist ->
                 distributions[dist.variantID] = dist.percent
             }
         } catch (e: Exception) {
-            error.value = e.message ?: "Failed to load distributions"
+            error.value = e.message ?: LocalizedStrings.failedToLoadDistributions
         } finally {
             loading.value = false
         }
@@ -58,11 +58,11 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
         }
     }) {
         H3 { 
-            Text("Edit Distribution")
+            Text(LocalizedStrings.editDistribution)
             InfoTooltip(
-                title = "Distributions",
-                description = "Distributions define how variants are assigned to entities in a segment. Each variant gets a percentage of the traffic. Percentages must add up to exactly 100%.",
-                details = "For example, a 50/50 split means half the entities get variant A and half get variant B. This is used for A/B testing and gradual rollouts."
+                title = LocalizedStrings.distributionsTooltipTitle,
+                description = LocalizedStrings.distributionsTooltipDescription,
+                details = LocalizedStrings.distributionsTooltipDetails
             )
         }
         
@@ -77,7 +77,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                     borderRadius(5.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         } else {
             variants.forEach { variant ->
@@ -112,7 +112,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                         marginBottom(10.px)
                     }
                 }) {
-                    Text("Percentages must add up to 100% (currently at ${total}%)")
+                    Text(LocalizedStrings.percentagesMustAddUpTo100(total))
                 }
             }
             
@@ -131,7 +131,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                         }
                     }
                 }) {
-                    Text("Distributions saved successfully!")
+                    Text(LocalizedStrings.distributionsSavedSuccessfully)
                 }
             }
             
@@ -151,7 +151,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                                 )
                             }
                             
-                            apiClient.updateDistributions(
+                            ApiClient.updateDistributions(
                                 flagId,
                                 segmentId,
                                 PutDistributionsRequest(distributionRequests)
@@ -162,7 +162,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                             delay(2000)
                             success.value = false
                         } catch (e: Exception) {
-                            error.value = e.message ?: "Failed to save distributions"
+                            error.value = e.message ?: LocalizedStrings.failedToSaveDistributions
                         } finally {
                             saving.value = false
                         }
@@ -183,7 +183,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                     cursor(if (saving.value || total != 100) "not-allowed" else "pointer")
                 }
             }) {
-                Text(if (saving.value) "Saving..." else "Save Distribution")
+                Text(if (saving.value) LocalizedStrings.saving else LocalizedStrings.saveDistribution)
             }
         }
     }

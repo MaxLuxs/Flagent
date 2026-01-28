@@ -1,0 +1,226 @@
+package flagent.frontend.components.metrics
+
+import androidx.compose.runtime.*
+import flagent.frontend.api.MetricType
+import flagent.frontend.components.common.EmptyState
+import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.theme.FlagentTheme
+import flagent.frontend.util.currentTimeMillis
+import flagent.frontend.util.format
+import flagent.frontend.util.textTransform
+import flagent.frontend.viewmodel.MetricsViewModel
+import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.dom.*
+
+/**
+ * Metrics Dashboard component (Phase 3)
+ */
+@Composable
+fun MetricsDashboard(flagId: Int) {
+    val viewModel = remember { MetricsViewModel(flagId) }
+    
+    LaunchedEffect(flagId) {
+        viewModel.loadMetrics()
+        viewModel.loadAggregation()
+    }
+    
+    Div({
+        style {
+            backgroundColor(Color.white)
+            borderRadius(8.px)
+            padding(24.px)
+            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+        }
+    }) {
+        H2({
+            style {
+                fontSize(20.px)
+                fontWeight(600)
+                color(Color("#1E293B"))
+                margin(0.px)
+                marginBottom(24.px)
+            }
+        }) {
+            Text("Metrics & Analytics")
+        }
+        
+        // Filters
+        Div({
+            style {
+                display(DisplayStyle.Flex)
+                gap(16.px)
+                marginBottom(24.px)
+                flexWrap(FlexWrap.Wrap)
+            }
+        }) {
+            // Metric type selector
+            Select({
+                onChange { event ->
+                    val value = event.value
+                    viewModel.selectedMetricType = if (value.isNullOrBlank()) null else MetricType.valueOf(value)
+                    viewModel.loadMetrics()
+                    viewModel.loadAggregation()
+                }
+                style {
+                    padding(10.px, 16.px)
+                    border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+                    borderRadius(6.px)
+                    fontSize(14.px)
+                }
+            }) {
+                Option("", { 
+                    if (viewModel.selectedMetricType == null) attr("selected", "")
+                }) {
+                    Text("All Metrics")
+                }
+                MetricType.values().forEach { type ->
+                    Option(type.name, { 
+                        if (viewModel.selectedMetricType == type) attr("selected", "")
+                    }) {
+                        Text(type.name.replace("_", " "))
+                    }
+                }
+            }
+            
+            // Time range buttons
+            Button({
+                onClick {
+                    viewModel.startTime = currentTimeMillis() - 3600000 // 1 hour
+                    viewModel.endTime = currentTimeMillis()
+                    viewModel.loadMetrics()
+                    viewModel.loadAggregation()
+                }
+                style {
+                    padding(10.px, 16.px)
+                    backgroundColor(FlagentTheme.Primary)
+                    color(Color.white)
+                    border(0.px)
+                    borderRadius(6.px)
+                    cursor("pointer")
+                    fontSize(14.px)
+                }
+            }) {
+                Text("Last Hour")
+            }
+            
+            Button({
+                onClick {
+                    viewModel.startTime = currentTimeMillis() - 86400000 // 24 hours
+                    viewModel.endTime = currentTimeMillis()
+                    viewModel.loadMetrics()
+                    viewModel.loadAggregation()
+                }
+                style {
+                    padding(10.px, 16.px)
+                    backgroundColor(FlagentTheme.Primary)
+                    color(Color.white)
+                    border(0.px)
+                    borderRadius(6.px)
+                    cursor("pointer")
+                    fontSize(14.px)
+                }
+            }) {
+                Text("Last 24 Hours")
+            }
+        }
+        
+        // Aggregation stats
+        viewModel.aggregation?.let { agg ->
+            Div({
+                style {
+                    display(DisplayStyle.Grid)
+                    property("grid-template-columns", "repeat(auto-fit, minmax(200px, 1fr))")
+                    gap(16.px)
+                    marginBottom(24.px)
+                }
+            }) {
+                MetricCard("Count", agg.count.toString())
+                MetricCard("Average", agg.avg.format(2))
+                MetricCard("Min", agg.min.format(2))
+                MetricCard("Max", agg.max.format(2))
+            }
+        }
+        
+        // Loading state
+        if (viewModel.isLoading) {
+            SkeletonLoader(height = 200.px)
+        } else if (viewModel.metrics.isEmpty()) {
+            EmptyState(
+                icon = "analytics",
+                title = "No metrics available",
+                description = "Start sending metrics to see analytics here"
+            )
+        } else {
+            // Metrics chart
+            if (viewModel.selectedMetricType != null) {
+                MetricsChart(
+                    metrics = viewModel.metrics,
+                    metricType = viewModel.selectedMetricType!!,
+                    title = "${viewModel.selectedMetricType!!.name} Over Time"
+                )
+            } else {
+                P({
+                    style {
+                        fontSize(14.px)
+                        color(Color("#64748B"))
+                        margin(0.px)
+                        marginTop(16.px)
+                    }
+                }) {
+                    Text("${viewModel.metrics.size} data points collected. Select a metric type to view chart.")
+                }
+            }
+        }
+        
+        // Error state
+        viewModel.error?.let { error ->
+            Div({
+                style {
+                    marginTop(16.px)
+                    padding(12.px)
+                    backgroundColor(Color("#FEE2E2"))
+                    borderRadius(6.px)
+                    color(Color("#991B1B"))
+                    fontSize(14.px)
+                }
+            }) {
+                Text(error)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetricCard(label: String, value: String) {
+    Div({
+        style {
+            padding(16.px)
+            backgroundColor(Color("#F8FAFC"))
+            borderRadius(6.px)
+            border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+        }
+    }) {
+        P({
+            style {
+                fontSize(12.px)
+                color(Color("#64748B"))
+                margin(0.px)
+                marginBottom(8.px)
+                textTransform("uppercase")
+                property("letter-spacing", "0.05em")
+            }
+        }) {
+            Text(label)
+        }
+        P({
+            style {
+                fontSize(24.px)
+                fontWeight(600)
+                color(Color("#1E293B"))
+                margin(0.px)
+            }
+        }) {
+            Text(value)
+        }
+    }
+}

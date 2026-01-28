@@ -3,6 +3,7 @@ package flagent.frontend.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.browser.document
 import kotlinx.serialization.json.Json
@@ -44,7 +45,7 @@ fun JsonEditor(
             true
         } catch (e: Exception) {
             isValid.value = false
-            errorMessage.value = "Invalid JSON: ${e.message}"
+            errorMessage.value = LocalizedStrings.invalidJsonWithReason(e.message)
             false
         }
     }
@@ -133,7 +134,7 @@ fun JsonEditor(
                         size = 16.px,
                         color = FlagentTheme.Error
                     )
-                    Text(errorMessage.value ?: "Invalid JSON")
+                    Text(errorMessage.value ?: LocalizedStrings.jsonInvalid)
                 }
             } else if (isValid.value && value.isNotBlank()) {
                 Div({
@@ -151,7 +152,7 @@ fun JsonEditor(
                         size = 14.px,
                         color = FlagentTheme.Success
                     )
-                    Text("Valid JSON")
+                    Text(LocalizedStrings.jsonValid)
                 }
             }
         }
@@ -164,7 +165,7 @@ fun JsonEditor(
                 property("line-height", "1.4")
             }
         }) {
-            Text("Enter JSON key/value pairs without outer braces, e.g., \"key\": \"value\". JSON is validated in real-time.")
+            Text(LocalizedStrings.jsonHelperText)
         }
     }
 }

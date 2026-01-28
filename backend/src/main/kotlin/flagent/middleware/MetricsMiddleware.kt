@@ -1,16 +1,16 @@
 package flagent.middleware
 
-import flagent.config.AppConfig
-import io.ktor.server.application.*
-import io.ktor.server.metrics.micrometer.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
 import com.timgroup.statsd.NonBlockingStatsDClient
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder
-import io.ktor.http.*
-import io.ktor.server.request.*
+import flagent.config.AppConfig
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.metrics.micrometer.MicrometerMetrics
+import io.ktor.server.response.respond
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -21,19 +21,19 @@ private val logger = KotlinLogging.logger {}
  */
 fun Application.configurePrometheusMetrics() {
     if (!AppConfig.prometheusEnabled) return
-    
+
     val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    
+
     install(MicrometerMetrics) {
         registry = appMicrometerRegistry
     }
-    
+
     routing {
         get(AppConfig.prometheusPath) {
             call.respond(appMicrometerRegistry.scrape())
         }
     }
-    
+
     logger.info { "Prometheus metrics enabled at ${AppConfig.prometheusPath}" }
 }
 
@@ -50,15 +50,15 @@ class StatsDMetricsMiddleware(
             "path:$path",
             "status:${statusCode}"
         )
-        
+
         statsdClient.increment("flagent.requests", *tags)
         statsdClient.recordExecutionTime("flagent.request.duration", duration, *tags)
-        
+
         if (statusCode >= 400) {
             statsdClient.increment("flagent.errors", *tags)
         }
     }
-    
+
     fun recordEvaluation(flagID: Int, variantID: Int?) {
         val tags = arrayOf(
             "flag_id:$flagID",
@@ -70,16 +70,16 @@ class StatsDMetricsMiddleware(
 
 fun Application.configureStatsDMetrics() {
     if (!AppConfig.statsdEnabled) return
-    
+
     val statsdClient = NonBlockingStatsDClientBuilder()
         .prefix(AppConfig.statsdPrefix)
         .hostname(AppConfig.statsdHost)
         .port(AppConfig.statsdPort.toInt())
         .build()
-    
+
     environment.monitor.subscribe(io.ktor.server.application.ApplicationStopped) {
         statsdClient.close()
     }
-    
+
     logger.info { "StatsD metrics enabled: ${AppConfig.statsdHost}:${AppConfig.statsdPort}" }
 }

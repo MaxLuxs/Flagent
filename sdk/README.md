@@ -9,6 +9,8 @@ Client libraries (SDK) for Flagent API - a feature flagging, A/B testing and dyn
 | Kotlin | [kotlin/](./kotlin/) | ✅ Available | Kotlin/JVM client library (Android, JVM) |
 | JavaScript/TypeScript | [javascript/](./javascript/) | ✅ Available | TypeScript/JavaScript client library |
 | Swift | [swift/](./swift/) | ✅ Available | Native Swift client library (iOS, macOS) |
+| Python | [python/](./python/) | ✅ Available | Python client library with async/await support |
+| Go | [go/](./go/) | ✅ Available | Go client library with context support |
 
 ## Enhanced SDKs
 
@@ -19,6 +21,7 @@ Enhanced SDKs provide additional features like caching, convenient API, and bett
 | Kotlin | [kotlin-enhanced/](./kotlin-enhanced/) | ✅ Available | Enhanced Kotlin SDK with caching |
 | Swift | [swift-enhanced/](./swift-enhanced/) | ✅ Available | Enhanced Swift SDK with caching |
 | JavaScript/TypeScript | [javascript-enhanced/](./javascript-enhanced/) | ✅ Available | Enhanced TypeScript SDK with caching |
+| Go | [go-enhanced/](./go-enhanced/) | ✅ Available | Enhanced Go SDK with caching |
 
 ## Debug UI Libraries
 
@@ -57,6 +60,18 @@ See [JavaScript SDK README](./javascript/README.md) for installation and usage.
 #### Enhanced JavaScript/TypeScript SDK
 
 See [JavaScript Enhanced SDK README](./javascript-enhanced/README.md) for installation and usage with caching.
+
+#### Python SDK
+
+See [Python SDK README](./python/README.md) for installation and usage.
+
+#### Go SDK
+
+See [Go SDK README](./go/README.md) for installation and usage.
+
+#### Enhanced Go SDK
+
+See [Go Enhanced SDK README](./go-enhanced/README.md) for installation and usage with caching.
 
 ### Debug UI Usage
 

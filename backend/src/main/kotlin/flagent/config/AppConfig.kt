@@ -230,6 +230,27 @@ object AppConfig {
 
     // Web Prefix
     val webPrefix: String = System.getenv("FLAGENT_WEB_PREFIX") ?: ""
+    
+    // Multi-Tenancy
+    val multiTenancyEnabled: Boolean = 
+        System.getenv("FLAGENT_MULTI_TENANCY_ENABLED")?.toBoolean() ?: false
+
+    // Stripe Billing
+    val stripeEnabled: Boolean = System.getenv("FLAGENT_STRIPE_ENABLED")?.toBoolean() ?: false
+    val stripeSecretKey: String = System.getenv("FLAGENT_STRIPE_SECRET_KEY") ?: ""
+    val stripePublishableKey: String = System.getenv("FLAGENT_STRIPE_PUBLISHABLE_KEY") ?: ""
+    val stripeWebhookSecret: String = System.getenv("FLAGENT_STRIPE_WEBHOOK_SECRET") ?: ""
+
+    // Slack Notifications
+    val slackEnabled: Boolean = System.getenv("FLAGENT_SLACK_ENABLED")?.toBoolean() ?: false
+    val slackWebhookUrl: String = System.getenv("FLAGENT_SLACK_WEBHOOK_URL") ?: ""
+    val slackChannel: String? = System.getenv("FLAGENT_SLACK_CHANNEL")
+
+    // SSO callback redirect (browser land after IdP callback)
+    val ssoCallbackRedirectUrl: String = System.getenv("FLAGENT_SSO_CALLBACK_REDIRECT_URL") ?: "/"
+
+    // SSO JWT signing secret (min 32 chars for HS256). Used by SsoService and jwt-auth for Billing.
+    val ssoJwtSecret: String = System.getenv("FLAGENT_SSO_JWT_SECRET") ?: "your-secret-key-at-least-32-characters-long"
 
     private fun parseDuration(s: String): Duration {
         return when {

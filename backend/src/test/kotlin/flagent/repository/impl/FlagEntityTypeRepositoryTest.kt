@@ -3,7 +3,8 @@ package flagent.repository.impl
 import flagent.domain.entity.FlagEntityType
 import flagent.repository.Database
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -34,7 +35,7 @@ class FlagEntityTypeRepositoryTest {
     fun cleanup() {
         try {
             transaction(Database.getDatabase()) {
-                org.jetbrains.exposed.sql.SchemaUtils.drop(
+                SchemaUtils.drop(
                     flagent.repository.tables.Flags,
                     flagent.repository.tables.Segments,
                     flagent.repository.tables.Variants,

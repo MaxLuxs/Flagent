@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.Tag
 import flagent.domain.repository.ITagRepository
@@ -6,9 +7,7 @@ import flagent.repository.Database
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
+import org.jetbrains.exposed.v1.core.*
 
 class TagRepository : ITagRepository {
     
@@ -26,7 +25,7 @@ class TagRepository : ITagRepository {
             query = query.orderBy(Tags.id, SortOrder.ASC)
             
             if (limit != null) {
-                query = query.limit(limit, offset.toLong())
+                query = query.limit(limit).offset(offset.toLong())
             }
             
             query.map { mapRowToTag(it) }
@@ -35,7 +34,7 @@ class TagRepository : ITagRepository {
     
     override suspend fun findByValue(value: String): Tag? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Tags.select { Tags.value eq value }
+            Tags.selectAll().where { Tags.value eq value }
                 .firstOrNull()
                 ?.let { mapRowToTag(it) }
         }
@@ -51,7 +50,7 @@ class TagRepository : ITagRepository {
             
             val id = Tags.insert {
                 it[value] = tag.value
-                it[createdAt] = java.time.Instant.now()
+                it[createdAt] = java.time.LocalDateTime.now()
             }[Tags.id].value
             
             tag.copy(id = id)
@@ -61,7 +60,7 @@ class TagRepository : ITagRepository {
     override suspend fun delete(id: Int): Unit = withContext(Dispatchers.IO) {
         Database.transaction {
             Tags.update({ Tags.id eq id }) {
-                it[deletedAt] = java.time.Instant.now()
+                it[deletedAt] = java.time.LocalDateTime.now()
             }
         }
         Unit
@@ -70,7 +69,7 @@ class TagRepository : ITagRepository {
     override suspend fun addTagToFlag(flagId: Int, tagId: Int) = withContext(Dispatchers.IO) {
         Database.transaction {
             // Check if already exists
-            val exists = FlagsTags.select {
+            val exists = FlagsTags.selectAll().where {
                 (FlagsTags.flagId eq flagId) and (FlagsTags.tagId eq tagId)
             }.firstOrNull()
             
@@ -96,7 +95,7 @@ class TagRepository : ITagRepository {
         Database.transaction {
             Tags
                 .innerJoin(FlagsTags)
-                .select { FlagsTags.flagId eq flagId }
+                .selectAll().where { FlagsTags.flagId eq flagId }
                 .orderBy(Tags.id, SortOrder.ASC)
                 .map { mapRowToTag(it) }
         }

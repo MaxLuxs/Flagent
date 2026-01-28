@@ -5,10 +5,14 @@ import flagent.cache.impl.createEvalCacheFetcher
 import flagent.config.AppConfig
 import flagent.repository.Database
 import flagent.repository.impl.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import flagent.middleware.configureErrorHandling
 import flagent.middleware.configureCompression
 import flagent.middleware.configureLogging
 import flagent.middleware.configureJWTAuth
+import flagent.middleware.configureSsoJwtAuth
 import flagent.middleware.configureBasicAuth
 import flagent.middleware.configureHeaderAuth
 import flagent.middleware.configureCookieAuth
@@ -18,7 +22,6 @@ import flagent.middleware.configureSentry
 import flagent.middleware.configureNewRelic
 import flagent.route.configureConstraintRoutes
 import flagent.route.configureDistributionRoutes
-import flagent.route.configureDocumentationRoutes
 import flagent.route.configureEvaluationRoutes
 import flagent.route.configureExportRoutes
 import flagent.route.configureFlagEntityTypeRoutes
@@ -30,7 +33,17 @@ import flagent.route.configureProfilingRoutes
 import flagent.route.configureSegmentRoutes
 import flagent.route.configureTagRoutes
 import flagent.route.configureVariantRoutes
+import flagent.route.tenantRoutes
+import flagent.route.ssoRoutes
+import flagent.route.configureBillingRoutes
+import flagent.route.configureMetricsRoutes
+import flagent.route.configureSmartRolloutRoutes
+import flagent.route.configureAnomalyRoutes
+import flagent.middleware.TenantContextMiddleware
+import flagent.middleware.configureSSE
+import flagent.middleware.configureRealtimeEventBus
 import flagent.recorder.DataRecordingService
+import flagent.route.realtimeRoutes
 import flagent.service.ConstraintService
 import flagent.service.DistributionService
 import flagent.service.EvaluationService
@@ -41,6 +54,8 @@ import flagent.service.SegmentService
 import flagent.service.TagService
 import flagent.service.VariantService
 import flagent.service.ExportService
+import flagent.service.TenantProvisioningService
+import flagent.service.SsoService
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -48,8 +63,11 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.server.plugins.openapi.*
+import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
 import io.ktor.server.http.content.*
+import io.jsonwebtoken.security.Keys
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.io.File
@@ -57,7 +75,15 @@ import java.io.File
 private val logger = KotlinLogging.logger {}
 
 fun main() {
-    embeddedServer(Netty, host = AppConfig.host, port = AppConfig.port) {
+    embeddedServer(
+        factory = Netty,
+        configure = {
+            connector {
+                host = AppConfig.host
+                port = AppConfig.port
+            }
+        }
+    ) {
         module()
     }.start(wait = true)
 }
@@ -119,6 +145,9 @@ fun Application.module() {
     
     install(DefaultHeaders)
     
+    // Configure SSE for real-time updates
+    configureSSE()
+    
     // Configure compression
     configureCompression()
     
@@ -133,6 +162,7 @@ fun Application.module() {
     
     // Configure authentication
     configureJWTAuth()
+    configureSsoJwtAuth()
     configureBasicAuth()
     configureHeaderAuth()
     configureCookieAuth()
@@ -153,6 +183,16 @@ fun Application.module() {
     val tagRepository = TagRepository()
     val flagSnapshotRepository = FlagSnapshotRepository()
     val flagEntityTypeRepository = FlagEntityTypeRepository()
+    val tenantRepository = TenantRepository()
+    val ssoRepository = flagent.repository.impl.SsoRepository()
+    val subscriptionRepository = flagent.repository.impl.SubscriptionRepository()
+    val invoiceRepository = flagent.repository.impl.InvoiceRepository()
+    val usageRecordRepository = flagent.repository.impl.UsageRecordRepository()
+    
+    // AI-powered rollouts repositories
+    val metricsRepository = flagent.repository.impl.MetricsRepository()
+    val anomalyAlertRepository = flagent.repository.impl.AnomalyAlertRepository()
+    val smartRolloutRepository = flagent.repository.impl.SmartRolloutRepository()
     
     // Initialize cache with appropriate fetcher
     val evalCache = if (AppConfig.evalOnlyMode && AppConfig.dbDriver in listOf("json_file", "json_http")) {
@@ -193,15 +233,86 @@ fun Application.module() {
         flagEntityTypeService
     )
     val tagService = TagService(tagRepository, flagRepository, flagSnapshotService)
+    
+    // Configure realtime event bus for SSE
+    val eventBus = configureRealtimeEventBus()
+    
+    // TODO: Integrate eventBus with services for automatic event publishing
+    // This will enable automatic SSE notifications on flag CRUD operations
+    // Example implementation needed in FlagService, SegmentService, VariantService
     val exportService = ExportService(flagRepository, flagSnapshotRepository, flagEntityTypeRepository)
+    val tenantProvisioningService = TenantProvisioningService(tenantRepository)
+    
+    // HTTP client for SSO (OAuth/OIDC)
+    val httpClient = HttpClient(CIO) {
+        install(ClientContentNegotiation) {
+            json()
+        }
+    }
+    val ssoJwtKey = Keys.hmacShaKeyFor(AppConfig.ssoJwtSecret.toByteArray())
+    val ssoService = SsoService(ssoRepository, tenantRepository, httpClient, ssoJwtKey)
+    val billingService = flagent.service.BillingService(
+        subscriptionRepository,
+        invoiceRepository,
+        usageRecordRepository,
+        tenantRepository
+    )
+    
+    // AI-powered rollouts services
+    val slackNotificationService = if (AppConfig.slackEnabled) {
+        flagent.service.SlackNotificationService().also {
+            logger.info { "Slack notifications enabled" }
+        }
+    } else {
+        logger.info { "Slack notifications disabled" }
+        null
+    }
+    
+    val metricsCollectionService = flagent.service.MetricsCollectionService(metricsRepository)
+    val anomalyDetectionService = flagent.service.AnomalyDetectionService(
+        anomalyAlertRepository,
+        metricsRepository,
+        flagRepository,
+        slackNotificationService
+    )
+    val smartRolloutService = flagent.service.SmartRolloutService(
+        smartRolloutRepository,
+        metricsRepository,
+        segmentService,
+        slackNotificationService
+    )
+    
+    // Start AI Rollout Scheduler (if enabled)
+    val aiRolloutScheduler = if (!AppConfig.evalOnlyMode) {
+        flagent.service.AiRolloutScheduler(
+            anomalyDetectionService,
+            smartRolloutService,
+            metricsCollectionService
+        ).also {
+            it.start()
+            logger.info { "AI Rollout Scheduler started" }
+        }
+    } else {
+        logger.info { "AI Rollout Scheduler disabled in EvalOnlyMode" }
+        null
+    }
+    
+    // Configure tenant context middleware
+    if (AppConfig.multiTenancyEnabled) {
+        val tenantContextMiddleware = TenantContextMiddleware(tenantRepository)
+        tenantContextMiddleware.configure(this)
+        logger.info { "Multi-tenancy enabled: tenant context middleware configured" }
+    }
     
     // Configure routes
     routing {
         val routeConfig: Routing.() -> Unit = {
             configureHealthRoutes()
             configureInfoRoutes()
-            configureDocumentationRoutes()
             configureEvaluationRoutes(evaluationService)
+            
+            // Real-time updates via SSE
+            realtimeRoutes(flagService, eventBus)
             
             // Profiling routes (if enabled)
             configureProfilingRoutes()
@@ -217,6 +328,24 @@ fun Application.module() {
                 configureFlagSnapshotRoutes(flagSnapshotService)
                 configureFlagEntityTypeRoutes(flagEntityTypeService)
                 configureExportRoutes(evalCache, exportService)
+                
+                // Tenant management routes (admin API)
+                tenantRoutes(tenantProvisioningService)
+                
+                // SSO/SAML routes (if multi-tenancy enabled)
+                if (AppConfig.multiTenancyEnabled) {
+                    ssoRoutes(ssoService)
+                }
+                
+                // Billing routes (if Stripe enabled)
+                if (AppConfig.stripeEnabled) {
+                    configureBillingRoutes(billingService)
+                }
+                
+                // AI-powered rollouts routes
+                configureMetricsRoutes(metricsCollectionService)
+                configureSmartRolloutRoutes(smartRolloutService)
+                configureAnomalyRoutes(anomalyDetectionService)
             } else {
                 logger.info { "Running in EvalOnlyMode - CRUD and Export routes are disabled" }
             }
@@ -236,10 +365,19 @@ fun Application.module() {
             // Static file serving for frontend (after API routes, without prefix)
             configureStaticFiles()
         }
+        
+        // New Ktor 3.4.0 OpenAPI and Swagger UI plugins
+        // Serve OpenAPI specification at /openapi
+        openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
+        
+        // Serve Swagger UI at /docs
+        swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
     }
     
     // Shutdown hook
     environment.monitor.subscribe(ApplicationStopped) {
+        aiRolloutScheduler?.stop()
+        slackNotificationService?.close()
         evalCache.stop()
         dataRecordingService?.stop()
         Database.close()

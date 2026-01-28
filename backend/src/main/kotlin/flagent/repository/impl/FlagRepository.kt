@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.Flag
 import flagent.domain.entity.Segment
@@ -10,10 +11,8 @@ import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
-import org.jetbrains.exposed.sql.javatime.timestamp
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.javatime.timestamp
 
 /**
  * Flag repository implementation
@@ -25,7 +24,7 @@ class FlagRepository : IFlagRepository {
     
     override suspend fun findById(id: Int): Flag? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Flags.select { Flags.id eq id }
+            Flags.selectAll().where { Flags.id eq id }
                 .firstOrNull()
                 ?.let { row -> mapRowToFlag(row) }
         }
@@ -33,7 +32,7 @@ class FlagRepository : IFlagRepository {
     
     override suspend fun findByKey(key: String): Flag? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Flags.select { Flags.key eq key }
+            Flags.selectAll().where { Flags.key eq key }
                 .firstOrNull()
                 ?.let { row -> mapRowToFlag(row) }
         }
@@ -90,17 +89,20 @@ class FlagRepository : IFlagRepository {
             
             // Apply limit and offset
             limit?.let {
-                query = query.limit(it, offset.toLong())
+                query = query.limit(it)
+                if (offset > 0) {
+                    query = query.offset(offset.toLong())
+                }
             } ?: run {
                 if (offset > 0) {
-                    query = query.limit(Int.MAX_VALUE, offset.toLong())
+                    query = query.offset(offset.toLong())
                 }
             }
             
             // Handle tags filter
             val flagIds = if (tags != null) {
                 val tagValues = tags.split(",").map { it.trim() }
-                val tagIds = Tags.select { Tags.value inList tagValues }
+                val tagIds = Tags.selectAll().where { Tags.value inList tagValues }
                     .map { it[Tags.id].value }
                 
                 if (tagIds.isEmpty()) {
@@ -108,8 +110,8 @@ class FlagRepository : IFlagRepository {
                 }
                 
                 FlagsTags
-                    .slice(FlagsTags.flagId)
-                    .select { FlagsTags.tagId inList tagIds }
+                    .select(FlagsTags.flagId)
+                    .where { FlagsTags.tagId inList tagIds }
                     .map { it[FlagsTags.flagId] }
                     .distinct()
                     .toSet()
@@ -154,7 +156,7 @@ class FlagRepository : IFlagRepository {
         // Only load tags (filter out deleted tags)
         val tags = Tags
             .innerJoin(FlagsTags)
-            .select { 
+            .selectAll().where { 
                 (FlagsTags.flagId eq flagId) and (Tags.deletedAt.isNull())
             }
             .orderBy(Tags.id, SortOrder.ASC)
@@ -180,14 +182,14 @@ class FlagRepository : IFlagRepository {
     
     override suspend fun findByTags(tags: List<String>): List<Flag> = withContext(Dispatchers.IO) {
         Database.transaction {
-            val tagIds = Tags.select { Tags.value inList tags }
+            val tagIds = Tags.selectAll().where { Tags.value inList tags }
                 .map { it[Tags.id].value }
             
             if (tagIds.isEmpty()) return@transaction emptyList()
             
             FlagsTags
-                .slice(FlagsTags.flagId)
-                .select { FlagsTags.tagId inList tagIds }
+                .select(FlagsTags.flagId)
+                .where { FlagsTags.tagId inList tagIds }
                 .map { it[FlagsTags.flagId] }
                 .distinct()
                 .mapNotNull { flagId -> findById(flagId) }
@@ -206,7 +208,7 @@ class FlagRepository : IFlagRepository {
                 it[notes] = flag.notes
                 it[dataRecordsEnabled] = flag.dataRecordsEnabled
                 it[entityType] = flag.entityType
-                it[createdAt] = java.time.Instant.now()
+                it[createdAt] = java.time.LocalDateTime.now()
             }[Flags.id].value
             
             flag.copy(id = id)
@@ -224,7 +226,7 @@ class FlagRepository : IFlagRepository {
                 it[notes] = flag.notes
                 it[dataRecordsEnabled] = flag.dataRecordsEnabled
                 it[entityType] = flag.entityType
-                it[updatedAt] = java.time.Instant.now()
+                it[updatedAt] = java.time.LocalDateTime.now()
             }
             
             flag
@@ -234,7 +236,7 @@ class FlagRepository : IFlagRepository {
     override suspend fun delete(id: Int): Unit = withContext(Dispatchers.IO) {
         Database.transaction {
             Flags.update({ Flags.id eq id }) {
-                it[deletedAt] = java.time.Instant.now()
+                it[deletedAt] = java.time.LocalDateTime.now()
             }
         }
         Unit
@@ -254,14 +256,14 @@ class FlagRepository : IFlagRepository {
         
         // Load related entities (ordered by rank, then id as in original)
         // Filter out deleted segments, variants, and tags
-        val segments = Segments.select { 
+        val segments = Segments.selectAll().where { 
             (Segments.flagId eq flagId) and (Segments.deletedAt.isNull())
         }
             .orderBy(Segments.rank, SortOrder.ASC)
             .orderBy(Segments.id, SortOrder.ASC)
             .map { mapRowToSegment(it) }
         
-        val variants = Variants.select { 
+        val variants = Variants.selectAll().where { 
             (Variants.flagId eq flagId) and (Variants.deletedAt.isNull())
         }
             .orderBy(Variants.id, SortOrder.ASC)
@@ -269,7 +271,7 @@ class FlagRepository : IFlagRepository {
         
         val tags = Tags
             .innerJoin(FlagsTags)
-            .select { 
+            .selectAll().where { 
                 (FlagsTags.flagId eq flagId) and (Tags.deletedAt.isNull())
             }
             .orderBy(Tags.id, SortOrder.ASC)
@@ -296,11 +298,11 @@ class FlagRepository : IFlagRepository {
     private fun mapRowToSegment(row: ResultRow): Segment {
         val segmentId = row[Segments.id].value
         
-        val constraints = Constraints.select { Constraints.segmentId eq segmentId }
+        val constraints = Constraints.selectAll().where { Constraints.segmentId eq segmentId }
             .orderBy(Constraints.createdAt, SortOrder.ASC)
             .map { mapRowToConstraint(it) }
         
-        val distributions = Distributions.select { Distributions.segmentId eq segmentId }
+        val distributions = Distributions.selectAll().where { Distributions.segmentId eq segmentId }
             .orderBy(Distributions.variantId, SortOrder.ASC)
             .map { mapRowToDistribution(it) }
         

@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
 import flagent.frontend.components.Slider
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import flagent.api.model.FlagResponse
 import flagent.api.model.CreateFlagRequest
@@ -36,7 +37,6 @@ import org.jetbrains.compose.web.dom.H5
 @Composable
 fun FlagEditor(flagId: Int?) {
     val activeTab = remember { mutableStateOf("Config") }
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     val flag = remember { mutableStateOf<FlagResponse?>(null) }
     val loading = remember { mutableStateOf(flagId != null) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -46,10 +46,10 @@ fun FlagEditor(flagId: Int?) {
             loading.value = true
             error.value = null
             try {
-                val fetchedFlag = apiClient.getFlag(flagId)
+                val fetchedFlag = ApiClient.getFlag(flagId)
                 flag.value = fetchedFlag
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to load flag"
+                error.value = e.message ?: LocalizedStrings.failedToLoadFlag
             } finally {
                 loading.value = false
             }
@@ -103,7 +103,7 @@ fun FlagEditor(flagId: Int?) {
                 }
             }) {
                 Span { Text("←") }
-                Text("Back to Flags")
+                Text(LocalizedStrings.backToFlags)
             }
             if (flagId != null) {
                 Span({
@@ -116,7 +116,7 @@ fun FlagEditor(flagId: Int?) {
                         fontWeight("600")
                     }
                 }) {
-                    Text("Flag ID: $flagId")
+                    Text("${LocalizedStrings.flagId}: $flagId")
                 }
             }
         }
@@ -132,7 +132,7 @@ fun FlagEditor(flagId: Int?) {
                     borderRadius(5.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         } else if (flagId == null) {
             // Create new flag - simple form
@@ -190,7 +190,7 @@ fun FlagEditor(flagId: Int?) {
                             size = 18.px,
                             color = if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.TextLight
                         )
-                        Text("Config")
+                        Text(LocalizedStrings.config)
                     }
                     Button({
                         onClick { activeTab.value = "History" }
@@ -228,17 +228,65 @@ fun FlagEditor(flagId: Int?) {
                             size = 18.px,
                             color = if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.TextLight
                         )
-                        Text("History")
+                        Text(LocalizedStrings.history)
+                    }
+                    if (flagent.frontend.config.AppConfig.Features.enableMetrics) {
+                        FlagEditorTabButton("Metrics", "analytics", activeTab)
+                    }
+                    if (flagent.frontend.config.AppConfig.Features.enableSmartRollout) {
+                        FlagEditorTabButton("Rollout", "trending_up", activeTab)
+                    }
+                    if (flagent.frontend.config.AppConfig.Features.enableAnomalyDetection) {
+                        FlagEditorTabButton("Anomalies", "warning", activeTab)
                     }
                 }
                 
                 // Tab content
                 when (activeTab.value) {
-                    "Config" -> FlagConfigTab(flag.value!!, apiClient, flagId)
+                    "Config" -> FlagConfigTab(flag.value!!, flagId)
                     "History" -> FlagHistory(flagId)
+                    "Metrics" -> flagent.frontend.components.metrics.MetricsDashboard(flagId)
+                    "Rollout" -> flagent.frontend.components.rollout.SmartRolloutConfig(flagId)
+                    "Anomalies" -> flagent.frontend.components.anomaly.AnomalyAlertsList(flagId)
+                    else -> FlagConfigTab(flag.value!!, flagId)
                 }
             }
         }
+    }
+}
+
+/**
+ * Reusable tab button for flag detail tabs
+ */
+@Composable
+private fun FlagEditorTabButton(label: String, icon: String, activeTab: androidx.compose.runtime.MutableState<String>) {
+    val isActive = activeTab.value == label
+    Button({
+        onClick { activeTab.value = label }
+        style {
+            padding(12.px, 24.px)
+            property("background-color", "transparent")
+            color(if (isActive) FlagentTheme.Primary else FlagentTheme.TextLight)
+            border { width(0.px); style(LineStyle.None) }
+            property("border-bottom", if (isActive) "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
+            cursor("pointer")
+            fontWeight(if (isActive) "600" else "500")
+            fontSize(15.px)
+            display(DisplayStyle.Flex)
+            alignItems(AlignItems.Center)
+            gap(8.px)
+            property("transition", "all 0.2s")
+            marginBottom(-2.px)
+        }
+        onMouseEnter {
+            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+        }
+        onMouseLeave {
+            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.TextLight.toString()
+        }
+    }) {
+        Icon(name = icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.TextLight)
+        Text(label)
     }
 }
 
@@ -247,7 +295,6 @@ fun FlagEditor(flagId: Int?) {
  */
 @Composable
 private fun CreateFlagForm() {
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     val description = remember { mutableStateOf("") }
     val key = remember { mutableStateOf("") }
     val saving = remember { mutableStateOf(false) }
@@ -266,9 +313,9 @@ private fun CreateFlagForm() {
             }
         }) {
             Label {
-                Text("Description:")
+                Text("${LocalizedStrings.description}:")
                 Input(InputType.Text) {
-                    attr("placeholder", "Flag description")
+                    attr("placeholder", LocalizedStrings.flagDescriptionPlaceholder)
                     value(description.value)
                     onInput { event -> description.value = event.value }
                     style {
@@ -285,9 +332,9 @@ private fun CreateFlagForm() {
             }
             
             Label {
-                Text("Key (optional):")
+                Text(LocalizedStrings.keyOptional)
                 Input(InputType.Text) {
-                    attr("placeholder", "Flag key")
+                    attr("placeholder", LocalizedStrings.flagKeyPlaceholder)
                     value(key.value)
                     onInput { event -> key.value = event.value }
                     style {
@@ -312,14 +359,14 @@ private fun CreateFlagForm() {
                         borderRadius(5.px)
                     }
                 }) {
-                    Text("Error: ${error.value}")
+                    Text("${LocalizedStrings.error}: ${error.value}")
                 }
             }
             
             Button({
                 onClick {
                     if (description.value.isBlank()) {
-                        error.value = "Description is required"
+                        error.value = LocalizedStrings.descriptionIsRequired
                         return@onClick
                     }
                     
@@ -328,7 +375,7 @@ private fun CreateFlagForm() {
                     
                     CoroutineScope(Dispatchers.Main).launch {
                         try {
-                            val newFlag = apiClient.createFlag(
+                            val newFlag = ApiClient.createFlag(
                                 CreateFlagRequest(
                                     description = description.value,
                                     key = key.value.takeIf { it.isNotEmpty() }
@@ -336,7 +383,7 @@ private fun CreateFlagForm() {
                             )
                             Router.navigateTo(Route.FlagDetail(newFlag.id))
                         } catch (e: Exception) {
-                            error.value = e.message ?: "Failed to create flag"
+                            error.value = e.message ?: LocalizedStrings.failedToCreateFlag
                         } finally {
                             saving.value = false
                         }
@@ -357,7 +404,7 @@ private fun CreateFlagForm() {
                     cursor(if (saving.value || description.value.isBlank()) "not-allowed" else "pointer")
                 }
             }) {
-                Text(if (saving.value) "Creating..." else "Create Flag")
+                Text(if (saving.value) LocalizedStrings.creating else LocalizedStrings.createFlag)
             }
         }
     }
@@ -368,7 +415,7 @@ private fun CreateFlagForm() {
  * Contains: Flag Settings, Variants, Segments, Debug Console, Delete Flag
  */
 @Composable
-private fun FlagConfigTab(flag: FlagResponse, apiClient: ApiClient, flagId: Int) {
+private fun FlagConfigTab(flag: FlagResponse, flagId: Int) {
     val flagState = remember { mutableStateOf(flag) }
     val showMdEditor = remember { mutableStateOf(false) }
     val allTags = remember { mutableStateOf<List<flagent.api.model.TagResponse>>(emptyList()) }
@@ -380,8 +427,8 @@ private fun FlagConfigTab(flag: FlagResponse, apiClient: ApiClient, flagId: Int)
     LaunchedEffect(Unit) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                allTags.value = apiClient.getAllTags()
-                entityTypes.value = apiClient.getEntityTypes()
+                allTags.value = ApiClient.getAllTags()
+                entityTypes.value = ApiClient.getEntityTypes()
             } catch (e: Exception) {
                 // Silent fail
             }
@@ -392,7 +439,7 @@ private fun FlagConfigTab(flag: FlagResponse, apiClient: ApiClient, flagId: Int)
     fun refreshFlag() {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                val updated = apiClient.getFlag(flagId)
+                val updated = ApiClient.getFlag(flagId)
                 flagState.value = updated
             } catch (e: Exception) {
                 // Silent fail
@@ -410,7 +457,6 @@ private fun FlagConfigTab(flag: FlagResponse, apiClient: ApiClient, flagId: Int)
         // Flag Settings Card
         FlagSettingsCard(
             flag = flagState.value,
-            apiClient = apiClient,
             flagId = flagId,
             showMdEditor = showMdEditor,
             allTags = allTags.value,
@@ -421,16 +467,16 @@ private fun FlagConfigTab(flag: FlagResponse, apiClient: ApiClient, flagId: Int)
         )
         
         // Variants Section - placeholder for now
-        VariantsSection(flagId, apiClient, flagState.value.variants, onUpdate = { refreshFlag() })
+        VariantsSection(flagId, flagState.value.variants, onUpdate = { refreshFlag() })
         
         // Segments Section - placeholder for now
-        SegmentsSection(flagId, apiClient, flagState.value.segments, flagState.value.variants, onUpdate = { refreshFlag() })
+        SegmentsSection(flagId, flagState.value.segments, flagState.value.variants, onUpdate = { refreshFlag() })
         
         // Debug Console
         DebugConsole(flagState.value.key)
         
         // Flag Settings (Delete)
-        FlagDeleteCard(flagId, apiClient)
+        FlagDeleteCard(flagId)
     }
 }
 
@@ -440,7 +486,6 @@ private fun FlagConfigTab(flag: FlagResponse, apiClient: ApiClient, flagId: Int)
 @Composable
 private fun FlagSettingsCard(
     flag: FlagResponse,
-    apiClient: ApiClient,
     flagId: Int,
     showMdEditor: androidx.compose.runtime.MutableState<Boolean>,
     allTags: List<flagent.api.model.TagResponse>,
@@ -472,7 +517,7 @@ private fun FlagSettingsCard(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.updateFlagFull(
+                ApiClient.updateFlagFull(
                     flagId,
                     PutFlagRequest(
                         key = key.value.takeIf { it.isNotEmpty() },
@@ -484,7 +529,7 @@ private fun FlagSettingsCard(
                 )
                 onFlagUpdated()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to save flag"
+                error.value = e.message ?: LocalizedStrings.failedToSaveFlag
             } finally {
                 saving.value = false
             }
@@ -494,10 +539,10 @@ private fun FlagSettingsCard(
     fun setEnabled(enabled: Boolean) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.setFlagEnabled(flagId, enabled)
+                ApiClient.setFlagEnabled(flagId, enabled)
                 onFlagUpdated()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to update flag"
+                error.value = e.message ?: LocalizedStrings.failedToUpdateFlag
             }
         }
     }
@@ -507,12 +552,12 @@ private fun FlagSettingsCard(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.addTagToFlag(flagId, newTagValue.value)
+                ApiClient.addTagToFlag(flagId, newTagValue.value)
                 newTagValue.value = ""
                 tagInputVisible.value = false
                 onFlagUpdated()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to add tag"
+                error.value = e.message ?: LocalizedStrings.failedToAddTag
             }
         }
     }
@@ -520,10 +565,10 @@ private fun FlagSettingsCard(
     fun removeTag(tagId: Int) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.removeTagFromFlag(flagId, tagId)
+                ApiClient.removeTagFromFlag(flagId, tagId)
                 onFlagUpdated()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to remove tag"
+                error.value = e.message ?: LocalizedStrings.failedToRemoveTag
             }
         }
     }
@@ -574,7 +619,7 @@ private fun FlagSettingsCard(
                         fontWeight("700")
                     }
                 }) {
-                    Text("Flag Settings")
+                    Text(LocalizedStrings.flagSettings)
                 }
                 InfoTooltip(
                     title = "Flag Settings",
@@ -637,7 +682,7 @@ private fun FlagSettingsCard(
                     marginBottom(15.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         }
         
@@ -667,7 +712,7 @@ private fun FlagSettingsCard(
                 }
             }) {
                 Text("🆔")
-                Text("Flag ID: $flagId")
+                Text("${LocalizedStrings.flagId}: $flagId")
             }
             Button({
                 onClick { saveFlag() }
@@ -710,7 +755,7 @@ private fun FlagSettingsCard(
                 Span {
                     Text(if (saving.value) "⏳" else "💾")
                 }
-                Text(if (saving.value) "Saving..." else "Save Flag")
+                Text(if (saving.value) LocalizedStrings.saving else LocalizedStrings.saveFlag)
             }
         }
         
@@ -741,7 +786,12 @@ private fun FlagSettingsCard(
                         }
                     }) {
                         Text("🔑")
-                        Text("Flag Key:")
+                        Text(LocalizedStrings.flagKeyWithColon)
+                        InfoTooltip(
+                            title = LocalizedStrings.flagKey,
+                            description = "The key is used in code to evaluate this flag (e.g. isEnabled(\"my_flag_key\")). Leave empty to auto-generate from description.",
+                            details = null
+                        )
                     }
                     Input(InputType.Text) {
                         value(key.value)
@@ -796,7 +846,7 @@ private fun FlagSettingsCard(
                             flexShrink(0)
                         }
                     }
-                    Text("Data Records")
+                    Text(LocalizedStrings.dataRecords)
                 }
             }
         }
@@ -833,7 +883,7 @@ private fun FlagSettingsCard(
                             size = 16.px,
                             color = FlagentTheme.Text
                         )
-                        Text("Flag Description:")
+                        Text(LocalizedStrings.flagDescriptionWithColon)
                     }
                     Input(InputType.Text) {
                         value(description.value)
@@ -888,7 +938,12 @@ private fun FlagSettingsCard(
                                 size = 16.px,
                                 color = FlagentTheme.Text
                             )
-                            Text("Entity Type:")
+                            Text(LocalizedStrings.entityType)
+                            InfoTooltip(
+                                title = LocalizedStrings.entityType,
+                                description = "Entity type defines what kind of entity this flag applies to (e.g. user, report, order). Used for evaluation context.",
+                                details = null
+                            )
                         }
                         Div({
                             style {
@@ -899,7 +954,7 @@ private fun FlagSettingsCard(
                                 value(entityType.value)
                                 onInput { event -> entityType.value = event.value }
                                 attr("list", "entity-type-suggestions")
-                                attr("placeholder", "Enter or select entity type")
+                                attr("placeholder", LocalizedStrings.enterOrSelectEntityTypePlaceholder)
                                 style {
                                     width(100.percent)
                                     padding(12.px, 16.px)
@@ -953,7 +1008,7 @@ private fun FlagSettingsCard(
                         margin(0.px)
                     }
                 }) {
-                    Text("Flag Notes")
+                    Text(LocalizedStrings.flagNotes)
                 }
                 Button({
                     onClick { showMdEditor.value = !showMdEditor.value }
@@ -992,9 +1047,17 @@ private fun FlagSettingsCard(
             H5({
                 style {
                     margin(0.px, 0.px, 10.px, 0.px)
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    gap(6.px)
                 }
             }) {
-                Text("Tags")
+                Text(LocalizedStrings.tags)
+                InfoTooltip(
+                    title = LocalizedStrings.tags,
+                    description = "Tags help organize and filter flags (e.g. by team, feature area). Used for search and grouping.",
+                    details = null
+                )
             }
             Div({
                 style {
@@ -1104,7 +1167,7 @@ private fun FlagSettingsCard(
                                 cursor("pointer")
                             }
                         }) {
-                            Text("Add")
+                            Text(LocalizedStrings.add)
                         }
                         Button({
                             onClick {
@@ -1123,7 +1186,7 @@ private fun FlagSettingsCard(
                                 cursor("pointer")
                             }
                         }) {
-                            Text("Cancel")
+                            Text(LocalizedStrings.cancel)
                         }
                     }
                 }
@@ -1143,7 +1206,7 @@ private fun FlagSettingsCard(
                         fontSize(12.px)
                     }
                 }) {
-                    Text("+ New Tag")
+                    Text(LocalizedStrings.newTag)
                 }
             }
         }
@@ -1156,7 +1219,6 @@ private fun FlagSettingsCard(
 @Composable
 private fun VariantsSection(
     flagId: Int,
-    apiClient: ApiClient,
     variants: List<flagent.api.model.VariantResponse>,
     onUpdate: () -> Unit
 ) {
@@ -1172,11 +1234,11 @@ private fun VariantsSection(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.createVariant(flagId, flagent.api.model.CreateVariantRequest(key = newVariantKey.value))
+                ApiClient.createVariant(flagId, flagent.api.model.CreateVariantRequest(key = newVariantKey.value))
                 newVariantKey.value = ""
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to create variant"
+                error.value = e.message ?: LocalizedStrings.failedToCreateVariant
             } finally {
                 creating.value = false
             }
@@ -1219,7 +1281,7 @@ private fun VariantsSection(
                     fontWeight("700")
                 }
             }) {
-                Text("Variants")
+                Text(LocalizedStrings.variants)
             }
             InfoTooltip(
                 title = "Variants",
@@ -1238,7 +1300,7 @@ private fun VariantsSection(
                     marginBottom(15.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         }
         
@@ -1253,11 +1315,11 @@ private fun VariantsSection(
                     marginBottom(15.px)
                 }
             }) {
-                Text("No variants created for this feature flag yet")
+                Text(LocalizedStrings.noVariantsYet)
             }
         } else {
             variants.forEach { variant ->
-                VariantCard(flagId, variant, apiClient, onUpdate)
+                VariantCard(flagId, variant, onUpdate)
             }
         }
         
@@ -1283,7 +1345,7 @@ private fun VariantsSection(
                 }
             }) {
                 Input(InputType.Text) {
-                    attr("placeholder", "Enter variant key...")
+                    attr("placeholder", LocalizedStrings.enterVariantKeyPlaceholder)
                     value(newVariantKey.value)
                     onInput { event -> newVariantKey.value = event.value }
                     onKeyDown { event ->
@@ -1353,7 +1415,7 @@ private fun VariantsSection(
                         size = 18.px,
                         color = FlagentTheme.Background
                     )
-                    Text(if (creating.value) "Creating..." else "Create Variant")
+                    Text(if (creating.value) LocalizedStrings.creating else LocalizedStrings.createVariant)
                 }
             }
         }
@@ -1367,7 +1429,6 @@ private fun VariantsSection(
 private fun VariantCard(
     flagId: Int,
     variant: flagent.api.model.VariantResponse,
-    apiClient: ApiClient,
     onUpdate: () -> Unit
 ) {
     val key = remember { mutableStateOf(variant.key) }
@@ -1418,7 +1479,7 @@ private fun VariantCard(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.updateVariant(
+                ApiClient.updateVariant(
                     flagId,
                     variant.id,
                     flagent.api.model.PutVariantRequest(
@@ -1428,7 +1489,7 @@ private fun VariantCard(
                 )
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to update variant"
+                error.value = e.message ?: LocalizedStrings.failedToUpdateVariant
             } finally {
                 saving.value = false
             }
@@ -1436,7 +1497,7 @@ private fun VariantCard(
     }
     
     fun deleteVariant() {
-        if (!kotlinx.browser.window.confirm("Are you sure you want to delete variant #${variant.id} [${variant.key}]?")) {
+        if (!kotlinx.browser.window.confirm(LocalizedStrings.confirmDeleteVariant(variant.id, variant.key))) {
             return
         }
         
@@ -1445,10 +1506,10 @@ private fun VariantCard(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.deleteVariant(flagId, variant.id)
+                ApiClient.deleteVariant(flagId, variant.id)
                 onUpdate()
             } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to delete variant"
+                val errorMsg = e.message ?: LocalizedStrings.failedToDeleteVariant
                 error.value = if (errorMsg.contains("being used", ignoreCase = true)) {
                     "This variant is being used by a segment distribution. Please remove the segment or edit the distribution in order to remove this variant."
                 } else {
@@ -1503,7 +1564,7 @@ private fun VariantCard(
                     fontSize(12.px)
                 }
             }) {
-                Text("Variant ID: ${variant.id}")
+                Text("${LocalizedStrings.variantId}: ${variant.id}")
             }
             Div({
                 style {
@@ -1529,7 +1590,7 @@ private fun VariantCard(
                         fontSize(12.px)
                     }
                 }) {
-                    Text(if (saving.value) "Saving..." else "Save Variant")
+                    Text(if (saving.value) LocalizedStrings.saving else LocalizedStrings.saveVariant)
                 }
                 Button({
                     onClick { deleteVariant() }
@@ -1549,7 +1610,7 @@ private fun VariantCard(
                         fontSize(12.px)
                     }
                 }) {
-                    Text(if (deleting.value) "Deleting..." else "Delete")
+                    Text(if (deleting.value) LocalizedStrings.deleting else LocalizedStrings.delete)
                 }
             }
         }
@@ -1564,13 +1625,13 @@ private fun VariantCard(
                     marginBottom(15.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         }
         
         // Key input
         Label {
-            Text("Key:")
+            Text(LocalizedStrings.keyWithColon)
             Input(InputType.Text) {
                 value(key.value)
                 onInput { event -> key.value = event.value }
@@ -1641,7 +1702,6 @@ private fun VariantCard(
 @Composable
 private fun SegmentsSection(
     flagId: Int,
-    apiClient: ApiClient,
     segments: List<flagent.api.model.SegmentResponse>,
     variants: List<flagent.api.model.VariantResponse>,
     onUpdate: () -> Unit
@@ -1663,7 +1723,7 @@ private fun SegmentsSection(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.reorderSegments(
+                ApiClient.reorderSegments(
                     flagId,
                     flagent.api.model.PutSegmentReorderRequest(
                         segmentIDs = reorderedSegments.map { it.id }
@@ -1671,7 +1731,7 @@ private fun SegmentsSection(
                 )
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to reorder segments"
+                error.value = e.message ?: LocalizedStrings.failedToReorderSegments
             } finally {
                 reordering.value = false
             }
@@ -1719,7 +1779,7 @@ private fun SegmentsSection(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.createSegment(
+                ApiClient.createSegment(
                     flagId,
                     flagent.api.model.CreateSegmentRequest(
                         description = newSegmentDescription.value,
@@ -1731,7 +1791,7 @@ private fun SegmentsSection(
                 showCreateSegmentModal.value = false
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to create segment"
+                error.value = e.message ?: LocalizedStrings.failedToCreateSegment
             } finally {
                 creating.value = false
             }
@@ -1783,7 +1843,7 @@ private fun SegmentsSection(
                         fontWeight("700")
                     }
                 }) {
-                    Text("Segments")
+                    Text(LocalizedStrings.segments)
                 }
                 InfoTooltip(
                     title = "Segments",
@@ -1837,7 +1897,7 @@ private fun SegmentsSection(
                         fontSize(12.px)
                     }
                 }) {
-                    Text("New Segment")
+                    Text(LocalizedStrings.newSegment)
                 }
             }
         }
@@ -1852,7 +1912,7 @@ private fun SegmentsSection(
                     marginBottom(15.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         }
         
@@ -1867,7 +1927,7 @@ private fun SegmentsSection(
                     marginBottom(15.px)
                 }
             }) {
-                Text("No segments created for this feature flag yet")
+                Text(LocalizedStrings.noSegmentsYet)
             }
         } else {
             Div({
@@ -1883,7 +1943,6 @@ private fun SegmentsSection(
                         flagId = flagId,
                         segment = segment,
                         variants = variants,
-                        apiClient = apiClient,
                         onUpdate = onUpdate
                     )
                 }
@@ -1893,7 +1952,7 @@ private fun SegmentsSection(
         // Create Segment Modal
         if (showCreateSegmentModal.value) {
             Modal(
-                title = "Create Segment",
+                title = LocalizedStrings.createSegment,
                 onClose = { 
                     showCreateSegmentModal.value = false
                     newSegmentDescription.value = ""
@@ -1901,8 +1960,8 @@ private fun SegmentsSection(
                     error.value = null
                 },
                 onConfirm = { createSegment() },
-                confirmText = "Create",
-                cancelText = "Cancel",
+                confirmText = LocalizedStrings.create,
+                cancelText = LocalizedStrings.cancel,
                 showCancel = true,
                 confirmDisabled = creating.value || newSegmentDescription.value.isBlank(),
                 confirmLoading = creating.value
@@ -1917,7 +1976,7 @@ private fun SegmentsSection(
                             marginBottom(15.px)
                         }
                     }) {
-                        Text("Error: ${error.value}")
+                        Text("${LocalizedStrings.error}: ${error.value}")
                     }
                 }
                 
@@ -1936,10 +1995,10 @@ private fun SegmentsSection(
                         }
                     }) {
                         Label {
-                            Text("Description:")
+                            Text("${LocalizedStrings.description}:")
                         }
                         Input(InputType.Text) {
-                            attr("placeholder", "Enter segment description")
+                            attr("placeholder", LocalizedStrings.enterSegmentDescriptionPlaceholder)
                             value(newSegmentDescription.value)
                             onInput { event -> newSegmentDescription.value = event.value }
                             style {
@@ -1963,7 +2022,7 @@ private fun SegmentsSection(
                         }
                     }) {
                         Label {
-                            Text("Rollout Percent: ${newSegmentRollout.value}%")
+                            Text("${LocalizedStrings.rolloutPercent}: ${newSegmentRollout.value}%")
                         }
                         Input(InputType.Range) {
                             value(newSegmentRollout.value.toString())
@@ -1991,7 +2050,6 @@ private fun SegmentCard(
     flagId: Int,
     segment: flagent.api.model.SegmentResponse,
     variants: List<flagent.api.model.VariantResponse>,
-    apiClient: ApiClient,
     onUpdate: () -> Unit
 ) {
     val description = remember { mutableStateOf(segment.description ?: "") }
@@ -2012,7 +2070,7 @@ private fun SegmentCard(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.updateSegment(
+                ApiClient.updateSegment(
                     flagId,
                     segment.id,
                     flagent.api.model.PutSegmentRequest(
@@ -2022,7 +2080,7 @@ private fun SegmentCard(
                 )
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to update segment"
+                error.value = e.message ?: LocalizedStrings.failedToSaveSegment
             } finally {
                 saving.value = false
             }
@@ -2030,7 +2088,7 @@ private fun SegmentCard(
     }
     
     fun deleteSegment() {
-        if (!kotlinx.browser.window.confirm("Are you sure you want to delete this segment?")) {
+        if (!kotlinx.browser.window.confirm(LocalizedStrings.confirmDeleteSegment)) {
             return
         }
         
@@ -2039,10 +2097,10 @@ private fun SegmentCard(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.deleteSegment(flagId, segment.id)
+                ApiClient.deleteSegment(flagId, segment.id)
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to delete segment"
+                error.value = e.message ?: LocalizedStrings.failedToDeleteSegment
             } finally {
                 deleting.value = false
             }
@@ -2080,7 +2138,7 @@ private fun SegmentCard(
                 Text("☰")
             }
             Span {
-                Text("Drag to reorder")
+                Text(LocalizedStrings.dragToReorder)
             }
         }
         
@@ -2102,7 +2160,7 @@ private fun SegmentCard(
                     fontSize(12.px)
                 }
             }) {
-                Text("Segment ID: ${segment.id}")
+                Text("${LocalizedStrings.segmentId}: ${segment.id}")
             }
             Div({
                 style {
@@ -2128,7 +2186,7 @@ private fun SegmentCard(
                         fontSize(12.px)
                     }
                 }) {
-                    Text(if (saving.value) "Saving..." else "Save Segment Setting")
+                    Text(if (saving.value) LocalizedStrings.saving else LocalizedStrings.saveSegmentSetting)
                 }
                 Button({
                     onClick { deleteSegment() }
@@ -2148,7 +2206,7 @@ private fun SegmentCard(
                         fontSize(12.px)
                     }
                 }) {
-                    Text(if (deleting.value) "Deleting..." else "Delete")
+                    Text(if (deleting.value) LocalizedStrings.deleting else LocalizedStrings.delete)
                 }
             }
         }
@@ -2163,7 +2221,7 @@ private fun SegmentCard(
                     marginBottom(15.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         }
         
@@ -2181,7 +2239,7 @@ private fun SegmentCard(
                 }
             }) {
                 Label {
-                    Text("Description:")
+                    Text("${LocalizedStrings.description}:")
                     Input(InputType.Text) {
                         value(description.value)
                         onInput { event -> description.value = event.value }
@@ -2204,7 +2262,20 @@ private fun SegmentCard(
                 }
             }) {
                 Label {
-                    Text("Rollout: ${rolloutPercent.value}%")
+                    Span({
+                        style {
+                            display(DisplayStyle.Flex)
+                            alignItems(AlignItems.Center)
+                            gap(6.px)
+                        }
+                    }) {
+                        Text("${LocalizedStrings.rollout}: ${rolloutPercent.value}%")
+                        InfoTooltip(
+                            title = LocalizedStrings.rolloutPercent,
+                            description = "Percentage of matching entities that will be assigned a variant from this segment. Remaining share gets default/fallback.",
+                            details = null
+                        )
+                    }
                     Input(InputType.Number) {
                         value(rolloutPercent.value.toString())
                         onInput { event ->
@@ -2228,10 +2299,10 @@ private fun SegmentCard(
         }
         
         // Constraints section
-        ConstraintsSection(flagId, segment, apiClient, onUpdate)
+        ConstraintsSection(flagId, segment, onUpdate)
         
         // Distributions section
-        DistributionsSection(flagId, segment, variants, apiClient, onUpdate)
+        DistributionsSection(flagId, segment, variants, onUpdate)
     }
 }
 
@@ -2242,7 +2313,6 @@ private fun SegmentCard(
 private fun ConstraintsSection(
     flagId: Int,
     segment: flagent.api.model.SegmentResponse,
-    apiClient: ApiClient,
     onUpdate: () -> Unit
 ) {
     val newConstraintProperty = remember { mutableStateOf("") }
@@ -2274,7 +2344,7 @@ private fun ConstraintsSection(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.createConstraint(
+                ApiClient.createConstraint(
                     flagId,
                     segment.id,
                     flagent.api.model.CreateConstraintRequest(
@@ -2288,7 +2358,7 @@ private fun ConstraintsSection(
                 newConstraintOperator.value = "EQ"
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to create constraint"
+                error.value = e.message ?: LocalizedStrings.failedToCreateConstraint
             } finally {
                 creating.value = false
             }
@@ -2298,7 +2368,7 @@ private fun ConstraintsSection(
     fun updateConstraint(constraint: flagent.api.model.ConstraintResponse) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.updateConstraint(
+                ApiClient.updateConstraint(
                     flagId,
                     segment.id,
                     constraint.id,
@@ -2316,11 +2386,11 @@ private fun ConstraintsSection(
     }
     
     fun deleteConstraint(constraint: flagent.api.model.ConstraintResponse) {
-        if (!kotlinx.browser.window.confirm("Are you sure you want to delete this constraint?")) return
+        if (!kotlinx.browser.window.confirm(LocalizedStrings.confirmDeleteConstraint)) return
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.deleteConstraint(flagId, segment.id, constraint.id)
+                ApiClient.deleteConstraint(flagId, segment.id, constraint.id)
                 onUpdate()
             } catch (e: Exception) {
                 // Silent fail
@@ -2336,9 +2406,17 @@ private fun ConstraintsSection(
         H5({
             style {
                 margin(0.px, 0.px, 10.px, 0.px)
+                display(DisplayStyle.Flex)
+                alignItems(AlignItems.Center)
+                gap(6.px)
             }
         }) {
-            Text("Constraints (match ALL of them)")
+            Text(LocalizedStrings.constraintsMatchAll)
+            InfoTooltip(
+                title = LocalizedStrings.constraintsTooltipTitle,
+                description = LocalizedStrings.constraintsTooltipDescription,
+                details = LocalizedStrings.constraintsTooltipDetails
+            )
         }
         
         if (segment.constraints.isEmpty()) {
@@ -2352,7 +2430,7 @@ private fun ConstraintsSection(
                     marginBottom(10.px)
                 }
             }) {
-                Text("No constraints (ALL will pass)")
+                Text(LocalizedStrings.noConstraintsAllPass)
             }
         } else {
             segment.constraints.forEach { constraint ->
@@ -2374,7 +2452,7 @@ private fun ConstraintsSection(
             }
         }) {
             Input(InputType.Text) {
-                attr("placeholder", "Property")
+                attr("placeholder", LocalizedStrings.propertyPlaceholder)
                 value(newConstraintProperty.value)
                 onInput { event -> newConstraintProperty.value = event.value }
                 style {
@@ -2409,7 +2487,7 @@ private fun ConstraintsSection(
                 }
             }
             Input(InputType.Text) {
-                attr("placeholder", "Value")
+                attr("placeholder", LocalizedStrings.valuePlaceholder)
                 value(newConstraintValue.value)
                 onInput { event -> newConstraintValue.value = event.value }
                 style {
@@ -2566,7 +2644,7 @@ private fun ConstraintRow(
             Input(InputType.Text) {
                 value(property.value)
                 onInput { event -> property.value = event.value }
-                attr("placeholder", "Property")
+                attr("placeholder", LocalizedStrings.propertyPlaceholder)
                 style {
                     flex(2)
                     padding(6.px, 8.px)
@@ -2603,7 +2681,7 @@ private fun ConstraintRow(
             Input(InputType.Text) {
                 value(value.value)
                 onInput { event -> value.value = event.value }
-                attr("placeholder", "Value")
+                attr("placeholder", LocalizedStrings.valuePlaceholder)
                 style {
                     flex(2)
                     padding(6.px, 8.px)
@@ -2639,7 +2717,7 @@ private fun ConstraintRow(
                     fontWeight("500")
                 }
             }) {
-                Text(if (saving.value) "Saving..." else "Save")
+                Text(if (saving.value) LocalizedStrings.saving else LocalizedStrings.save)
             }
             Button({
                 onClick { onDelete() }
@@ -2657,7 +2735,7 @@ private fun ConstraintRow(
                     fontWeight("500")
                 }
             }) {
-                Text("Delete")
+                Text(LocalizedStrings.delete)
             }
         }
     }
@@ -2671,7 +2749,6 @@ private fun DistributionsSection(
     flagId: Int,
     segment: flagent.api.model.SegmentResponse,
     variants: List<flagent.api.model.VariantResponse>,
-    apiClient: ApiClient,
     onUpdate: () -> Unit
 ) {
     val showEditDialog = remember { mutableStateOf(false) }
@@ -2694,7 +2771,7 @@ private fun DistributionsSection(
                     margin(0.px)
                 }
             }) {
-                Text("Distribution")
+                Text(LocalizedStrings.distribution)
             }
             Button({
                 onClick { showEditDialog.value = true }
@@ -2711,7 +2788,7 @@ private fun DistributionsSection(
                     fontSize(12.px)
                 }
             }) {
-                Text("Edit")
+                Text(LocalizedStrings.edit)
             }
         }
         
@@ -2725,7 +2802,7 @@ private fun DistributionsSection(
                     color(FlagentTheme.TextLight)
                 }
             }) {
-                Text("No distribution yet")
+                Text(LocalizedStrings.noDistributionYet)
             }
         } else {
             Div({
@@ -2747,7 +2824,6 @@ private fun DistributionsSection(
                 segmentId = segment.id,
                 variants = variants,
                 currentDistributions = segment.distributions,
-                apiClient = apiClient,
                 onClose = { showEditDialog.value = false },
                 onUpdate = {
                     showEditDialog.value = false
@@ -2839,7 +2915,6 @@ private fun DistributionEditDialog(
     segmentId: Int,
     variants: List<flagent.api.model.VariantResponse>,
     currentDistributions: List<flagent.api.model.DistributionResponse>,
-    apiClient: ApiClient,
     onClose: () -> Unit,
     onUpdate: () -> Unit
 ) {
@@ -2856,7 +2931,7 @@ private fun DistributionEditDialog(
     fun saveDistributions() {
         val total = distributions.values.sum()
         if (total != 100) {
-            error.value = "Percentages must add up to 100% (currently at ${total}%)"
+            error.value = LocalizedStrings.percentagesMustAddUpTo100(total)
             return
         }
         
@@ -2865,7 +2940,7 @@ private fun DistributionEditDialog(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                apiClient.updateDistributions(
+                ApiClient.updateDistributions(
                     flagId,
                     segmentId,
                     flagent.api.model.PutDistributionsRequest(
@@ -2879,7 +2954,7 @@ private fun DistributionEditDialog(
                 )
                 onUpdate()
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to save distributions"
+                error.value = e.message ?: LocalizedStrings.failedToSaveDistributions
             } finally {
                 saving.value = false
             }
@@ -2889,11 +2964,11 @@ private fun DistributionEditDialog(
     val total = distributions.values.sum()
     
     Modal(
-        title = "Edit Distribution",
+        title = LocalizedStrings.editDistribution,
         onClose = onClose,
         onConfirm = { saveDistributions() },
-        confirmText = "Save",
-        cancelText = "Cancel",
+        confirmText = LocalizedStrings.save,
+        cancelText = LocalizedStrings.cancel,
         showCancel = true,
         confirmDisabled = saving.value || total != 100,
         confirmLoading = saving.value
@@ -2908,7 +2983,7 @@ private fun DistributionEditDialog(
                     marginBottom(15.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         }
         
@@ -2922,7 +2997,7 @@ private fun DistributionEditDialog(
                     marginBottom(15.px)
                 }
             }) {
-                Text("Percentages must add up to 100% (currently at ${total}%)")
+                Text(LocalizedStrings.percentagesMustAddUpTo100(total))
             }
         }
         
@@ -3014,7 +3089,7 @@ private fun DistributionEditDialog(
  * Flag Delete Card
  */
 @Composable
-private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
+private fun FlagDeleteCard(flagId: Int) {
     val showConfirm = remember { mutableStateOf(false) }
     val deleting = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -3037,7 +3112,7 @@ private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
                 color(FlagentTheme.Text)
             }
         }) {
-            Text("Flag Settings")
+            Text(LocalizedStrings.flagSettings)
         }
         
         if (showConfirm.value) {
@@ -3054,7 +3129,7 @@ private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
                     marginBottom(15.px)
                 }
             }) {
-                Text("Are you sure you want to delete this feature flag?")
+                Text(LocalizedStrings.deleteFlagConfirm)
                 Div({
                     style {
                         display(DisplayStyle.Flex)
@@ -3068,10 +3143,10 @@ private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
                             error.value = null
                             CoroutineScope(Dispatchers.Main).launch {
                                 try {
-                                    apiClient.deleteFlag(flagId)
+                                    ApiClient.deleteFlag(flagId)
                                     Router.navigateTo(Route.Home)
                                 } catch (e: Exception) {
-                                    error.value = e.message ?: "Failed to delete flag"
+                                    error.value = e.message ?: LocalizedStrings.failedToDeleteFlag
                                     deleting.value = false
                                 }
                             }
@@ -3091,7 +3166,7 @@ private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
                             cursor(if (deleting.value) "not-allowed" else "pointer")
                         }
                     }) {
-                        Text(if (deleting.value) "Deleting..." else "Confirm Delete")
+                        Text(if (deleting.value) LocalizedStrings.deleting else LocalizedStrings.confirmDelete)
                     }
                     Button({
                         onClick { showConfirm.value = false }
@@ -3107,7 +3182,7 @@ private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
                             cursor("pointer")
                         }
                     }) {
-                        Text("Cancel")
+                        Text(LocalizedStrings.cancel)
                     }
                 }
                 if (error.value != null) {
@@ -3117,7 +3192,7 @@ private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
                             marginTop(10.px)
                         }
                     }) {
-                        Text("Error: ${error.value}")
+                        Text("${LocalizedStrings.error}: ${error.value}")
                     }
                 }
             }
@@ -3136,7 +3211,7 @@ private fun FlagDeleteCard(flagId: Int, apiClient: ApiClient) {
                     cursor("pointer")
                 }
             }) {
-                Text("Delete Flag")
+                Text(LocalizedStrings.deleteFlag)
             }
         }
     }

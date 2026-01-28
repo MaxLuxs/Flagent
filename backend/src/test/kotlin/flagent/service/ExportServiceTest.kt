@@ -10,8 +10,9 @@ import flagent.repository.tables.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.sqlite.SQLiteDataSource
 import java.io.File
 import java.nio.file.Files
@@ -67,7 +68,7 @@ class ExportServiceTest {
         try {
             tempFile.writeBytes(sqliteBytes)
             
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
@@ -76,7 +77,7 @@ class ExportServiceTest {
                 val flagCount = Flags.selectAll().count()
                 assertEquals(1, flagCount, "Should export 1 flag")
                 
-                val exportedFlag = Flags.select { Flags.id eq createdFlag.id }.firstOrNull()
+                val exportedFlag = Flags.selectAll().where { Flags.id eq createdFlag.id }.firstOrNull()
                 assertNotNull(exportedFlag, "Exported flag should exist")
                 assertEquals(createdFlag.key, exportedFlag[Flags.key], "Flag key should match")
                 assertEquals(createdFlag.description, exportedFlag[Flags.description], "Flag description should match")
@@ -100,7 +101,7 @@ class ExportServiceTest {
         try {
             tempFile.writeBytes(sqliteBytes)
             
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
@@ -153,29 +154,29 @@ class ExportServiceTest {
         try {
             tempFile.writeBytes(sqliteBytes)
             
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
             
             transaction(db) {
                 // Verify variant belongs to flag
-                val variant = Variants.select { Variants.flagId eq createdFlag.id }.firstOrNull()
+                val variant = Variants.selectAll().where { Variants.flagId eq createdFlag.id }.firstOrNull()
                 assertNotNull(variant, "Variant should exist")
                 assertEquals(createdFlag.id, variant[Variants.flagId], "Variant should belong to flag")
                 
                 // Verify segment belongs to flag
-                val segment = Segments.select { Segments.flagId eq createdFlag.id }.firstOrNull()
+                val segment = Segments.selectAll().where { Segments.flagId eq createdFlag.id }.firstOrNull()
                 assertNotNull(segment, "Segment should exist")
                 assertEquals(createdFlag.id, segment[Segments.flagId], "Segment should belong to flag")
                 
                 // Verify constraint belongs to segment
-                val constraint = Constraints.select { Constraints.segmentId eq segment[Segments.id].value }.firstOrNull()
+                val constraint = Constraints.selectAll().where { Constraints.segmentId eq segment[Segments.id].value }.firstOrNull()
                 assertNotNull(constraint, "Constraint should exist")
                 assertEquals(segment[Segments.id].value, constraint[Constraints.segmentId], "Constraint should belong to segment")
                 
                 // Verify distribution belongs to segment and variant
-                val distribution = Distributions.select { 
+                val distribution = Distributions.selectAll().where { 
                     Distributions.segmentId eq segment[Segments.id].value 
                 }.firstOrNull()
                 assertNotNull(distribution, "Distribution should exist")
@@ -209,7 +210,7 @@ class ExportServiceTest {
         try {
             tempFile.writeBytes(sqliteBytes)
             
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
@@ -245,7 +246,7 @@ class ExportServiceTest {
         try {
             tempFile.writeBytes(sqliteBytes)
             
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
@@ -254,7 +255,7 @@ class ExportServiceTest {
                 val snapshotCount = FlagSnapshots.selectAll().count()
                 assertEquals(1, snapshotCount, "Should export snapshots when exclude_snapshots=false")
                 
-                val exportedSnapshot = FlagSnapshots.select { 
+                val exportedSnapshot = FlagSnapshots.selectAll().where { 
                     FlagSnapshots.id eq createdSnapshot.id 
                 }.firstOrNull()
                 assertNotNull(exportedSnapshot, "Exported snapshot should exist")
@@ -280,7 +281,7 @@ class ExportServiceTest {
         try {
             tempFile.writeBytes(sqliteBytes)
             
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
@@ -289,7 +290,7 @@ class ExportServiceTest {
                 val entityTypeCount = FlagEntityTypes.selectAll().count()
                 assertTrue(entityTypeCount >= 1, "Should export at least 1 entity type")
                 
-                val exportedEntityType = FlagEntityTypes.select { 
+                val exportedEntityType = FlagEntityTypes.selectAll().where { 
                     FlagEntityTypes.id eq createdEntityType.id 
                 }.firstOrNull()
                 assertNotNull(exportedEntityType, "Exported entity type should exist")
@@ -319,7 +320,7 @@ class ExportServiceTest {
             assertTrue(header.startsWith("SQLite format 3"), "Should be valid SQLite format")
             
             // Verify file can be opened as SQLite database
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
@@ -350,7 +351,7 @@ class ExportServiceTest {
         try {
             tempFile.writeBytes(sqliteBytes)
             
-            val db = org.jetbrains.exposed.sql.Database.connect(
+            val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
                 url = "jdbc:sqlite:${tempFile.absolutePath}",
                 driver = "org.sqlite.JDBC"
             )
@@ -359,8 +360,8 @@ class ExportServiceTest {
                 val flagCount = Flags.selectAll().count()
                 assertEquals(2, flagCount, "Should export 2 flags")
                 
-                val exportedFlag1 = Flags.select { Flags.key eq "flag1" }.firstOrNull()
-                val exportedFlag2 = Flags.select { Flags.key eq "flag2" }.firstOrNull()
+                val exportedFlag1 = Flags.selectAll().where { Flags.key eq "flag1" }.firstOrNull()
+                val exportedFlag2 = Flags.selectAll().where { Flags.key eq "flag2" }.firstOrNull()
                 assertNotNull(exportedFlag1, "Flag1 should be exported")
                 assertNotNull(exportedFlag2, "Flag2 should be exported")
             }

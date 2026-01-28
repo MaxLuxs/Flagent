@@ -1,8 +1,16 @@
 package flagent.frontend.components
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
+import flagent.frontend.config.AppConfig
+import flagent.frontend.navigation.Route
+import flagent.frontend.navigation.Router
 import flagent.frontend.theme.FlagentTheme
+import flagent.frontend.viewmodel.AnomalyViewModel
+import flagent.frontend.viewmodel.AuthViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.ATarget
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -11,7 +19,20 @@ import org.jetbrains.compose.web.dom.*
  * Navbar component - top navigation bar
  */
 @Composable
-fun Navbar() {
+fun Navbar(authViewModel: AuthViewModel? = null) {
+    val scope = rememberCoroutineScope()
+    val anomalyViewModel = if (AppConfig.Features.enableAnomalyDetection) {
+        remember { AnomalyViewModel() }
+    } else null
+    
+    LaunchedEffect(Unit) {
+        if (anomalyViewModel != null) {
+            while (true) {
+                anomalyViewModel.loadUnresolvedAlerts()
+                delay(30000) // Refresh every 30 seconds
+            }
+        }
+    }
     Div({
         style {
             property("background", "linear-gradient(135deg, ${FlagentTheme.Primary} 0%, ${FlagentTheme.PrimaryDark} 100%)")
@@ -90,39 +111,139 @@ fun Navbar() {
             Div({
                 style {
                     display(DisplayStyle.Flex)
-                    gap(25.px)
+                    gap(15.px)
                     alignItems(AlignItems.Center)
                 }
             }) {
-                A(href = "/docs", attrs = {
-                    attr("target", "_blank")
-                    style {
-                        textDecoration("none")
-                        color(FlagentTheme.Background)
-                        fontWeight("600")
-                        fontSize(14.px)
-                        display(DisplayStyle.Flex)
-                        alignItems(AlignItems.Center)
-                        gap(6.px)
-                        padding(8.px, 12.px)
-                        borderRadius(6.px)
-                        property("transition", "background-color 0.2s")
+                NavLink("Dashboard", "dashboard", Route.Dashboard.PATH)
+                NavLink("Flags", "flag", Route.Home.PATH)
+                NavLink("Experiments", "science", Route.Experiments.PATH)
+                NavLink("Analytics", "analytics", Route.Analytics.PATH)
+                
+                // Alerts with badge
+                if (AppConfig.Features.enableAnomalyDetection && anomalyViewModel != null) {
+                    Div({
+                        style {
+                            position(Position.Relative)
+                        }
+                    }) {
+                        A(href = Route.Alerts.PATH, attrs = {
+                            style {
+                                textDecoration("none")
+                                color(FlagentTheme.Background)
+                                fontWeight("600")
+                                fontSize(14.px)
+                                display(DisplayStyle.Flex)
+                                alignItems(AlignItems.Center)
+                                gap(6.px)
+                                padding(8.px, 12.px)
+                                borderRadius(6.px)
+                                property("transition", "background-color 0.2s")
+                            }
+                            onMouseEnter {
+                                (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "rgba(255, 255, 255, 0.15)"
+                            }
+                            onMouseLeave {
+                                (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent"
+                            }
+                            onClick { e ->
+                                e.preventDefault()
+                                Router.navigateTo(Route.Alerts)
+                            }
+                        }) {
+                            Icon("notifications", size = 18.px, color = FlagentTheme.Background)
+                            Text("Alerts")
+                        }
+                        
+                        // Badge with count
+                        if (anomalyViewModel.alerts.isNotEmpty()) {
+                            Span({
+                                style {
+                                    position(Position.Absolute)
+                                    property("top", "-4px")
+                                    property("right", "-4px")
+                                    backgroundColor(Color("#EF4444"))
+                                    color(FlagentTheme.Background)
+                                    fontSize(11.px)
+                                    fontWeight("bold")
+                                    padding(2.px, 6.px)
+                                    borderRadius(10.px)
+                                    minWidth(18.px)
+                                    textAlign("center")
+                                }
+                            }) {
+                                Text(anomalyViewModel.alerts.size.toString())
+                            }
+                        }
                     }
-                    onMouseEnter {
-                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "rgba(255, 255, 255, 0.15)"
-                    }
-                    onMouseLeave {
-                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent"
-                    }
-                }) {
-                    Icon(
-                        name = "api",
-                        size = 18.px,
-                        color = FlagentTheme.Background
-                    )
-                    Text("API")
                 }
-                A(href = "https://github.com/MaxLuxs/Flagent", attrs = {
+                
+                NavLink("Settings", "settings", Route.Settings.PATH)
+
+                if (AppConfig.requiresAuth && authViewModel != null) {
+                    if (authViewModel.isAuthenticated) {
+                        Span({
+                            style {
+                                color(FlagentTheme.Background)
+                                fontSize(14.px)
+                                padding(0.px, 8.px)
+                            }
+                        }) {
+                            Text(authViewModel.currentUser?.name ?: authViewModel.currentUser?.email ?: "User")
+                        }
+                        Button({
+                            onClick {
+                                scope.launch {
+                                    runCatching { ApiClient.ssoLogout() }
+                                    authViewModel.logout()
+                                    Router.navigateTo(Route.Login)
+                                }
+                            }
+                            style {
+                                padding(8.px, 12.px)
+                                backgroundColor(Color("transparent"))
+                                color(FlagentTheme.Background)
+                                border(1.px, LineStyle.Solid, FlagentTheme.Background)
+                                borderRadius(6.px)
+                                cursor("pointer")
+                                fontSize(14.px)
+                                fontWeight("600")
+                            }
+                        }) {
+                            Text("Logout")
+                        }
+                    } else {
+                        A(href = Route.Login.PATH, attrs = {
+                            style {
+                                textDecoration("none")
+                                color(FlagentTheme.Background)
+                                fontWeight("600")
+                                fontSize(14.px)
+                                display(DisplayStyle.Flex)
+                                alignItems(AlignItems.Center)
+                                gap(6.px)
+                                padding(8.px, 12.px)
+                                borderRadius(6.px)
+                                property("transition", "background-color 0.2s")
+                            }
+                            onMouseEnter {
+                                (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "rgba(255, 255, 255, 0.15)"
+                            }
+                            onMouseLeave {
+                                (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent"
+                            }
+                            onClick { e ->
+                                e.preventDefault()
+                                Router.navigateTo(Route.Login)
+                            }
+                        }) {
+                            Icon("login", size = 18.px, color = FlagentTheme.Background)
+                            Text("Login")
+                        }
+                    }
+                }
+                
+                A(href = "/docs", attrs = {
                     attr("target", "_blank")
                     style {
                         textDecoration("none")
@@ -148,9 +269,40 @@ fun Navbar() {
                         size = 18.px,
                         color = FlagentTheme.Background
                     )
-                    Text("Docs")
+                    Text(flagent.frontend.i18n.LocalizedStrings.docs)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NavLink(label: String, icon: String, path: String) {
+    A(href = path, attrs = {
+        style {
+            textDecoration("none")
+            color(FlagentTheme.Background)
+            fontWeight("600")
+            fontSize(14.px)
+            display(DisplayStyle.Flex)
+            alignItems(AlignItems.Center)
+            gap(6.px)
+            padding(8.px, 12.px)
+            borderRadius(6.px)
+            property("transition", "background-color 0.2s")
+        }
+        onMouseEnter {
+            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "rgba(255, 255, 255, 0.15)"
+        }
+        onMouseLeave {
+            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent"
+        }
+        onClick { e ->
+            e.preventDefault()
+            Router.navigateToPath(path)
+        }
+    }) {
+        Icon(icon, size = 18.px, color = FlagentTheme.Background)
+        Text(label)
     }
 }

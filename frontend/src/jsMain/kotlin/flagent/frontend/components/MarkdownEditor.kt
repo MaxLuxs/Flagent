@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.DisplayStyle
@@ -39,7 +40,7 @@ import org.jetbrains.compose.web.dom.TextArea
 fun MarkdownEditor(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String = "Enter markdown text...",
+    placeholder: String = LocalizedStrings.markdownPlaceholder,
     showPreview: Boolean = true
 ) {
     LaunchedEffect(value) {
@@ -68,7 +69,7 @@ fun MarkdownEditor(
                 }
             }) {
                 Label {
-                    Text("Markdown Editor:")
+                    Text(LocalizedStrings.markdownEditorLabel)
                     TextArea {
                         value(value)
                         onInput { event -> onValueChange(event.value) }
@@ -105,7 +106,7 @@ fun MarkdownEditor(
                         minHeight(200.px)
                     }
                 }) {
-                    H4 { Text("Preview:") }
+                    H4 { Text(LocalizedStrings.previewLabel) }
                     Div({
                         id("markdown-preview")
                         style {
@@ -117,7 +118,7 @@ fun MarkdownEditor(
                         }
                     }) {
                         if (value.isEmpty()) {
-                            Text("No content")
+                            Text(LocalizedStrings.noContent)
                         }
                     }
                 }

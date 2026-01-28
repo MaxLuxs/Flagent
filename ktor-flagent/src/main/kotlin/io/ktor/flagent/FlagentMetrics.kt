@@ -8,8 +8,8 @@ import io.ktor.server.metrics.micrometer.*
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import com.timgroup.statsd.NonBlockingStatsDClient
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder
 import mu.KotlinLogging
@@ -207,11 +207,7 @@ fun Application.configureFlagentMetrics(config: FlagentMetricsConfig): FlagentMe
             this.registry = registry
         }
         
-        // Ensure Routing plugin is installed
-        if (this.pluginOrNull(Routing) == null) {
-            install(Routing)
-        }
-        
+        // Routing plugin is installed automatically in Ktor 3.x
         routing {
             get(config.prometheusPath) {
                 call.respondText(registry.scrape(), ContentType.Text.Plain)

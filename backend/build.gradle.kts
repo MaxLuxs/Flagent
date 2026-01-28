@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    alias(libs.plugins.ktor.plugin)
     application
     jacoco
 }
@@ -12,13 +13,21 @@ dependencies {
     // Shared models
     implementation(project(":shared"))
     
-    // Ktor
+    // Ktor Server
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.bundles.ktor.server)
     implementation(libs.bundles.ktor.server.auth)
     implementation(libs.ktor.server.metrics.micrometer)
+    implementation(libs.ktor.server.openapi)
+    implementation(libs.ktor.server.routing.openapi)
     implementation(libs.ktor.server.swagger)
+    implementation(libs.ktor.server.sse)
+    
+    // Ktor Client (for SSO/OAuth)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
     
     // Database - Exposed
     implementation(libs.bundles.exposed)
@@ -39,8 +48,13 @@ dependencies {
     // Messaging
     implementation(libs.bundles.messaging)
     
-    // JWT
-    implementation(libs.java.jwt)
+    // JWT (JJWT)
+    implementation(libs.jjwt.api)
+    runtimeOnly(libs.jjwt.impl)
+    runtimeOnly(libs.jjwt.jackson)
+    
+    // Billing
+    implementation(libs.stripe.java)
     
     // Utilities
     implementation(libs.commons.lang3)
@@ -107,4 +121,18 @@ tasks.jacocoTestReport {
             }
         })
     )
+}
+
+// Configure shadowJar to use zip64 for large archives
+tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+    isZip64 = true
+}
+
+// Configure OpenAPI compiler extension for runtime metadata generation
+ktor {
+    openApi {
+        enabled = true
+        codeInferenceEnabled = true
+        onlyCommented = false
+    }
 }

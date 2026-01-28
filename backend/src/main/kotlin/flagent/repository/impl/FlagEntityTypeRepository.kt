@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.FlagEntityType
 import flagent.domain.repository.IFlagEntityTypeRepository
@@ -6,8 +7,7 @@ import flagent.repository.Database
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.*
 
 class FlagEntityTypeRepository : IFlagEntityTypeRepository {
     
@@ -21,7 +21,7 @@ class FlagEntityTypeRepository : IFlagEntityTypeRepository {
     
     override suspend fun findByKey(key: String): FlagEntityType? = withContext(Dispatchers.IO) {
         Database.transaction {
-            FlagEntityTypes.select { FlagEntityTypes.key eq key }
+            FlagEntityTypes.selectAll().where { FlagEntityTypes.key eq key }
                 .firstOrNull()
                 ?.let { mapRowToFlagEntityType(it) }
         }
@@ -37,7 +37,7 @@ class FlagEntityTypeRepository : IFlagEntityTypeRepository {
             
             val id = FlagEntityTypes.insert {
                 it[FlagEntityTypes.key] = entityType.key
-                it[FlagEntityTypes.createdAt] = java.time.Instant.now()
+                it[FlagEntityTypes.createdAt] = java.time.LocalDateTime.now()
             }[FlagEntityTypes.id].value
             
             entityType.copy(id = id)

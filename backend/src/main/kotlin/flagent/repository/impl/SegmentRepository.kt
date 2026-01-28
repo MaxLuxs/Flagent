@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.Constraint
 import flagent.domain.entity.Distribution
@@ -8,14 +9,13 @@ import flagent.repository.Database
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.*
 
 class SegmentRepository : ISegmentRepository {
     
     override suspend fun findByFlagId(flagId: Int): List<Segment> = withContext(Dispatchers.IO) {
         Database.transaction {
-            Segments.select { Segments.flagId eq flagId }
+            Segments.selectAll().where { Segments.flagId eq flagId }
                 .orderBy(Segments.rank, SortOrder.ASC)
                 .orderBy(Segments.id, SortOrder.ASC)
                 .map { mapRowToSegment(it) }
@@ -24,7 +24,7 @@ class SegmentRepository : ISegmentRepository {
     
     override suspend fun findById(id: Int): Segment? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Segments.select { Segments.id eq id }
+            Segments.selectAll().where { Segments.id eq id }
                 .firstOrNull()
                 ?.let { mapRowToSegment(it) }
         }
@@ -37,7 +37,7 @@ class SegmentRepository : ISegmentRepository {
                 it[description] = segment.description
                 it[rank] = segment.rank
                 it[rolloutPercent] = segment.rolloutPercent
-                it[createdAt] = java.time.Instant.now()
+                it[createdAt] = java.time.LocalDateTime.now()
             }[Segments.id].value
             
             segment.copy(id = id)
@@ -50,7 +50,7 @@ class SegmentRepository : ISegmentRepository {
                 it[description] = segment.description
                 it[rank] = segment.rank
                 it[rolloutPercent] = segment.rolloutPercent
-                it[updatedAt] = java.time.Instant.now()
+                it[updatedAt] = java.time.LocalDateTime.now()
             }
             segment
         }
@@ -59,7 +59,7 @@ class SegmentRepository : ISegmentRepository {
     override suspend fun delete(id: Int): Unit = withContext(Dispatchers.IO) {
         Database.transaction {
             Segments.update({ Segments.id eq id }) {
-                it[deletedAt] = java.time.Instant.now()
+                it[deletedAt] = java.time.LocalDateTime.now()
             }
         }
         Unit
@@ -78,7 +78,7 @@ class SegmentRepository : ISegmentRepository {
     private fun mapRowToSegment(row: ResultRow): Segment {
         val segmentId = row[Segments.id].value
         
-        val constraints = Constraints.select { Constraints.segmentId eq segmentId }
+        val constraints = Constraints.selectAll().where { Constraints.segmentId eq segmentId }
             .orderBy(Constraints.createdAt, SortOrder.ASC)
             .map { 
                 Constraint(
@@ -90,7 +90,7 @@ class SegmentRepository : ISegmentRepository {
                 )
             }
         
-        val distributions = Distributions.select { Distributions.segmentId eq segmentId }
+        val distributions = Distributions.selectAll().where { Distributions.segmentId eq segmentId }
             .orderBy(Distributions.variantId, SortOrder.ASC)
             .map {
                 flagent.domain.entity.Distribution(

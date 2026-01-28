@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.FlagSnapshot
 import flagent.domain.repository.IFlagSnapshotRepository
@@ -6,14 +7,13 @@ import flagent.repository.Database
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.*
 
 class FlagSnapshotRepository : IFlagSnapshotRepository {
     
     override suspend fun findByFlagId(flagId: Int, limit: Int?, offset: Int, sortDesc: Boolean): List<FlagSnapshot> = withContext(Dispatchers.IO) {
         Database.transaction {
-            var query = FlagSnapshots.select { FlagSnapshots.flagId eq flagId }
+            var query = FlagSnapshots.selectAll().where { FlagSnapshots.flagId eq flagId }
             
             query = query.orderBy(
                 if (sortDesc) FlagSnapshots.createdAt to SortOrder.DESC
@@ -21,7 +21,7 @@ class FlagSnapshotRepository : IFlagSnapshotRepository {
             )
             
             if (limit != null) {
-                query = query.limit(limit, offset.toLong())
+                query = query.limit(limit).offset(offset.toLong())
             }
             
             query.map { mapRowToFlagSnapshot(it) }
@@ -38,7 +38,7 @@ class FlagSnapshotRepository : IFlagSnapshotRepository {
     
     override suspend fun create(snapshot: FlagSnapshot): FlagSnapshot = withContext(Dispatchers.IO) {
         Database.transaction {
-            val now = java.time.Instant.now()
+            val now = java.time.LocalDateTime.now()
             val id = FlagSnapshots.insert {
                 it[FlagSnapshots.flagId] = snapshot.flagId
                 it[FlagSnapshots.updatedBy] = snapshot.updatedBy

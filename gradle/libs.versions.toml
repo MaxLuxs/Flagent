@@ -1,68 +1,70 @@
 [versions]
 # Kotlin
-kotlin = "2.0.21"
-kotlin-android = "2.2.20"
+kotlin = "2.3.0"
 
 # Ktor
-ktor = "2.3.7"
+ktor = "3.4.0"
 
 # Exposed
-exposed = "0.44.1"
+exposed = "1.0.0"
 
 # Kotlinx Libraries
-kotlinx-serialization-json = "1.7.0"
+kotlinx-serialization-json = "1.10.0"
 kotlinx-datetime = "0.6.2"
-kotlinx-coroutines = "1.8.0"
+kotlinx-coroutines = "1.10.2"
 
 # Compose
-compose = "1.8.0"
-compose-bom = "2024.02.00"
+compose = "1.10.0"
+compose-bom = "2026.01.00"
 
 # Database Drivers
-postgresql = "42.7.1"
-mysql = "8.2.0"
-sqlite = "3.44.1.0"
-hikaricp = "5.1.0"
+postgresql = "42.7.9"
+mysql = "9.5.0"
+sqlite = "3.51.1.0"
+hikaricp = "7.0.2"
 
 # Logging
-logback = "1.4.14"
+logback = "1.5.26"
 kotlin-logging = "3.0.5"
 
 # Monitoring & Metrics
-sentry = "8.29.0"
-newrelic = "8.24.0"
-micrometer = "1.12.0"
-datadog = "4.2.0"
+sentry = "8.31.0"
+newrelic = "9.0.0"
+micrometer = "1.16.2"
+datadog = "4.4.5"
 
 # Messaging
-kafka = "3.6.1"
-aws-kinesis = "2.21.29"
-google-pubsub = "1.126.0"
+kafka = "4.1.1"
+aws-kinesis = "2.41.15"
+google-pubsub = "1.147.0"
 
 # Security
-jwt = "4.4.0"
+jjwt = "0.13.0"
+
+# Billing
+stripe = "31.2.0"
 
 # Utilities
-commons-lang3 = "3.14.0"
-jackson = "2.15.4"
+commons-lang3 = "3.20.0"
+jackson = "2.21.0"
 
 # Testing
-kotlin-test = "2.0.21"
-mockk = "1.13.8"
-testcontainers = "1.19.3"
+kotlin-test = "2.3.0"
+mockk = "1.14.9"
+testcontainers = "1.21.4"
 junit = "4.13.2"
 
 # Android
-android-gradle-plugin = "8.2.0"
+android-gradle-plugin = "8.13.2"
 android-compile-sdk = "34"
 android-min-sdk = "24"
 android-target-sdk = "34"
-androidx-junit = "1.1.5"
-espresso = "3.5.1"
-navigation-compose = "2.7.6"
-lifecycle = "2.7.0"
-activity-compose = "1.8.2"
-datastore = "1.0.0"
+androidx-junit = "1.3.0"
+espresso = "3.7.0"
+navigation-compose = "2.9.6"
+lifecycle = "2.10.0"
+activity-compose = "1.12.2"
+datastore = "1.2.0"
 compose-compiler = "1.5.14"
 jvm-target = "17"
 jvm-target-android = "17"
@@ -85,7 +87,10 @@ ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = 
 ktor-server-metrics-micrometer = { module = "io.ktor:ktor-server-metrics-micrometer", version.ref = "ktor" }
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
 ktor-server-default-headers = { module = "io.ktor:ktor-server-default-headers", version.ref = "ktor" }
+ktor-server-openapi = { module = "io.ktor:ktor-server-openapi", version.ref = "ktor" }
+ktor-server-routing-openapi = { module = "io.ktor:ktor-server-routing-openapi", version.ref = "ktor" }
 ktor-server-swagger = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor" }
+ktor-server-sse = { module = "io.ktor:ktor-server-sse", version.ref = "ktor" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 
 # Ktor Client
@@ -102,6 +107,7 @@ exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exp
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
 exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
 
 # Kotlinx
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
@@ -144,8 +150,13 @@ kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafk
 aws-kinesis = { module = "software.amazon.awssdk:kinesis", version.ref = "aws-kinesis" }
 google-pubsub = { module = "com.google.cloud:google-cloud-pubsub", version.ref = "google-pubsub" }
 
-# Security
-java-jwt = { module = "com.auth0:java-jwt", version.ref = "jwt" }
+# Security (JJWT)
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
+# Billing
+stripe-java = { module = "com.stripe:stripe-java", version.ref = "stripe" }
 
 # Utilities
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
@@ -171,11 +182,12 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences", v
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-android" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
 
 [bundles]
 ktor-server = [
@@ -205,7 +217,8 @@ exposed = [
     "exposed-dao",
     "exposed-jdbc",
     "exposed-kotlin-datetime",
-    "exposed-java-time"
+    "exposed-java-time",
+    "exposed-json"
 ]
 
 database-drivers = [

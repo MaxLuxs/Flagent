@@ -1,20 +1,17 @@
 package flagent.domain.usecase
 
 import flagent.domain.entity.Flag
-import flagent.domain.util.SegmentMatcher
-import flagent.domain.util.VariantSelector
 import flagent.domain.value.EvaluationContext
-import java.util.*
+import flagent.evaluator.FlagEvaluator
+import flagent.service.adapter.EvaluatorAdapter
+import flagent.evaluator.FlagEvaluator.EvalContext
 
 /**
  * EvaluateFlagUseCase - evaluates a flag and returns variant assignment
- * Domain layer - no framework dependencies
+ * Domain layer - delegates to shared FlagEvaluator
  */
-class EvaluateFlagUseCase(
-    private val segmentMatcher: SegmentMatcher = SegmentMatcher(),
-    private val variantSelector: VariantSelector = VariantSelector()
-) {
-    private val random = Random()
+class EvaluateFlagUseCase {
+    private val flagEvaluator = FlagEvaluator()
     
     /**
      * Evaluation result
@@ -36,97 +33,37 @@ class EvaluateFlagUseCase(
     /**
      * Evaluate flag with context
      * Returns evaluation result with variant ID and segment ID
+     * 
+     * Now delegates to shared FlagEvaluator for consistent evaluation logic
      */
     fun invoke(
         flag: Flag,
         context: EvaluationContext,
         enableDebug: Boolean = false
     ): EvaluationResult {
-        // Validate flag
-        if (!flag.enabled) {
-            return EvaluationResult(
-                variantID = null,
-                segmentID = null,
-                debugLogs = if (enableDebug) {
-                    listOf(SegmentDebugLog(0, "flagID ${flag.id} is not enabled"))
-                } else emptyList()
-            )
-        }
+        // Convert domain Flag to EvaluableFlag
+        val evaluableFlag = EvaluatorAdapter.toEvaluableFlag(flag)
         
-        if (flag.segments.isEmpty()) {
-            return EvaluationResult(
-                variantID = null,
-                segmentID = null,
-                debugLogs = if (enableDebug) {
-                    listOf(SegmentDebugLog(0, "flagID ${flag.id} has no segments"))
-                } else emptyList()
-            )
-        }
+        // Convert EvaluationContext to EvalContext
+        val evalContext = FlagEvaluator.EvalContext(
+            entityID = context.entityID.value,
+            entityType = context.entityType,
+            entityContext = context.entityContext?.mapValues { it.value.toString() } ?: emptyMap()
+        )
         
-        // Prepare flag for evaluation
-        val flagEvaluation = flag.prepareEvaluation()
+        // Delegate to shared evaluator
+        val sharedResult = flagEvaluator.evaluate(evaluableFlag, evalContext, enableDebug)
         
-        // Evaluate segments in order (by rank)
-        val sortedSegments = flag.segments.sortedBy { it.rank }
-        val debugLogs = mutableListOf<SegmentDebugLog>()
-        var variantID: Int? = null
-        var segmentID: Int? = null
-        
-        for (segment in sortedSegments) {
-            segmentID = segment.id
-            
-            // Check if segment matches constraints
-            val matches = segmentMatcher.matches(segment, context)
-            
-            if (!matches) {
-                if (enableDebug) {
-                    debugLogs.add(
-                        SegmentDebugLog(
-                            segmentID = segment.id,
-                            message = "segment_id ${segment.id} did not match constraints"
-                        )
-                    )
-                }
-                // Continue to next segment
-                continue
-            }
-            
-            // Select variant based on distribution
-            val selectedVariantID = variantSelector.selectVariant(
-                segment = segment,
-                entityID = context.entityID.value,
-                flagID = flag.id
-            )
-            
-            if (selectedVariantID != null) {
-                variantID = selectedVariantID
-                if (enableDebug) {
-                    debugLogs.add(
-                        SegmentDebugLog(
-                            segmentID = segment.id,
-                            message = "matched all constraints. rollout yes. variantID: $selectedVariantID"
-                        )
-                    )
-                }
-                // Found matching segment, stop evaluation
-                break
-            } else {
-                if (enableDebug) {
-                    debugLogs.add(
-                        SegmentDebugLog(
-                            segmentID = segment.id,
-                            message = "matched all constraints. rollout no."
-                        )
-                    )
-                }
-                // Continue to next segment
-            }
-        }
-        
+        // Convert back to domain EvaluationResult
         return EvaluationResult(
-            variantID = variantID,
-            segmentID = segmentID,
-            debugLogs = debugLogs
+            variantID = sharedResult.variantID,
+            segmentID = sharedResult.segmentID,
+            debugLogs = sharedResult.debugLogs.map { log ->
+                SegmentDebugLog(
+                    segmentID = log.segmentID,
+                    message = log.message
+                )
+            }
         )
     }
 }

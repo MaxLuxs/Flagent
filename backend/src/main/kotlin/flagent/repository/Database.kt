@@ -6,13 +6,12 @@ import flagent.config.AppConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.core.StdOutSqlLogger
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import flagent.repository.tables.*
 
 private val logger = KotlinLogging.logger {}
@@ -79,6 +78,7 @@ object Database {
                 addLogger(StdOutSqlLogger)
             }
 
+            // Create main Flagent tables (in public schema)
             SchemaUtils.createMissingTablesAndColumns(
                 Flags,
                 Segments,
@@ -91,6 +91,45 @@ object Database {
                 FlagEntityTypes,
                 Users
             )
+            
+            // Create AI-powered rollouts tables (always enabled)
+            SchemaUtils.createMissingTablesAndColumns(
+                MetricDataPoints,
+                AnomalyAlerts,
+                AnomalyDetectionConfigs,
+                SmartRolloutConfigs,
+                SmartRolloutHistory
+            )
+            logger.info { "AI-powered rollouts tables created" }
+            
+            // Create multi-tenancy tables (in public schema)
+            if (AppConfig.multiTenancyEnabled) {
+                SchemaUtils.createMissingTablesAndColumns(
+                    Tenants,
+                    TenantUsers,
+                    TenantApiKeys,
+                    TenantUsage
+                )
+                logger.info { "Multi-tenancy tables created" }
+                
+                // Create SSO tables
+                SchemaUtils.createMissingTablesAndColumns(
+                    SsoProviders,
+                    SsoSessions,
+                    SsoLoginAttempts
+                )
+                logger.info { "SSO/SAML tables created" }
+            }
+            
+            // Create billing tables (if Stripe enabled)
+            if (AppConfig.stripeEnabled) {
+                SchemaUtils.createMissingTablesAndColumns(
+                    Subscriptions,
+                    Invoices,
+                    UsageRecords
+                )
+                logger.info { "Billing tables created" }
+            }
 
             logger.info { "Database migrations completed" }
         }
@@ -107,8 +146,10 @@ object Database {
      * Execute database operation in transaction
      */
     suspend fun <T> transaction(block: suspend () -> T): T {
-        return newSuspendedTransaction(Dispatchers.IO, exposedDatabase!!) {
-            block()
+        return withContext(Dispatchers.IO) {
+            suspendTransaction(exposedDatabase!!) {
+                block()
+            }
         }
     }
 

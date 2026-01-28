@@ -1,0 +1,161 @@
+# Default values for Flagent Helm chart
+
+## Flagent image configuration
+image:
+  repository: ghcr.io/maxluxs/flagent
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+## Number of replicas
+replicaCount: 3
+
+## Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 18000
+  annotations: {}
+
+## Ingress configuration
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: flagent.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - secretName: flagent-tls
+    #   hosts:
+    #     - flagent.example.com
+
+## Resource limits and requests
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "1000m"
+
+## Horizontal Pod Autoscaler
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+## Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+## Node affinity and tolerations
+affinity: {}
+tolerations: []
+nodeSelector: {}
+
+## Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+## Liveness and readiness probes
+livenessProbe:
+  httpGet:
+    path: /api/v1/health
+    port: 18000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /api/v1/health
+    port: 18000
+  initialDelaySeconds: 15
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+## Flagent configuration
+config:
+  host: "0.0.0.0"
+  port: 18000
+  logLevel: "INFO"
+  
+  ## Database configuration
+  database:
+    driver: "postgres"  # postgres, mysql, sqlite
+    host: "postgres-service"
+    port: 5432
+    name: "flagent"
+    user: "flagent"
+    password: "changeme"
+    maxPoolSize: 10
+    
+  ## Eval cache configuration
+  evalCache:
+    refreshInterval: 60000  # 60 seconds
+    
+  ## CORS configuration
+  cors:
+    enabled: true
+    allowedOrigins: ["*"]
+    allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowedHeaders: ["*"]
+    
+  ## Authentication (optional)
+  auth:
+    jwt:
+      enabled: false
+      secret: ""
+      issuer: "flagent"
+      audience: "flagent"
+    basic:
+      enabled: false
+      username: "admin"
+      password: "changeme"
+
+## PostgreSQL dependency (subchart)
+postgresql:
+  enabled: true
+  auth:
+    username: flagent
+    password: changeme
+    database: flagent
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+
+## Redis dependency for distributed cache (optional)
+redis:
+  enabled: false
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 1Gi
+
+## Service monitor for Prometheus (optional)
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}

@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import flagent.api.model.CreateConstraintRequest
 import flagent.api.model.PutConstraintRequest
 import flagent.frontend.api.ApiClient
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Router
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +45,6 @@ import org.jetbrains.compose.web.dom.Text
  */
 @Composable
 fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     val property = remember { mutableStateOf("") }
     val operator = remember { mutableStateOf("EQ") }
     val value = remember { mutableStateOf("") }
@@ -72,17 +72,17 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
             loading.value = true
             error.value = null
             try {
-                val constraints = apiClient.getConstraints(flagId, segmentId)
+                val constraints = ApiClient.getConstraints(flagId, segmentId)
                 val constraint = constraints.find { it.id == constraintId }
                 if (constraint != null) {
                     property.value = constraint.property
                     operator.value = constraint.operator
                     value.value = constraint.value
                 } else {
-                    error.value = "Constraint not found"
+                    error.value = LocalizedStrings.constraintNotFound
                 }
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to load constraint"
+                error.value = e.message ?: LocalizedStrings.failedToLoadConstraint
             } finally {
                 loading.value = false
             }
@@ -101,11 +101,11 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
         }
     }) {
         H3 { 
-            Text(if (constraintId != null) "Edit Constraint" else "Create Constraint")
+            Text(if (constraintId != null) LocalizedStrings.editConstraint else LocalizedStrings.createConstraint)
             InfoTooltip(
-                title = "Constraints",
-                description = "Constraints define targeting rules for segments. They check if an entity's properties match specific conditions. Only entities that match all constraints in a segment will be assigned variants from that segment.",
-                details = "Operators: EQ (equals), NEQ (not equals), GT/LT (greater/less than), IN/NOT_IN (in list), CONTAINS (string contains), STARTS_WITH/ENDS_WITH (string matching)."
+                title = LocalizedStrings.constraintsTooltipTitle,
+                description = LocalizedStrings.constraintsTooltipDescription,
+                details = LocalizedStrings.constraintsTooltipDetails
             )
         }
 
@@ -120,7 +120,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                     borderRadius(5.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         } else {
             Div({
@@ -131,7 +131,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                 }
             }) {
                 Label {
-                    Text("Property:")
+                    Text("${LocalizedStrings.property}:")
                     Input(InputType.Text) {
                         value(property.value)
                         onInput { event -> property.value = event.value }
@@ -143,7 +143,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                 }
 
                 Label {
-                    Text("Operator:")
+                    Text("${LocalizedStrings.operator}:")
                     Select(attrs = {
                         attr("value", operator.value)
                         onChange { event ->
@@ -164,7 +164,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                 }
 
                 Label {
-                    Text("Value:")
+                    Text("${LocalizedStrings.value}:")
                     Input(InputType.Text) {
                         value(value.value)
                         onInput { event -> value.value = event.value }
@@ -178,7 +178,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                 Button({
                     onClick {
                         if (property.value.isBlank() || value.value.isBlank()) {
-                            error.value = "Property and Value are required"
+                            error.value = LocalizedStrings.propertyAndValueAreRequired
                             return@onClick
                         }
 
@@ -188,7 +188,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                         CoroutineScope(Dispatchers.Main).launch {
                             try {
                                 if (constraintId != null) {
-                                    apiClient.updateConstraint(
+                                    ApiClient.updateConstraint(
                                         flagId,
                                         segmentId,
                                         constraintId,
@@ -199,7 +199,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                                         )
                                     )
                                 } else {
-                                    apiClient.createConstraint(
+                                    ApiClient.createConstraint(
                                         flagId,
                                         segmentId,
                                         CreateConstraintRequest(
@@ -211,7 +211,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                                 }
                                 Router.navigateBack()
                             } catch (e: Exception) {
-                                error.value = e.message ?: "Failed to save constraint"
+                                error.value = e.message ?: LocalizedStrings.failedToSaveConstraint
                             } finally {
                                 saving.value = false
                             }
@@ -235,7 +235,11 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                         cursor(if (saving.value || property.value.isBlank() || value.value.isBlank()) "not-allowed" else "pointer")
                     }
                 }) {
-                    Text(if (saving.value) "Saving..." else if (constraintId != null) "Update Constraint" else "Create Constraint")
+                    Text(
+                        if (saving.value) LocalizedStrings.saving
+                        else if (constraintId != null) LocalizedStrings.updateConstraint
+                        else LocalizedStrings.createConstraint
+                    )
                 }
             }
         }

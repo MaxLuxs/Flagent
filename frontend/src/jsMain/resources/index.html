@@ -6,6 +6,49 @@
     <title>Flagent - Feature Flags Management</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Environment configuration
+        window.ENV_API_BASE_URL = window.ENV_API_BASE_URL || "http://localhost:18000";
+        window.ENV_DEBUG_MODE = window.ENV_DEBUG_MODE || "false";
+        window.ENV_API_TIMEOUT = window.ENV_API_TIMEOUT || "30000";
+        window.ENV_ERROR_TRACKING = window.ENV_ERROR_TRACKING || "false";
+        window.ENV_DEFAULT_LANGUAGE = window.ENV_DEFAULT_LANGUAGE || "en";
+        
+        // Edition: "open_source" (default) or "enterprise"
+        // Override via URL: ?edition=open_source or ?edition=enterprise
+        (function() {
+            var match = window.location.search.match(/[?&]edition=(open_source|enterprise)/i);
+            if (match) {
+                window.ENV_EDITION = match[1].toLowerCase();
+            } else if (typeof window.ENV_EDITION === "undefined") {
+                window.ENV_EDITION = "open_source";
+            }
+        })();
+        // Deployment mode: "self_hosted" (default) or "saas"
+        window.ENV_DEPLOYMENT_MODE = window.ENV_DEPLOYMENT_MODE || "self_hosted";
+        // Plan override (optional): "open_source" | "enterprise" | "saas_enterprise" | "saas_lowprice"
+        // If not set, plan is derived from edition + deployment mode
+        // window.ENV_PLAN = "open_source";
+        
+        // Core Feature flags (available in both editions)
+        window.ENV_FEATURE_AUTH = window.ENV_FEATURE_AUTH || "false";
+        window.ENV_FEATURE_REALTIME = window.ENV_FEATURE_REALTIME || "true";
+        
+        // Open Source Features (available in both editions)
+        window.ENV_FEATURE_METRICS = window.ENV_FEATURE_METRICS || "true";
+        window.ENV_FEATURE_SMART_ROLLOUT = window.ENV_FEATURE_SMART_ROLLOUT || "true";
+        window.ENV_FEATURE_ANOMALY_DETECTION = window.ENV_FEATURE_ANOMALY_DETECTION || "true";
+        
+        // Enterprise-Only Features (automatically disabled in open_source edition)
+        window.ENV_FEATURE_MULTI_TENANCY = window.ENV_FEATURE_MULTI_TENANCY || "true";
+        window.ENV_FEATURE_SSO = window.ENV_FEATURE_SSO || "true";
+        window.ENV_FEATURE_BILLING = window.ENV_FEATURE_BILLING || "true";
+        window.ENV_FEATURE_SLACK = window.ENV_FEATURE_SLACK || "true";
+        window.ENV_FEATURE_ADVANCED_ANALYTICS = window.ENV_FEATURE_ADVANCED_ANALYTICS || "true";
+        window.ENV_FEATURE_AUDIT_LOGS = window.ENV_FEATURE_AUDIT_LOGS || "true";
+        window.ENV_FEATURE_RBAC = window.ENV_FEATURE_RBAC || "true";
+    </script>
     <style>
         * {
             box-sizing: border-box;
@@ -62,6 +105,36 @@
         @media (max-width: 768px) {
             body {
                 font-size: 14px;
+            }
+            
+            /* Mobile-friendly table overflow */
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            /* Stack flex containers on mobile */
+            .flex-row {
+                flex-direction: column !important;
+            }
+            
+            /* Full-width buttons on mobile */
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* Adjust padding for mobile */
+            .container {
+                padding: 10px !important;
+            }
+        }
+        
+        /* Tablet responsive */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 95%;
             }
         }
         

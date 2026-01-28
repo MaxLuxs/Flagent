@@ -1,4 +1,5 @@
 package flagent.repository.impl
+import org.jetbrains.exposed.v1.jdbc.*
 
 import flagent.domain.entity.Variant
 import flagent.domain.repository.IVariantRepository
@@ -7,8 +8,7 @@ import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.*
 
 class VariantRepository : IVariantRepository {
     
@@ -16,7 +16,7 @@ class VariantRepository : IVariantRepository {
     
     override suspend fun findByFlagId(flagId: Int): List<Variant> = withContext(Dispatchers.IO) {
         Database.transaction {
-            Variants.select { Variants.flagId eq flagId }
+            Variants.selectAll().where { Variants.flagId eq flagId }
                 .orderBy(Variants.id, SortOrder.ASC)
                 .map { mapRowToVariant(it) }
         }
@@ -24,7 +24,7 @@ class VariantRepository : IVariantRepository {
     
     override suspend fun findById(id: Int): Variant? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Variants.select { Variants.id eq id }
+            Variants.selectAll().where { Variants.id eq id }
                 .firstOrNull()
                 ?.let { mapRowToVariant(it) }
         }
@@ -38,7 +38,7 @@ class VariantRepository : IVariantRepository {
                 it[flagId] = variant.flagId
                 it[key] = variant.key
                 it[attachment] = attachmentJson
-                it[createdAt] = java.time.Instant.now()
+                it[createdAt] = java.time.LocalDateTime.now()
             }[Variants.id].value
             
             variant.copy(id = id)
@@ -52,7 +52,7 @@ class VariantRepository : IVariantRepository {
             Variants.update({ Variants.id eq variant.id }) {
                 it[key] = variant.key
                 it[attachment] = attachmentJson
-                it[updatedAt] = java.time.Instant.now()
+                it[updatedAt] = java.time.LocalDateTime.now()
             }
             variant
         }
@@ -61,7 +61,7 @@ class VariantRepository : IVariantRepository {
     override suspend fun delete(id: Int): Unit = withContext(Dispatchers.IO) {
         Database.transaction {
             Variants.update({ Variants.id eq id }) {
-                it[deletedAt] = java.time.Instant.now()
+                it[deletedAt] = java.time.LocalDateTime.now()
             }
         }
         Unit

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: flagent-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_DB=${POSTGRES_DB:-flagent}
+      - POSTGRES_USER=${POSTGRES_USER:-flagent}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-flagent}
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - flagent-network
+    depends_on:
+      - postgres
+
+volumes:
+  grafana-storage:
+
+networks:
+  flagent-network:
+    external: true

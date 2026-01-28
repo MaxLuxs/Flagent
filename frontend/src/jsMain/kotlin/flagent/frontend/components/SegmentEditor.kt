@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import flagent.api.model.CreateSegmentRequest
 import flagent.api.model.PutSegmentRequest
 import flagent.frontend.api.ApiClient
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Router
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +43,6 @@ import org.jetbrains.compose.web.dom.Text
  */
 @Composable
 fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
-    val apiClient = remember { ApiClient("http://localhost:18000") }
     val description = remember { mutableStateOf("") }
     val rolloutPercent = remember { mutableStateOf(100) }
     val loading = remember { mutableStateOf(segmentId != null) }
@@ -54,16 +54,16 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
             loading.value = true
             error.value = null
             try {
-                val segments = apiClient.getSegments(flagId)
+                val segments = ApiClient.getSegments(flagId)
                 val segment = segments.find { it.id == segmentId }
                 if (segment != null) {
                     description.value = segment.description ?: ""
                     rolloutPercent.value = segment.rolloutPercent
                 } else {
-                    error.value = "Segment not found"
+                    error.value = LocalizedStrings.segmentNotFound
                 }
             } catch (e: Exception) {
-                error.value = e.message ?: "Failed to load segment"
+                error.value = e.message ?: LocalizedStrings.failedToLoadSegment
             } finally {
                 loading.value = false
             }
@@ -82,11 +82,11 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
         }
     }) {
         H3 { 
-            Text(if (segmentId != null) "Edit Segment" else "Create Segment")
+            Text(if (segmentId != null) LocalizedStrings.editSegment else LocalizedStrings.createSegment)
             InfoTooltip(
-                title = "Segments",
-                description = "Segments group entities that should receive the same variant assignment. Each segment can have constraints (targeting rules) and distributions (variant percentages).",
-                details = "Segments are evaluated in order. The first segment whose constraints match an entity will determine which variant is assigned. Use rollout percentage to control what portion of matching entities get assigned."
+                title = LocalizedStrings.segmentEditorTitle,
+                description = LocalizedStrings.segmentsTooltipDescription,
+                details = LocalizedStrings.segmentsTooltipDetails
             )
         }
 
@@ -101,7 +101,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                     borderRadius(5.px)
                 }
             }) {
-                Text("Error: ${error.value}")
+                Text("${LocalizedStrings.error}: ${error.value}")
             }
         } else {
             Div({
@@ -112,7 +112,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                 }
             }) {
                 Label {
-                    Text("Description:")
+                    Text("${LocalizedStrings.description}:")
                     Input(InputType.Text) {
                         value(description.value)
                         onInput { event -> description.value = event.value }
@@ -124,7 +124,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                 }
 
                 Label {
-                    Text("Rollout Percent: ${rolloutPercent.value}%")
+                    Text("${LocalizedStrings.rolloutPercent}: ${rolloutPercent.value}%")
                     Input(InputType.Range) {
                         value(rolloutPercent.value.toString())
                         onInput { event ->
@@ -142,7 +142,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                 Button({
                     onClick {
                         if (description.value.isBlank()) {
-                            error.value = "Description is required"
+                            error.value = LocalizedStrings.descriptionIsRequired
                             return@onClick
                         }
 
@@ -152,7 +152,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                         CoroutineScope(Dispatchers.Main).launch {
                             try {
                                 if (segmentId != null) {
-                                    apiClient.updateSegment(
+                                    ApiClient.updateSegment(
                                         flagId,
                                         segmentId,
                                         PutSegmentRequest(
@@ -161,7 +161,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                                         )
                                     )
                                 } else {
-                                    apiClient.createSegment(
+                                    ApiClient.createSegment(
                                         flagId,
                                         CreateSegmentRequest(
                                             description = description.value,
@@ -171,7 +171,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                                 }
                                 Router.navigateBack()
                             } catch (e: Exception) {
-                                error.value = e.message ?: "Failed to save segment"
+                                error.value = e.message ?: LocalizedStrings.failedToSaveSegment
                             } finally {
                                 saving.value = false
                             }
@@ -195,7 +195,11 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                         cursor(if (saving.value || description.value.isBlank()) "not-allowed" else "pointer")
                     }
                 }) {
-                    Text(if (saving.value) "Saving..." else if (segmentId != null) "Update Segment" else "Create Segment")
+                    Text(
+                        if (saving.value) LocalizedStrings.saving
+                        else if (segmentId != null) LocalizedStrings.updateSegment
+                        else LocalizedStrings.createSegment
+                    )
                 }
             }
         }

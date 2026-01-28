@@ -9,6 +9,7 @@ import flagent.domain.entity.Tag
 import flagent.api.model.*
 import flagent.service.FlagService
 import flagent.util.getSubject
+import flagent.route.mapper.ResponseMappers.mapFlagToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -146,69 +147,4 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
         }
 }
 
-private fun mapFlagToResponse(flag: Flag): FlagResponse {
-    return FlagResponse(
-        id = flag.id,
-        key = flag.key,
-        description = flag.description,
-        createdBy = flag.createdBy,
-        updatedBy = flag.updatedBy,
-        enabled = flag.enabled,
-        snapshotID = flag.snapshotId,
-        notes = flag.notes,
-        dataRecordsEnabled = flag.dataRecordsEnabled,
-        entityType = flag.entityType,
-        segments = flag.segments.map { mapSegmentToResponse(it) },
-        variants = flag.variants.map { mapVariantToResponse(it) },
-        tags = flag.tags.map { mapTagToResponse(it) },
-        updatedAt = flag.updatedAt
-    )
-}
-
-private fun mapSegmentToResponse(segment: Segment): SegmentResponse {
-    return SegmentResponse(
-        id = segment.id,
-        flagID = segment.flagId,
-        description = segment.description,
-        rank = segment.rank,
-        rolloutPercent = segment.rolloutPercent,
-        constraints = segment.constraints.map { mapConstraintToResponse(it) },
-        distributions = segment.distributions.map { mapDistributionToResponse(it) }
-    )
-}
-
-private fun mapVariantToResponse(variant: Variant): VariantResponse {
-    return VariantResponse(
-        id = variant.id,
-        flagID = variant.flagId,
-        key = variant.key,
-        attachment = variant.attachment?.entries?.associate { it.key to it.value.toString() }
-    )
-}
-
-private fun mapConstraintToResponse(constraint: Constraint): ConstraintResponse {
-    return ConstraintResponse(
-        id = constraint.id,
-        segmentID = constraint.segmentId,
-        property = constraint.property,
-        operator = constraint.operator,
-        value = constraint.value
-    )
-}
-
-private fun mapDistributionToResponse(distribution: Distribution): DistributionResponse {
-    return DistributionResponse(
-        id = distribution.id,
-        segmentID = distribution.segmentId,
-        variantID = distribution.variantId,
-        variantKey = distribution.variantKey,
-        percent = distribution.percent
-    )
-}
-
-private fun mapTagToResponse(tag: Tag): TagResponse {
-    return TagResponse(
-        id = tag.id,
-        value = tag.value
-    )
-}
+// Mappers are now centralized in flagent.route.mapper.ResponseMappers

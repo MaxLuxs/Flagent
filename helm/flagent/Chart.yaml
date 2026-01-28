@@ -1,0 +1,18 @@
+apiVersion: v2
+name: flagent
+description: A Helm chart for Flagent feature flag and experimentation platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - feature-flags
+  - experimentation
+  - ab-testing
+  - kotlin
+  - ktor
+home: https://github.com/MaxLuxs/Flagent
+sources:
+  - https://github.com/MaxLuxs/Flagent
+maintainers:
+  - name: Flagent Team
+    email: support@flagent.io
