@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Enterprise contract: `EnterpriseConfigurator.configureRoutes(Routing, EnterpriseBackendContext)` for registering tenant/billing/SSO routes from enterprise module
+- `EnterpriseBackendContext`: `createTenantSchema`, `runTenantSchemaMigrations`, `dropTenantSchema` for tenant provisioning in enterprise
+- Backend `Database`: tenant schema helpers for enterprise (`createTenantSchema`, `runTenantSchemaMigrations`, `dropTenantSchema`)
+- When enterprise absent: core creates tenant/billing/SSO tables (self-hosted) and registers routes via `DefaultEnterpriseConfigurator.configureRoutes`
+- When enterprise present: `EnterprisePlugin.configure()` runs migrations; route registration in enterprise is prepared (repos/services/routes move is follow-up)
+
+### Changed
+- Application.kt: tenant/billing/SSO middleware and routes only when enterprise absent; always calls `enterpriseConfigurator.configureRoutes()`; enterprise tables created by enterprise when present, by core when absent
+
 ### Fixed
 - Fixed all broken links in README files
 - Generated SDK documentation (JavaScript, Swift, Kotlin)

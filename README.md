@@ -406,6 +406,11 @@ flagent/
     └── swift/        # Swift/iOS SDK
 ```
 
+## Open-Source vs Enterprise Build
+
+- **Open-source (default):** Core feature flags, evaluation, A/B testing, and APIs. Build with `./gradlew build`. If `internal/flagent-enterprise` is not present, only core is built.
+- **Enterprise (optional):** When `internal/flagent-enterprise` exists (or is added as a submodule), the build includes the enterprise module: multi-tenancy, billing (Stripe), SSO/SAML, and related tables. The backend loads it via ServiceLoader and runs enterprise migrations and routes when the module is on the classpath. See [internal/README.md](internal/README.md).
+
 ## Deployment
 
 Flagent supports multiple deployment options for different use cases.

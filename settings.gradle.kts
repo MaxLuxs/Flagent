@@ -23,6 +23,12 @@ include(":kotlin-debug-ui")
 include(":android-sample")
 include(":android-sample:app")
 
+// Enterprise module (optional submodule)
+if (file("internal/flagent-enterprise/build.gradle.kts").exists()) {
+    include(":flagent-enterprise")
+    project(":flagent-enterprise").projectDir = file("internal/flagent-enterprise")
+}
+
 project(":shared").projectDir = file("shared")
 project(":backend").projectDir = file("backend")
 project(":frontend").projectDir = file("frontend")

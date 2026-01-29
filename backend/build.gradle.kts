@@ -13,6 +13,11 @@ dependencies {
     // Shared models
     implementation(project(":shared"))
     
+    // Enterprise module (optional, when internal/flagent-enterprise submodule is present)
+    if (project.findProject(":flagent-enterprise") != null) {
+        implementation(project(":flagent-enterprise"))
+    }
+    
     // Ktor Server
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)

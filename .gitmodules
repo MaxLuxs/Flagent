@@ -1,0 +1,3 @@
+[submodule "internal/flagent-enterprise"]
+	path = internal/flagent-enterprise
+	url = git@github.com:MaxLuxs/Flagent-Enterprise.git

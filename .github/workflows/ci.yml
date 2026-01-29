@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v4
+        # Submodules (e.g. internal/flagent-enterprise) are not inited by default; core build runs without enterprise.
       
       - name: Set up JDK 21
         uses: actions/setup-java@v4

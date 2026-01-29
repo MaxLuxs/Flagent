@@ -2,6 +2,7 @@ package flagent.repository
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import flagent.api.EnterpriseConfigurator
 import flagent.config.AppConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,6 +14,7 @@ import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import flagent.repository.tables.*
+import java.util.ServiceLoader
 
 private val logger = KotlinLogging.logger {}
 
@@ -78,7 +80,7 @@ object Database {
                 addLogger(StdOutSqlLogger)
             }
 
-            // Create main Flagent tables (in public schema)
+            // Create main Flagent tables (in public schema) - core only
             SchemaUtils.createMissingTablesAndColumns(
                 Flags,
                 Segments,
@@ -91,7 +93,7 @@ object Database {
                 FlagEntityTypes,
                 Users
             )
-            
+
             // Create AI-powered rollouts tables (always enabled)
             SchemaUtils.createMissingTablesAndColumns(
                 MetricDataPoints,
@@ -101,36 +103,33 @@ object Database {
                 SmartRolloutHistory
             )
             logger.info { "AI-powered rollouts tables created" }
-            
-            // Create multi-tenancy tables (in public schema)
-            if (AppConfig.multiTenancyEnabled) {
-                SchemaUtils.createMissingTablesAndColumns(
-                    Tenants,
-                    TenantUsers,
-                    TenantApiKeys,
-                    TenantUsage
-                )
-                logger.info { "Multi-tenancy tables created" }
-                
-                // Create SSO tables
-                SchemaUtils.createMissingTablesAndColumns(
-                    SsoProviders,
-                    SsoSessions,
-                    SsoLoginAttempts
-                )
-                logger.info { "SSO/SAML tables created" }
-            }
-            
-            // Create billing tables (if Stripe enabled)
-            if (AppConfig.stripeEnabled) {
-                SchemaUtils.createMissingTablesAndColumns(
-                    Subscriptions,
-                    Invoices,
-                    UsageRecords
-                )
-                logger.info { "Billing tables created" }
-            }
 
+            // Multi-tenancy, SSO, billing: created by enterprise when present, else by core when config enabled (self-hosted)
+            val enterprisePresent = ServiceLoader.load(EnterpriseConfigurator::class.java).toList().isNotEmpty()
+            if (!enterprisePresent) {
+                if (AppConfig.multiTenancyEnabled) {
+                    SchemaUtils.createMissingTablesAndColumns(
+                        Tenants,
+                        TenantUsers,
+                        TenantApiKeys,
+                        TenantUsage
+                    )
+                    SchemaUtils.createMissingTablesAndColumns(
+                        SsoProviders,
+                        SsoSessions,
+                        SsoLoginAttempts
+                    )
+                    logger.info { "Multi-tenancy and SSO tables created (core)" }
+                }
+                if (AppConfig.stripeEnabled) {
+                    SchemaUtils.createMissingTablesAndColumns(
+                        Subscriptions,
+                        Invoices,
+                        UsageRecords
+                    )
+                    logger.info { "Billing tables created (core)" }
+                }
+            }
             logger.info { "Database migrations completed" }
         }
     }
@@ -143,12 +142,82 @@ object Database {
     }
 
     /**
+     * Run a block inside a synchronous transaction (for enterprise migrations).
+     */
+    fun runBlockingMigrations(block: () -> Unit) {
+        transaction(exposedDatabase!!) {
+            if (AppConfig.dbConnectionDebug) {
+                addLogger(StdOutSqlLogger)
+            }
+            block()
+        }
+    }
+
+    /**
+     * Run a block inside a synchronous transaction (for enterprise repository operations).
+     */
+    fun <T> runBlockingTransaction(block: () -> T): T {
+        return transaction(exposedDatabase!!) {
+            if (AppConfig.dbConnectionDebug) {
+                addLogger(StdOutSqlLogger)
+            }
+            block()
+        }
+    }
+
+    /**
      * Execute database operation in transaction
      */
     suspend fun <T> transaction(block: suspend () -> T): T {
         return withContext(Dispatchers.IO) {
             suspendTransaction(exposedDatabase!!) {
                 block()
+            }
+        }
+    }
+
+    /**
+     * Create tenant schema (for enterprise TenantProvisioningService).
+     * Called via EnterpriseBackendContext when enterprise module is present.
+     */
+    suspend fun createTenantSchema(schemaName: String) {
+        withContext(Dispatchers.IO) {
+            suspendTransaction(exposedDatabase!!) {
+                exec("CREATE SCHEMA IF NOT EXISTS $schemaName")
+            }
+        }
+    }
+
+    /**
+     * Run core Flagent table migrations in the given tenant schema.
+     */
+    suspend fun runTenantSchemaMigrations(schemaName: String) {
+        withContext(Dispatchers.IO) {
+            suspendTransaction(exposedDatabase!!) {
+                exec("SET search_path TO $schemaName, public")
+                SchemaUtils.create(
+                    Flags,
+                    Segments,
+                    Variants,
+                    Constraints,
+                    Distributions,
+                    Tags,
+                    FlagsTags,
+                    FlagSnapshots,
+                    FlagEntityTypes,
+                    Users
+                )
+            }
+        }
+    }
+
+    /**
+     * Drop tenant schema (for enterprise tenant deletion).
+     */
+    suspend fun dropTenantSchema(schemaName: String) {
+        withContext(Dispatchers.IO) {
+            suspendTransaction(exposedDatabase!!) {
+                exec("DROP SCHEMA IF EXISTS $schemaName CASCADE")
             }
         }
     }
