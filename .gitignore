@@ -198,6 +198,8 @@ playwright/.cache/
 .cache/
 tmp/
 temp/
+COMMIT_MSG.txt
+:memory:*
 
 # OpenAPI Generator
 .openapi-generator/
