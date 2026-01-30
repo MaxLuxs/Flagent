@@ -110,8 +110,11 @@ tasks.test {
     useJUnitPlatform {
         excludeTags("performance")
     }
-    filter {
-        excludeTestsMatching("*IntegrationTest")
+    // Exclude integration tests by default (they need Postgres). CI runs them with -PincludeIntegrationTests.
+    if (!project.hasProperty("includeIntegrationTests")) {
+        filter {
+            excludeTestsMatching("*IntegrationTest")
+        }
     }
     finalizedBy(tasks.jacocoTestReport)
     ignoreFailures = true

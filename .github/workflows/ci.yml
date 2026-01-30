@@ -100,7 +100,7 @@ jobs:
         env:
           FLAGENT_DB_DBDRIVER: postgres
           FLAGENT_DB_DBCONNECTIONSTR: jdbc:postgresql://localhost:5432/flagent_test?user=test&password=test
-        run: ./gradlew :backend:test --no-daemon --tests "*IntegrationTest"
+        run: ./gradlew :backend:test --no-daemon -PincludeIntegrationTests --tests "*IntegrationTest"
   
   actionlint:
     runs-on: ubuntu-latest
