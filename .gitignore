@@ -170,6 +170,7 @@ build/
 .env.development
 .env.production
 *.env
+!.env.billing.example
 
 # Logs
 logs/
@@ -269,6 +270,8 @@ vendor/
 
 # Documentation (ignore main docs directory, but keep SDK docs)
 /docs/
+# Private documentation (never commit)
+docs/private/
 # Keep GitHub Pages files
 !docs/index.html
 !docs/styles.css
