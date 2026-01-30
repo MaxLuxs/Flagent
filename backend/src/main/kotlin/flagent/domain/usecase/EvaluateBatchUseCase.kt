@@ -9,7 +9,7 @@ import flagent.domain.value.EntityID
  * Domain layer - no framework dependencies
  */
 class EvaluateBatchUseCase(
-    private val evaluateFlagUseCase: EvaluateFlagUseCase = EvaluateFlagUseCase()
+    private val evaluateFlagUseCase: EvaluateFlagUseCase
 ) {
     /**
      * Batch evaluation result

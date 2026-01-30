@@ -85,7 +85,7 @@ class ExportService(
     }
     
     private suspend fun exportFlags(tempDb: Database) = withContext(Dispatchers.IO) {
-        val flags = flagRepository.findAll()
+        val flags = flagRepository.findAll(preload = true)
         
         suspendTransaction(tempDb) {
             // First, collect all unique tags and insert them

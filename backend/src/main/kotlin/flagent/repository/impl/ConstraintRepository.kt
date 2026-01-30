@@ -13,7 +13,8 @@ class ConstraintRepository : IConstraintRepository {
     
     override suspend fun findBySegmentId(segmentId: Int): List<Constraint> = withContext(Dispatchers.IO) {
         Database.transaction {
-            Constraints.selectAll().where { Constraints.segmentId eq segmentId }
+            Constraints.selectAll()
+                .where { (Constraints.segmentId eq segmentId) and (Constraints.deletedAt.isNull()) }
                 .orderBy(Constraints.createdAt, SortOrder.ASC)
                 .map { mapRowToConstraint(it) }
         }
@@ -21,7 +22,8 @@ class ConstraintRepository : IConstraintRepository {
     
     override suspend fun findById(id: Int): Constraint? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Constraints.selectAll().where { Constraints.id eq id }
+            Constraints.selectAll()
+                .where { (Constraints.id eq id) and (Constraints.deletedAt.isNull()) }
                 .firstOrNull()
                 ?.let { mapRowToConstraint(it) }
         }

@@ -6,6 +6,12 @@ plugins {
     `maven-publish`
 }
 
+java {
+    toolchain {
+        languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(21))
+    }
+}
+
 group = "io.ktor"
 
 dependencies {
@@ -40,6 +46,7 @@ dependencies {
     // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
 }
 

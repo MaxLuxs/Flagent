@@ -74,13 +74,13 @@ fun Route.realtimeRoutes(
             }
         }
         
-        // Health check endpoint for SSE
+        // Health check endpoint for SSE (use homogeneous map for JSON serialization)
         get("/sse/health") {
             call.respond(
                 HttpStatusCode.OK,
                 mapOf(
                     "status" to "healthy",
-                    "activeConnections" to eventBus.getActiveConnectionCount(),
+                    "activeConnections" to eventBus.getActiveConnectionCount().toString(),
                     "protocol" to "SSE"
                 )
             )

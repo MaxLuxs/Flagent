@@ -2,19 +2,25 @@ package flagent.repository
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import flagent.api.EnterpriseConfigurator
 import flagent.config.AppConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import flagent.repository.tables.*
-import java.util.ServiceLoader
+import flagent.repository.tables.Constraints
+import flagent.repository.tables.Distributions
+import flagent.repository.tables.FlagEntityTypes
+import flagent.repository.tables.FlagSnapshots
+import flagent.repository.tables.Flags
+import flagent.repository.tables.FlagsTags
+import flagent.repository.tables.Segments
+import flagent.repository.tables.Tags
+import flagent.repository.tables.Users
+import flagent.repository.tables.Variants
 
 private val logger = KotlinLogging.logger {}
 
@@ -31,14 +37,18 @@ object Database {
      * Supports PostgreSQL, MySQL, and SQLite
      */
     fun init() {
-        val driver = when (AppConfig.dbDriver) {
+        val dbDriver = when (AppConfig.dbDriver) {
+            "postgres", "postgresql" -> "postgres"
+            else -> AppConfig.dbDriver
+        }
+        val driver = when (dbDriver) {
             "postgres" -> "org.postgresql.Driver"
             "mysql" -> "com.mysql.cj.jdbc.Driver"
             "sqlite3" -> "org.sqlite.JDBC"
             else -> throw IllegalArgumentException("Unsupported database driver: ${AppConfig.dbDriver}")
         }
 
-        val jdbcUrl = when (AppConfig.dbDriver) {
+        val jdbcUrl = when (dbDriver) {
             "postgres" -> AppConfig.dbConnectionStr
             "mysql" -> AppConfig.dbConnectionStr
             "sqlite3" -> {
@@ -51,11 +61,12 @@ object Database {
             else -> throw IllegalArgumentException("Unsupported database driver: ${AppConfig.dbDriver}")
         }
 
+        val useMemoryDb = dbDriver == "sqlite3" && AppConfig.dbConnectionStr == ":memory:"
         val config = HikariConfig().apply {
             this.driverClassName = driver
             this.jdbcUrl = jdbcUrl
-            maximumPoolSize = 10
-            minimumIdle = 2
+            maximumPoolSize = if (useMemoryDb) 1 else 10
+            minimumIdle = if (useMemoryDb) 1 else 2
             connectionTimeout = 30000
             idleTimeout = 600000
             maxLifetime = 1800000
@@ -80,7 +91,7 @@ object Database {
                 addLogger(StdOutSqlLogger)
             }
 
-            // Create main Flagent tables (in public schema) - core only
+            // Create core Flagent tables only (enterprise creates its own tables when present)
             SchemaUtils.createMissingTablesAndColumns(
                 Flags,
                 Segments,
@@ -93,43 +104,6 @@ object Database {
                 FlagEntityTypes,
                 Users
             )
-
-            // Create AI-powered rollouts tables (always enabled)
-            SchemaUtils.createMissingTablesAndColumns(
-                MetricDataPoints,
-                AnomalyAlerts,
-                AnomalyDetectionConfigs,
-                SmartRolloutConfigs,
-                SmartRolloutHistory
-            )
-            logger.info { "AI-powered rollouts tables created" }
-
-            // Multi-tenancy, SSO, billing: created by enterprise when present, else by core when config enabled (self-hosted)
-            val enterprisePresent = ServiceLoader.load(EnterpriseConfigurator::class.java).toList().isNotEmpty()
-            if (!enterprisePresent) {
-                if (AppConfig.multiTenancyEnabled) {
-                    SchemaUtils.createMissingTablesAndColumns(
-                        Tenants,
-                        TenantUsers,
-                        TenantApiKeys,
-                        TenantUsage
-                    )
-                    SchemaUtils.createMissingTablesAndColumns(
-                        SsoProviders,
-                        SsoSessions,
-                        SsoLoginAttempts
-                    )
-                    logger.info { "Multi-tenancy and SSO tables created (core)" }
-                }
-                if (AppConfig.stripeEnabled) {
-                    SchemaUtils.createMissingTablesAndColumns(
-                        Subscriptions,
-                        Invoices,
-                        UsageRecords
-                    )
-                    logger.info { "Billing tables created (core)" }
-                }
-            }
             logger.info { "Database migrations completed" }
         }
     }
@@ -176,11 +150,21 @@ object Database {
         }
     }
 
+    private fun isSqlite(): Boolean {
+        val dbDriver = when (AppConfig.dbDriver) {
+            "postgres", "postgresql" -> "postgres"
+            else -> AppConfig.dbDriver
+        }
+        return dbDriver == "sqlite3"
+    }
+
     /**
      * Create tenant schema (for enterprise TenantProvisioningService).
      * Called via EnterpriseBackendContext when enterprise module is present.
+     * No-op for SQLite (no schema support); tenants share single DB via tenant_id.
      */
     suspend fun createTenantSchema(schemaName: String) {
+        if (isSqlite()) return
         withContext(Dispatchers.IO) {
             suspendTransaction(exposedDatabase!!) {
                 exec("CREATE SCHEMA IF NOT EXISTS $schemaName")
@@ -190,8 +174,10 @@ object Database {
 
     /**
      * Run core Flagent table migrations in the given tenant schema.
+     * No-op for SQLite (tables already created in default namespace).
      */
     suspend fun runTenantSchemaMigrations(schemaName: String) {
+        if (isSqlite()) return
         withContext(Dispatchers.IO) {
             suspendTransaction(exposedDatabase!!) {
                 exec("SET search_path TO $schemaName, public")
@@ -213,8 +199,10 @@ object Database {
 
     /**
      * Drop tenant schema (for enterprise tenant deletion).
+     * No-op for SQLite (no schema support).
      */
     suspend fun dropTenantSchema(schemaName: String) {
+        if (isSqlite()) return
         withContext(Dispatchers.IO) {
             suspendTransaction(exposedDatabase!!) {
                 exec("DROP SCHEMA IF EXISTS $schemaName CASCADE")

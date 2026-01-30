@@ -44,11 +44,10 @@ interface EnterpriseBackendContext {
 
 /**
  * Core backend dependencies passed to enterprise for features that need them (smart rollout, anomaly detection).
- * All getters return Any to avoid backend types in shared; enterprise casts to concrete types.
  */
 interface CoreDependencies {
-    fun getSegmentService(): Any?
-    fun getFlagRepository(): Any?
+    fun getSegmentService(): CoreSegmentService?
+    fun getFlagRepository(): CoreFlagRepository?
     fun getEvalCache(): Any?
     fun getSlackNotificationService(): Any?
 }

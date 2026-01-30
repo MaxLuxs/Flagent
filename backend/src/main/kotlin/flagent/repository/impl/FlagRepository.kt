@@ -24,15 +24,17 @@ class FlagRepository : IFlagRepository {
     
     override suspend fun findById(id: Int): Flag? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Flags.selectAll().where { Flags.id eq id }
+            Flags.selectAll()
+                .where { (Flags.id eq id) and (Flags.deletedAt.isNull()) }
                 .firstOrNull()
                 ?.let { row -> mapRowToFlag(row) }
         }
     }
-    
+
     override suspend fun findByKey(key: String): Flag? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Flags.selectAll().where { Flags.key eq key }
+            Flags.selectAll()
+                .where { (Flags.key eq key) and (Flags.deletedAt.isNull()) }
                 .firstOrNull()
                 ?.let { row -> mapRowToFlag(row) }
         }

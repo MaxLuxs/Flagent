@@ -8,11 +8,46 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EvalCacheTest {
+
+    @Test
+    fun `constructor throws when both repository and fetcher are null`() {
+        assertFailsWith<IllegalArgumentException> {
+            EvalCache(flagRepository = null, fetcher = null)
+        }
+    }
+
+    @Test
+    fun `getByFlagKeyOrID returns flag when using fetcher only`() = runBlocking {
+        val flag = Flag(
+            id = 1,
+            key = "test_flag",
+            description = "Test flag",
+            enabled = true
+        )
+        val fetcher = object : EvalCacheFetcher {
+            override suspend fun fetch(): List<Flag> = listOf(flag)
+        }
+        val cache = EvalCache(flagRepository = null, fetcher = fetcher)
+        cache.start()
+        cache.refresh()
+
+        val result = cache.getByFlagKeyOrID(1)
+        assertNotNull(result)
+        assertEquals(flag, result)
+
+        val resultByKey = cache.getByFlagKeyOrID("test_flag")
+        assertNotNull(resultByKey)
+        assertEquals(flag, resultByKey)
+
+        cache.stop()
+    }
+
     @Test
     fun `getByFlagKeyOrID returns flag by ID`() = runBlocking {
         val flag = Flag(

@@ -20,7 +20,7 @@ class DocumentationRoutesTest {
         
         val response = client.get("/docs")
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Text.Html, response.contentType())
+        assertTrue(response.contentType()?.match(ContentType.Text.Html) == true)
         val content = response.bodyAsText()
         assertTrue(content.contains("swagger-ui"))
         assertTrue(content.contains("Flagent API Documentation"))
@@ -66,7 +66,7 @@ class DocumentationRoutesTest {
         )
         
         if (response.status == HttpStatusCode.OK) {
-            assertEquals(ContentType.Application.Json, response.contentType())
+            assertTrue(response.contentType()?.match(ContentType.Application.Json) == true)
             val json = Json.parseToJsonElement(response.bodyAsText())
             assertTrue(json is JsonObject)
         }

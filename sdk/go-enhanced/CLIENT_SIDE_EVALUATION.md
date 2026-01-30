@@ -446,7 +446,8 @@ config := enhanced.DefaultOfflineConfig().
 - [ ] Snapshot compression
 - [ ] Multi-snapshot support (A/B test different configs)
 - [ ] Snapshot pre-warming (predictive pre-fetch)
-- [ ] Real-time updates via WebSocket/SSE
+- [x] Real-time updates via SSE (implemented)
+- [ ] WebSocket support (future)
 
 ## See Also
 

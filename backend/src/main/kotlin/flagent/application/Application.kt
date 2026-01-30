@@ -6,25 +6,15 @@ import flagent.cache.impl.EvalCache
 import flagent.cache.impl.createEvalCacheFetcher
 import flagent.config.AppConfig
 import flagent.repository.Database
-import flagent.repository.impl.AnomalyAlertRepository
 import flagent.repository.impl.ConstraintRepository
 import flagent.repository.impl.DistributionRepository
 import flagent.repository.impl.FlagEntityTypeRepository
 import flagent.repository.impl.FlagRepository
 import flagent.repository.impl.FlagSnapshotRepository
-import flagent.repository.impl.InvoiceRepository
-import flagent.repository.impl.MetricsRepository
 import flagent.repository.impl.SegmentRepository
-import flagent.repository.impl.SmartRolloutRepository
-import flagent.repository.impl.SsoRepository
-import flagent.repository.impl.SubscriptionRepository
 import flagent.repository.impl.TagRepository
-import flagent.repository.impl.TenantRepository
-import flagent.repository.impl.UsageRecordRepository
 import flagent.repository.impl.VariantRepository
-import flagent.middleware.TenantContextMiddleware
 import flagent.middleware.configureErrorHandling
-import flagent.middleware.configureSsoJwtAuth
 import flagent.middleware.configureCompression
 import flagent.middleware.configureLogging
 import flagent.middleware.configureJWTAuth
@@ -47,13 +37,7 @@ import flagent.route.configureInfoRoutes
 import flagent.route.configureProfilingRoutes
 import flagent.route.configureSegmentRoutes
 import flagent.route.configureTagRoutes
-import flagent.route.configureBillingRoutes
-import flagent.route.configureMetricsRoutes
 import flagent.route.configureVariantRoutes
-import flagent.route.ssoRoutes
-import flagent.route.tenantRoutes
-import flagent.route.configureSmartRolloutRoutes
-import flagent.route.configureAnomalyRoutes
 import flagent.middleware.configureSSE
 import flagent.middleware.configureRealtimeEventBus
 import flagent.recorder.DataRecordingService
@@ -67,10 +51,7 @@ import flagent.service.FlagSnapshotService
 import flagent.service.SegmentService
 import flagent.service.TagService
 import flagent.service.VariantService
-import flagent.service.BillingService
 import flagent.service.ExportService
-import flagent.service.SsoService
-import flagent.service.TenantProvisioningService
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -80,12 +61,8 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.openapi.*
 import io.ktor.server.plugins.swagger.*
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.routing.*
 import io.ktor.server.http.content.*
-import io.jsonwebtoken.security.Keys
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.io.File
@@ -179,9 +156,8 @@ fun Application.module() {
     // Configure New Relic (requires Java Agent for full functionality)
     configureNewRelic()
     
-    // Configure authentication (SSO JWT configured here when enterprise absent, by enterprise when present)
+    // Configure authentication (SSO JWT configured by enterprise when present)
     configureJWTAuth()
-    configureSsoJwtAuth()
     configureBasicAuth()
     configureHeaderAuth()
     configureCookieAuth()
@@ -202,16 +178,6 @@ fun Application.module() {
     val tagRepository = TagRepository()
     val flagSnapshotRepository = FlagSnapshotRepository()
     val flagEntityTypeRepository = FlagEntityTypeRepository()
-    val tenantRepository = TenantRepository()
-    val ssoRepository = SsoRepository()
-    val subscriptionRepository = SubscriptionRepository()
-    val invoiceRepository = InvoiceRepository()
-    val usageRecordRepository = UsageRecordRepository()
-    
-    // AI-powered rollouts repositories
-    val metricsRepository = flagent.repository.impl.MetricsRepository()
-    val anomalyAlertRepository = flagent.repository.impl.AnomalyAlertRepository()
-    val smartRolloutRepository = flagent.repository.impl.SmartRolloutRepository()
     
     // Initialize cache with appropriate fetcher
     val evalCache = if (AppConfig.evalOnlyMode && AppConfig.dbDriver in listOf("json_file", "json_http")) {
@@ -260,67 +226,12 @@ fun Application.module() {
     // This will enable automatic SSE notifications on flag CRUD operations
     // Example implementation needed in FlagService, SegmentService, VariantService
     val exportService = ExportService(flagRepository, flagSnapshotRepository, flagEntityTypeRepository)
-    val tenantProvisioningService = TenantProvisioningService(tenantRepository)
-    val httpClient = HttpClient(CIO) {
-        install(ClientContentNegotiation) { json() }
-    }
-    val ssoJwtKey = Keys.hmacShaKeyFor(AppConfig.ssoJwtSecret.toByteArray())
-    val ssoService = SsoService(ssoRepository, tenantRepository, httpClient, ssoJwtKey)
-    val billingService = BillingService(
-        subscriptionRepository,
-        invoiceRepository,
-        usageRecordRepository,
-        tenantRepository
-    )
     
-    // AI-powered rollouts services
-    val slackNotificationService = if (AppConfig.slackEnabled) {
-        flagent.service.SlackNotificationService().also {
-            logger.info { "Slack notifications enabled" }
-        }
-    } else {
-        logger.info { "Slack notifications disabled" }
-        null
-    }
-    
-    val metricsCollectionService = flagent.service.MetricsCollectionService(metricsRepository)
-    val anomalyDetectionService = flagent.service.AnomalyDetectionService(
-        anomalyAlertRepository,
-        metricsRepository,
-        flagRepository,
-        slackNotificationService
-    )
-    val smartRolloutService = flagent.service.SmartRolloutService(
-        smartRolloutRepository,
-        metricsRepository,
-        segmentService,
-        slackNotificationService
-    )
-    
-    // Start AI Rollout Scheduler (if enabled)
-    val aiRolloutScheduler = if (!AppConfig.evalOnlyMode) {
-        flagent.service.AiRolloutScheduler(
-            anomalyDetectionService,
-            smartRolloutService,
-            metricsCollectionService
-        ).also {
-            it.start()
-            logger.info { "AI Rollout Scheduler started" }
-        }
-    } else {
-        logger.info { "AI Rollout Scheduler disabled in EvalOnlyMode" }
-        null
-    }
-    
-    // Tenant context middleware when enterprise absent (when present, enterprise configures it)
     val enterpriseConfigurator = ServiceLoader.load(EnterpriseConfigurator::class.java).toList().firstOrNull() ?: DefaultEnterpriseConfigurator()
-    if (enterpriseConfigurator is DefaultEnterpriseConfigurator && AppConfig.multiTenancyEnabled) {
-        TenantContextMiddleware(tenantRepository).configure(this)
-        logger.info { "Multi-tenancy enabled: tenant context middleware configured (core)" }
-    }
-    
-    // Invoke enterprise configurator (migrations; when enterprise present it also configures middleware and routes)
-    val coreDeps = CoreDependenciesImpl(segmentService, flagRepository, evalCache, slackNotificationService)
+    EnterprisePresence.enterpriseEnabled = enterpriseConfigurator !is DefaultEnterpriseConfigurator
+
+    // Invoke enterprise configurator (migrations; when enterprise present it configures middleware and routes)
+    val coreDeps = CoreDependenciesImpl(segmentService, flagRepository, evalCache)
     val backendContext = EnterpriseBackendContextImpl(coreDeps)
     enterpriseConfigurator.configure(this, backendContext)
     
@@ -349,18 +260,8 @@ fun Application.module() {
                 configureFlagEntityTypeRoutes(flagEntityTypeService)
                 configureExportRoutes(evalCache, exportService)
                 
-                // Tenant, billing, SSO: from enterprise when present, else from core (self-hosted)
+                // Tenant, billing, SSO, AI rollouts: registered by enterprise when present
                 enterpriseConfigurator.configureRoutes(this, backendContext)
-                if (enterpriseConfigurator is DefaultEnterpriseConfigurator) {
-                    tenantRoutes(tenantProvisioningService)
-                    if (AppConfig.multiTenancyEnabled) ssoRoutes(ssoService)
-                    if (AppConfig.stripeEnabled) configureBillingRoutes(billingService)
-                }
-                
-                // AI-powered rollouts routes
-                configureMetricsRoutes(metricsCollectionService)
-                configureSmartRolloutRoutes(smartRolloutService)
-                configureAnomalyRoutes(anomalyDetectionService)
             } else {
                 logger.info { "Running in EvalOnlyMode - CRUD and Export routes are disabled" }
             }
@@ -391,8 +292,6 @@ fun Application.module() {
     
     // Shutdown hook
     environment.monitor.subscribe(ApplicationStopped) {
-        aiRolloutScheduler?.stop()
-        slackNotificationService?.close()
         evalCache.stop()
         dataRecordingService?.stop()
         Database.close()

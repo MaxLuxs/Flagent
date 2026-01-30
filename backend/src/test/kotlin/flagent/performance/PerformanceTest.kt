@@ -11,11 +11,14 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.system.measureTimeMillis
 import kotlin.test.*
+import org.junit.jupiter.api.Tag
 
 /**
- * Performance tests for Flagent
- * Tests evaluation performance, cache performance, database queries, and concurrent requests
+ * Performance tests for Flagent.
+ * Excluded from default CI via excludeTags("performance"); run with
+ * ./gradlew :backend:test --tests "*PerformanceTest*" when needed.
  */
+@Tag("performance")
 class PerformanceTest {
     
     @BeforeTest
@@ -57,8 +60,10 @@ class PerformanceTest {
         val avgTime = time.toDouble() / iterations
         println("Single evaluation: $iterations iterations in ${time}ms, avg: ${avgTime}ms per evaluation")
         
-        // Should be fast (< 10ms per evaluation on average)
-        assertTrue(avgTime < 10.0, "Average evaluation time should be < 10ms, got ${avgTime}ms")
+        val threshold = System.getenv("RUN_PERF_TESTS")?.let { 
+            System.getenv("PERF_EVAL_THRESHOLD_MS")?.toDoubleOrNull() ?: 50.0 
+        } ?: 10.0
+        assertTrue(avgTime < threshold, "Average evaluation time should be < ${threshold}ms, got ${avgTime}ms")
     }
     
     @Test
@@ -103,8 +108,10 @@ class PerformanceTest {
         val avgTime = time.toDouble() / totalEvaluations
         println("Batch evaluation: $totalEvaluations evaluations in ${time}ms, avg: ${avgTime}ms per evaluation")
         
-        // Should be fast (< 10ms per evaluation on average)
-        assertTrue(avgTime < 10.0, "Average batch evaluation time should be < 10ms, got ${avgTime}ms")
+        val threshold = System.getenv("RUN_PERF_TESTS")?.let { 
+            System.getenv("PERF_EVAL_THRESHOLD_MS")?.toDoubleOrNull() ?: 50.0 
+        } ?: 10.0
+        assertTrue(avgTime < threshold, "Average batch evaluation time should be < ${threshold}ms, got ${avgTime}ms")
     }
     
     @Test

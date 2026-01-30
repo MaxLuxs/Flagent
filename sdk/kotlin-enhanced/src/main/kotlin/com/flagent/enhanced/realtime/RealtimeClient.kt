@@ -3,6 +3,7 @@ package com.flagent.enhanced.realtime
 import io.ktor.client.*
 import io.ktor.client.plugins.sse.*
 import io.ktor.client.request.*
+import io.ktor.sse.ServerSentEvent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable

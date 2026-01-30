@@ -8,29 +8,14 @@ import flagent.repository.Database
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.test.*
 
-@Testcontainers
 class DistributionRepositoryTest {
-    companion object {
-        @Container
-        @JvmStatic
-        val postgres = PostgreSQLContainer<Nothing>("postgres:15-alpine").apply {
-            withDatabaseName("testdb")
-            withUsername("test")
-            withPassword("test")
-            start()
-        }
-    }
-    
     private lateinit var flagRepository: FlagRepository
     private lateinit var segmentRepository: SegmentRepository
     private lateinit var variantRepository: VariantRepository
     private lateinit var repository: DistributionRepository
-    
+
     @BeforeTest
     fun setup() {
         Database.init()

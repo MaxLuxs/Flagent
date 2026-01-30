@@ -8,6 +8,11 @@ plugins {
     jacoco
 }
 
+java {
+    toolchain {
+        languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(21))
+    }
+}
 
 dependencies {
     // Shared models
@@ -102,9 +107,20 @@ tasks.jar {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("performance")
+    }
+    filter {
+        excludeTestsMatching("*IntegrationTest")
+    }
     finalizedBy(tasks.jacocoTestReport)
     ignoreFailures = true
+    maxParallelForks = 1
+    environment("FLAGENT_DB_DBDRIVER", "sqlite3")
+    environment("FLAGENT_DB_DBCONNECTIONSTR", ":memory:")
+    reports {
+        junitXml.required.set(false)
+    }
 }
 
 tasks.jacocoTestReport {

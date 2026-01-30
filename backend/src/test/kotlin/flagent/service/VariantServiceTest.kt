@@ -237,8 +237,12 @@ class VariantServiceTest {
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.findById(1) } returns existingVariant
-        coEvery { variantRepository.update(any()) } returns updatedVariant
+        coEvery { variantRepository.update(any()) } answers {
+            val v = firstArg<Variant>()
+            v.copy(id = 1, flagId = 1)
+        }
         coEvery { distributionRepository.updateVariantKeyByVariantId(1, "new-variant") } just Runs
+        coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
         val result = variantService.updateVariant(1, 1, variant)
         
@@ -354,12 +358,14 @@ class VariantServiceTest {
         val validKeys = listOf("variant-key", "variant_key", "variant.key", "variant:key", "variant/key", "variant123")
         
         coEvery { flagRepository.findById(1) } returns flag
+        coEvery { variantRepository.create(any()) } answers {
+            val v = firstArg<Variant>()
+            v.copy(id = 1, flagId = 1)
+        }
+        coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
         validKeys.forEach { key ->
             val variant = Variant(flagId = 1, key = key)
-            val createdVariant = variant.copy(id = 1, flagId = 1)
-            coEvery { variantRepository.create(any()) } returns createdVariant
-            
             val result = variantService.createVariant(1, variant)
             assertEquals(key, result.key)
         }

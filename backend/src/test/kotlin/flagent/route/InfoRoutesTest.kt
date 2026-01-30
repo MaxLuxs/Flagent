@@ -3,7 +3,10 @@ package flagent.route
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlin.test.*
 import kotlinx.serialization.json.*
@@ -12,6 +15,9 @@ class InfoRoutesTest {
     @Test
     fun testInfo() = testApplication {
         application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
             routing {
                 configureInfoRoutes()
             }

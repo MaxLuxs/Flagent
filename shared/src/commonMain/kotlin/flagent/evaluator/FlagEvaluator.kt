@@ -123,10 +123,12 @@ class FlagEvaluator(
             }
             
             val bucketNum = crc32Num(entityID, salt)
+            val bucket = (bucketNum % TOTAL_BUCKET_NUM).toInt()
             val (variantID, index) = bucketByNum(bucketNum)
             
-            if (bucketNum > TOTAL_BUCKET_NUM * rolloutPercent.toUInt() / 100u) {
-                return null to "rollout no. entityID bucket: $bucketNum rolloutPercent: $rolloutPercent"
+            val rolloutThreshold = TOTAL_BUCKET_NUM.toInt() * rolloutPercent / 100
+            if (bucket >= rolloutThreshold) {
+                return null to "rollout no. entityID bucket: $bucket rolloutPercent: $rolloutPercent"
             }
             
             return variantID to "matched distribution variantID: $variantID index: $index"

@@ -35,6 +35,18 @@ fun App() {
     val requiresAuth = AppConfig.requiresAuth
     val route = Router.currentRoute
 
+    // Redirect enterprise-only routes when edition is open-source
+    LaunchedEffect(route) {
+        when (route) {
+            is Route.FlagMetrics -> if (!AppConfig.Features.enableMetrics) Router.navigateTo(Route.Home)
+            is Route.FlagRollout -> if (!AppConfig.Features.enableSmartRollout) Router.navigateTo(Route.Home)
+            is Route.FlagAnomalies -> if (!AppConfig.Features.enableAnomalyDetection) Router.navigateTo(Route.Home)
+            is Route.Alerts -> if (!AppConfig.Features.enableAnomalyDetection) Router.navigateTo(Route.Home)
+            is Route.Tenants -> if (!AppConfig.Features.enableMultiTenancy) Router.navigateTo(Route.Home)
+            else -> {}
+        }
+    }
+
     LaunchedEffect(requiresAuth, route) {
         if (!requiresAuth) return@LaunchedEffect
         if (route is Route.Login) return@LaunchedEffect

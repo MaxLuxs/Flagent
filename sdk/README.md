@@ -14,14 +14,14 @@ Client libraries (SDK) for Flagent API - a feature flagging, A/B testing and dyn
 
 ## Enhanced SDKs
 
-Enhanced SDKs provide additional features like caching, convenient API, and better performance:
+Enhanced SDKs provide caching, convenient API, and optional client-side evaluation and real-time updates:
 
 | Language | Enhanced SDK | Status | Description |
 |----------|--------------|--------|-------------|
-| Kotlin | [kotlin-enhanced/](./kotlin-enhanced/) | ✅ Available | Enhanced Kotlin SDK with caching |
+| Kotlin | [kotlin-enhanced/](./kotlin-enhanced/) | ✅ Available | Caching, **client-side evaluation**, **SSE real-time updates** |
 | Swift | [swift-enhanced/](./swift-enhanced/) | ✅ Available | Enhanced Swift SDK with caching |
 | JavaScript/TypeScript | [javascript-enhanced/](./javascript-enhanced/) | ✅ Available | Enhanced TypeScript SDK with caching |
-| Go | [go-enhanced/](./go-enhanced/) | ✅ Available | Enhanced Go SDK with caching |
+| Go | [go-enhanced/](./go-enhanced/) | ✅ Available | Caching, **client-side evaluation**, **SSE real-time updates** |
 
 ## Debug UI Libraries
 
@@ -100,6 +100,7 @@ See [JavaScript Debug UI README](./javascript-debug-ui/README.md) for installati
    - Caching layer
    - Manager with convenient API
    - Offline support
+   - **Kotlin Enhanced & Go Enhanced:** client-side evaluation (local evaluator) and real-time updates (SSE)
    - Logging
 
 3. **Debug UI Library** (optional)

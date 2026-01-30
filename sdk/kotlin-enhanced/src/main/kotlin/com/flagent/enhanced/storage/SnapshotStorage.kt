@@ -61,6 +61,7 @@ class FileSnapshotStorage(
     private val json = Json {
         prettyPrint = false
         ignoreUnknownKeys = true
+        allowStructuredMapKeys = true
     }
     
     private val snapshotFile: File

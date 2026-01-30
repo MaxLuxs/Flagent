@@ -145,17 +145,17 @@ object AppConfig {
             (js("window.ENV_FEATURE_REALTIME") as? String)?.toBoolean() ?: true
         }
         
-        // Open Source Features (available in both editions)
+        // Metrics, Smart Rollout, Anomaly: only when enterprise backend (hide when open-source)
         val enableMetrics: Boolean by lazy {
-            (js("window.ENV_FEATURE_METRICS") as? String)?.toBoolean() ?: true
+            isEnterprise && ((js("window.ENV_FEATURE_METRICS") as? String)?.toBoolean() ?: true)
         }
         
         val enableSmartRollout: Boolean by lazy {
-            (js("window.ENV_FEATURE_SMART_ROLLOUT") as? String)?.toBoolean() ?: true
+            isEnterprise && ((js("window.ENV_FEATURE_SMART_ROLLOUT") as? String)?.toBoolean() ?: true)
         }
         
         val enableAnomalyDetection: Boolean by lazy {
-            (js("window.ENV_FEATURE_ANOMALY_DETECTION") as? String)?.toBoolean() ?: true
+            isEnterprise && ((js("window.ENV_FEATURE_ANOMALY_DETECTION") as? String)?.toBoolean() ?: true)
         }
         
         // Enterprise-Only Features (only available in Enterprise edition)

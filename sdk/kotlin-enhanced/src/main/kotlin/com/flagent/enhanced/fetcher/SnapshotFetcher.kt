@@ -3,12 +3,18 @@ package com.flagent.enhanced.fetcher
 import com.flagent.client.apis.ExportApi
 import com.flagent.client.apis.FlagApi
 import com.flagent.enhanced.model.*
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.add
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 
 /**
  * SnapshotFetcher - fetches flag configurations from server.
@@ -43,10 +49,9 @@ class SnapshotFetcher(
     suspend fun fetchSnapshot(ttlMs: Long = 300000): FlagSnapshot = withContext(Dispatchers.IO) {
         try {
             // Fetch snapshot from export API (more efficient)
-            val response = exportApi.getExportEvalCacheJson()
-            val json = response.body()
-            
-            // Parse flags from export format
+            val response = exportApi.getExportEvalCacheJSON()
+            val body = response.body()
+            val json = mapToJsonObject(body)
             val flags = parseExportJson(json)
             
             FlagSnapshot(
@@ -67,36 +72,41 @@ class SnapshotFetcher(
      * Used when export API is unavailable or fails.
      */
     private suspend fun fetchSnapshotFallback(ttlMs: Long): FlagSnapshot {
-        val response = flagApi.getFlags(
+        val response = flagApi.findFlags(
             limit = 1000,
-            preload = true,
+            offset = null,
             enabled = null,
-            deleted = false
+            description = null,
+            key = null,
+            descriptionLike = null,
+            preload = true,
+            deleted = false,
+            tags = null
         )
         val flagsList = response.body()
         
         val flags = flagsList.mapNotNull { flagDto ->
-            val flagId = flagDto.id ?: return@mapNotNull null
+            val flagId = flagDto.id
             
             val segments = flagDto.segments?.map { segmentDto ->
                 LocalSegment(
-                    id = segmentDto.id ?: 0L,
-                    rank = segmentDto.rank ?: 0,
-                    rolloutPercent = segmentDto.rolloutPercent ?: 100,
+                    id = segmentDto.id,
+                    rank = (segmentDto.rank).toInt(),
+                    rolloutPercent = (segmentDto.rolloutPercent).toInt(),
                     constraints = segmentDto.constraints?.map { constraintDto ->
                         LocalConstraint(
-                            id = constraintDto.id ?: 0L,
-                            property = constraintDto.property ?: "",
-                            operator = constraintDto.operator ?: "EQ",
-                            value = constraintDto.value
+                            id = constraintDto.id,
+                            property = constraintDto.`property`,
+                            operator = constraintDto.`operator`.value,
+                            value = constraintDto.`value`
                         )
                     } ?: emptyList(),
                     distributions = segmentDto.distributions?.map { distDto ->
                         LocalDistribution(
-                            id = distDto.id ?: 0L,
-                            variantID = distDto.variantID ?: 0L,
+                            id = distDto.id,
+                            variantID = distDto.variantID,
                             variantKey = distDto.variantKey ?: "",
-                            percent = distDto.percent ?: 0
+                            percent = distDto.percent.toInt()
                         )
                     } ?: emptyList(),
                     description = segmentDto.description
@@ -105,21 +115,21 @@ class SnapshotFetcher(
             
             val variants = flagDto.variants?.map { variantDto ->
                 LocalVariant(
-                    id = variantDto.id ?: 0L,
-                    key = variantDto.key ?: "",
+                    id = variantDto.id,
+                    key = variantDto.key,
                     attachment = variantDto.attachment
                 )
             } ?: emptyList()
             
             flagId to LocalFlag(
                 id = flagId,
-                key = flagDto.key ?: "",
-                enabled = flagDto.enabled ?: false,
+                key = flagDto.key,
+                enabled = flagDto.enabled,
                 segments = segments,
                 variants = variants,
                 description = flagDto.description,
                 entityType = flagDto.entityType,
-                updatedAt = flagDto.updatedAt
+                updatedAt = null
             )
         }.toMap()
         
@@ -198,6 +208,29 @@ class SnapshotFetcher(
         }
         
         return flags
+    }
+
+    /**
+     * Convert Map (from Export API response) to JsonObject for parsing.
+     */
+    private fun mapToJsonObject(map: Map<String, Any?>): JsonObject {
+        return buildJsonObject {
+            map.forEach { (k, v) ->
+                put(k, anyToJsonElement(v))
+            }
+        }
+    }
+
+    private fun anyToJsonElement(v: Any?): JsonElement {
+        if (v == null) return JsonPrimitive("")
+        return when (v) {
+            is Map<*, *> -> mapToJsonObject(v as Map<String, Any?>)
+            is List<*> -> JsonArray(v.map { anyToJsonElement(it) })
+            is Number -> JsonPrimitive(v)
+            is Boolean -> JsonPrimitive(v)
+            is String -> JsonPrimitive(v)
+            else -> JsonPrimitive(v.toString())
+        }
     }
 
     /**

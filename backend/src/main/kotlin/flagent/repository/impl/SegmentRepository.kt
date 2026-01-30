@@ -15,7 +15,8 @@ class SegmentRepository : ISegmentRepository {
     
     override suspend fun findByFlagId(flagId: Int): List<Segment> = withContext(Dispatchers.IO) {
         Database.transaction {
-            Segments.selectAll().where { Segments.flagId eq flagId }
+            Segments.selectAll()
+                .where { (Segments.flagId eq flagId) and (Segments.deletedAt.isNull()) }
                 .orderBy(Segments.rank, SortOrder.ASC)
                 .orderBy(Segments.id, SortOrder.ASC)
                 .map { mapRowToSegment(it) }
@@ -24,7 +25,8 @@ class SegmentRepository : ISegmentRepository {
     
     override suspend fun findById(id: Int): Segment? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Segments.selectAll().where { Segments.id eq id }
+            Segments.selectAll()
+                .where { (Segments.id eq id) and (Segments.deletedAt.isNull()) }
                 .firstOrNull()
                 ?.let { mapRowToSegment(it) }
         }

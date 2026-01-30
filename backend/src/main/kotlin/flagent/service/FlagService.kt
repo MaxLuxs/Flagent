@@ -2,7 +2,7 @@ package flagent.service
 
 import flagent.domain.entity.*
 import flagent.domain.repository.IFlagRepository
-import java.util.*
+import java.security.SecureRandom
 
 /**
  * Flag service - handles flag business logic
@@ -29,11 +29,12 @@ class FlagService(
     }
     
     private fun generateSecureRandomKey(): String {
-        // Generate random key similar to util.NewSecureRandomKey()
+        // Generate cryptographically secure random key (util.NewSecureRandomKey())
         // Format: "k" + random chars from charset
         val charset = "123456789abcdefghijkmnopqrstuvwxyz"
         val length = 16 // uniuri.StdLen
-        val randomKey = (1..length).map { charset[Random().nextInt(charset.length)] }.joinToString("")
+        val random = SecureRandom()
+        val randomKey = (1..length).map { charset[random.nextInt(charset.length)] }.joinToString("")
         return "k$randomKey"
     }
     

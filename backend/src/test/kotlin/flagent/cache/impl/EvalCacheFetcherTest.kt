@@ -5,7 +5,10 @@ import flagent.domain.entity.Flag
 import flagent.domain.repository.IFlagRepository
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import kotlin.test.*
+import kotlin.test.assertFailsWith
+import kotlin.test.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertTrue
 import java.io.File
 import java.nio.file.Files
 
@@ -102,6 +105,21 @@ class EvalCacheFetcherTest {
         
         assertTrue(fetcher is JsonHttpFetcher)
         
+        unmockkObject(AppConfig)
+    }
+
+    @Test
+    fun testCreateEvalCacheFetcher_Throws_WhenUnsupportedDriver() {
+        val repository = mockk<IFlagRepository>()
+        mockkObject(AppConfig)
+        every { AppConfig.evalOnlyMode } returns true
+        every { AppConfig.dbDriver } returns "sqlite3"
+        every { AppConfig.dbConnectionStr } returns ":memory:"
+
+        assertFailsWith<IllegalArgumentException> {
+            createEvalCacheFetcher(repository)
+        }
+
         unmockkObject(AppConfig)
     }
 }

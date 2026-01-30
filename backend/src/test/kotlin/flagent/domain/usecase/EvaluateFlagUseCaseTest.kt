@@ -3,6 +3,7 @@ package flagent.domain.usecase
 import flagent.domain.entity.*
 import flagent.domain.value.EntityID
 import flagent.domain.value.EvaluationContext
+import flagent.service.adapter.SharedFlagEvaluatorAdapter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -10,7 +11,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EvaluateFlagUseCaseTest {
-    private val useCase = EvaluateFlagUseCase()
+    private val useCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
     
     @Test
     fun `invoke returns null variant for disabled flag`() {

@@ -239,7 +239,7 @@ class EvaluationService(
                         segmentID = segment.id,
                         message = "constraints did not match"
                     ),
-                    false // Continue to next segment
+                    true // Continue to next segment
                 )
             }
         }

@@ -239,7 +239,8 @@ The UI is built with Compose for Web and provides a modern, intuitive interface 
 
 ### 🔌 Integration & Ecosystem
 - **REST API** - Comprehensive REST API with OpenAPI/Swagger documentation
-- **Official SDKs** - Native SDKs for Kotlin, JavaScript/TypeScript, and Swift
+- **Official SDKs** - Kotlin, JavaScript/TypeScript, Swift, Python, Go (base + Enhanced variants)
+- **Enhanced SDKs** - Client-side evaluation and real-time updates (SSE) in Kotlin Enhanced and Go Enhanced
 - **Ktor Plugin** - Native integration for Ktor applications (`ktor-flagent`)
 - **CI/CD Integration** - GitHub Actions, GitLab CI, Jenkins, and other CI/CD platforms
 - **Webhooks** - Real-time notifications for flag changes and events
@@ -268,11 +269,15 @@ The UI is built with Compose for Web and provides a modern, intuitive interface 
 
 Flagent provides official SDK clients:
 
-| Language | SDK | Status |
-| ---------- | --- | ------ |
-| Kotlin | [Flagent Kotlin SDK](./sdk/kotlin/) | ✅ Available |
-| JavaScript/TypeScript | [Flagent JavaScript SDK](./sdk/javascript/) | ✅ Available |
-| Swift | [Flagent Swift SDK](./sdk/swift/) | ✅ Available |
+| Language | SDK | Enhanced | Status |
+| ---------- | --- | -------- | ------ |
+| Kotlin | [kotlin/](./sdk/kotlin/) | [kotlin-enhanced/](./sdk/kotlin-enhanced/) (client-side eval, SSE) | ✅ Available |
+| JavaScript/TypeScript | [javascript/](./sdk/javascript/) | [javascript-enhanced/](./sdk/javascript-enhanced/) | ✅ Available |
+| Swift | [swift/](./sdk/swift/) | [swift-enhanced/](./sdk/swift-enhanced/) | ✅ Available |
+| Python | [python/](./sdk/python/) | — | ✅ Available |
+| Go | [go/](./sdk/go/) | [go-enhanced/](./sdk/go-enhanced/) (client-side eval, SSE) | ✅ Available |
+
+See [SDK README](./sdk/README.md) for details and Debug UI libraries.
 
 ## Development
 
@@ -399,17 +404,20 @@ flagent/
 │   └── config/       # Configuration and application setup
 ├── frontend/         # Compose for Web frontend
 ├── ktor-flagent/     # Ktor plugin for Flagent functionality
-├── shared/           # Shared models between backend and frontend
+├── shared/           # Shared models (EnterpriseConfigurator, tenant helpers)
+├── internal/         # Optional enterprise module (multi-tenancy, billing, SSO)
 └── sdk/              # Client SDKs
-    ├── kotlin/       # Kotlin/JVM SDK
-    ├── javascript/   # JavaScript/TypeScript SDK
-    └── swift/        # Swift/iOS SDK
+    ├── kotlin/       # Kotlin base + kotlin-enhanced (client-side eval, SSE)
+    ├── javascript/   # JS/TS base + javascript-enhanced
+    ├── swift/        # Swift base + swift-enhanced
+    ├── python/       # Python SDK
+    └── go/            # Go base + go-enhanced (client-side eval, SSE)
 ```
 
 ## Open-Source vs Enterprise Build
 
-- **Open-source (default):** Core feature flags, evaluation, A/B testing, and APIs. Build with `./gradlew build`. If `internal/flagent-enterprise` is not present, only core is built.
-- **Enterprise (optional):** When `internal/flagent-enterprise` exists (or is added as a submodule), the build includes the enterprise module: multi-tenancy, billing (Stripe), SSO/SAML, and related tables. The backend loads it via ServiceLoader and runs enterprise migrations and routes when the module is on the classpath. See [internal/README.md](internal/README.md).
+- **Self-hosted (default):** When the enterprise module is absent, the core creates tenant/billing/SSO tables and registers routes via `DefaultEnterpriseConfigurator`. Full feature flags, evaluation, A/B testing, and APIs. Build with `./gradlew build`.
+- **Enterprise (optional):** When `internal/flagent-enterprise` is present (submodule), the build includes the enterprise module: multi-tenancy, billing (Stripe), SSO/SAML. The backend uses `EnterpriseConfigurator.configureRoutes(Routing, EnterpriseBackendContext)` and tenant schema helpers (`createTenantSchema`, `runTenantSchemaMigrations`). See [internal/README.md](internal/README.md).
 
 ## Deployment
 
@@ -517,25 +525,3 @@ Flagent is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for
 - Include copyright and license notice
 - State changes
 - Include the original LICENSE file
-
-## Comparison with Alternatives
-
-Flagent provides a modern, open-source alternative to commercial feature flag solutions:
-
-| Feature | Flagent | Unleash | Flagsmith | LaunchDarkly |
-|---------|---------|---------|-----------|--------------|
-| Open Source | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No |
-| Self-Hosted | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No |
-| A/B Testing | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Analytics Integration | ✅ Yes | ⚠️ Limited | ✅ Yes | ✅ Yes |
-| Multi-Environment | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Kotlin/JVM Native | ✅ Yes | ⚠️ Java SDK | ⚠️ Java SDK | ⚠️ Java SDK |
-| Modern UI | ✅ Compose | ⚠️ React | ✅ React | ✅ React |
-| Free Tier | ✅ Unlimited | ✅ Unlimited | ⚠️ Limited | ❌ No |
-
-**Why Flagent?**
-- 🚀 Built with modern Kotlin/Ktor stack
-- 🎯 Simple, intuitive API and UI
-- ⚡ High performance with Kotlin Coroutines
-- 🔧 Easy to extend and customize
-- 📦 Production-ready with comprehensive features

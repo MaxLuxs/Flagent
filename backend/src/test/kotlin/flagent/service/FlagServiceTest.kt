@@ -68,7 +68,20 @@ class FlagServiceTest {
             flagService.createFlagKey(longKey)
         }
     }
-    
+
+    @Test
+    fun testCreateFlagKey_acceptsKeyWithDotsColonsSlashes() {
+        assertEquals("feature.v2", flagService.createFlagKey("feature.v2"))
+        assertEquals("ns:key", flagService.createFlagKey("ns:key"))
+        assertEquals("path/to/flag", flagService.createFlagKey("path/to/flag"))
+    }
+
+    @Test
+    fun testCreateFlagKey_acceptsKeyExactly63Chars() {
+        val key63 = "a".repeat(63)
+        assertEquals(key63, flagService.createFlagKey(key63))
+    }
+
     @Test
     fun testFindFlags() = runBlocking {
         val flags = listOf(

@@ -6,7 +6,8 @@ plugins {
 
 
 kotlin {
-    jvm()
+    jvmToolchain(21)
+    jvm {}
     
     js(IR) {
         browser()
@@ -23,6 +24,15 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.ktor.server.core)
+            }
+        }
+        
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.kotlin.test.junit5)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.mockk)
             }
         }
         
@@ -44,7 +54,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 // JaCoCo configuration for multiplatform JVM target
 val jvmTestTask = tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
-    ignoreFailures = true  // Allow coverage report generation even if tests fail
 }
 
 tasks.register<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoTestReport") {

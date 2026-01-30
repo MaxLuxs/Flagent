@@ -89,9 +89,31 @@ class ExportServiceTest {
     
     @Test
     fun testExportSQLite_ExportsAllRelatedData() = runBlocking {
-        // Arrange: Create test data with all relationships
-        val flag = createTestFlagWithRelations()
+        // Arrange: Create flag and all related entities in DB (export reads via flagRepository.findAll with preload)
+        val flag = createTestFlag()
         val createdFlag = flagRepository.create(flag)
+        val segmentRepository = SegmentRepository()
+        val variantRepository = VariantRepository()
+        val constraintRepository = ConstraintRepository()
+        val distributionRepository = DistributionRepository()
+        val tagRepository = TagRepository()
+        val createdSegment = segmentRepository.create(
+            Segment(flagId = createdFlag.id, description = "Test segment", rank = 0, rolloutPercent = 100)
+        )
+        val createdVariant1 = variantRepository.create(Variant(flagId = createdFlag.id, key = "control", attachment = null))
+        val createdVariant2 = variantRepository.create(Variant(flagId = createdFlag.id, key = "treatment", attachment = null))
+        constraintRepository.create(
+            Constraint(segmentId = createdSegment.id, property = "user_id", operator = "EQ", value = "123")
+        )
+        distributionRepository.updateDistributions(
+            createdSegment.id,
+            listOf(
+                Distribution(segmentId = createdSegment.id, variantId = createdVariant1.id, variantKey = "control", percent = 50),
+                Distribution(segmentId = createdSegment.id, variantId = createdVariant2.id, variantKey = "treatment", percent = 50)
+            )
+        )
+        val createdTag = tagRepository.create(Tag(value = "test_tag"))
+        tagRepository.addTagToFlag(createdFlag.id, createdTag.id)
         
         // Act: Export to SQLite
         val sqliteBytes = exportService.exportSQLite(excludeSnapshots = false)
@@ -107,31 +129,18 @@ class ExportServiceTest {
             )
             
             transaction(db) {
-                // Check flags
                 val flagCount = Flags.selectAll().count()
                 assertEquals(1, flagCount, "Should export 1 flag")
-                
-                // Check variants
                 val variantCount = Variants.selectAll().count()
                 assertEquals(2, variantCount, "Should export 2 variants")
-                
-                // Check segments
                 val segmentCount = Segments.selectAll().count()
                 assertEquals(1, segmentCount, "Should export 1 segment")
-                
-                // Check constraints
                 val constraintCount = Constraints.selectAll().count()
                 assertEquals(1, constraintCount, "Should export 1 constraint")
-                
-                // Check distributions
                 val distributionCount = Distributions.selectAll().count()
                 assertEquals(2, distributionCount, "Should export 2 distributions")
-                
-                // Check tags
                 val tagCount = Tags.selectAll().count()
                 assertTrue(tagCount >= 1, "Should export at least 1 tag")
-                
-                // Check flags_tags junction table
                 val flagsTagsCount = FlagsTags.selectAll().count()
                 assertTrue(flagsTagsCount >= 1, "Should export at least 1 flag-tag relationship")
             }

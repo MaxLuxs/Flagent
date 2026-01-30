@@ -24,7 +24,8 @@ class MetricsMiddlewareTest {
         
         val response = client.get("/metrics")
         assertEquals(200, response.status.value)
-        assertTrue(response.bodyAsText().contains("prometheus"))
+        val body = response.bodyAsText()
+        assertTrue(body.contains("# HELP") || body.contains("prometheus"), "Prometheus text format expected, got: ${body.take(200)}")
         
         unmockkObject(AppConfig)
     }

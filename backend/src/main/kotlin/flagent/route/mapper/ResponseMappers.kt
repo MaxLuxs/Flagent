@@ -59,7 +59,7 @@ object ResponseMappers {
             id = variant.id,
             flagID = variant.flagId,
             key = variant.key,
-            attachment = variant.attachment?.entries?.associate { it.key to it.value.toString() }
+            attachment = variant.attachment?.entries?.associate { (k, v) -> k to v.toString().trim('"') }
         )
     }
     

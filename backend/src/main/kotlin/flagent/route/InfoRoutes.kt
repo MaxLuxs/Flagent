@@ -1,6 +1,7 @@
 package flagent.route
 
 import flagent.api.model.InfoResponse
+import flagent.application.EnterprisePresence
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -16,12 +17,12 @@ fun Routing.configureInfoRoutes() {
             val version = System.getProperty("flagent.version") ?: "1.0.0"
             val buildTime = System.getProperty("flagent.buildTime")
             val gitCommit = System.getProperty("flagent.gitCommit")
-            
             call.respond(
                 InfoResponse(
                     version = version,
                     buildTime = buildTime,
-                    gitCommit = gitCommit
+                    gitCommit = gitCommit,
+                    enterpriseEnabled = EnterprisePresence.enterpriseEnabled
                 )
             )
         }

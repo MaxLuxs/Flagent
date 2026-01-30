@@ -38,7 +38,7 @@ class ErrorHandlerTest {
     fun testServerErrorMessage() {
         val error = AppError.ServerError()
         val message = ErrorHandler.getUserMessage(error)
-        assertEquals("Server error. Please try again later.", message)
+        assertEquals("Server Error", message)
     }
     
     @Test

@@ -3,7 +3,14 @@ import org.gradle.api.tasks.compile.JavaCompile
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization")
     `maven-publish`
+}
+
+java {
+    toolchain {
+        languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(21))
+    }
 }
 
 group = "com.flagent"
@@ -28,11 +35,18 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)
     
+    // Ktor client (RealtimeClient SSE, OfflineFlagentManager optional httpClient)
+    implementation(libs.ktor.client.core)
+    
+    // Logging (RealtimeClient)
+    implementation(libs.kotlin.logging.jvm)
+    
     // Testing
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.client.core)
+    testImplementation(libs.ktor.client.cio)
 }
 
 tasks.withType<KotlinCompile> {

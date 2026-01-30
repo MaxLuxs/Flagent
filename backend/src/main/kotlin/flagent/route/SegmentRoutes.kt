@@ -61,6 +61,18 @@ fun Routing.configureSegmentRoutes(segmentService: SegmentService) {
                 }
                 
                 route("/{segmentId}") {
+                    get {
+                        val flagId = call.parameters["flagId"]?.toIntOrNull()
+                            ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid flag ID")
+                        val segmentId = call.parameters["segmentId"]?.toIntOrNull()
+                            ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid segment ID")
+                        val segment = segmentService.getSegment(segmentId)
+                            ?: return@get call.respond(HttpStatusCode.NotFound, "Segment not found")
+                        if (segment.flagId != flagId) {
+                            return@get call.respond(HttpStatusCode.BadRequest, "Segment does not belong to this flag")
+                        }
+                        call.respond(mapSegmentToResponse(segment))
+                    }
                     put {
                         val flagId = call.parameters["flagId"]?.toIntOrNull()
                             ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid flag ID")

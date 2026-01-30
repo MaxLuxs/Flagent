@@ -18,10 +18,10 @@ Enhanced SDK добавляют кэширование и удобные API п�
 
 | Язык | Enhanced SDK | Статус | Описание |
 |------|--------------|--------|----------|
-| Kotlin | [`kotlin-enhanced/`](./kotlin-enhanced/) | Доступен | Kotlin SDK с кэшем |
+| Kotlin | [`kotlin-enhanced/`](./kotlin-enhanced/) | Доступен | Кэш, **client-side evaluation**, **SSE real-time** |
 | Swift | [`swift-enhanced/`](./swift-enhanced/) | Доступен | Swift SDK с кэшем |
 | JavaScript/TypeScript | [`javascript-enhanced/`](./javascript-enhanced/) | Доступен | TypeScript SDK с кэшем |
-| Go | [`go-enhanced/`](./go-enhanced/) | Доступен | Go SDK с кэшем |
+| Go | [`go-enhanced/`](./go-enhanced/) | Доступен | Кэш, **client-side evaluation**, **SSE real-time** |
 
 ## Debug UI
 

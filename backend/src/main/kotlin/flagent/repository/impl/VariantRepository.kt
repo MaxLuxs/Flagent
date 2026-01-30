@@ -16,7 +16,8 @@ class VariantRepository : IVariantRepository {
     
     override suspend fun findByFlagId(flagId: Int): List<Variant> = withContext(Dispatchers.IO) {
         Database.transaction {
-            Variants.selectAll().where { Variants.flagId eq flagId }
+            Variants.selectAll()
+                .where { (Variants.flagId eq flagId) and (Variants.deletedAt.isNull()) }
                 .orderBy(Variants.id, SortOrder.ASC)
                 .map { mapRowToVariant(it) }
         }
@@ -24,7 +25,8 @@ class VariantRepository : IVariantRepository {
     
     override suspend fun findById(id: Int): Variant? = withContext(Dispatchers.IO) {
         Database.transaction {
-            Variants.selectAll().where { Variants.id eq id }
+            Variants.selectAll()
+                .where { (Variants.id eq id) and (Variants.deletedAt.isNull()) }
                 .firstOrNull()
                 ?.let { mapRowToVariant(it) }
         }
