@@ -22,10 +22,10 @@ choco install k6
 
 ## Запуск сервера
 
-Перед запуском тестов убедитесь, что Flagent сервер запущен:
+Перед запуском тестов убедитесь, что Flagent сервер запущен (from repo root):
 
 ```bash
-cd flagent/backend
+cd backend
 ./gradlew run
 ```
 

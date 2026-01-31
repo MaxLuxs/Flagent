@@ -1,5 +1,7 @@
 # Flagent SDK Clients
 
+> [English](README.md) | [Русский](README.ru.md)
+
 Client libraries (SDK) for Flagent API - a feature flagging, A/B testing and dynamic configuration microservice.
 
 ## Available SDKs
@@ -136,15 +138,15 @@ To regenerate base SDKs after updating the OpenAPI specification:
 
 ```bash
 # Generate Kotlin SDK
-cd flagent/sdk/kotlin
+cd sdk/kotlin
 ./generate.sh
 
 # Generate JavaScript SDK
-cd flagent/sdk/javascript
+cd sdk/javascript
 ./generate.sh
 
 # Generate Swift SDK
-cd flagent/sdk/swift
+cd sdk/swift
 ./generate.sh
 ```
 

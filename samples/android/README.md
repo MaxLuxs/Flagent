@@ -24,7 +24,7 @@ Sample Android application demonstrating the usage of Flagent SDK for feature fl
 Before running the Android app, ensure the Flagent backend server is running:
 
 ```bash
-cd flagent/backend
+cd backend
 ./gradlew run
 ```
 

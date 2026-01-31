@@ -62,4 +62,4 @@ These infrastructure components are integrated with GitHub Actions:
 For detailed documentation, see:
 - [Grafana Setup](grafana/README.md)
 - [Load Testing Guide](load-tests/README.md)
-- [Backup & Recovery](../docs/operations/backup-recovery.md)
+- [Backup & Recovery](https://maxluxs.github.io/Flagent/#/operations/backup-recovery)

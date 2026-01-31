@@ -21,7 +21,8 @@ helm repo update
 
 ```bash
 git clone https://github.com/MaxLuxs/Flagent.git
-cd Flagent/flagent/helm
+cd Flagent
+cd helm
 helm install flagent ./flagent
 ```
 

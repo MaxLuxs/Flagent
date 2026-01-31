@@ -1,5 +1,7 @@
 # Flagent SDK (клиентские библиотеки)
 
+> [English](README.md) | Русский
+
 SDK для Flagent API — платформы feature flags, A/B тестирования и динамической конфигурации. Базовый путь API: `/api/v1`.
 
 ## Доступные SDK
@@ -93,5 +95,5 @@ Base Kotlin SDK генерируется из OpenAPI и имеет достат
 
 ## Совместимость API
 
-Все base SDK генерируются из OpenAPI спецификации. Русская версия спецификации: [`docs/api/openapi.ru.yaml`](../../docs/api/openapi.ru.yaml).
+Все base SDK генерируются из OpenAPI спецификации. Русская версия спецификации: [OpenAPI (RU)](https://maxluxs.github.io/Flagent/api/openapi.ru.yaml).
 

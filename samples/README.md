@@ -91,7 +91,7 @@ cd samples/ktor
 Перед запуском любого примера убедитесь, что Flagent backend сервер запущен:
 
 ```bash
-cd flagent/backend
+cd backend
 ./gradlew run
 ```
 

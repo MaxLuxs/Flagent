@@ -433,4 +433,4 @@ manager.enableRealtimeUpdates(baseUrl)
 
 - [Client-Side Evaluation](CLIENT_SIDE_EVALUATION.md)
 - [Kotlin Enhanced SDK README](README.md)
-- [Flagent API Documentation](../../docs/api/openapi.yaml)
+- [Flagent API Documentation](https://maxluxs.github.io/Flagent/api/openapi.yaml)

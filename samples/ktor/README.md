@@ -24,7 +24,7 @@ Sample Ktor application demonstrating the usage of the Flagent Ktor plugin for f
 Before running the sample, ensure the Flagent backend server is running:
 
 ```bash
-cd flagent/backend
+cd backend
 ./gradlew run
 ```
 

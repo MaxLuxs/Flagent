@@ -11,7 +11,7 @@
 npm install -g @openapitools/openapi-generator-cli
 
 # Сгенерировать Kotlin SDK
-cd flagent/sdk/kotlin
+cd sdk/kotlin
 ./generate.sh
 
 # Сгенерировать JavaScript SDK
@@ -20,7 +20,7 @@ cd ../javascript
 
 # Или сгенерировать все сразу
 cd ../../..
-make -C flagent/sdk generate
+make -C sdk generate
 ```
 
 ### 2. Проверка Kotlin SDK
@@ -28,7 +28,7 @@ make -C flagent/sdk generate
 #### Сборка проекта
 
 ```bash
-cd flagent/sdk/kotlin
+cd sdk/kotlin
 ./gradlew build
 ```
 
@@ -75,7 +75,7 @@ fun main() = runBlocking {
 #### Установка зависимостей
 
 ```bash
-cd flagent/sdk/javascript
+cd sdk/javascript
 npm install
 ```
 
@@ -119,7 +119,7 @@ node test.js
 
 ```bash
 # Запустить сервер (из корня проекта)
-cd flagent/backend
+cd backend
 ./gradlew run
 ```
 

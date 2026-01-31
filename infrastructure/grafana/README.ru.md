@@ -1,18 +1,18 @@
-# Grafana Dashboards for Flagent
+# Grafana Dashboards для Flagent
 
-> [English](README.md) | [Русский](README.ru.md)
+> [English](README.md) | Русский
 
-Ready-to-use Grafana dashboards for monitoring AI-Powered Rollouts.
+Готовые Grafana dashboards для мониторинга AI-Powered Rollouts.
 
 ## Quick Start
 
-### 1. Start Grafana
+### 1. Запуск Grafana
 
 ```bash
-# With Docker Compose
+# С Docker Compose
 docker-compose -f grafana/docker-compose.grafana.yml up -d
 
-# Or standalone
+# Или standalone
 docker run -d \
   --name=grafana \
   -p 3000:3000 \
@@ -22,23 +22,23 @@ docker run -d \
   grafana/grafana:10.0.0
 ```
 
-### 2. Open Grafana
+### 2. Открыть Grafana
 
 ```
 URL: http://localhost:3000
 Username: admin
-Password: admin (or value from GRAFANA_ADMIN_PASSWORD)
+Password: admin (или значение из GRAFANA_ADMIN_PASSWORD)
 ```
 
-### 3. Configure Data Source
+### 3. Настроить Data Source
 
-Grafana auto-configures PostgreSQL data source via provisioning.
+Grafana автоматически настроит PostgreSQL data source через provisioning.
 
-**Manual setup (if needed):**
+**Ручная настройка (если нужно):**
 1. Configuration → Data Sources → Add data source
-2. Select PostgreSQL
-3. Settings:
-   - Host: `postgres:5432` (or `localhost:5432` for local)
+2. Выберите PostgreSQL
+3. Настройки:
+   - Host: `postgres:5432` (или `localhost:5432` для local)
    - Database: `flagent`
    - User: `flagent`
    - Password: `flagent`
@@ -51,21 +51,21 @@ Grafana auto-configures PostgreSQL data source via provisioning.
 
 **UID:** `flagent-metrics`
 
-**Panels:**
-1. **Success Rate by Flag** - success rate trend per flag
-2. **Error Rate by Flag** - error rate trend (threshold: 5%)
+**Панели:**
+1. **Success Rate by Flag** - тренд success rate по флагам
+2. **Error Rate by Flag** - тренд error rate (threshold: 5%)
 3. **Latency by Flag** - avg, p95, max latency (threshold: 1000ms)
-4. **Top 10 Flags by Metric Volume** - most active flags
+4. **Top 10 Flags by Metric Volume** - самые активные флаги
 5. **Unresolved Anomalies** - gauge (last hour)
 6. **Active Smart Rollouts** - gauge
-7. **Total Metrics** - counter (last hour)
+7. **Total Metrics** - счётчик (last hour)
 8. **Active Flags** - distinct flags (last hour)
 
 **Time Range:** Last 6 hours (default)
 **Refresh:** 30 seconds
 
 **Variables:**
-- None (can add `$flag_id` for filtering)
+- None (можно добавить `$flag_id` для фильтрации)
 
 **Alerts:**
 - High Error Rate (>5%)
@@ -75,24 +75,24 @@ Grafana auto-configures PostgreSQL data source via provisioning.
 
 **UID:** `flagent-anomalies`
 
-**Panels:**
+**Панели:**
 1. **Anomalies by Severity** - pie chart (CRITICAL/HIGH/MEDIUM/LOW)
-2. **Anomalies by Type** - donut chart (type distribution)
-3. **Anomaly Detection Timeline** - stacked bar chart over time
-4. **Recent Anomaly Alerts** - table with last 100 alerts
+2. **Anomalies by Type** - donut chart (types distribution)
+3. **Anomaly Detection Timeline** - stacked bar chart по времени
+4. **Recent Anomaly Alerts** - table с последними 100 alerts
 5. **Critical Anomalies (Unresolved)** - gauge
-6. **Actions Taken** - pie chart (action distribution)
+6. **Actions Taken** - pie chart (actions distribution)
 7. **Resolution Rate** - gauge (resolved / total)
 
 **Time Range:** Last 24 hours (default)
 **Refresh:** 30 seconds
 
 **Table Columns:**
-- Flag - flag with anomaly
-- Type - anomaly type
-- Severity - criticality (color-coded)
-- Message - description
-- Action - action taken (FLAG_DISABLED, ROLLOUT_PAUSED, etc.)
+- Flag - флаг с аномалией
+- Type - тип аномалии
+- Severity - критичность (color-coded)
+- Message - описание
+- Action - действие (FLAG_DISABLED, ROLLOUT_PAUSED, etc.)
 - Status - OPEN/RESOLVED (color-coded)
 - Detected - timestamp (relative time)
 
@@ -172,31 +172,31 @@ ORDER BY time
 
 ## Customization
 
-### Add Variable for Filtering
+### Добавить переменную для фильтрации
 
 1. Dashboard Settings → Variables → Add variable
-2. Settings:
+2. Настройки:
    - Name: `flag_id`
    - Type: Query
    - Data source: Flagent Postgres
    - Query: `SELECT DISTINCT flag_id FROM metric_data_points ORDER BY flag_id`
 3. Save
 
-4. Update queries:
+4. Обновить queries:
 ```sql
 WHERE flag_id = $flag_id
 ```
 
-### Add Alert Rule
+### Добавить alert rule
 
 1. Edit panel → Alert tab
 2. Create alert rule
-3. Condition:
+3. Условие:
    - WHEN `avg()` OF `query(A, 5m, now)`
    - IS ABOVE `0.05` (5% error rate)
 4. Notification channel: Slack/Email
 
-### Export Dashboard
+### Экспорт dashboard
 
 ```bash
 # Export dashboard JSON
@@ -213,11 +213,11 @@ curl -X POST -H "Authorization: Bearer <api-key>" \
 
 ## Troubleshooting
 
-### Dashboard Not Loading
+### Dashboard не загружается
 
-**Cause:** Data source not configured
+**Причина:** Data source не настроен
 
-**Solution:**
+**Решение:**
 ```bash
 # Check data source
 curl http://localhost:3000/api/datasources
@@ -226,11 +226,11 @@ curl http://localhost:3000/api/datasources
 curl -X POST http://localhost:3000/api/datasources/<id>/health
 ```
 
-### Queries Return Empty Results
+### Queries возвращают пустые результаты
 
-**Cause:** No data in tables
+**Причина:** Нет данных в таблицах
 
-**Solution:**
+**Решение:**
 ```sql
 -- Check if data exists
 SELECT COUNT(*) FROM metric_data_points;
@@ -248,11 +248,11 @@ curl -X POST http://localhost:8000/api/v1/metrics \
   }'
 ```
 
-### PostgreSQL Connection Failed
+### PostgreSQL connection failed
 
-**Cause:** Wrong credentials or host
+**Причина:** Неправильные credentials или host
 
-**Solution:**
+**Решение:**
 ```bash
 # Check connection from Grafana container
 docker exec -it flagent-grafana sh
@@ -263,18 +263,18 @@ psql -h postgres -U flagent -d flagent -c "SELECT 1"
 # Configuration → Data Sources → Flagent Postgres → Edit
 ```
 
-### time_bucket Function Not Found
+### Time_bucket function not found
 
-**Cause:** TimescaleDB extension not installed
+**Причина:** TimescaleDB extension не установлена
 
-**Solution:**
+**Решение:**
 
-**Option 1: Install TimescaleDB (recommended)**
+**Option 1: Install TimescaleDB (рекомендуется)**
 ```sql
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 ```
 
-**Option 2: Replace time_bucket with date_trunc**
+**Option 2: Replace time_bucket с date_trunc**
 ```sql
 -- Replace this:
 time_bucket('5 minutes', to_timestamp(timestamp / 1000))
@@ -285,17 +285,17 @@ date_trunc('minute', to_timestamp(timestamp / 1000))
 
 ## Best Practices
 
-1. **Regular refresh** - set dashboard refresh to 30s-1min for real-time monitoring
-2. **Alert thresholds** - configure alerts for critical metrics
-3. **Data retention** - purge old metrics (>90 days)
-4. **Snapshot backups** - periodically save dashboard JSON
-5. **Access control** - restrict access to production dashboards
+1. **Regular refresh** - set dashboard refresh to 30s-1min для real-time мониторинга
+2. **Alert thresholds** - настроить alerts для critical metrics
+3. **Data retention** - очищать старые metrics (>90 days)
+4. **Snapshot backups** - периодически сохранять dashboard JSON
+5. **Access control** - ограничить доступ к production dashboards
 
 ## Advanced Features
 
 ### Template Variables
 
-Add variables for dynamic filtering:
+Добавьте variables для динамической фильтрации:
 
 **Flag Filter:**
 ```sql
@@ -312,7 +312,7 @@ SELECT DISTINCT environment FROM flags ORDER BY environment
 
 ### Annotations
 
-Display deployment events on charts:
+Отображение deployment events на графиках:
 
 ```sql
 SELECT
@@ -327,9 +327,9 @@ ORDER BY time
 
 ### Dashboard Links
 
-Link dashboards together:
+Связать dashboards между собой:
 1. Dashboard Settings → Links → Add dashboard link
-2. Specify target dashboard UID
+2. Указать UID целевого dashboard
 3. Include time range & variables
 
 ## Resources

@@ -23,7 +23,7 @@ Sample Swift console application demonstrating the usage of Flagent SDK for feat
 Before running the sample, ensure the Flagent backend server is running:
 
 ```bash
-cd flagent/backend
+cd backend
 ./gradlew run
 ```
 

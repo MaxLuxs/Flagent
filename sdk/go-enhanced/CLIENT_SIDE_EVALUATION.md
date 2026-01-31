@@ -452,5 +452,5 @@ config := enhanced.DefaultOfflineConfig().
 ## See Also
 
 - [Go Enhanced SDK README](README.md)
-- [API Documentation](../../docs/api/openapi.yaml)
-- [Architecture Documentation](../../docs/architecture/backend.md)
+- [API Documentation](https://maxluxs.github.io/Flagent/api/openapi.yaml)
+- [Architecture Documentation](https://maxluxs.github.io/Flagent/#/architecture/backend)

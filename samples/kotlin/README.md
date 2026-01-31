@@ -23,7 +23,7 @@ Sample Kotlin/JVM console application demonstrating the usage of Flagent SDK for
 Before running the sample, ensure the Flagent backend server is running:
 
 ```bash
-cd flagent/backend
+cd backend
 ./gradlew run
 ```
 
