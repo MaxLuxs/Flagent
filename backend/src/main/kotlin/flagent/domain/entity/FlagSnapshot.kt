@@ -1,14 +1,11 @@
 package flagent.domain.entity
 
-import kotlinx.serialization.Serializable
-
 /**
  * FlagSnapshot entity - snapshot of a flag
  * Any change of the flag will create a new snapshot
- * 
+ *
  * Domain entity - no framework dependencies
  */
-@Serializable
 data class FlagSnapshot(
     val id: Int = 0,
     val flagId: Int,

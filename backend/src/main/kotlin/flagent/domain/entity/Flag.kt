@@ -1,13 +1,11 @@
 package flagent.domain.entity
 
-import kotlinx.serialization.Serializable
-
 /**
  * Flag entity - the unit of flags
- * 
- * Domain entity - no framework dependencies
+ *
+ * Domain entity - no framework dependencies.
+ * Evaluation logic lives in shared evaluator (FlagEvaluator).
  */
-@Serializable
 data class Flag(
     val id: Int = 0,
     val key: String,
@@ -23,20 +21,4 @@ data class Flag(
     val variants: List<Variant> = emptyList(),
     val tags: List<Tag> = emptyList(),
     val updatedAt: String? = null
-) {
-    /**
-     * FlagEvaluation holds necessary info for evaluation
-     * Not stored in DB, computed at runtime
-     */
-    data class FlagEvaluation(
-        val variantsMap: Map<Int, Variant>
-    )
-    
-    /**
-     * Prepare evaluation data structure
-     */
-    fun prepareEvaluation(): FlagEvaluation {
-        val variantsMap = variants.associateBy { it.id }
-        return FlagEvaluation(variantsMap = variantsMap)
-    }
-}
+)

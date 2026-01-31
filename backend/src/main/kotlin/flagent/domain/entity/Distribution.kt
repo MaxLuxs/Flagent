@@ -1,13 +1,10 @@
 package flagent.domain.entity
 
-import kotlinx.serialization.Serializable
-
 /**
  * Distribution entity - represents distribution under segment and links to variant
- * 
+ *
  * Domain entity - no framework dependencies
  */
-@Serializable
 data class Distribution(
     val id: Int = 0,
     val segmentId: Int,

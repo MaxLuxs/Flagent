@@ -1,13 +1,10 @@
 package flagent.domain.entity
 
-import kotlinx.serialization.Serializable
-
 /**
  * Constraint entity - the unit of constraints
- * 
+ *
  * Domain entity - no framework dependencies
  */
-@Serializable
 data class Constraint(
     val id: Int = 0,
     val segmentId: Int,
