@@ -15,13 +15,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        // Base SDK dependency - in production, use: .package(url: "...", from: "1.0.0")
         .package(path: "../swift"),
+        .package(url: "https://github.com/Flight-School/AnyCodable", .upToNextMajor(from: "0.6.1")),
     ],
     targets: [
         .target(
             name: "FlagentEnhanced",
-            dependencies: ["FlagentClient"],
+            dependencies: ["FlagentClient", "AnyCodable"],
             path: "Sources/FlagentEnhanced"
         ),
         .testTarget(

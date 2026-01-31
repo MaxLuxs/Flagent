@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import FlagentClient
+import AnyCodable
 
 // Helper extension to convert Combine publishers to async/await
 extension AnyPublisher {
