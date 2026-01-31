@@ -1,0 +1,284 @@
+<p align="center"><strong><a href="README.md">English</a></strong> | Русский</p>
+
+# Flagent
+
+<p align="center">
+    <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+" target="_blank">
+        <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build Status">
+    </a>
+    <a href="https://codecov.io/gh/MaxLuxs/Flagent">
+        <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg" alt="Code Coverage">
+    </a>
+    <a href="https://github.com/MaxLuxs/Flagent/releases" target="_blank">
+        <img src="https://img.shields.io/github/release/MaxLuxs/Flagent.svg?style=flat&color=green" alt="Release">
+    </a>
+    <a href="https://img.shields.io/badge/license-Apache%202.0-green.svg" target="_blank">
+        <img src="https://img.shields.io/badge/license-Apache%202.0-green.svg" alt="License">
+    </a>
+</p>
+
+**Flagent** — это современная, production-ready платформа для feature flags и экспериментов, построенная на **Kotlin/Ktor**. Первое Kotlin-native решение в экосистеме feature flags, сочетающее type-safety, coroutines и чистую архитектуру для высокопроизводительного управления функциональностью с AI-возможностями.
+
+## 🎯 Почему Flagent?
+
+### Kotlin-Native превосходство
+- **Type-Safe SDK** - Валидация на этапе компиляции и автодополнение в IDE
+- **Coroutine-First** - Неблокирующий I/O и структурированная конкурентность
+- **Ktor Ecosystem** - Бесшовная интеграция с Ktor приложениями
+- **Clean Architecture** - DDD принципы и тестируемый дизайн
+
+### AI-возможности (в планах)
+- **Smart Rollouts** - ML-based автоматическое масштабирование на основе метрик
+- **Anomaly Detection** - Авто-откат при деградации производительности
+- **Predictive Targeting** - Рекомендации сегментов на основе данных
+- **A/B Insights** - Автоматический анализ экспериментов
+
+### Enterprise-Ready
+- **Production-Proven** - 70+ тестовых файлов, комплексное покрытие
+- **Высокая производительность** - Sub-millisecond evaluation, 10k+ req/s
+- **Multi-Tenancy** - Изолированные окружения для команд (в планах)
+- **Real-Time обновления** - SSE в Kotlin Enhanced, Go Enhanced
+
+## 🚀 Быстрый старт
+
+Запустите Flagent менее чем за 5 минут:
+
+```bash
+# Через Docker (Рекомендуется)
+docker pull ghcr.io/maxluxs/flagent
+docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
+
+# Открыть Flagent UI
+open http://localhost:18000
+```
+
+**Данные по умолчанию:**
+- Имя пользователя: `admin`
+- Пароль: `admin`
+
+## ✨ Ключевые возможности
+
+### Основные возможности (Доступны сейчас)
+- ✅ **Feature Flags** - Постепенные rollout, kill switches и удаленная конфигурация
+- ✅ **A/B тестирование** - Мультивариантные эксперименты с детерминированным bucketing (MurmurHash3)
+- ✅ **Продвинутый таргетинг** - Сегментация пользователей по атрибутам, процентам или сложным правилам ограничений
+- ✅ **Multi-Environment** - Отдельные конфигурации для dev, staging и production
+- ✅ **Data Recorders** - Интеграция с Kafka, Kinesis, PubSub для аналитики
+- ✅ **Высокая производительность** - Sub-millisecond evaluation с EvalCache и TTL
+- ✅ **Несколько БД** - Поддержка PostgreSQL, MySQL, SQLite
+- ✅ **Docker Ready** - Production-ready Docker образы с Compose
+- ✅ **Официальные SDK** - Kotlin, JavaScript/TypeScript, Swift, Python, Go с Enhanced вариантами
+- ✅ **Ktor Plugin** - Интеграция первого класса для Ktor серверов
+- ✅ **Admin UI** - Современная панель управления на Compose for Web
+- ✅ **Debug Console** - Тестирование и отладка evaluation в реальном времени
+
+### Функции в планах
+- ✅ **Client-Side Evaluation** - Kotlin Enhanced, Go Enhanced (offline-first local evaluator)
+- ✅ **Real-Time обновления** - SSE в Kotlin Enhanced, Go Enhanced
+- 🚧 **GitOps поддержка** - Feature flags as code (YAML/JSON) (Q2 2026)
+- 🚧 **Multi-Tenancy** - Изоляция команд и лимиты ресурсов (Q3 2026)
+- 🚧 **SSO/SAML** - Enterprise аутентификация (Auth0, Okta) (Q3 2026)
+- 🚧 **RBAC** - Role-based access control (Q3 2026)
+- 🚧 **AI Rollouts** - ML-powered постепенные rollout (Q4 2026)
+
+## 📖 Документация
+
+- 📖 **[Полная документация](https://maxluxs.github.io/Flagent)** - Полные руководства, справочник API и примеры
+- 📖 **[Руководство по началу работы](https://maxluxs.github.io/Flagent/#/getting-started_ru)** - Быстрый старт и инструкции по настройке
+- 📖 **[Документация API](https://maxluxs.github.io/Flagent/api/openapi.yaml)** - OpenAPI спецификация
+- 📖 **[Документация архитектуры](https://maxluxs.github.io/Flagent/#/architecture/backend)** - Системная архитектура и дизайн
+- 📖 **[Конфигурация](https://maxluxs.github.io/Flagent/#/configuration_ru)** - Настройка переменных окружения
+- 📖 **[Развертывание](https://maxluxs.github.io/Flagent/#/deployment_ru)** - Руководство по production развертыванию
+- 📖 **[Сценарии использования](https://maxluxs.github.io/Flagent/#/use-cases_ru)** - Примеры из реального мира
+
+## 🏗️ Структура проекта
+
+```
+flagent/
+├── backend/          # Ktor backend (Clean Architecture)
+├── frontend/         # Compose for Web UI
+├── sdk/              # Client SDKs (Kotlin, JS, Swift, Python, Go)
+├── ktor-flagent/     # Ktor plugin
+└── docs/roadmap.md   # Roadmap разработки
+```
+
+См. [README.md](README.md#development) для детальной структуры проекта и настройки разработки.
+
+## 🛠️ Стек технологий
+
+- **Kotlin** - Современный JVM язык с coroutines
+- **Ktor** - Web-фреймворк для построения async приложений
+- **Exposed** - Type-safe SQL фреймворк
+- **Kotlinx Serialization** - JSON сериализация
+- **Compose for Web** - Современный UI фреймворк
+- **PostgreSQL/MySQL/SQLite** - Поддержка баз данных
+
+## 📦 Установка
+
+### Docker (Рекомендуется)
+
+```bash
+docker pull ghcr.io/maxluxs/flagent
+docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
+```
+
+### Docker Compose (с PostgreSQL)
+
+```bash
+git clone https://github.com/MaxLuxs/Flagent.git
+cd Flagent
+docker compose up -d
+```
+
+### Сборка из исходников
+
+```bash
+git clone https://github.com/MaxLuxs/Flagent.git
+cd Flagent
+./gradlew build
+./gradlew :backend:run
+```
+
+См. [Руководство по развертыванию](https://maxluxs.github.io/Flagent/#/deployment_ru) для production настройки.
+
+## 🎯 SDK и интеграции
+
+### Backend SDK (Доступны)
+- **[Kotlin SDK](sdk/kotlin)** - Type-safe Kotlin client + Enhanced вариант
+- **[JavaScript/TypeScript SDK](sdk/javascript)** - Node.js/Browser support + Enhanced вариант
+- **[Ktor Plugin](ktor-flagent)** - Интеграция первого класса для Ktor серверов
+
+### Mobile SDK (Доступны)
+- **[Swift SDK](sdk/swift)** - iOS/macOS нативный клиент + Enhanced вариант
+
+### Дополнительные SDK (Доступны)
+- **[Python SDK](sdk/python)** - Asyncio, типизированный client
+- **[Go SDK](sdk/go)** + **[Go Enhanced](sdk/go-enhanced)** - goroutines, client-side eval, SSE
+
+### Debug Tools (Доступны)
+- **[Kotlin Debug UI](sdk/kotlin-debug-ui)** - Встроенная панель отладки
+- **[Swift Debug UI](sdk/swift-debug-ui)** - Нативные SwiftUI инструменты отладки
+- **[JavaScript Debug UI](sdk/javascript-debug-ui)** - React-based консоль отладки
+
+## 🔧 Пример использования
+
+### Kotlin
+```kotlin
+val client = FlagentClient.create(
+    baseUrl = "http://localhost:18000/api/v1",
+    apiKey = "your-api-key"
+)
+
+// Простая проверка флага
+if (client.isEnabled("new_payment_flow")) {
+    newPaymentSystem.process()
+} else {
+    legacyPaymentSystem.process()
+}
+
+// A/B тестирование
+val variant = client.evaluate(
+    flagKey = "checkout_experiment",
+    entityContext = mapOf("user_id" to userId)
+)?.variant
+
+when (variant) {
+    "control" -> showOldCheckout()
+    "variant_a" -> showNewCheckoutA()
+    "variant_b" -> showNewCheckoutB()
+}
+```
+
+### JavaScript/TypeScript
+```javascript
+import { FlagentClient } from '@flagent/client';
+
+const client = new FlagentClient({
+  baseUrl: 'http://localhost:18000/api/v1',
+  apiKey: 'your-api-key'
+});
+
+// Простая проверка флага
+if (await client.isEnabled('new_payment_flow')) {
+  newPaymentSystem.process();
+} else {
+  legacyPaymentSystem.process();
+}
+```
+
+### Swift
+```swift
+let client = FlagentClient(
+    baseURL: "http://localhost:18000/api/v1",
+    apiKey: "your-api-key"
+)
+
+// Простая проверка флага
+if try await client.isEnabled("new_payment_flow") {
+    newPaymentSystem.process()
+} else {
+    legacyPaymentSystem.process()
+}
+```
+
+## 🤝 Участие в разработке
+
+Мы приветствуем вклад в проект! Пожалуйста, см. наше руководство по участию:
+
+1. Форкните репозиторий
+2. Создайте вашу feature ветку (`git checkout -b feature/amazing-feature`)
+3. Закоммитьте ваши изменения (`git commit -m 'Add some amazing feature'`)
+4. Запушьте в ветку (`git push origin feature/amazing-feature`)
+5. Откройте Pull Request
+
+Для более подробной информации, см. [Настройка разработки](README.md#development).
+
+## 🌍 Локализация
+
+Flagent полностью локализован для РФ/СНГ рынка:
+
+- ✅ **Русская документация** - Полная документация на русском языке
+- ✅ **Русский UI** - Интерфейс admin панели на русском
+- ✅ **Русская поддержка** - Поддержка на русском языке
+
+## 📊 Roadmap
+
+См. наш детальный [Roadmap](docs/roadmap.md) для полного видения проекта.
+
+### Фаза 1: Foundation (Q1 2026)
+- ✅ Client-side evaluation (Go Enhanced, Kotlin Enhanced)
+- ✅ Real-time обновления (SSE) в Go Enhanced, Kotlin Enhanced
+- ✅ Python и Go SDK + Go Enhanced
+- 🚧 Kubernetes Helm чарты
+
+### Фаза 2: Community (Q2-Q3 2026)
+- Feature Flags as Code (GitOps)
+- CLI инструмент
+- Webhooks и интеграции
+- Edge Service для масштабирования
+
+### Фаза 3: Enterprise (Q3-Q4 2026)
+- Multi-tenancy архитектура
+- SSO/SAML
+- RBAC
+- Audit logs
+- AI-powered rollouts (MVP)
+
+## 📄 Лицензия
+
+Этот проект лицензирован под Apache License 2.0 - см. файл [LICENSE](LICENSE) для деталей.
+
+## 💬 Сообщество и поддержка
+
+- 💬 **[GitHub Discussions](https://github.com/MaxLuxs/Flagent/discussions)** - Задавайте вопросы и делитесь идеями
+- 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Сообщайте о багах или запрашивайте функции
+- 📚 **[Документация](https://maxluxs.github.io/Flagent)** - Полные руководства и справочник API
+- 💻 **[Примеры](samples)** - Примеры кода и туториалы
+
+## ⭐ Звезды
+
+Если вам нравится Flagent, поставьте звезду на GitHub! Это помогает другим разработчикам найти проект.
+
+---
+
+**Построен с ❤️ на Kotlin и Ktor**

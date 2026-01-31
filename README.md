@@ -1,74 +1,76 @@
-<h1 align="center">Flagent</h1>
-
-<p align="center">
-  <strong>Open-source feature management platform built with Kotlin/Ktor</strong>
-</p>
-
-<p align="center">
-    <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+" target="_blank">
-        <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build Status">
+<div align="center">
+  <p><strong>English</strong> | <a href="README.ru.md">Русский</a></p>
+  <h1>Flagent</h1>
+  <p><strong>The First Kotlin-Native Feature Flag Platform</strong></p>
+  <p>Type-safe, coroutine-first feature flags and experimentation with AI-powered rollouts</p>
+  
+  <p>
+    <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+">
+      <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build Status">
     </a>
     <a href="https://codecov.io/gh/MaxLuxs/Flagent">
-        <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg" alt="Code Coverage">
+      <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg" alt="Code Coverage">
     </a>
-    <a href="https://github.com/MaxLuxs/Flagent/releases" target="_blank">
-        <img src="https://img.shields.io/github/release/MaxLuxs/Flagent.svg?style=flat&color=green" alt="Release">
+    <a href="https://github.com/MaxLuxs/Flagent/releases">
+      <img src="https://img.shields.io/github/release/MaxLuxs/Flagent.svg?style=flat&color=green" alt="Release">
     </a>
+    <a href="https://github.com/MaxLuxs/Flagent/blob/main/LICENSE">
+      <img src="https://img.shields.io/badge/license-Apache%202.0-green.svg" alt="License">
+    </a>
+  </p>
+  
+  <p>
     <a href="https://github.com/MaxLuxs/Flagent/stargazers">
-        <img src="https://img.shields.io/github/stars/MaxLuxs/Flagent?style=flat&color=yellow" alt="GitHub Stars">
+      <img src="https://img.shields.io/github/stars/MaxLuxs/Flagent?style=social" alt="GitHub Stars">
     </a>
     <a href="https://github.com/MaxLuxs/Flagent/network/members">
-        <img src="https://img.shields.io/github/forks/MaxLuxs/Flagent?style=flat&color=blue" alt="GitHub Forks">
+      <img src="https://img.shields.io/github/forks/MaxLuxs/Flagent?style=social" alt="GitHub Forks">
     </a>
-    <a href="https://img.shields.io/badge/kotlin-2.0.21-blue.svg?logo=kotlin" target="_blank">
-        <img src="https://img.shields.io/badge/kotlin-2.0.21-blue.svg?logo=kotlin" alt="Kotlin Version">
+    <a href="https://github.com/MaxLuxs/Flagent/graphs/contributors">
+      <img src="https://img.shields.io/github/contributors/MaxLuxs/Flagent" alt="Contributors">
     </a>
-    <a href="LICENSE" target="_blank">
-        <img src="https://img.shields.io/badge/license-Apache%202.0-green.svg" alt="License">
-    </a>
-</p>
+  </p>
+  
+  <p>
+    <a href="#-quick-start">Quick Start</a> •
+    <a href="https://maxluxs.github.io/Flagent">Documentation</a> •
+    <a href="#-key-features">Features</a> •
+    <a href="#-sdks">SDKs</a> •
+    <a href="#-use-cases">Use Cases</a> •
+    <a href="docs/roadmap.md">Roadmap</a>
+  </p>
+</div>
 
-<p align="center">
-  <a href="#-what-is-flagent">About</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#key-features">Features</a> •
-  <a href="#client-libraries">SDKs</a> •
-  <a href="https://maxluxs.github.io/Flagent">Documentation</a> •
-  <a href="#community--support">Community</a>
-</p>
+---
 
-<br/>
+**Flagent** is a modern, production-ready feature flag and experimentation platform built with **Kotlin/Ktor**. The first Kotlin-native solution in the feature flags ecosystem, combining type-safety, coroutines, and clean architecture to deliver high-performance feature management with AI-powered capabilities.
 
-## 🚀 What is Flagent?
+## 🎯 Why Flagent?
 
-**Flagent** is a production-ready, open-source feature flag and experimentation platform built with Kotlin/Ktor. It enables teams to safely deploy features, run A/B tests, and manage dynamic configurations with fine-grained targeting and real-time analytics.
+### Kotlin-Native Excellence
+- **Type-Safe SDKs** - Compile-time validation and IDE autocomplete
+- **Coroutine-First** - Non-blocking I/O and structured concurrency
+- **Ktor Ecosystem** - Seamless integration with Ktor applications
+- **Clean Architecture** - DDD principles and testable design
 
-Feature flags in Flagent let you deploy code to production behind toggles, reducing the risk of impacting your users. Roll out features gradually, test with real production data, and maintain full control over when and how features are enabled.
+### AI-Powered Intelligence (Roadmap)
+- **Smart Rollouts** - ML-based automatic scaling based on metrics
+- **Anomaly Detection** - Auto-rollback on performance degradation  
+- **Predictive Targeting** - Data-driven segment recommendations
+- **A/B Insights** - Automated experiment analysis
 
-Flagent is designed for modern development teams who need:
-- **Feature Flags** - Gradual rollouts, kill switches, and remote configuration
-- **A/B Testing** - Multi-variant experiments with statistical significance analysis
-- **Advanced Targeting** - Segment users by attributes, percentages, or complex rules
-- **Multi-Environment Management** - Separate configurations for dev, staging, and production
-- **Analytics Integration** - Real-time metrics and integration with popular analytics platforms
-- **Enterprise Scalability** - High-performance evaluation engine built on Kotlin Coroutines
-- **Self-Hosted or Cloud** - Deploy on your infrastructure or use managed hosting
+### Enterprise-Ready
+- **Production-Proven** - 70+ test files, comprehensive coverage
+- **High Performance** - Sub-millisecond evaluation, 10k+ req/s
+- **Multi-Tenancy** - Isolated environments for teams (Roadmap)
+- **Real-Time Updates** - SSE in Kotlin Enhanced, Go Enhanced
 
-Built with Clean Architecture principles, Flagent provides a modern, type-safe API and comprehensive SDKs for seamless integration into any tech stack.
+## 🚀 Quick Start
 
-## Documentation
+Get Flagent running in under 5 minutes:
 
-- 📖 [Full Documentation](https://maxluxs.github.io/Flagent) - Complete documentation with examples and API reference
-- 📖 [API Documentation](http://localhost:18000/docs) - Interactive Swagger UI (when server is running)
-
-## Quick Start
-
-Get Flagent running in under 5 minutes.
-
-### Option 1: Docker (Recommended)
-
-```sh
-# Pull and run Flagent
+```bash
+# Using Docker (Recommended)
 docker pull ghcr.io/maxluxs/flagent
 docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 
@@ -80,350 +82,112 @@ open http://localhost:18000
 - Username: `admin`
 - Password: `admin`
 
-### Option 2: Docker Compose (with PostgreSQL)
+## ✨ Key Features
 
-```bash
-# Clone the repository
-git clone https://github.com/MaxLuxs/Flagent.git
-cd Flagent
+### Core Features (Available Now)
+- ✅ **Feature Flags** - Gradual rollouts, kill switches, and remote configuration
+- ✅ **A/B Testing** - Multi-variant experiments with deterministic bucketing (MurmurHash3)
+- ✅ **Advanced Targeting** - Segment users by attributes, percentages, or complex constraint rules
+- ✅ **Multi-Environment** - Separate configurations for dev, staging, and production
+- ✅ **Data Recorders** - Kafka, Kinesis, PubSub integration for analytics
+- ✅ **High Performance** - Sub-millisecond evaluation with EvalCache and TTL
+- ✅ **Client-Side Evaluation** - Offline-first local evaluation (< 1ms) in Kotlin Enhanced, Go Enhanced
+- ✅ **Real-Time Updates** - SSE for instant flag changes in Kotlin Enhanced, Go Enhanced
+- ✅ **Multiple Databases** - PostgreSQL, MySQL, SQLite support
+- ✅ **Docker Ready** - Production-ready Docker images with Compose
+- ✅ **Official SDKs** - Kotlin, JavaScript/TypeScript, Swift, Python, Go with Enhanced variants
+- ✅ **Ktor Plugin** - First-class Ktor server-side integration
+- ✅ **Admin UI** - Modern Compose for Web dashboard
+- ✅ **Debug Console** - Real-time evaluation testing and debugging
 
-# Start with Docker Compose
-docker compose up -d
+### Roadmap Features
+- 🚧 **GitOps Support** - Feature flags as code (YAML/JSON) (Q2 2026)
+- 🚧 **Multi-Tenancy** - Team isolation and resource limits (Q3 2026)
+- 🚧 **SSO/SAML** - Enterprise authentication (Auth0, Okta) (Q3 2026)
+- 🚧 **RBAC** - Role-based access control (Q3 2026)
+- 🚧 **AI Rollouts** - ML-powered gradual rollouts (Q4 2026)
 
-# Access the UI
-open http://localhost:18000
+## 📖 Documentation
+
+- 📖 **[Full Documentation](https://maxluxs.github.io/Flagent)** - Complete guides, API reference, and examples
+- 📖 **[Getting Started Guide](README.md#-quick-start)** - Quick start and setup instructions
+- 📖 **[API Documentation](https://maxluxs.github.io/Flagent/api/openapi.yaml)** - OpenAPI specification
+- 📖 **[Architecture Documentation](https://maxluxs.github.io/Flagent/#/architecture/backend)** - System architecture and design
+
+## 🏗️ Project Structure
+
 ```
-
-### Option 3: Build from Source
-
-```bash
-cd flagent
-./gradlew :backend:run
+flagent/
+├── backend/          # Ktor backend (Clean Architecture)
+├── frontend/         # Compose for Web UI
+├── sdk/              # Client SDKs (Kotlin, JS, Swift, Python, Go)
+├── ktor-flagent/     # Ktor plugin
+└── docs/roadmap.md   # Development roadmap
 ```
-
-The server will start on `http://localhost:18000`
-
-### Try the Evaluation API
-
-```bash
-curl --request POST \
-     --url http://localhost:18000/api/v1/evaluation \
-     --header 'content-type: application/json' \
-     --data '{
-       "entityID": "user-123",
-       "entityType": "user",
-       "entityContext": {
-         "state": "NY",
-         "tier": "premium"
-       },
-       "flagID": 1,
-       "enableDebug": true
-     }'
-```
-
-For more examples, see [Documentation](https://maxluxs.github.io/Flagent) and [Code Examples](https://github.com/MaxLuxs/Flagent/tree/main/samples).
-
-## Performance & Scalability
-
-Flagent is built for production-scale deployments with a focus on performance and reliability.
-
-### Evaluation Performance
-
-- **Sub-millisecond Latency** - Typical evaluation time under 1ms per request
-- **Kotlin Coroutines** - Asynchronous, non-blocking evaluation engine
-- **In-Memory Caching** - Fast lookup with configurable TTL and refresh intervals
-- **Deterministic Evaluation** - Consistent results using MurmurHash3 hashing
-
-### Scalability
-
-- **Horizontal Scaling** - Stateless architecture supports multiple instances behind a load balancer
-- **Database Connection Pooling** - Efficient resource usage with HikariCP
-- **Client-Side Caching** - SDKs cache flags locally to reduce server load
-- **Batch Evaluation** - Evaluate multiple flags in a single API request
-
-### Benchmarks
-
-Flagent handles high-throughput scenarios:
-- **10,000+ evaluations/second** per instance (varies by hardware)
-- **Low memory footprint** - ~200MB base memory usage
-- **Database agnostic** - Supports PostgreSQL, MySQL, SQLite with similar performance characteristics
-
-## Performance Metrics
-
-Flagent automatically collects performance metrics using Micrometer and Prometheus. Metrics are collected for all HTTP requests without any additional code.
-
-### Automatic HTTP Metrics
-
-The following metrics are automatically collected by the MicrometerMetrics plugin:
-
-- **`http.server.requests`** - Total count of HTTP requests with tags: `method`, `uri`, `status`
-- **`http.server.requests.duration`** - Request duration histogram with tags: `method`, `uri`, `status`
-- **JVM metrics** - Memory usage, thread counts, garbage collection
-
-### Enabling Metrics
-
-To enable Prometheus metrics endpoint, set the environment variable:
-
-```bash
-export FLAGENT_PROMETHEUS_ENABLED=true
-export FLAGENT_PROMETHEUS_PATH=/metrics  # optional, defaults to /metrics
-```
-
-After starting the server, metrics are available at:
-
-```bash
-curl http://localhost:18000/metrics
-```
-
-### StatsD Metrics
-
-StatsD metrics can also be enabled for integration with Datadog, Graphite, etc.:
-
-```bash
-export FLAGENT_STATSD_ENABLED=true
-export FLAGENT_STATSD_HOST=127.0.0.1
-export FLAGENT_STATSD_PORT=8125
-export FLAGENT_STATSD_PREFIX=flagent.
-```
-
-See [AppConfig.kt](flagent/backend/src/main/kotlin/flagent/config/AppConfig.kt) for all metrics configuration options.
-
-## Flagent UI
-
-The UI is built with Compose for Web and provides a modern, intuitive interface for managing feature flags and experiments.
-
-## Technology Stack
-
-- **Kotlin** - Modern JVM language
-- **Ktor** - Web framework
-- **Exposed** - ORM for database operations
-- **Kotlinx Coroutines** - Asynchronous programming
-- **Kotlinx Serialization** - JSON serialization
-- **HikariCP** - Connection pooling
-- **Compose for Web** - Frontend UI
-
-## Key Features
-
-### 🚀 Feature Flags & Remote Configuration
-- **Feature Flags Management** - Toggle features on/off instantly without code deployments
-- **Gradual Rollouts** - Roll out features progressively (1%, 10%, 50%, 100%) with kill switches
-- **Dynamic Configuration** - Update application settings without redeployment
-- **Kill Switches** - Instantly disable features in production if issues are detected
-
-### 🧪 A/B Testing & Experimentation
-- **Multi-Variant Experiments** - Run A/B/n tests with any number of variants
-- **Statistical Significance** - Built-in calculation of p-values and confidence intervals
-- **Deterministic Bucketing** - Consistent assignment using MurmurHash3 for reliable results
-- **Custom Targeting Rules** - Segment users by attributes, percentages, or complex constraints
-- **Real-Time Analytics** - Track experiment results with live metrics and dashboards
-
-### 🎯 Advanced Targeting & Segmentation
-- **User Segmentation** - Target users by attributes (region, tier, age, custom properties)
-- **Percentage Rollouts** - Gradual rollouts with precise percentage control
-- **Constraint Evaluation** - Complex rules with AND/OR logic, comparisons, and regex matching
-- **Multi-Environment Support** - Separate configurations for development, staging, and production
-
-### ⚡ Performance & Scalability
-- **High Performance** - Built on Kotlin Coroutines for asynchronous, non-blocking evaluation
-- **Low Latency** - Sub-millisecond evaluation times with in-memory caching
-- **Horizontal Scalability** - Stateless architecture supports horizontal scaling
-- **Connection Pooling** - Efficient database connections with HikariCP
-- **Edge Caching** - Client-side caching for offline-first SDKs
-
-### 📊 Analytics & Monitoring
-- **Real-Time Metrics** - Prometheus metrics for HTTP requests, evaluation counts, and latencies
-- **Analytics Integration** - Native integrations with Segment, Mixpanel, Amplitude, and more
-- **Data Recording** - Export evaluation data to Kafka, AWS Kinesis, or Google Pub/Sub
-- **Performance Monitoring** - Built-in metrics for request duration, cache hit rates, and errors
-- **Health Checks** - RESTful health check endpoints for monitoring and load balancing
-
-### 🔌 Integration & Ecosystem
-- **REST API** - Comprehensive REST API with OpenAPI/Swagger documentation
-- **Official SDKs** - Kotlin, JavaScript/TypeScript, Swift, Python, Go (base + Enhanced variants)
-- **Enhanced SDKs** - Client-side evaluation and real-time updates (SSE) in Kotlin Enhanced and Go Enhanced
-- **Ktor Plugin** - Native integration for Ktor applications (`ktor-flagent`)
-- **CI/CD Integration** - GitHub Actions, GitLab CI, Jenkins, and other CI/CD platforms
-- **Webhooks** - Real-time notifications for flag changes and events
-- **Notification Systems** - Slack, Microsoft Teams, Discord, and email integrations
-
-### 🗄️ Database & Storage
-- **Multiple Database Support** - PostgreSQL, MySQL, and SQLite out of the box
-- **Migration System** - Database migrations with Exposed ORM
-- **Data Export** - Export evaluation data to BigQuery, MongoDB, and other storage systems
-- **Backup & Recovery** - Database backups and point-in-time recovery support
-
-### 🔒 Security & Authentication
-- **Multiple Auth Methods** - JWT, Basic Auth, Header-based, and Cookie-based authentication
-- **Role-Based Access Control** - Fine-grained permissions for flags and environments
-- **API Key Management** - Secure API key generation and rotation
-- **Audit Logging** - Track all changes with detailed audit logs
-
-### 🌐 Deployment Options
-- **Docker** - Official Docker images for easy deployment
-- **Docker Compose** - Complete setup with PostgreSQL included
-- **Kubernetes** - Helm charts and Kubernetes manifests for production deployments
-- **Self-Hosted** - Full control over your infrastructure
-- **Cloud Ready** - Deploy to AWS, GCP, Azure, or any cloud provider
-
-## Client Libraries
-
-Flagent provides official SDK clients:
-
-| Language | SDK | Enhanced | Status |
-| ---------- | --- | -------- | ------ |
-| Kotlin | [kotlin/](./sdk/kotlin/) | [kotlin-enhanced/](./sdk/kotlin-enhanced/) (client-side eval, SSE) | ✅ Available |
-| JavaScript/TypeScript | [javascript/](./sdk/javascript/) | [javascript-enhanced/](./sdk/javascript-enhanced/) | ✅ Available |
-| Swift | [swift/](./sdk/swift/) | [swift-enhanced/](./sdk/swift-enhanced/) | ✅ Available |
-| Python | [python/](./sdk/python/) | — | ✅ Available |
-| Go | [go/](./sdk/go/) | [go-enhanced/](./sdk/go-enhanced/) (client-side eval, SSE) | ✅ Available |
-
-See [SDK README](./sdk/README.md) for details and Debug UI libraries.
 
 ## Development
 
 ### Requirements
-
 - JDK 21+
 - Gradle 9.0
 
 ### Build
-
 ```bash
-cd flagent
 ./gradlew build
 ```
 
-### Configuration
+### Run Backend
+```bash
+./gradlew :backend:run
+```
 
-All settings are configured via environment variables. See [AppConfig.kt](flagent/backend/src/main/kotlin/flagent/config/AppConfig.kt) for the full list of options.
+### Configuration
+All settings via environment variables. See [AppConfig.kt](backend/src/main/kotlin/flagent/config/AppConfig.kt) for options.
 
 Example:
-
 ```bash
 export FLAGENT_DB_DBDRIVER=sqlite3
 export FLAGENT_DB_DBCONNECTIONSTR=flagent.sqlite
 export PORT=18000
-cd flagent
 ./gradlew :backend:run
 ```
 
-### API Documentation
-
-After starting the server, interactive API documentation is available:
-
+### API Documentation (when server running)
 - **Swagger UI**: http://localhost:18000/docs
-- **OpenAPI specification (YAML)**: http://localhost:18000/api/v1/openapi.yaml
-- **OpenAPI specification (JSON)**: http://localhost:18000/api/v1/openapi.json
+- **OpenAPI YAML**: http://localhost:18000/api/v1/openapi.yaml
 
-## Use Cases
+## 📚 SDKs
 
-### 1. Feature Flags for Safe Deployments
+Official SDKs available for multiple platforms:
 
-Deploy code to production behind feature flags, enabling instant rollbacks without code changes:
+| Language | Package | Status | Features |
+|----------|---------|--------|----------|
+| **Kotlin** | [flagent-kotlin](sdk/kotlin) | ✅ Stable | Full API support, coroutines |
+| **Kotlin Enhanced** | [kotlin-enhanced](sdk/kotlin-enhanced) | ✅ Stable | Client-side eval, real-time updates |
+| **JavaScript/TypeScript** | [flagent-js](sdk/javascript) | ✅ Stable | Full API support, async/await |
+| **Swift** | [flagent-swift](sdk/swift) | ✅ Stable | Full API support, async/await |
+| **Python** | [flagent-python](sdk/python) | ✅ Stable | Full API support, asyncio |
+| **Go** | [flagent-go](sdk/go) | ✅ Stable | Full API support, goroutines |
+| **Go Enhanced** | [go-enhanced](sdk/go-enhanced) | ✅ Stable | Client-side eval, real-time updates |
 
-```kotlin
-// Kotlin SDK Example
-val client = FlagentClient.create(baseUrl = "http://localhost:18000/api/v1")
+### Server-Side Integration
 
-if (client.isEnabled("new_payment_flow")) {
-    // New payment implementation
-    newPaymentFlow.process()
-} else {
-    // Fallback to old implementation
-    legacyPaymentFlow.process()
-}
-```
+- **Ktor Plugin** - [ktor-flagent](ktor-flagent) - First-class Ktor integration with middleware support
 
-### 2. A/B Testing for Product Optimization
+See [SDK Documentation](https://maxluxs.github.io/Flagent) for detailed usage guides.
 
-Run experiments to test new features and measure impact:
+## 🛠️ Technology Stack
 
-```kotlin
-val assignment = client.evaluate("checkout_experiment", entityContext = userContext)
-when (assignment?.variant) {
-    "control" -> showOldCheckout()
-    "variant_a" -> showNewCheckoutVariantA()
-    "variant_b" -> showNewCheckoutVariantB()
-}
-```
+- **Kotlin** - Modern JVM language with coroutines
+- **Ktor** - Web framework for building async applications
+- **Exposed** - Type-safe SQL framework
+- **Kotlinx Serialization** - JSON serialization
+- **Compose for Web** - Modern UI framework
+- **PostgreSQL/MySQL/SQLite** - Database support
 
-### 3. Gradual Rollouts with Kill Switches
+## 📦 Installation
 
-Roll out features gradually and instantly disable if issues are detected:
-
-```kotlin
-// Roll out to 10% of users in NY state
-val enabled = client.isEnabled(
-    "new_feature",
-    entityContext = mapOf("state" to "NY")
-)
-
-if (enabled) {
-    // Feature enabled for 10% of NY users
-    // Can be instantly disabled via UI or API
-}
-```
-
-### 4. Dynamic Configuration
-
-Update application settings without redeployment:
-
-```kotlin
-val config = client.getVariantAttachment("app_config")
-val maxRetries = config["max_retries"]?.toInt() ?: 3
-val timeout = config["timeout_ms"]?.toLong() ?: 5000
-```
-
-### 5. User Segmentation and Targeting
-
-Target specific user segments with complex rules:
-
-```kotlin
-// Enable feature only for premium users in specific regions
-val enabled = client.isEnabled(
-    "premium_feature",
-    entityContext = mapOf(
-        "tier" to "premium",
-        "region" to "US",
-        "subscription_age_days" to "30"
-    )
-)
-```
-
-See [Use Cases Documentation](https://maxluxs.github.io/Flagent/#/examples) for more examples.
-
-## Project Structure
-
-```
-flagent/
-├── backend/          # Ktor backend server (Clean Architecture)
-│   ├── domain/       # Domain layer (entities, use cases, interfaces)
-│   ├── service/      # Application layer (services, DTOs, mappers)
-│   ├── repository/   # Infrastructure layer (database, cache)
-│   ├── route/        # Presentation layer (HTTP handlers)
-│   └── config/       # Configuration and application setup
-├── frontend/         # Compose for Web frontend
-├── ktor-flagent/     # Ktor plugin for Flagent functionality
-├── shared/           # Shared models (EnterpriseConfigurator, tenant helpers)
-├── internal/         # Optional enterprise module (multi-tenancy, billing, SSO)
-└── sdk/              # Client SDKs
-    ├── kotlin/       # Kotlin base + kotlin-enhanced (client-side eval, SSE)
-    ├── javascript/   # JS/TS base + javascript-enhanced
-    ├── swift/        # Swift base + swift-enhanced
-    ├── python/       # Python SDK
-    └── go/            # Go base + go-enhanced (client-side eval, SSE)
-```
-
-## Open-Source vs Enterprise Build
-
-- **Self-hosted (default):** When the enterprise module is absent, the core creates tenant/billing/SSO tables and registers routes via `DefaultEnterpriseConfigurator`. Full feature flags, evaluation, A/B testing, and APIs. Build with `./gradlew build`.
-- **Enterprise (optional):** When `internal/flagent-enterprise` is present (submodule), the build includes the enterprise module: multi-tenancy, billing (Stripe), SSO/SAML. The backend uses `EnterpriseConfigurator.configureRoutes(Routing, EnterpriseBackendContext)` and tenant schema helpers (`createTenantSchema`, `runTenantSchemaMigrations`). See [internal/README.md](internal/README.md).
-
-## Deployment
-
-Flagent supports multiple deployment options for different use cases.
-
-### Quick Start with Docker
+### Docker (Recommended)
 
 ```bash
 docker pull ghcr.io/maxluxs/flagent
@@ -433,95 +197,171 @@ docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 ### Docker Compose (with PostgreSQL)
 
 ```bash
+git clone https://github.com/MaxLuxs/Flagent.git
+cd Flagent
 docker compose up -d
 ```
 
-### Kubernetes
+### Build from Source
 
-Deploy to Kubernetes with Helm or manifests (see [deployment guide](https://maxluxs.github.io/Flagent/#/deployment)).
+```bash
+git clone https://github.com/MaxLuxs/Flagent.git
+cd Flagent
+./gradlew build
+./gradlew :backend:run
+```
 
-### Self-Hosted
+See [Deployment Guide](https://maxluxs.github.io/Flagent/#/deployment) for production setup.
 
-1. **Build from source:**
-   ```bash
-   cd flagent
-   ./gradlew build
-   ```
+## 🤝 Contributing
 
-2. **Configure environment variables:**
-   ```bash
-   export FLAGENT_DB_DBDRIVER=postgres
-   export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flagent
-   export PORT=18000
-   ```
+We welcome contributions from the community! Flagent is built with love by developers, for developers.
 
-3. **Run the application:**
-   ```bash
-   ./gradlew :backend:run
-   ```
+### How to Contribute
 
-See [Deployment Documentation](https://maxluxs.github.io/Flagent/#/deployment) for production setup, multi-environment configuration, and scaling strategies.
+1. **Fork the repository**
+2. **Create your feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Make your changes** - Follow our [code style guidelines](https://maxluxs.github.io/Flagent/#/contributing)
+4. **Add tests** - Ensure your changes are well-tested
+5. **Commit your changes** (`git commit -m 'Add some amazing feature'`)
+6. **Push to the branch** (`git push origin feature/amazing-feature`)
+7. **Open a Pull Request**
 
-## Multi-Environment Management
+### Areas to Contribute
 
-Flagent supports managing feature flags across multiple environments:
+- 🐛 **Bug Fixes** - Help us squash bugs
+- ✨ **New Features** - Implement features from our [roadmap](docs/roadmap.md)
+- 📚 **Documentation** - Improve guides and examples
+- 🌍 **SDKs** - Add support for new languages
+- 🎨 **UI/UX** - Enhance the admin dashboard
+- ⚡ **Performance** - Optimize evaluation speed
+- 🧪 **Tests** - Increase test coverage
 
-- **Development** - Local development and testing
-- **Staging** - Pre-production testing and validation
-- **Production** - Live production environment
+For more details, see our [Contributing Guide](https://maxluxs.github.io/Flagent/#/contributing) and [Development Setup](README.md#development).
 
-Each environment can have:
-- Separate database instances
-- Different configuration settings
-- Environment-specific flags and experiments
-- Independent analytics and metrics
-
-See [Multi-Environment Setup](https://maxluxs.github.io/Flagent/#/features/feature-flags-as-code) for detailed configuration.
-
-## Community & Support
-
-We know that learning a new tool can be challenging. We're here to help!
-
-### 💬 Getting Help
-
-- **[GitHub Discussions](https://github.com/MaxLuxs/Flagent/discussions)** - Ask questions, share ideas, and discuss use cases with the community
-- **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Report bugs or request features
-- **[Documentation](https://maxluxs.github.io/Flagent)** - Complete guides, API reference, tutorials, and examples
-- **[Code Examples](https://github.com/MaxLuxs/Flagent/tree/main/samples)** - Real-world implementation examples
-
-### 🤝 Contributing
-
-Flagent is an open-source project, and we welcome contributions from the community! Whether you're fixing bugs, improving documentation, or adding new features, your help is appreciated.
-
-Check out our [Contributing Guide](https://github.com/MaxLuxs/Flagent/blob/main/docs/contributing.md) to get started:
-- Code of conduct
-- Development environment setup
-- Running tests
-- Pull request process
-- Code style guidelines
-
-### 🗺️ Roadmap
-
-We're continuously improving Flagent. Upcoming features include:
-- 🔄 **GitOps Integration** - Feature flags as code with Git-based workflows
-- 📊 **Advanced Analytics** - Statistical significance, cohort analysis, and ML-powered insights
-- 🔌 **More Integrations** - Additional analytics platforms and notification systems
-- 🌐 **Multi-Region** - Cross-region replication and edge caching
-- 🔐 **Enterprise SSO** - SAML, OIDC, and LDAP authentication
-
-See our [GitHub Issues](https://github.com/MaxLuxs/Flagent/issues) for the full roadmap and vote on features you'd like to see!
-
-## License
+## 📄 License
 
 Flagent is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for details.
 
-**Apache 2.0** allows you to:
-- ✅ Use Flagent commercially
-- ✅ Modify and distribute
-- ✅ Place warranty
-- ✅ Patent use
+## 🗺️ Roadmap
 
-**You must:**
-- Include copyright and license notice
-- State changes
-- Include the original LICENSE file
+Flagent is evolving into a production-ready feature flag and experimentation platform. Our roadmap focuses on community needs and enterprise requirements.
+
+### Phase 1: Foundation (Q1 2026) 
+**Goal**: Close critical gaps for production use
+- ✅ Core feature flags and A/B testing (DONE)
+- ✅ Admin UI and Debug Console (DONE)
+- ✅ Data recorders: Kafka, Kinesis, PubSub (DONE)
+- ✅ Python SDK with asyncio (DONE)
+- ✅ Go SDK (DONE)
+- ✅ Client-side evaluation in Go SDK (DONE)
+- ✅ Real-time updates (SSE) in Go SDK (DONE) ⭐ **NEW**
+- 🚧 Enhanced documentation
+
+**Target**: 100+ GitHub stars, 5+ production deployments
+
+### Phase 2: Community (Q2-Q3 2026)
+**Goal**: Build community and product-market fit
+- Feature Flags as Code (GitOps workflow)
+- CLI tool for automation
+- Webhooks and integrations (Slack, Datadog)
+- Java/.NET SDKs
+- Edge Service for SDK scaling
+- Debug UI for SDKs (Compose/SwiftUI/React)
+- Public performance benchmarks
+
+**Target**: 500+ stars, 20+ contributors, 50+ deployments
+
+### Phase 3: Enterprise (Q3-Q4 2026)
+**Goal**: Enterprise-ready features + SaaS launch
+- Multi-tenancy architecture
+- SSO/SAML (Auth0, Okta, Azure AD)
+- RBAC with custom roles
+- Audit logs and compliance
+- Advanced analytics dashboard
+- AI-powered rollouts (MVP)
+
+**Target**: 2000+ stars, SaaS beta, 10+ paying customers
+
+### Phase 4: Scale (2027+)
+**Goal**: Market leadership
+- AI Anomaly Detection
+- Predictive Targeting
+- Terraform/Pulumi providers
+- Kubernetes Operator
+- SOC 2 compliance
+- Enterprise SLA guarantees
+
+**Target**: 5000+ stars, $50k MRR, 50+ enterprise customers
+
+See our [detailed roadmap](docs/roadmap.md) for more information.
+
+## 🌟 Community & Support
+
+Join our growing community of developers building better feature flag systems!
+
+### Get Help
+
+- 💬 **[GitHub Discussions](https://github.com/MaxLuxs/Flagent/discussions)** - Ask questions, share ideas, and connect with other users
+- 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Report bugs or request new features
+- 📚 **[Documentation](https://maxluxs.github.io/Flagent)** - Comprehensive guides, API reference, and tutorials
+- 💻 **[Code Examples](samples)** - Real-world examples in Kotlin, Python, JavaScript, Swift, and Go
+- 🎯 **[Roadmap](docs/roadmap.md)** - Our journey to becoming the best open-source feature flag platform
+
+### Stay Updated
+
+- ⭐ **Star us on GitHub** to stay updated with new releases
+- 👀 **Watch the repository** to get notified about issues and PRs
+- 🗣️ **Share your experience** - Blog posts, talks, and social media mentions are always appreciated!
+
+### Enterprise Support
+
+Need help deploying Flagent in production? Want custom features or SLA guarantees? We offer:
+
+- 🏢 **Professional Services** - Architecture review, deployment assistance, custom integrations
+- 🎓 **Training & Workshops** - Team training on feature flag best practices
+- 🔒 **Priority Support** - Faster response times and dedicated Slack channel
+- 🚀 **Managed Hosting** (Coming Soon) - Fully managed SaaS solution
+
+Contact us at: **support@flagent.io** (Coming Soon)
+
+## 🎯 Use Cases
+
+- **Feature Flags** - Safe deployments with instant rollbacks
+- **A/B Testing** - Product optimization with statistical significance
+- **Gradual Rollouts** - Progressive feature releases with kill switches
+- **Dynamic Configuration** - Update settings without redeployment
+- **User Segmentation** - Target specific user groups with complex rules
+- **Kill Switches** - Emergency feature disable in production
+- **Multi-Variant Testing** - Test multiple variations simultaneously
+- **Canary Releases** - Test with subset of users before full rollout
+
+## 📊 Performance & Scalability
+
+- **Sub-millisecond latency** - Typical evaluation time under 1ms
+- **10,000+ evaluations/second** per instance
+- **Horizontal scaling** - Stateless architecture supports multiple instances
+- **Low memory footprint** - ~200MB base memory usage
+- **EvalCache with TTL** - Intelligent caching reduces database load by 90%
+- **Deterministic bucketing** - Consistent user assignments using MurmurHash3
+
+## 👥 Who's Using Flagent?
+
+Flagent is trusted by teams building high-performance Kotlin applications:
+
+- 🚀 **Early Adopters** - Join our growing community of production users
+- 🔬 **Research Projects** - Used in academic and research environments
+- 🏢 **Internal Tools** - Powering feature flags for internal applications
+
+*Are you using Flagent in production? [Let us know!](https://github.com/MaxLuxs/Flagent/discussions/new?category=show-and-tell)*
+
+## 🔗 Links
+
+- 📖 **[Documentation](https://maxluxs.github.io/Flagent)**
+- 🐳 **[Docker Hub](https://github.com/MaxLuxs/Flagent/pkgs/container/flagent)**
+- 📦 **[Releases](https://github.com/MaxLuxs/Flagent/releases)**
+- 💬 **[Discussions](https://github.com/MaxLuxs/Flagent/discussions)**
+
+---
+
+**Made with ❤️ by the Flagent team**
