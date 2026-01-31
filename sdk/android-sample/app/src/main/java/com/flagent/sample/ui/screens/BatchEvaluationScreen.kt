@@ -35,7 +35,6 @@ import com.flagent.sample.viewmodel.BatchEvaluationState
 import com.flagent.sample.viewmodel.BatchEvaluationViewModel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 @Composable
 fun BatchEvaluationScreen(
@@ -298,15 +297,10 @@ fun BatchEvaluationScreen(
     }
 }
 
-private fun parseEntityContext(jsonString: String): Map<String, kotlinx.serialization.json.JsonObject>? {
+private fun parseEntityContext(jsonString: String): kotlinx.serialization.json.JsonObject? {
     return try {
         if (jsonString.isBlank()) return null
-        val json = Json.parseToJsonElement(jsonString).jsonObject
-        json.entries.associate { entry ->
-            entry.key to kotlinx.serialization.json.buildJsonObject {
-                put(entry.key, entry.value)
-            }
-        }
+        Json.parseToJsonElement(jsonString).jsonObject
     } catch (e: Exception) {
         null
     }

@@ -62,7 +62,7 @@ class EvaluationViewModel : ViewModel() {
                     flagID = flagID,
                     entityID = entityID,
                     entityType = entityType,
-                    entityContext = entityContext?.let { convertToJsonObjectMap(it) },
+                    entityContext = entityContext?.let { convertToJsonObject(it) },
                     enableDebug = enableDebug
                 )
                 val response = evaluationApi!!.postEvaluation(evalContext)
@@ -115,16 +115,16 @@ class EvaluationViewModel : ViewModel() {
         _state.value = EvaluationState.Idle
     }
     
-    private fun convertToJsonObjectMap(map: Map<String, Any>): Map<String, JsonObject> {
-        return map.mapValues { entry ->
-            val value = when (val v = entry.value) {
-                is String -> JsonPrimitive(v)
-                is Number -> JsonPrimitive(v)
-                is Boolean -> JsonPrimitive(v)
-                else -> JsonPrimitive(v.toString())
-            }
-            kotlinx.serialization.json.buildJsonObject {
-                put(entry.key, value)
+    private fun convertToJsonObject(map: Map<String, Any>): JsonObject {
+        return kotlinx.serialization.json.buildJsonObject {
+            map.forEach { (key, value) ->
+                val prim = when (val v = value) {
+                    is String -> JsonPrimitive(v)
+                    is Number -> JsonPrimitive(v)
+                    is Boolean -> JsonPrimitive(v)
+                    else -> JsonPrimitive(v.toString())
+                }
+                put(key, prim)
             }
         }
     }
