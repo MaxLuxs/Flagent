@@ -1,18 +1,17 @@
 package flagent.route
 
-import flagent.domain.entity.Variant
 import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.VariantService
+import flagent.service.command.CreateVariantCommand
+import flagent.service.command.PutVariantCommand
 import flagent.util.getSubject
+import flagent.route.mapper.ResponseMappers.mapVariantToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 /**
  * Variant routes - CRUD operations for variants
@@ -39,23 +38,12 @@ fun Routing.configureVariantRoutes(variantService: VariantService) {
                     val updatedBy = call.getSubject()
                     
                     try {
-                        val attachment = request.attachment?.let { map ->
-                            buildJsonObject {
-                                map.forEach { (key, value) ->
-                                    put(key, value)
-                                }
-                            }
-                        }
-                        
-                        val variant = variantService.createVariant(
-                            flagId,
-                            Variant(
-                                flagId = flagId,
-                                key = request.key,
-                                attachment = attachment
-                            ),
-                            updatedBy = updatedBy
+                        val command = CreateVariantCommand(
+                            flagId = flagId,
+                            key = request.key,
+                            attachment = request.attachment
                         )
+                        val variant = variantService.createVariant(command, updatedBy)
                         
                         call.respond(HttpStatusCode.OK, mapVariantToResponse(variant))
                     } catch (e: IllegalArgumentException) {
@@ -78,24 +66,13 @@ fun Routing.configureVariantRoutes(variantService: VariantService) {
                         val updatedBy = call.getSubject()
                         
                         try {
-                            val attachment = request.attachment?.let { map ->
-                                buildJsonObject {
-                                    map.forEach { (key, value) ->
-                                        put(key, value)
-                                    }
-                                }
-                            }
-                            
-                            val variant = variantService.updateVariant(
-                                flagId,
-                                variantId,
-                                Variant(
-                                    flagId = flagId,
-                                    key = request.key,
-                                    attachment = attachment
-                                ),
-                                updatedBy = updatedBy
+                            val command = PutVariantCommand(
+                                flagId = flagId,
+                                variantId = variantId,
+                                key = request.key,
+                                attachment = request.attachment
                             )
+                            val variant = variantService.updateVariant(command, updatedBy)
                             
                             call.respond(HttpStatusCode.OK, mapVariantToResponse(variant))
                         } catch (e: IllegalArgumentException) {
@@ -132,19 +109,4 @@ fun Routing.configureVariantRoutes(variantService: VariantService) {
                 }
             }
         }
-}
-
-private fun mapVariantToResponse(variant: Variant): VariantResponse {
-    val attachment = variant.attachment?.let { jsonObject ->
-        jsonObject.entries.associate { (key, value) ->
-            key to value.toString().trim('"')
-        }
-    }
-    
-    return VariantResponse(
-        id = variant.id,
-        flagID = variant.flagId,
-        key = variant.key,
-        attachment = attachment
-    )
 }

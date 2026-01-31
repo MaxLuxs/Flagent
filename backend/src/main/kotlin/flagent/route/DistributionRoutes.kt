@@ -1,10 +1,12 @@
 package flagent.route
 
-import flagent.domain.entity.Distribution
 import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.DistributionService
+import flagent.service.command.DistributionItemCommand
+import flagent.service.command.PutDistributionsCommand
 import flagent.util.getSubject
+import flagent.route.mapper.ResponseMappers.mapDistributionToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -38,16 +40,18 @@ fun Routing.configureDistributionRoutes(distributionService: DistributionService
                     val updatedBy = call.getSubject()
                     
                     try {
-                        val distributions = request.distributions.map {
-                            Distribution(
-                                segmentId = segmentId,
-                                variantId = it.variantID,
-                                variantKey = it.variantKey,
-                                percent = it.percent
-                            )
-                        }
-                        
-                        distributionService.updateDistributions(flagId, segmentId, distributions, updatedBy)
+                        val command = PutDistributionsCommand(
+                            flagId = flagId,
+                            segmentId = segmentId,
+                            distributions = request.distributions.map {
+                                DistributionItemCommand(
+                                    variantID = it.variantID,
+                                    variantKey = it.variantKey,
+                                    percent = it.percent
+                                )
+                            }
+                        )
+                        distributionService.updateDistributions(command, updatedBy)
                         
                         // Return updated distributions
                         val updatedDistributions = distributionService.findDistributionsBySegmentId(segmentId)
@@ -58,14 +62,4 @@ fun Routing.configureDistributionRoutes(distributionService: DistributionService
                 }
             }
         }
-}
-
-private fun mapDistributionToResponse(distribution: Distribution): DistributionResponse {
-    return DistributionResponse(
-        id = distribution.id,
-        segmentID = distribution.segmentId,
-        variantID = distribution.variantId,
-        variantKey = distribution.variantKey,
-        percent = distribution.percent
-    )
 }

@@ -1,12 +1,14 @@
 package flagent.route
 
-import flagent.domain.entity.Constraint
-import flagent.domain.entity.Distribution
-import flagent.domain.entity.Segment
 import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.SegmentService
+import flagent.service.command.CreateSegmentCommand
+import flagent.service.command.PutSegmentCommand
 import flagent.util.getSubject
+import flagent.route.mapper.ResponseMappers.mapSegmentToResponse
+import flagent.route.mapper.ResponseMappers.mapConstraintToResponse
+import flagent.route.mapper.ResponseMappers.mapDistributionToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -37,14 +39,12 @@ fun Routing.configureSegmentRoutes(segmentService: SegmentService) {
                     val request = call.receive<CreateSegmentRequest>()
                     val updatedBy = call.getSubject()
                     
-                    val segment = segmentService.createSegment(
-                        Segment(
-                            flagId = flagId,
-                            description = request.description,
-                            rolloutPercent = request.rolloutPercent
-                        ),
-                        updatedBy = updatedBy
+                    val command = CreateSegmentCommand(
+                        flagId = flagId,
+                        description = request.description,
+                        rolloutPercent = request.rolloutPercent
                     )
+                    val segment = segmentService.createSegment(command, updatedBy)
                     
                     call.respond(HttpStatusCode.OK, mapSegmentToResponse(segment))
                 }
@@ -90,13 +90,11 @@ fun Routing.configureSegmentRoutes(segmentService: SegmentService) {
                         
                         val updatedBy = call.getSubject()
                         
-                        val updatedSegment = segmentService.updateSegment(
-                            existingSegment.copy(
-                                description = request.description,
-                                rolloutPercent = request.rolloutPercent
-                            ),
-                            updatedBy = updatedBy
+                        val command = PutSegmentCommand(
+                            description = request.description,
+                            rolloutPercent = request.rolloutPercent
                         )
+                        val updatedSegment = segmentService.updateSegment(segmentId, command, updatedBy)
                         
                         call.respond(mapSegmentToResponse(updatedSegment))
                     }
@@ -121,36 +119,4 @@ fun Routing.configureSegmentRoutes(segmentService: SegmentService) {
                 }
             }
         }
-}
-
-private fun mapSegmentToResponse(segment: Segment): SegmentResponse {
-    return SegmentResponse(
-        id = segment.id,
-        flagID = segment.flagId,
-        description = segment.description,
-        rank = segment.rank,
-        rolloutPercent = segment.rolloutPercent,
-        constraints = segment.constraints.map { mapConstraintToResponse(it) },
-        distributions = segment.distributions.map { mapDistributionToResponse(it) }
-    )
-}
-
-private fun mapConstraintToResponse(constraint: Constraint): ConstraintResponse {
-    return ConstraintResponse(
-        id = constraint.id,
-        segmentID = constraint.segmentId,
-        property = constraint.property,
-        operator = constraint.operator,
-        value = constraint.value
-    )
-}
-
-private fun mapDistributionToResponse(distribution: Distribution): DistributionResponse {
-    return DistributionResponse(
-        id = distribution.id,
-        segmentID = distribution.segmentId,
-        variantID = distribution.variantId,
-        variantKey = distribution.variantKey,
-        percent = distribution.percent
-    )
 }

@@ -1,10 +1,11 @@
 package flagent.route
 
-import flagent.domain.entity.Tag
 import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.TagService
+import flagent.service.command.CreateTagCommand
 import flagent.util.getSubject
+import flagent.route.mapper.ResponseMappers.mapTagToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -57,7 +58,8 @@ fun Routing.configureTagRoutes(tagService: TagService) {
                     val updatedBy = call.getSubject()
                     
                     try {
-                        val tag = tagService.createTag(flagId, request.value, updatedBy)
+                        val command = CreateTagCommand(flagId = flagId, value = request.value)
+                        val tag = tagService.createTag(command, updatedBy)
                         call.respond(HttpStatusCode.OK, mapTagToResponse(tag))
                     } catch (e: IllegalArgumentException) {
                         val statusCode = when {
@@ -96,11 +98,4 @@ fun Routing.configureTagRoutes(tagService: TagService) {
                 }
             }
         }
-}
-
-private fun mapTagToResponse(tag: Tag): TagResponse {
-    return TagResponse(
-        id = tag.id,
-        value = tag.value
-    )
 }

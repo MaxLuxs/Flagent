@@ -1,14 +1,10 @@
 package flagent.route
 
-import flagent.domain.entity.Flag
-import flagent.domain.entity.Segment
-import flagent.domain.entity.Variant
-import flagent.domain.entity.Constraint
-import flagent.domain.entity.Distribution
-import flagent.domain.entity.Tag
 import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.FlagService
+import flagent.service.command.CreateFlagCommand
+import flagent.service.command.PutFlagCommand
 import flagent.util.getSubject
 import flagent.route.mapper.ResponseMappers.mapFlagToResponse
 import io.ktor.http.*
@@ -16,8 +12,6 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 
 /**
  * Flag routes - CRUD operations for flags
@@ -56,15 +50,12 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                     val updatedBy = call.getSubject()
                     
                     try {
-                        val flag = flagService.createFlag(
-                            Flag(
-                                key = request.key ?: "",
-                                description = request.description,
-                                enabled = false
-                            ),
-                            template = request.template,
-                            updatedBy = updatedBy
+                        val command = CreateFlagCommand(
+                            key = request.key,
+                            description = request.description,
+                            template = request.template
                         )
+                        val flag = flagService.createFlag(command, updatedBy)
                         
                         call.respond(HttpStatusCode.OK, mapFlagToResponse(flag))
                     } catch (e: IllegalArgumentException) {
@@ -95,16 +86,14 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                         
                         val updatedBy = call.getSubject()
                         
-                        val updatedFlag = flagService.updateFlag(
-                            existingFlag.copy(
-                                description = request.description ?: existingFlag.description,
-                                key = request.key ?: existingFlag.key,
-                                dataRecordsEnabled = request.dataRecordsEnabled ?: existingFlag.dataRecordsEnabled,
-                                entityType = request.entityType ?: existingFlag.entityType,
-                                notes = request.notes ?: existingFlag.notes
-                            ),
-                            updatedBy = updatedBy
+                        val command = PutFlagCommand(
+                            description = request.description,
+                            key = request.key,
+                            dataRecordsEnabled = request.dataRecordsEnabled,
+                            entityType = request.entityType,
+                            notes = request.notes
                         )
+                        val updatedFlag = flagService.updateFlag(flagId, command, updatedBy)
                         
                         call.respond(mapFlagToResponse(updatedFlag))
                     }

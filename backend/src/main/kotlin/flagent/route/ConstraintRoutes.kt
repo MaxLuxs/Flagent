@@ -1,10 +1,12 @@
 package flagent.route
 
-import flagent.domain.entity.Constraint
 import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.ConstraintService
+import flagent.service.command.CreateConstraintCommand
+import flagent.service.command.PutConstraintCommand
 import flagent.util.getSubject
+import flagent.route.mapper.ResponseMappers.mapConstraintToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -41,15 +43,13 @@ fun Routing.configureConstraintRoutes(constraintService: ConstraintService) {
                     val updatedBy = call.getSubject()
                     
                     try {
-                        val constraint = constraintService.createConstraint(
-                            Constraint(
-                                segmentId = segmentId,
-                                property = request.property,
-                                operator = request.operator,
-                                value = request.value
-                            ),
-                            updatedBy = updatedBy
+                        val command = CreateConstraintCommand(
+                            segmentId = segmentId,
+                            property = request.property,
+                            operator = request.operator,
+                            value = request.value
                         )
+                        val constraint = constraintService.createConstraint(command, updatedBy)
                         
                         call.respond(HttpStatusCode.OK, mapConstraintToResponse(constraint))
                     } catch (e: IllegalArgumentException) {
@@ -76,14 +76,12 @@ fun Routing.configureConstraintRoutes(constraintService: ConstraintService) {
                         
                         try {
                             val updatedBy = call.getSubject()
-                            val updatedConstraint = constraintService.updateConstraint(
-                                existingConstraint.copy(
-                                    property = request.property,
-                                    operator = request.operator,
-                                    value = request.value
-                                ),
-                                updatedBy = updatedBy
+                            val command = PutConstraintCommand(
+                                property = request.property,
+                                operator = request.operator,
+                                value = request.value
                             )
+                            val updatedConstraint = constraintService.updateConstraint(constraintId, command, updatedBy)
                             
                             call.respond(mapConstraintToResponse(updatedConstraint))
                         } catch (e: IllegalArgumentException) {
@@ -113,14 +111,4 @@ fun Routing.configureConstraintRoutes(constraintService: ConstraintService) {
                 }
             }
         }
-}
-
-private fun mapConstraintToResponse(constraint: Constraint): ConstraintResponse {
-    return ConstraintResponse(
-        id = constraint.id,
-        segmentID = constraint.segmentId,
-        property = constraint.property,
-        operator = constraint.operator,
-        value = constraint.value
-    )
 }
