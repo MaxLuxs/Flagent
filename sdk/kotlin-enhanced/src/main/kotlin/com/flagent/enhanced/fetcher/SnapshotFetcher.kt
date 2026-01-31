@@ -144,70 +144,80 @@ class SnapshotFetcher(
     /**
      * Parse export JSON format into flag map.
      *
-     * The export format is optimized for evaluation cache.
+     * Contract: EvalCacheJSON returns {"flags": [Flag, ...]}.
+     * Fallback: legacy format {"<flagId>": Flag, ...} for backward compatibility.
      */
     private fun parseExportJson(json: JsonObject): Map<Long, LocalFlag> {
-        // Export format structure varies, this is a basic parser
-        // May need adjustment based on actual export format
         val flags = mutableMapOf<Long, LocalFlag>()
-        
         try {
-            json.forEach { (key, value) ->
-                val flagId = key.toLongOrNull() ?: return@forEach
-                val flagObj = value.jsonObject
-                
-                val segments = flagObj["segments"]?.jsonArray?.map { segmentEl ->
-                    val segmentObj = segmentEl.jsonObject
-                    LocalSegment(
-                        id = segmentObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
-                        rank = segmentObj["rank"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
-                        rolloutPercent = segmentObj["rolloutPercent"]?.jsonPrimitive?.content?.toIntOrNull() ?: 100,
-                        constraints = segmentObj["constraints"]?.jsonArray?.map { constraintEl ->
-                            val constraintObj = constraintEl.jsonObject
-                            LocalConstraint(
-                                id = constraintObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
-                                property = constraintObj["property"]?.jsonPrimitive?.content ?: "",
-                                operator = constraintObj["operator"]?.jsonPrimitive?.content ?: "EQ",
-                                value = constraintObj["value"]?.jsonPrimitive?.content
-                            )
-                        } ?: emptyList(),
-                        distributions = segmentObj["distributions"]?.jsonArray?.map { distEl ->
-                            val distObj = distEl.jsonObject
-                            LocalDistribution(
-                                id = distObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
-                                variantID = distObj["variantID"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
-                                variantKey = distObj["variantKey"]?.jsonPrimitive?.content ?: "",
-                                percent = distObj["percent"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-                            )
-                        } ?: emptyList()
-                    )
-                } ?: emptyList()
-                
-                val variants = flagObj["variants"]?.jsonArray?.map { variantEl ->
-                    val variantObj = variantEl.jsonObject
-                    LocalVariant(
-                        id = variantObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
-                        key = variantObj["key"]?.jsonPrimitive?.content ?: "",
-                        attachment = variantObj["attachment"]?.jsonObject
-                    )
-                } ?: emptyList()
-                
-                flags[flagId] = LocalFlag(
-                    id = flagId,
-                    key = flagObj["key"]?.jsonPrimitive?.content ?: "",
-                    enabled = flagObj["enabled"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false,
-                    segments = segments,
-                    variants = variants,
-                    description = flagObj["description"]?.jsonPrimitive?.content,
-                    entityType = flagObj["entityType"]?.jsonPrimitive?.content
-                )
+            val flagsArray = json["flags"]?.jsonArray
+            if (flagsArray != null) {
+                for (flagEl in flagsArray) {
+                    val flagObj = flagEl.jsonObject
+                    val flagId = flagObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: continue
+                    flags[flagId] = parseFlagObject(flagObj, flagId)
+                }
+            } else {
+                json.forEach { (key, value) ->
+                    val flagId = key.toLongOrNull() ?: return@forEach
+                    val flagObj = value.jsonObject
+                    flags[flagId] = parseFlagObject(flagObj, flagId)
+                }
             }
         } catch (e: Exception) {
-            // If parsing fails, return empty map (will trigger fallback)
             throw e
         }
-        
         return flags
+    }
+
+    private fun parseFlagObject(flagObj: JsonObject, flagId: Long): LocalFlag {
+        val segments = flagObj["segments"]?.jsonArray?.map { segmentEl ->
+            val segmentObj = segmentEl.jsonObject
+            LocalSegment(
+                id = segmentObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
+                rank = segmentObj["rank"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
+                rolloutPercent = segmentObj["rolloutPercent"]?.jsonPrimitive?.content?.toIntOrNull() ?: 100,
+                constraints = segmentObj["constraints"]?.jsonArray?.map { constraintEl ->
+                    val constraintObj = constraintEl.jsonObject
+                    LocalConstraint(
+                        id = constraintObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
+                        property = constraintObj["property"]?.jsonPrimitive?.content ?: "",
+                        operator = constraintObj["operator"]?.jsonPrimitive?.content ?: "EQ",
+                        value = constraintObj["value"]?.jsonPrimitive?.content
+                    )
+                } ?: emptyList(),
+                distributions = segmentObj["distributions"]?.jsonArray?.map { distEl ->
+                    val distObj = distEl.jsonObject
+                    LocalDistribution(
+                        id = distObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
+                        variantID = distObj["variantId"]?.jsonPrimitive?.content?.toLongOrNull()
+                            ?: distObj["variantID"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
+                        variantKey = distObj["variantKey"]?.jsonPrimitive?.content ?: "",
+                        percent = distObj["percent"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                    )
+                } ?: emptyList()
+            )
+        } ?: emptyList()
+
+        val variants = flagObj["variants"]?.jsonArray?.map { variantEl ->
+            val variantObj = variantEl.jsonObject
+            val attachment = variantObj["attachment"] as? JsonObject
+            LocalVariant(
+                id = variantObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
+                key = variantObj["key"]?.jsonPrimitive?.content ?: "",
+                attachment = attachment
+            )
+        } ?: emptyList()
+
+        return LocalFlag(
+            id = flagId,
+            key = flagObj["key"]?.jsonPrimitive?.content ?: "",
+            enabled = flagObj["enabled"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false,
+            segments = segments,
+            variants = variants,
+            description = flagObj["description"]?.jsonPrimitive?.content,
+            entityType = flagObj["entityType"]?.jsonPrimitive?.content
+        )
     }
 
     /**

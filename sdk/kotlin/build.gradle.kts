@@ -62,7 +62,7 @@ publishing {
             pom {
                 name.set("Flagent Kotlin Client")
                 description.set("Kotlin client library for Flagent API")
-                url.set("https://github.com/MaxLuxs/Flagent")
+                url.set("https://github.com/MaxLuxs/flagent")
                 
                 licenses {
                     license {

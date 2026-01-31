@@ -225,11 +225,11 @@ func (e *LocalEvaluator) evaluateConstraint(constraint *LocalConstraint, context
 	}
 }
 
-// selectVariant selects a variant based on rollout and distribution
+// selectVariant selects a variant based on rollout and distribution.
+// EVALUATION_SPEC: hashInput = salt + entityID (no separator)
 func (e *LocalEvaluator) selectVariant(segment *LocalSegment, entityID string, flagID int64) (int64, bool) {
-	// Calculate bucket using CRC32 consistent hashing
 	salt := fmt.Sprintf("%d", flagID)
-	hashInput := fmt.Sprintf("%s:%s", entityID, salt)
+	hashInput := salt + entityID
 	bucket := int(crc32.ChecksumIEEE([]byte(hashInput)) % uint32(totalBucketNum))
 
 	// Check rollout percentage
@@ -238,26 +238,26 @@ func (e *LocalEvaluator) selectVariant(segment *LocalSegment, entityID string, f
 		return 0, false
 	}
 
-	// Select variant based on distribution
+	// Select variant based on distribution (EVALUATION_SPEC: sort by percent, bucketInt = bucket+1)
 	if len(segment.Distributions) == 0 {
 		return 0, true
 	}
 
-	cumulativePercent := 0
-	for _, distribution := range segment.Distributions {
-		cumulativePercent += distribution.Percent
-		distributionBucket := cumulativePercent * percentMultiplier
-		if bucket < distributionBucket {
-			return distribution.VariantID, true
+	sortedDist := make([]*LocalDistribution, len(segment.Distributions))
+	copy(sortedDist, segment.Distributions)
+	sort.Slice(sortedDist, func(i, j int) bool {
+		return sortedDist[i].Percent < sortedDist[j].Percent
+	})
+
+	bucketInt := bucket + 1 // 1..1000 scale per EVALUATION_SPEC
+	cumulative := 0
+	for _, dist := range sortedDist {
+		cumulative += dist.Percent * percentMultiplier
+		if bucketInt <= cumulative {
+			return dist.VariantID, true
 		}
 	}
-
-	// Default to first distribution
-	if len(segment.Distributions) > 0 {
-		return segment.Distributions[0].VariantID, true
-	}
-
-	return 0, true
+	return sortedDist[len(sortedDist)-1].VariantID, true
 }
 
 // conditionalDebug returns debug logs only if debug is enabled

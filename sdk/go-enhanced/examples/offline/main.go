@@ -58,8 +58,8 @@ func main() {
 		}
 		if len(result.DebugLogs) > 0 {
 			fmt.Println("Debug logs:")
-			for _, log := range result.DebugLogs {
-				fmt.Printf("  - %s\n", log)
+			for _, msg := range result.DebugLogs {
+				fmt.Printf("  - %s\n", msg)
 			}
 		}
 	}

@@ -44,7 +44,7 @@ tasks.withType<JavaCompile> {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components["kotlin"])
+            from(components["java"])
             
             pom {
                 name.set("Flagent Kotlin Debug UI")

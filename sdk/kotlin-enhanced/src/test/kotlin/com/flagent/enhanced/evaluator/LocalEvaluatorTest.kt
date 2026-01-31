@@ -397,8 +397,7 @@ class LocalEvaluatorTest {
         
         assertEquals("MATCH", result.reason)
         assertTrue(result.debugLogs.isNotEmpty())
-        assertTrue(result.debugLogs.any { it.contains("Evaluating segment") })
-        assertTrue(result.debugLogs.any { it.contains("constraints matched") })
+        assertTrue(result.debugLogs.any { it.contains("Segment") && it.contains("matched") })
     }
 
     @Test

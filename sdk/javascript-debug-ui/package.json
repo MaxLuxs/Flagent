@@ -16,7 +16,7 @@
   "author": "Flagent Team",
   "license": "Apache-2.0",
   "dependencies": {
-    "@flagent/enhanced-client": "^1.0.0",
+    "@flagent/enhanced-client": "file:../javascript-enhanced",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },

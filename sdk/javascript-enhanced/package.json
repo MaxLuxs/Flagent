@@ -17,7 +17,7 @@
   "author": "Flagent Team",
   "license": "Apache-2.0",
   "dependencies": {
-    "@flagent/client": "^1.0.0"
+    "@flagent/client": "file:../javascript"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

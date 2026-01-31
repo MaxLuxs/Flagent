@@ -28,6 +28,11 @@ dependencies {
         implementation("com.flagent:flagent-kotlin-client:1.0.0")
     }
     
+    // Shared evaluator (single source of truth for rollout/constraint logic)
+    if (findProject(":shared") != null) {
+        implementation(project(":shared"))
+    }
+    
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
     

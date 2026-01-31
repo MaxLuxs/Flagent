@@ -29,7 +29,43 @@ private fun <T : Any> httpResponseWithBody(ktorResponse: KtorResponse, body: T):
 class SnapshotFetcherTest {
 
     @Test
-    fun `fetchSnapshot returns snapshot from export API`() = runBlocking {
+    fun `fetchSnapshot returns snapshot from export API flags array`() = runBlocking {
+        val exportApi = mockk<ExportApi>()
+        val flagApi = mockk<FlagApi>(relaxed = true)
+
+        @Suppress("UNCHECKED_CAST")
+        val body = mapOf<String, Any>(
+            "flags" to listOf(
+                mapOf(
+                    "id" to 1,
+                    "key" to "test_flag",
+                    "enabled" to true,
+                    "segments" to emptyList<Any>(),
+                    "variants" to emptyList<Any>()
+                )
+            )
+        ) as Map<String, Any>
+        coEvery { exportApi.getExportEvalCacheJSON() } returns HttpResponse(
+            mockk(relaxed = true),
+            mockk {
+                coEvery { body(any()) } returns body
+            }
+        )
+
+        val fetcher = SnapshotFetcher(exportApi, flagApi)
+        val snapshot = fetcher.fetchSnapshot(ttlMs = 60_000)
+
+        assertNotNull(snapshot)
+        assertEquals(1, snapshot.flags.size)
+        assertTrue(snapshot.flags.containsKey(1L))
+        assertEquals("test_flag", snapshot.flags[1L]?.key)
+        assertTrue(snapshot.flags[1L]?.enabled == true)
+        assertNotNull(snapshot.revision)
+        assertTrue(snapshot.revision!!.startsWith("snapshot-"))
+    }
+
+    @Test
+    fun `fetchSnapshot returns snapshot from legacy export format`() = runBlocking {
         val exportApi = mockk<ExportApi>()
         val flagApi = mockk<FlagApi>(relaxed = true)
 
