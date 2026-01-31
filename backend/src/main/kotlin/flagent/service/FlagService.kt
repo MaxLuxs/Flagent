@@ -2,6 +2,12 @@ package flagent.service
 
 import flagent.domain.entity.*
 import flagent.domain.repository.IFlagRepository
+import flagent.service.command.CreateFlagCommand
+import flagent.service.command.CreateSegmentCommand
+import flagent.service.command.CreateVariantCommand
+import flagent.service.command.DistributionItemCommand
+import flagent.service.command.PutDistributionsCommand
+import flagent.service.command.PutFlagCommand
 import java.security.SecureRandom
 
 /**
@@ -82,18 +88,23 @@ class FlagService(
         return flagRepository.findById(id)
     }
     
-    suspend fun createFlag(flag: Flag, template: String? = null, updatedBy: String? = null): Flag {
-        val key = createFlagKey(flag.key)
-        val created = flagRepository.create(flag.copy(key = key))
+    suspend fun createFlag(command: CreateFlagCommand, updatedBy: String? = null): Flag {
+        val key = createFlagKey(command.key)
+        val flag = Flag(
+            key = key,
+            description = command.description,
+            enabled = false
+        )
+        val created = flagRepository.create(flag)
         
         // Load template if specified
-        if (template != null) {
-            when (template) {
+        if (command.template != null) {
+            when (command.template) {
                 "simple_boolean_flag" -> {
                     loadSimpleBooleanFlagTemplate(created, updatedBy)
                 }
                 else -> {
-                    throw IllegalArgumentException("unknown value for template: $template")
+                    throw IllegalArgumentException("unknown value for template: ${command.template}")
                 }
             }
         }
@@ -115,10 +126,9 @@ class FlagService(
         
         // Create default segment
         val segment = segmentService.createSegment(
-            Segment(
+            CreateSegmentCommand(
                 flagId = flag.id,
-                description = null,
-                rank = SegmentService.SegmentDefaultRank,
+                description = "",
                 rolloutPercent = 100
             ),
             updatedBy = updatedBy
@@ -126,8 +136,7 @@ class FlagService(
         
         // Create default variant
         val variant = variantService.createVariant(
-            flagId = flag.id,
-            variant = Variant(
+            CreateVariantCommand(
                 flagId = flag.id,
                 key = "on",
                 attachment = null
@@ -137,37 +146,50 @@ class FlagService(
         
         // Create default distribution
         distributionService.updateDistributions(
-            flagId = flag.id,
-            segmentId = segment.id,
-            distributions = listOf(
-                Distribution(
-                    segmentId = segment.id,
-                    variantId = variant.id,
-                    variantKey = variant.key,
-                    percent = 100
+            PutDistributionsCommand(
+                flagId = flag.id,
+                segmentId = segment.id,
+                distributions = listOf(
+                    DistributionItemCommand(
+                        variantID = variant.id,
+                        variantKey = variant.key,
+                        percent = 100
+                    )
                 )
             ),
             updatedBy = updatedBy
         )
     }
     
-    suspend fun updateFlag(flag: Flag, updatedBy: String? = null): Flag {
-        val key = if (flag.key.isNotEmpty()) {
-            validateKey(flag.key)
-            flag.key
+    suspend fun updateFlag(flagId: Int, command: PutFlagCommand, updatedBy: String? = null): Flag {
+        val existingFlag = flagRepository.findById(flagId)
+            ?: throw IllegalArgumentException("Flag not found: $flagId")
+        
+        val key = if ((command.key ?: existingFlag.key).isNotEmpty()) {
+            validateKey(command.key ?: existingFlag.key)
+            command.key ?: existingFlag.key
         } else {
-            flag.key
+            existingFlag.key
         }
         
+        val updatedFlag = existingFlag.copy(
+            description = command.description ?: existingFlag.description,
+            key = key,
+            dataRecordsEnabled = command.dataRecordsEnabled ?: existingFlag.dataRecordsEnabled,
+            entityType = command.entityType ?: existingFlag.entityType,
+            notes = command.notes ?: existingFlag.notes,
+            updatedBy = updatedBy
+        )
+        
         // Create FlagEntityType if entityType is provided and not empty
-        flag.entityType?.let { entityType ->
+        updatedFlag.entityType?.let { entityType ->
             if (entityType.isNotEmpty()) {
                 // Create entity type if not exists (FirstOrCreate logic)
                 flagEntityTypeService?.createOrGet(entityType)
             }
         }
         
-        val updated = flagRepository.update(flag.copy(key = key, updatedBy = updatedBy))
+        val updated = flagRepository.update(updatedFlag)
         
         // Save flag snapshot after update
         flagSnapshotService?.saveFlagSnapshot(updated.id, updatedBy)

@@ -7,7 +7,7 @@ import flagent.repository.Database
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 import org.jetbrains.exposed.v1.core.*
 
 class VariantRepository : IVariantRepository {
@@ -34,7 +34,7 @@ class VariantRepository : IVariantRepository {
     
     override suspend fun create(variant: Variant): Variant = withContext(Dispatchers.IO) {
         Database.transaction {
-            val attachmentJson = variant.attachment?.let { json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), it) }
+            val attachmentJson = variant.attachment?.let { mapToJsonString(it) }
             
             val id = Variants.insert {
                 it[flagId] = variant.flagId
@@ -49,7 +49,7 @@ class VariantRepository : IVariantRepository {
     
     override suspend fun update(variant: Variant): Variant = withContext(Dispatchers.IO) {
         Database.transaction {
-            val attachmentJson = variant.attachment?.let { json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), it) }
+            val attachmentJson = variant.attachment?.let { mapToJsonString(it) }
             
             Variants.update({ Variants.id eq variant.id }) {
                 it[key] = variant.key
@@ -71,19 +71,26 @@ class VariantRepository : IVariantRepository {
     
     private fun mapRowToVariant(row: ResultRow): Variant {
         val attachmentJson = row[Variants.attachment]
-        val attachment = attachmentJson?.let {
-            try {
-                json.parseToJsonElement(it) as? kotlinx.serialization.json.JsonObject
-            } catch (e: Exception) {
-                null
-            }
-        }
-        
+        val attachment = attachmentJson?.let { jsonStringToMap(it) }
         return Variant(
             id = row[Variants.id].value,
             flagId = row[Variants.flagId],
             key = row[Variants.key] ?: "",
             attachment = attachment
         )
+    }
+
+    private fun mapToJsonString(map: Map<String, String>): String {
+        val obj = buildJsonObject { map.forEach { put(it.key, it.value) } }
+        return json.encodeToString(JsonObject.serializer(), obj)
+    }
+
+    private fun jsonStringToMap(jsonStr: String): Map<String, String>? {
+        return try {
+            val obj = json.parseToJsonElement(jsonStr).jsonObject
+            obj.entries.associate { it.key to it.value.jsonPrimitive.content }
+        } catch (e: Exception) {
+            null
+        }
     }
 }

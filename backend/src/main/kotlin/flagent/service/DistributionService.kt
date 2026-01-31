@@ -3,6 +3,7 @@ package flagent.service
 import flagent.domain.entity.Distribution
 import flagent.domain.repository.IDistributionRepository
 import flagent.domain.repository.IFlagRepository
+import flagent.service.command.PutDistributionsCommand
 
 /**
  * Distribution service - handles distribution business logic
@@ -17,17 +18,21 @@ class DistributionService(
         return distributionRepository.findBySegmentId(segmentId)
     }
     
-    suspend fun updateDistributions(
-        flagId: Int,
-        segmentId: Int,
-        distributions: List<Distribution>,
-        updatedBy: String? = null
-    ) {
+    suspend fun updateDistributions(command: PutDistributionsCommand, updatedBy: String? = null) {
+        val distributions = command.distributions.map {
+            Distribution(
+                segmentId = command.segmentId,
+                variantId = it.variantID,
+                variantKey = it.variantKey,
+                percent = it.percent
+            )
+        }
+        val flagId = command.flagId
         validateDistributions(flagId, distributions)
-        distributionRepository.updateDistributions(segmentId, distributions)
+        distributionRepository.updateDistributions(command.segmentId, distributions)
         
         // Save flag snapshot after updating distributions
-        flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
+        flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
     }
     
     private suspend fun validateDistributions(flagId: Int, distributions: List<Distribution>) {

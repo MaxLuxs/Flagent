@@ -119,8 +119,9 @@ class ExportService(
                 
                 // Insert variants (must be after flags due to FK)
                 flag.variants.forEach { variant ->
-                    val attachmentJson = variant.attachment?.let { 
-                        json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), it) 
+                    val attachmentJson = variant.attachment?.let { map ->
+                        val obj = kotlinx.serialization.json.buildJsonObject { map.forEach { put(it.key, kotlinx.serialization.json.JsonPrimitive(it.value)) } }
+                        json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), obj)
                     }
                     Variants.insert {
                         it[id] = EntityID(variant.id, Variants)

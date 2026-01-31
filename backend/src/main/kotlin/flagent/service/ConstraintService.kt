@@ -3,6 +3,8 @@ package flagent.service
 import flagent.domain.entity.Constraint
 import flagent.domain.repository.IConstraintRepository
 import flagent.domain.repository.ISegmentRepository
+import flagent.service.command.CreateConstraintCommand
+import flagent.service.command.PutConstraintCommand
 
 /**
  * Constraint service - handles constraint business logic
@@ -21,7 +23,13 @@ class ConstraintService(
         return constraintRepository.findById(id)
     }
     
-    suspend fun createConstraint(constraint: Constraint, updatedBy: String? = null): Constraint {
+    suspend fun createConstraint(command: CreateConstraintCommand, updatedBy: String? = null): Constraint {
+        val constraint = Constraint(
+            segmentId = command.segmentId,
+            property = command.property,
+            operator = command.operator,
+            value = command.value
+        )
         constraint.validate()
         
         // Get segment to know flagId
@@ -36,7 +44,15 @@ class ConstraintService(
         return created
     }
     
-    suspend fun updateConstraint(constraint: Constraint, updatedBy: String? = null): Constraint {
+    suspend fun updateConstraint(constraintId: Int, command: PutConstraintCommand, updatedBy: String? = null): Constraint {
+        val existingConstraint = constraintRepository.findById(constraintId)
+            ?: throw IllegalArgumentException("error finding constraintID $constraintId")
+        
+        val constraint = existingConstraint.copy(
+            property = command.property,
+            operator = command.operator,
+            value = command.value
+        )
         constraint.validate()
         
         // Get segment to know flagId

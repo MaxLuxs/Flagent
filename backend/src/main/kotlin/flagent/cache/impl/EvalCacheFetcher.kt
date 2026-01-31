@@ -65,7 +65,7 @@ class JsonFileFetcher(
             
             val content = file.readText()
             val evalCacheJson = json.decodeFromString<EvalCacheJSON>(content)
-            evalCacheJson.flags
+            evalCacheJson.flags.map { it.toFlag() }
         } catch (e: Exception) {
             logger.error(e) { "Failed to load flags from JSON file: $filePath" }
             throw e
@@ -90,7 +90,7 @@ class JsonHttpFetcher(
             
             val content = connection.getInputStream().bufferedReader().use { it.readText() }
             val evalCacheJson = json.decodeFromString<EvalCacheJSON>(content)
-            evalCacheJson.flags
+            evalCacheJson.flags.map { it.toFlag() }
         } catch (e: Exception) {
             logger.error(e) { "Failed to load flags from HTTP URL: $url" }
             throw e

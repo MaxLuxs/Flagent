@@ -2,6 +2,8 @@ package flagent.service
 
 import flagent.domain.entity.Segment
 import flagent.domain.repository.ISegmentRepository
+import flagent.service.command.CreateSegmentCommand
+import flagent.service.command.PutSegmentCommand
 
 /**
  * Segment service - handles segment business logic
@@ -23,21 +25,33 @@ class SegmentService(
         return segmentRepository.findById(id)
     }
     
-    suspend fun createSegment(segment: Segment, updatedBy: String? = null): Segment {
+    suspend fun createSegment(command: CreateSegmentCommand, updatedBy: String? = null): Segment {
+        val segment = Segment(
+            flagId = command.flagId,
+            description = command.description,
+            rolloutPercent = command.rolloutPercent
+        )
         val segmentWithDefaultRank = segment.copy(rank = SegmentDefaultRank)
         val created = segmentRepository.create(segmentWithDefaultRank)
         
         // Save flag snapshot after creating segment
-        flagSnapshotService?.saveFlagSnapshot(segment.flagId, updatedBy)
+        flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
         
         return created
     }
     
-    suspend fun updateSegment(segment: Segment, updatedBy: String? = null): Segment {
-        val updated = segmentRepository.update(segment)
+    suspend fun updateSegment(segmentId: Int, command: PutSegmentCommand, updatedBy: String? = null): Segment {
+        val existingSegment = segmentRepository.findById(segmentId)
+            ?: throw IllegalArgumentException("error finding segmentID $segmentId")
+        
+        val updatedSegment = existingSegment.copy(
+            description = command.description,
+            rolloutPercent = command.rolloutPercent
+        )
+        val updated = segmentRepository.update(updatedSegment)
         
         // Save flag snapshot after updating segment
-        flagSnapshotService?.saveFlagSnapshot(segment.flagId, updatedBy)
+        flagSnapshotService?.saveFlagSnapshot(existingSegment.flagId, updatedBy)
         
         return updated
     }

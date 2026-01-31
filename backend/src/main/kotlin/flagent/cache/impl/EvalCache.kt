@@ -195,7 +195,7 @@ class EvalCache(
         cacheMutex.readLock().lock()
         try {
             val flags = idCache.values.toList()
-            return EvalCacheJSON(flags = flags)
+            return EvalCacheJSON(flags = flags.map { it.toEvalCacheExport() })
         } finally {
             cacheMutex.readLock().unlock()
         }
@@ -204,9 +204,9 @@ class EvalCache(
 
 /**
  * EvalCacheJSON - JSON serialization format of EvalCache's flags
- * Maps to EvalCacheJSON from pkg/handler/eval_cache_fetcher.go
+ * Uses serializable DTOs (domain entities have no @Serializable)
  */
 @kotlinx.serialization.Serializable
 data class EvalCacheJSON(
-    val flags: List<Flag>
+    val flags: List<EvalCacheFlagExport>
 )

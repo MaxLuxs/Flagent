@@ -45,6 +45,8 @@ import flagent.route.realtimeRoutes
 import flagent.service.ConstraintService
 import flagent.service.DistributionService
 import flagent.service.EvaluationService
+import flagent.service.adapter.SharedFlagEvaluatorAdapter
+import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.service.FlagEntityTypeService
 import flagent.service.FlagService
 import flagent.service.FlagSnapshotService
@@ -201,8 +203,10 @@ fun Application.module() {
         null
     }
     
-    // Initialize services
-    val evaluationService = EvaluationService(evalCache, dataRecordingService)
+    // Initialize evaluation: shared evaluator as single source of truth
+    val sharedFlagEvaluatorAdapter = SharedFlagEvaluatorAdapter()
+    val evaluateFlagUseCase = EvaluateFlagUseCase(sharedFlagEvaluatorAdapter)
+    val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase, dataRecordingService)
     val flagSnapshotService = FlagSnapshotService(flagSnapshotRepository, flagRepository)
     val flagEntityTypeService = FlagEntityTypeService(flagEntityTypeRepository)
     val segmentService = SegmentService(segmentRepository, flagSnapshotService)

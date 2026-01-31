@@ -1,5 +1,6 @@
 package flagent.service
 
+import flagent.cache.impl.toEvalCacheExport
 import flagent.domain.entity.Flag
 import flagent.domain.entity.FlagSnapshot
 import flagent.domain.repository.IFlagRepository
@@ -43,9 +44,9 @@ class FlagSnapshotService(
         val flag = flagRepository.findById(flagId)
             ?: throw IllegalArgumentException("error finding flagID $flagId")
         
-        // Serialize flag to JSON
+        // Serialize flag to JSON (domain Flag has no @Serializable; use export DTO)
         val flagJson = try {
-            json.encodeToString(flag)
+            json.encodeToString(flag.toEvalCacheExport())
         } catch (e: Exception) {
             throw IllegalStateException("failed to marshal the flag into JSON when SaveFlagSnapshot: ${e.message}", e)
         }

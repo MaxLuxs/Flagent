@@ -3,6 +3,7 @@ package flagent.service
 import flagent.domain.entity.Tag
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.ITagRepository
+import flagent.service.command.CreateTagCommand
 
 /**
  * Tag service - handles tag business logic
@@ -25,23 +26,23 @@ class TagService(
         return tagRepository.findAll(limit, offset, valueLike)
     }
     
-    suspend fun createTag(flagId: Int, tagValue: String, updatedBy: String? = null): Tag {
+    suspend fun createTag(command: CreateTagCommand, updatedBy: String? = null): Tag {
         // Validate flag exists
-        val flag = flagRepository.findById(flagId)
-            ?: throw IllegalArgumentException("error finding flagID $flagId")
+        val flag = flagRepository.findById(command.flagId)
+            ?: throw IllegalArgumentException("error finding flagID ${command.flagId}")
         
         // Validate tag value
-        validateTagValue(tagValue)
+        validateTagValue(command.value)
         
         // Find existing tag or create new one
-        val tag = tagRepository.findByValue(tagValue)
-            ?: tagRepository.create(Tag(value = tagValue))
+        val tag = tagRepository.findByValue(command.value)
+            ?: tagRepository.create(Tag(value = command.value))
         
         // Associate tag with flag
-        tagRepository.addTagToFlag(flagId, tag.id)
+        tagRepository.addTagToFlag(command.flagId, tag.id)
         
         // Save flag snapshot after creating tag
-        flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
+        flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
         
         return tag
     }

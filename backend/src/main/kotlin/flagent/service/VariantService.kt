@@ -4,6 +4,8 @@ import flagent.domain.entity.Variant
 import flagent.domain.repository.IDistributionRepository
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.IVariantRepository
+import flagent.service.command.CreateVariantCommand
+import flagent.service.command.PutVariantCommand
 
 /**
  * Variant service - handles variant business logic
@@ -19,52 +21,59 @@ class VariantService(
         return variantRepository.findByFlagId(flagId)
     }
     
-    suspend fun createVariant(flagId: Int, variant: Variant, updatedBy: String? = null): Variant {
+    suspend fun createVariant(command: CreateVariantCommand, updatedBy: String? = null): Variant {
         // Validate flag exists
-        val flag = flagRepository.findById(flagId)
-            ?: throw IllegalArgumentException("error finding flagID $flagId")
+        val flag = flagRepository.findById(command.flagId)
+            ?: throw IllegalArgumentException("error finding flagID ${command.flagId}")
         
         // Validate variant key
-        validateVariantKey(variant.key)
+        validateVariantKey(command.key)
         
-        // Create variant
-        val created = variantRepository.create(
-            variant.copy(flagId = flagId)
+        val variant = Variant(
+            flagId = command.flagId,
+            key = command.key,
+            attachment = command.attachment
         )
         
+        // Create variant
+        val created = variantRepository.create(variant)
+        
         // Save flag snapshot after creating variant
-        flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
+        flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
         
         return created
     }
     
-    suspend fun updateVariant(flagId: Int, variantId: Int, variant: Variant, updatedBy: String? = null): Variant {
+    suspend fun updateVariant(command: PutVariantCommand, updatedBy: String? = null): Variant {
         // Validate flag exists
-        val flag = flagRepository.findById(flagId)
-            ?: throw IllegalArgumentException("error finding flagID $flagId")
+        val flag = flagRepository.findById(command.flagId)
+            ?: throw IllegalArgumentException("error finding flagID ${command.flagId}")
         
         // Validate variant exists
-        val existing = variantRepository.findById(variantId)
-            ?: throw IllegalArgumentException("error finding variantID $variantId")
+        val existing = variantRepository.findById(command.variantId)
+            ?: throw IllegalArgumentException("error finding variantID ${command.variantId}")
         
         // Validate variant belongs to flag
-        if (existing.flagId != flagId) {
-            throw IllegalArgumentException("variant $variantId does not belong to flag $flagId")
+        if (existing.flagId != command.flagId) {
+            throw IllegalArgumentException("variant ${command.variantId} does not belong to flag ${command.flagId}")
         }
         
         // Validate variant key
-        validateVariantKey(variant.key)
+        validateVariantKey(command.key)
         
-        // Update variant
-        val updated = variantRepository.update(
-            variant.copy(id = variantId, flagId = flagId)
+        val variant = existing.copy(
+            key = command.key,
+            attachment = command.attachment
         )
         
+        // Update variant
+        val updated = variantRepository.update(variant)
+        
         // Update variantKey in distributions
-        updateDistributionsVariantKey(variantId, variant.key)
+        updateDistributionsVariantKey(command.variantId, command.key)
         
         // Save flag snapshot after updating variant
-        flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
+        flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
         
         return updated
     }
@@ -129,7 +138,7 @@ class VariantService(
             }
         }
     }
-    
+
     private suspend fun updateDistributionsVariantKey(variantId: Int, variantKey: String) {
         // Update all distributions that reference this variantId to have the new variantKey
         // Maps to validatePutVariantForDistributions from pkg/handler/validate.go

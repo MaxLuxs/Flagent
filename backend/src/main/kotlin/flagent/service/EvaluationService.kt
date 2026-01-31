@@ -2,8 +2,8 @@ package flagent.service
 
 import flagent.cache.impl.EvalCache
 import flagent.config.AppConfig
-import flagent.domain.entity.*
-import flagent.domain.usecase.ConstraintEvaluationUseCase
+import flagent.domain.entity.Flag
+import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.domain.value.EntityID
 import flagent.domain.value.EvaluationContext
 import flagent.recorder.DataRecordingService
@@ -15,16 +15,16 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 /**
- * Evaluation service - handles flag evaluation logic
- * Maps to pkg/handler/eval.go from original project
+ * Evaluation service - delegates to EvaluateFlagUseCase (shared evaluator).
+ * Maps to pkg/handler/eval.go from original project.
  */
 class EvaluationService(
     private val evalCache: EvalCache,
+    private val evaluateFlagUseCase: EvaluateFlagUseCase,
     private val dataRecordingService: DataRecordingService? = null
 ) {
     private val random = Random()
-    private val constraintEvaluationUseCase = ConstraintEvaluationUseCase()
-    
+
     /**
      * Evaluate flag by ID or Key
      */
@@ -41,7 +41,7 @@ class EvaluationService(
             flagKey != null -> evalCache.getByFlagKeyOrID(flagKey)
             else -> null
         }
-        
+
         return evaluateFlagWithContext(
             flag = flag,
             flagID = flagID ?: 0,
@@ -52,7 +52,7 @@ class EvaluationService(
             enableDebug = enableDebug
         )
     }
-    
+
     /**
      * Evaluate flags by tags
      */
@@ -77,9 +77,9 @@ class EvaluationService(
             )
         }
     }
-    
+
     /**
-     * Evaluate flag with context
+     * Evaluate flag with context - delegates to EvaluateFlagUseCase (shared evaluator).
      */
     private fun evaluateFlagWithContext(
         flag: Flag?,
@@ -90,7 +90,6 @@ class EvaluationService(
         entityContext: Map<String, Any>?,
         enableDebug: Boolean
     ): EvalResult {
-        // Handle null flag
         if (flag == null) {
             return createBlankResult(
                 flag = null,
@@ -102,164 +101,69 @@ class EvaluationService(
                 message = "flagID $flagID not found or deleted"
             )
         }
-        
-        // Check if flag is enabled
-        if (!flag.enabled) {
-            return createBlankResult(
-                flag = flag,
-                flagID = flagID,
-                flagKey = flagKey,
-                entityID = entityID,
-                entityType = entityType,
-                entityContext = entityContext,
-                message = "flagID ${flag.id} is not enabled"
-            )
-        }
-        
-        // Check if flag has segments
-        if (flag.segments.isEmpty()) {
-            return createBlankResult(
-                flag = flag,
-                flagID = flagID,
-                flagKey = flagKey,
-                entityID = entityID,
-                entityType = entityType,
-                entityContext = entityContext,
-                message = "flagID ${flag.id} has no segments"
-            )
-        }
-        
-        // Generate entityID if not provided
-        val finalEntityID = entityID ?: "randomly_generated_${random.nextInt()}"
+
+        val finalEntityID = entityID?.takeIf { it.isNotBlank() } ?: "randomly_generated_${random.nextInt()}"
         val finalEntityType = entityType ?: flag.entityType ?: ""
-        
-        // Prepare flag for evaluation
-        val flagEvaluation = flag.prepareEvaluation()
-        
-        // Evaluate segments
-        val segmentDebugLogs = mutableListOf<SegmentDebugLog>()
-        var variantID: Int? = null
-        var segmentID: Int? = null
-        
-        for (segment in flag.segments) {
-            segmentID = segment.id
-            val segmentEvaluation = segment.prepareEvaluation()
-            
-            val (resultVariantID, log, evalNextSegment) = evaluateSegment(
-                flagID = flag.id,
-                segment = segment,
-                segmentEvaluation = segmentEvaluation,
-                entityID = finalEntityID,
-                entityContext = entityContext,
-                enableDebug = enableDebug
-            )
-            
-            if (AppConfig.evalDebugEnabled && enableDebug) {
-                segmentDebugLogs.add(log)
-            }
-            
-            if (resultVariantID != null) {
-                variantID = resultVariantID
-            }
-            
-            if (!evalNextSegment) {
-                break
-            }
+
+        val context = EvaluationContext(
+            entityID = EntityID(finalEntityID),
+            entityType = finalEntityType.takeIf { it.isNotEmpty() },
+            entityContext = entityContext
+        )
+
+        val useCaseResult = evaluateFlagUseCase.invoke(flag, context, enableDebug)
+
+        val variant = useCaseResult.variantID?.let { vid -> flag.variants.find { it.id == vid } }
+        val variantAttachmentJson = variant?.attachment?.let { map ->
+            buildJsonObject { map.forEach { put(it.key, it.value) } }
         }
-        
-        // Build result
-        val variant = variantID?.let { flagEvaluation.variantsMap[it] }
-        
+
+        val blankMessage = when {
+            useCaseResult.variantID != null -> null
+            !flag.enabled -> "flagID ${flag.id} is not enabled"
+            flag.segments.isEmpty() -> "flagID ${flag.id} has no segments"
+            else -> useCaseResult.debugLogs.firstOrNull()?.message ?: ""
+        }
+        val evalDebugLogValue = when {
+            blankMessage != null -> EvalDebugLog(
+                message = blankMessage,
+                segmentDebugLogs = if (enableDebug) useCaseResult.debugLogs.map { log ->
+                    SegmentDebugLog(segmentID = log.segmentID, message = log.message)
+                } else emptyList()
+            )
+            enableDebug -> EvalDebugLog(
+                segmentDebugLogs = useCaseResult.debugLogs.map { log ->
+                    SegmentDebugLog(segmentID = log.segmentID, message = log.message)
+                }
+            )
+            else -> null
+        }
+
         val result = EvalResult(
             flagID = flag.id,
             flagKey = flag.key,
             flagSnapshotID = flag.snapshotId,
             flagTags = flag.tags.map { it.value },
-            segmentID = segmentID,
-            variantID = variantID,
+            segmentID = useCaseResult.segmentID,
+            variantID = useCaseResult.variantID,
             variantKey = variant?.key,
-            variantAttachment = variant?.attachment,
+            variantAttachment = variantAttachmentJson,
             evalContext = EvalContext(
                 entityID = finalEntityID,
                 entityType = finalEntityType,
                 entityContext = entityContext?.let { mapToJsonObject(it) }
             ),
-            evalDebugLog = if (enableDebug) EvalDebugLog(
-                segmentDebugLogs = segmentDebugLogs
-            ) else null,
+            evalDebugLog = evalDebugLogValue,
             timestamp = System.currentTimeMillis()
         )
-        
-        // Record evaluation result if recording is enabled
+
         if (AppConfig.recorderEnabled && AppConfig.evalLoggingEnabled) {
             dataRecordingService?.recordAsync(result)
         }
-        
+
         return result
     }
-    
-    /**
-     * Evaluate segment
-     * Returns: (variantID, debugLog, evalNextSegment)
-     */
-    private fun evaluateSegment(
-        flagID: Int,
-        segment: Segment,
-        segmentEvaluation: Segment.SegmentEvaluation,
-        entityID: String,
-        entityContext: Map<String, Any>?,
-        enableDebug: Boolean
-    ): Triple<Int?, SegmentDebugLog, Boolean> {
-        // Check constraints if present
-        if (segment.constraints.isNotEmpty()) {
-            if (entityContext == null) {
-                return Triple(
-                    null,
-                    SegmentDebugLog(
-                        segmentID = segment.id,
-                        message = "constraints are present in the segment_id ${segment.id}, but got invalid entity_context"
-                    ),
-                    true
-                )
-            }
-            
-            // Evaluate constraints using ConstraintEvaluationUseCase
-            val evaluationContext = EvaluationContext(
-                entityID = EntityID(entityID),
-                entityType = null,
-                entityContext = entityContext
-            )
-            
-            val constraintsMatch = constraintEvaluationUseCase.evaluate(segment.constraints, evaluationContext)
-            
-            if (!constraintsMatch) {
-                return Triple(
-                    null,
-                    SegmentDebugLog(
-                        segmentID = segment.id,
-                        message = "constraints did not match"
-                    ),
-                    true // Continue to next segment
-                )
-            }
-        }
-        
-        // Evaluate distribution rollout
-        val (variantID, debugMsg) = segmentEvaluation.distributionArray.rollout(
-            entityID = entityID,
-            salt = flagID.toString(),
-            rolloutPercent = segment.rolloutPercent
-        )
-        
-        val log = SegmentDebugLog(
-            segmentID = segment.id,
-            message = "matched all constraints. $debugMsg"
-        )
-        
-        // If we matched, don't evaluate next segment
-        return Triple(variantID, log, variantID == null)
-    }
-    
+
     private fun createBlankResult(
         flag: Flag?,
         flagID: Int,
@@ -290,10 +194,7 @@ class EvaluationService(
             timestamp = System.currentTimeMillis()
         )
     }
-    
-    /**
-     * Convert Map<String, Any> to JsonObject
-     */
+
     private fun mapToJsonObject(map: Map<String, Any>): JsonObject {
         return buildJsonObject {
             map.forEach { (key, value) ->
@@ -309,9 +210,8 @@ class EvaluationService(
     }
 }
 
-
 /**
- * Evaluation result
+ * Evaluation result (service/API layer - uses JsonObject for variantAttachment until domain uses Map)
  */
 @Serializable
 data class EvalResult(
@@ -328,9 +228,6 @@ data class EvalResult(
     val timestamp: Long
 )
 
-/**
- * Evaluation context
- */
 @Serializable
 data class EvalContext(
     val entityID: String? = null,
@@ -338,18 +235,12 @@ data class EvalContext(
     val entityContext: JsonObject? = null
 )
 
-/**
- * Evaluation debug log
- */
 @Serializable
 data class EvalDebugLog(
     val message: String = "",
     val segmentDebugLogs: List<SegmentDebugLog> = emptyList()
 )
 
-/**
- * Segment debug log
- */
 @Serializable
 data class SegmentDebugLog(
     val segmentID: Int,
