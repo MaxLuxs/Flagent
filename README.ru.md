@@ -4,7 +4,10 @@
 
 <p align="center">
     <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+" target="_blank">
-        <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build Status">
+        <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI">
+    </a>
+    <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml?query=branch%3Amain+" target="_blank">
+        <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml/badge.svg?branch=main" alt="CI (Swift)">
     </a>
     <a href="https://codecov.io/gh/MaxLuxs/Flagent">
         <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg" alt="Code Coverage">
@@ -143,6 +146,40 @@ cd Flagent
 
 ## 🎯 SDK и интеграции
 
+### Подключение как зависимость (Kotlin/JVM)
+
+Артефакты публикуются в [GitHub Packages](https://github.com/MaxLuxs/Flagent/packages). Добавьте репозиторий и зависимость:
+
+**Gradle (Kotlin DSL):**
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/MaxLuxs/Flagent")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+dependencies {
+    // Ktor plugin (сервер)
+    implementation("com.flagent:ktor-flagent:1.0.0")
+    // Kotlin client
+    implementation("com.flagent:kotlin-client:1.0.0")
+    // Kotlin Enhanced (offline eval, SSE)
+    implementation("com.flagent:kotlin-enhanced:1.0.0")
+    // Kotlin Debug UI
+    implementation("com.flagent:kotlin-debug-ui:1.0.0")
+    // Shared (KMP; подтягивается ktor-flagent или для multiplatform)
+    implementation("com.flagent:shared:1.0.0")
+}
+```
+
+Публикуемые артефакты: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. Для чтения используйте [GitHub PAT](https://github.com/settings/tokens) с правом `read:packages` (или `GITHUB_TOKEN` в CI). Версию замените на актуальную из [релизов](https://github.com/MaxLuxs/Flagent/releases).
+
 ### Backend SDK (Доступны)
 - **[Kotlin SDK](sdk/kotlin)** - Type-safe Kotlin client + Enhanced вариант
 - **[JavaScript/TypeScript SDK](sdk/javascript)** - Node.js/Browser support + Enhanced вариант
@@ -235,7 +272,7 @@ if try await client.isEnabled("new_payment_flow") {
 
 ## 🌍 Локализация
 
-Flagent полностью локализован для РФ/СНГ рынка:
+Flagent полностью локализован для СНГ рынка:
 
 - ✅ **Русская документация** - Полная документация на русском языке
 - ✅ **Русский UI** - Интерфейс admin панели на русском

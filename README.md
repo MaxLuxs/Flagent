@@ -6,7 +6,10 @@
   
   <p>
     <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+">
-      <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build Status">
+      <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI">
+    </a>
+    <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml?query=branch%3Amain+">
+      <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml/badge.svg?branch=main" alt="CI (Swift)">
     </a>
     <a href="https://codecov.io/gh/MaxLuxs/Flagent">
       <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg" alt="Code Coverage">
@@ -169,6 +172,40 @@ Official SDKs available for multiple platforms:
 | **Python** | [flagent-python](sdk/python) | ✅ Stable | Full API support, asyncio |
 | **Go** | [flagent-go](sdk/go) | ✅ Stable | Full API support, goroutines |
 | **Go Enhanced** | [go-enhanced](sdk/go-enhanced) | ✅ Stable | Client-side eval, real-time updates |
+
+### Add as dependency (Kotlin/JVM)
+
+Artifacts are published to [GitHub Packages](https://github.com/MaxLuxs/Flagent/packages). Add the repository and dependency:
+
+**Gradle (Kotlin DSL):**
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/MaxLuxs/Flagent")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+dependencies {
+    // Ktor plugin (server)
+    implementation("com.flagent:ktor-flagent:1.0.0")
+    // Kotlin client
+    implementation("com.flagent:kotlin-client:1.0.0")
+    // Kotlin Enhanced (offline eval, SSE)
+    implementation("com.flagent:kotlin-enhanced:1.0.0")
+    // Kotlin Debug UI
+    implementation("com.flagent:kotlin-debug-ui:1.0.0")
+    // Shared (KMP; pulled transitively by ktor-flagent, or use for multi-platform)
+    implementation("com.flagent:shared:1.0.0")
+}
+```
+
+Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace `1.0.0` with the [release version](https://github.com/MaxLuxs/Flagent/releases).
 
 ### Server-Side Integration
 

@@ -3,37 +3,49 @@
 ## Обзор
 
 Backend построен на Ktor с использованием Kotlin Coroutines для асинхронности.
+Следует принципам Clean Architecture с разделением на слои.
 
 ## Структура
 
 ```
-flagent/
-├── application/     # Application.kt - точка входа
-├── config/          # Конфигурация из environment
-├── entity/          # Data classes (модели)
-├── repository/      # Exposed таблицы и DAO
-├── service/         # Бизнес-логика
-├── route/           # Ktor routes (API endpoints)
-├── middleware/      # Ktor plugins (CORS, auth, etc)
-├── cache/           # In-memory кэш для evaluation
-├── recorder/        # Data recording (Kafka/Kinesis/PubSub)
-└── util/            # Утилиты
+flagent/backend/
+├── application/       # Application.kt - точка входа, EnterpriseConfigurator
+├── config/            # Конфигурация из environment
+├── domain/            # Domain Layer
+│   ├── entity/        # Data classes (Flag, Segment, Constraint, etc.)
+│   ├── repository/    # Интерфейсы репозиториев (IFlagRepository, etc.)
+│   ├── usecase/       # Use cases (EvaluateFlagUseCase, EvaluateBatchUseCase)
+│   └── value/         # Value objects (EntityID, FlagKey, EvaluationContext)
+├── repository/        # Infrastructure - Exposed таблицы, реализации репозиториев
+├── service/           # Application Layer - оркестрация use cases
+│   ├── command/       # Command objects (CreateFlagCommand, PutSegmentCommand, etc.)
+│   └── adapter/       # Adapters к shared evaluator
+├── route/             # Presentation - Ktor routes (API endpoints)
+│   └── mapper/        # ResponseMappers (domain → API Response)
+├── middleware/        # Ktor plugins (CORS, auth, etc)
+├── cache/             # In-memory кэш для evaluation
+├── recorder/          # Data recording (Kafka/Kinesis/PubSub)
+└── util/              # Утилиты
 ```
 
-## Поток данных
+## Поток данных (Request → Command → Service → Repository)
 
 ```
-HTTP Request
-    ↓
-Middleware (CORS, Auth, Logging)
+HTTP Request (CreateFlagRequest, PutSegmentRequest, etc.)
     ↓
 Route Handler
     ↓
-Service (бизнес-логика)
+Request → Command mapping (CreateFlagCommand, PutSegmentCommand, etc.)
     ↓
-Repository (доступ к БД)
+Service (принимает Command, строит domain entity внутри)
+    ↓
+Use Case / Repository (доступ к БД)
     ↓
 Database (Exposed)
+    ↓
+Domain entity → Response mapping (ResponseMappers)
+    ↓
+HTTP Response
 ```
 
 ## Evaluation Flow
@@ -43,17 +55,17 @@ POST /api/v1/evaluation
     ↓
 EvaluationRoute
     ↓
-EvaluationService
+EvaluationService (делегирует в EvaluateFlagUseCase + SharedFlagEvaluatorAdapter)
+    ↓
+EvaluateFlagUseCase → shared FlagEvaluator
     ↓
 EvalCache (in-memory)
     ↓
-Flag evaluation algorithm
+Flag evaluation algorithm (в shared module)
     ↓
-Segment matching
+Constraint evaluation (ConstraintEvaluator)
     ↓
-Constraint evaluation
-    ↓
-Distribution rollout
+Distribution rollout (RolloutAlgorithm)
     ↓
 Return result
     ↓
