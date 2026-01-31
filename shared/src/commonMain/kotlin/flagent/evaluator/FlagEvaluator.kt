@@ -59,22 +59,22 @@ class FlagEvaluator(
         val constraints: List<EvaluableConstraint>,
         val distributions: List<EvaluableDistribution>
     ) {
+        /**
+         * Build distribution array with accumulated percents in 0-1000 scale (EVALUATION_SPEC).
+         */
         fun prepareDistribution(): DistributionArray {
             if (distributions.isEmpty()) {
                 return DistributionArray(emptyList(), emptyList())
             }
-            
             val sortedDist = distributions.sortedBy { it.percent }
             val variantIds = mutableListOf<Int>()
             val percentsAccumulated = mutableListOf<Int>()
-            
             var accumulated = 0
             for (dist in sortedDist) {
-                accumulated += dist.percent
+                accumulated += dist.percent * 10 // 0-1000 scale
                 variantIds.add(dist.variantId)
                 percentsAccumulated.add(accumulated)
             }
-            
             return DistributionArray(variantIds, percentsAccumulated)
         }
     }
@@ -99,86 +99,20 @@ class FlagEvaluator(
     )
     
     /**
-     * Distribution array for fast variant selection
+     * Distribution array for fast variant selection. Uses RolloutAlgorithm (salt+entityID, EVALUATION_SPEC).
      */
     data class DistributionArray(
         val variantIds: List<Int>,
         val percentsAccumulated: List<Int>
     ) {
-        companion object {
-            const val TOTAL_BUCKET_NUM = 1000u
-        }
-        
         fun rollout(entityID: String, salt: String, rolloutPercent: Int): Pair<Int?, String> {
-            if (entityID.isEmpty()) {
-                return null to "rollout no. empty entityID"
-            }
-            
-            if (rolloutPercent <= 0) {
-                return null to "rollout no. invalid rolloutPercent: $rolloutPercent"
-            }
-            
-            if (variantIds.isEmpty() || percentsAccumulated.isEmpty()) {
-                return null to "rollout no. there's no distribution set"
-            }
-            
-            val bucketNum = crc32Num(entityID, salt)
-            val bucket = (bucketNum % TOTAL_BUCKET_NUM).toInt()
-            val (variantID, index) = bucketByNum(bucketNum)
-            
-            val rolloutThreshold = TOTAL_BUCKET_NUM.toInt() * rolloutPercent / 100
-            if (bucket >= rolloutThreshold) {
-                return null to "rollout no. entityID bucket: $bucket rolloutPercent: $rolloutPercent"
-            }
-            
-            return variantID to "matched distribution variantID: $variantID index: $index"
-        }
-        
-        private fun bucketByNum(num: UInt): Pair<Int, Int> {
-            val bucket = (num % TOTAL_BUCKET_NUM).toInt()
-            
-            // Binary search for the variant
-            var left = 0
-            var right = percentsAccumulated.size - 1
-            
-            while (left <= right) {
-                val mid = (left + right) / 2
-                val midPercent = percentsAccumulated[mid] * 10 // Convert to per-mille
-                
-                if (bucket < midPercent) {
-                    if (mid == 0 || bucket >= percentsAccumulated[mid - 1] * 10) {
-                        return variantIds[mid] to mid
-                    }
-                    right = mid - 1
-                } else {
-                    left = mid + 1
-                }
-            }
-            
-            // If not found, return last variant
-            return variantIds.last() to percentsAccumulated.size - 1
-        }
-        
-        /**
-         * CRC32 hash function for consistent bucketing
-         * Uses Kotlin's built-in implementation
-         */
-        private fun crc32Num(entityID: String, salt: String): UInt {
-            val input = "$entityID$salt"
-            var crc = 0xFFFFFFFFu
-            
-            for (byte in input.encodeToByteArray()) {
-                crc = crc xor byte.toUByte().toUInt()
-                for (k in 0 until 8) {
-                    crc = if ((crc and 1u) != 0u) {
-                        (crc shr 1) xor 0xEDB88320u
-                    } else {
-                        crc shr 1
-                    }
-                }
-            }
-            
-            return crc xor 0xFFFFFFFFu
+            return RolloutAlgorithm.rollout(
+                entityID = entityID,
+                salt = salt,
+                rolloutPercent = rolloutPercent,
+                variantIds = variantIds,
+                percentsAccumulated = percentsAccumulated
+            )
         }
     }
     
