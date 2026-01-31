@@ -1,5 +1,6 @@
 package flagent.frontend.api
 
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.api.model.PutSegmentReorderRequest
 import flagent.frontend.config.AppConfig
@@ -66,13 +67,13 @@ object ApiClient {
     internal fun getApiPath(path: String): String {
         val baseUrl = AppConfig.apiBaseUrl
         return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
-            "/api/v1$path"
+            "${ApiConstants.API_BASE_PATH}$path"
         } else {
-            "$baseUrl/api/v1$path"
+            "$baseUrl${ApiConstants.API_BASE_PATH}$path"
         }
     }
     
-    /** Admin API path (no /api/v1 prefix) for tenants, etc. */
+    /** Admin API path (no API_BASE_PATH prefix) for tenants, etc. */
     internal fun getAdminPath(path: String): String {
         val baseUrl = AppConfig.apiBaseUrl
         return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {

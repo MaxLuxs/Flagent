@@ -306,11 +306,11 @@ git clone git@github.com:YourOrg/flagent.git
 cd flagent
 
 # Build frontend
-cd flagent/frontend
+cd frontend
 ./gradlew build
 
 # Run backend (Open Source)
-cd ../backend
+cd flagent./backend
 ./gradlew run
 ```
 
@@ -325,11 +325,11 @@ cd flagent
 git submodule update --remote enterprise
 
 # Build frontend (с Enterprise поддержкой)
-cd flagent/frontend
+cd frontend
 ./gradlew build
 
 # Run backend (Enterprise)
-cd ../enterprise/backend
+cd flagent./enterprise/backend
 export FLAGENT_EDITION=enterprise
 ./gradlew run
 ```
@@ -409,9 +409,9 @@ FLAGENT_SLACK_WEBHOOK_URL=https://hooks.slack.com/...
 
 **A:** 
 ```bash
-cd flagent/enterprise
+cd internal/flagent-enterprise
 git pull origin main
-cd ..
+cd flagent.
 git add enterprise
 git commit -m "Update enterprise submodule"
 ```

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import flagent.api.constants.ConstraintOperators
 import flagent.api.model.CreateConstraintRequest
 import flagent.api.model.PutConstraintRequest
 import flagent.frontend.api.ApiClient
@@ -52,20 +53,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
     val saving = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
 
-    val operators = listOf(
-        "EQ",
-        "NEQ",
-        "GT",
-        "GTE",
-        "LT",
-        "LTE",
-        "IN",
-        "NOT_IN",
-        "CONTAINS",
-        "NOT_CONTAINS",
-        "STARTS_WITH",
-        "ENDS_WITH"
-    )
+    val operators = ConstraintOperators.OPERATOR_DISPLAY_PAIRS
 
     LaunchedEffect(constraintId) {
         if (constraintId != null) {
@@ -155,9 +143,9 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                             padding(5.px)
                         }
                     }) {
-                        operators.forEach { op ->
-                            Option(value = op) {
-                                Text(op)
+                        operators.forEach { (opValue, display) ->
+                            Option(value = opValue) {
+                                Text(display)
                             }
                         }
                     }

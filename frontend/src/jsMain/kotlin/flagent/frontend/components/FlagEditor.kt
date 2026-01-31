@@ -11,6 +11,7 @@ import flagent.frontend.components.Icon
 import flagent.frontend.components.Slider
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
+import flagent.api.constants.ConstraintOperators
 import flagent.api.model.FlagResponse
 import flagent.api.model.CreateFlagRequest
 import flagent.api.model.PutFlagRequest
@@ -2321,20 +2322,7 @@ private fun ConstraintsSection(
     val creating = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
     
-    val operators = listOf(
-        "EQ" to "==",
-        "NEQ" to "!=",
-        "LT" to "<",
-        "LTE" to "<=",
-        "GT" to ">",
-        "GTE" to ">=",
-        "EREG" to "=~",
-        "NEREG" to "!~",
-        "IN" to "IN",
-        "NOTIN" to "NOT IN",
-        "CONTAINS" to "CONTAINS",
-        "NOTCONTAINS" to "NOT CONTAINS"
-    )
+    val operators = ConstraintOperators.OPERATOR_DISPLAY_PAIRS
     
     fun createConstraint() {
         if (newConstraintProperty.value.isBlank() || newConstraintValue.value.isBlank()) return

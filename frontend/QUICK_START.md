@@ -11,7 +11,7 @@
 
 ```bash
 # Clone the repository
-cd flagent/frontend
+cd frontend
 
 # Build the project
 ./gradlew build
