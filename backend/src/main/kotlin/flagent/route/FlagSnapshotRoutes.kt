@@ -1,5 +1,6 @@
 package flagent.route
 
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.FlagSnapshotService
 import io.ktor.http.*
@@ -13,7 +14,7 @@ import kotlinx.serialization.json.Json
  * Maps to pkg/handler/crud.go from original project
  */
 fun Routing.configureFlagSnapshotRoutes(flagSnapshotService: FlagSnapshotService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             route("/flags/{flagId}/snapshots") {
                 get {
                     val flagId = call.parameters["flagId"]?.toIntOrNull()

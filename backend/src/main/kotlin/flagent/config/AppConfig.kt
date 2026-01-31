@@ -1,5 +1,6 @@
 package flagent.config
 
+import flagent.api.constants.ApiConstants
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -189,7 +190,7 @@ object AppConfig {
     val jwtAuthDebug: Boolean = System.getenv("FLAGENT_JWT_AUTH_DEBUG")?.toBoolean() ?: false
     val jwtAuthPrefixWhitelistPaths: List<String> =
         System.getenv("FLAGENT_JWT_AUTH_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
-            ?: listOf("/api/v1/health", "/api/v1/evaluation", "/static")
+            ?: listOf("${ApiConstants.API_BASE_PATH}/health", "${ApiConstants.API_BASE_PATH}/evaluation", "/static")
     val jwtAuthExactWhitelistPaths: List<String> =
         System.getenv("FLAGENT_JWT_AUTH_EXACT_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
             ?: listOf("", "/")
@@ -223,7 +224,7 @@ object AppConfig {
     val basicAuthPassword: String = System.getenv("FLAGENT_BASIC_AUTH_PASSWORD") ?: ""
     val basicAuthPrefixWhitelistPaths: List<String> =
         System.getenv("FLAGENT_BASIC_AUTH_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
-            ?: listOf("/api/v1/health", "/api/v1/flags", "/api/v1/evaluation")
+            ?: listOf("${ApiConstants.API_BASE_PATH}/health", "${ApiConstants.API_BASE_PATH}/flags", "${ApiConstants.API_BASE_PATH}/evaluation")
     val basicAuthExactWhitelistPaths: List<String> =
         System.getenv("FLAGENT_BASIC_AUTH_EXACT_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
             ?: emptyList()

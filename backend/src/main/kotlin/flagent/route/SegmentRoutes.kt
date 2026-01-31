@@ -3,6 +3,7 @@ package flagent.route
 import flagent.domain.entity.Constraint
 import flagent.domain.entity.Distribution
 import flagent.domain.entity.Segment
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.SegmentService
 import flagent.util.getSubject
@@ -17,7 +18,7 @@ import io.ktor.server.routing.*
  * Maps to pkg/handler/crud.go from original project
  */
 fun Routing.configureSegmentRoutes(segmentService: SegmentService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             route("/flags/{flagId}/segments") {
                 
                 

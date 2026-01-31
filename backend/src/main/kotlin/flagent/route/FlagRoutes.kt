@@ -6,6 +6,7 @@ import flagent.domain.entity.Variant
 import flagent.domain.entity.Constraint
 import flagent.domain.entity.Distribution
 import flagent.domain.entity.Tag
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.FlagService
 import flagent.util.getSubject
@@ -23,7 +24,7 @@ import kotlinx.serialization.json.jsonObject
  * Maps to pkg/handler/crud.go from original project
  */
 fun Routing.configureFlagRoutes(flagService: FlagService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             route("/flags") {
                 get {
                     val limit = call.request.queryParameters["limit"]?.toIntOrNull()

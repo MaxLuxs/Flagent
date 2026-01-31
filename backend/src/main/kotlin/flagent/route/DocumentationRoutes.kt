@@ -1,5 +1,6 @@
 package flagent.route
 
+import flagent.api.constants.ApiConstants
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -90,7 +91,7 @@ fun Routing.configureDocumentationRoutes() {
     <script>
         window.onload = function() {
             const ui = SwaggerUIBundle({
-                url: "/api/v1/openapi.yaml",
+                url: "${ApiConstants.API_BASE_PATH}/openapi.yaml",
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
@@ -117,7 +118,7 @@ fun Routing.configureDocumentationRoutes() {
     }
     
     // GET /api/v1/openapi.yaml - OpenAPI specification in YAML format
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             get("/openapi.yaml") {
                 try {
                     // Load OpenAPI file from file system

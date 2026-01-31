@@ -1,5 +1,6 @@
 package flagent.route
 
+import flagent.api.constants.ApiConstants
 import flagent.api.model.InfoResponse
 import flagent.application.EnterprisePresence
 import io.ktor.server.application.*
@@ -12,7 +13,7 @@ import io.ktor.server.routing.*
  */
 
 fun Routing.configureInfoRoutes() {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
         get("/info") {
             val version = System.getProperty("flagent.version") ?: "1.0.0"
             val buildTime = System.getProperty("flagent.buildTime")

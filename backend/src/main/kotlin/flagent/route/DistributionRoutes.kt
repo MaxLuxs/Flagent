@@ -1,6 +1,7 @@
 package flagent.route
 
 import flagent.domain.entity.Distribution
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.DistributionService
 import flagent.util.getSubject
@@ -15,7 +16,7 @@ import io.ktor.server.routing.*
  * Maps to pkg/handler/crud.go from original project
  */
 fun Routing.configureDistributionRoutes(distributionService: DistributionService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             route("/flags/{flagId}/segments/{segmentId}/distributions") {
                 get {
                     val flagId = call.parameters["flagId"]?.toIntOrNull()

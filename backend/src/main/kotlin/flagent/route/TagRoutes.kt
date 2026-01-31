@@ -1,6 +1,7 @@
 package flagent.route
 
 import flagent.domain.entity.Tag
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.TagService
 import flagent.util.getSubject
@@ -15,7 +16,7 @@ import io.ktor.server.routing.*
  * Maps to pkg/handler/crud.go from original project
  */
 fun Routing.configureTagRoutes(tagService: TagService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             // GET /api/v1/tags - find all tags
             route("/tags") {
                 get {

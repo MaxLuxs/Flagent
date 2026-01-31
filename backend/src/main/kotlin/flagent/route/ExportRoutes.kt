@@ -1,5 +1,7 @@
 package flagent.route
 
+import flagent.api.constants.ApiConstants
+
 import flagent.cache.impl.EvalCache
 import flagent.cache.impl.EvalCacheJSON
 import flagent.service.ExportService
@@ -15,7 +17,7 @@ import kotlinx.serialization.json.Json
  * Maps to pkg/handler/export.go from original project
  */
 fun Routing.configureExportRoutes(evalCache: EvalCache, exportService: ExportService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             route("/export") {
                 // GET /api/v1/export/eval_cache/json - export eval cache as JSON
                 route("/eval_cache/json") {

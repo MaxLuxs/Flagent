@@ -1,5 +1,6 @@
 package flagent.route
 
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.EvaluationService
 import io.ktor.server.application.*
@@ -14,7 +15,7 @@ import kotlinx.serialization.json.jsonObject
  * Maps to pkg/handler/eval.go from original project
  */
 fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             post("/evaluation") {
                 val request = call.receive<EvaluationRequest>()
                 

@@ -1,6 +1,7 @@
 package flagent.route
 
 import flagent.domain.entity.Variant
+import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.VariantService
 import flagent.util.getSubject
@@ -18,7 +19,7 @@ import kotlinx.serialization.json.put
  * Maps to pkg/handler/crud.go from original project
  */
 fun Routing.configureVariantRoutes(variantService: VariantService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             route("/flags/{flagId}/variants") {
                 
                 

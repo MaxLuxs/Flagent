@@ -1,5 +1,7 @@
 package flagent.route
 
+import flagent.api.constants.ApiConstants
+
 import flagent.service.FlagEntityTypeService
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -11,7 +13,7 @@ import io.ktor.server.routing.*
  * Maps to pkg/handler/crud.go from original project
  */
 fun Routing.configureFlagEntityTypeRoutes(flagEntityTypeService: FlagEntityTypeService) {
-    route("/api/v1") {
+    route(ApiConstants.API_BASE_PATH) {
             route("/flags/entity_types") {
                 get {
                     try {
