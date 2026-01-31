@@ -22,7 +22,7 @@ data class EvaluationBatchRequest(
     val flagIDs: List<Int> = emptyList(),
     val flagKeys: List<String> = emptyList(),
     val flagTags: List<String> = emptyList(),
-    val flagTagsOperator: String? = null, // "ANY" or "ALL"
+    val flagTagsOperator: String? = null, // FlagTagsOperator.ANY_STR or FlagTagsOperator.ALL_STR
     val enableDebug: Boolean = false
 )
 

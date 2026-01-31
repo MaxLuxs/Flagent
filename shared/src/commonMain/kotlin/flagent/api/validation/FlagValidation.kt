@@ -1,5 +1,7 @@
 package flagent.api.validation
 
+import flagent.api.constants.ConstraintOperators
+
 /**
  * Validation utilities for feature flags
  * Shared across backend and frontend
@@ -101,12 +103,7 @@ object FlagValidation {
      * Validate constraint operator
      */
     fun validateConstraintOperator(operator: String): ValidationResult {
-        val validOperators = setOf(
-            "EQ", "NEQ", "LT", "LTE", "GT", "GTE",
-            "EREG", "NEREG", "IN", "NOTIN",
-            "CONTAINS", "NOTCONTAINS"
-        )
-        return if (operator in validOperators) {
+        return if (ConstraintOperators.isValid(operator)) {
             ValidationResult.Success
         } else {
             ValidationResult.Error("Invalid constraint operator: $operator")
