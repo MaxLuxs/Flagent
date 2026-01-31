@@ -16,6 +16,8 @@ include(":ktor-flagent")
 
 // SDK projects
 include(":kotlin-client")
+include(":java-client")
+include(":flagent-spring-boot-starter")
 include(":kotlin-enhanced")
 include(":kotlin-debug-ui")
 
@@ -23,9 +25,10 @@ include(":kotlin-debug-ui")
 include(":android-sample")
 include(":android-sample:app")
 
-// Standalone samples (Ktor, Kotlin)
+// Standalone samples (Ktor, Kotlin, Spring Boot)
 include(":sample-ktor")
 include(":sample-kotlin")
+include(":sample-spring-boot")
 
 // Enterprise module (optional submodule)
 if (file("internal/flagent-enterprise/build.gradle.kts").exists()) {
@@ -39,6 +42,8 @@ project(":frontend").projectDir = file("frontend")
 project(":ktor-flagent").projectDir = file("ktor-flagent")
 
 project(":kotlin-client").projectDir = file("sdk/kotlin")
+project(":java-client").projectDir = file("sdk/java")
+project(":flagent-spring-boot-starter").projectDir = file("sdk/spring-boot-starter")
 project(":kotlin-enhanced").projectDir = file("sdk/kotlin-enhanced")
 project(":kotlin-debug-ui").projectDir = file("sdk/kotlin-debug-ui")
 
@@ -47,3 +52,4 @@ project(":android-sample:app").projectDir = file("sdk/android-sample/app")
 
 project(":sample-ktor").projectDir = file("samples/ktor")
 project(":sample-kotlin").projectDir = file("samples/kotlin")
+project(":sample-spring-boot").projectDir = file("samples/spring-boot")

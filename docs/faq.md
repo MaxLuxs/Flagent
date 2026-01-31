@@ -152,7 +152,7 @@ Yes! Flagent provides a native Ktor plugin (`ktor-flagent`) for seamless integra
 
 ### Can I use Flagent with Spring Boot?
 
-Yes! You can use the Kotlin SDK or REST API directly from Spring Boot applications.
+Yes! The recommended way is the **Flagent Spring Boot Starter** (`flagent-spring-boot-starter`), which auto-configures the Java client and registers `EvaluationApi` and `HealthApi` beans. Alternatively, you can use the **Java SDK** (`flagent-java-client`) directly, the Kotlin SDK, or the REST API.
 
 ## Performance & Scalability
 

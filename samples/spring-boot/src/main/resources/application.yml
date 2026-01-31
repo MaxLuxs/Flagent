@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+flagent:
+  base-url: http://localhost:18000
+  cache:
+    enabled: true
+    ttl-ms: 60000

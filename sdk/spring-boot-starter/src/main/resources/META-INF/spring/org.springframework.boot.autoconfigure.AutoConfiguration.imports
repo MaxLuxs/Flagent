@@ -1,0 +1,2 @@
+com.flagent.spring.boot.flagent.FlagentAutoConfiguration
+com.flagent.spring.boot.flagent.FlagentHealthIndicatorAutoConfiguration
