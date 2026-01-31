@@ -129,8 +129,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: sdk/javascript/package-lock.json
       - name: Build sdk/javascript
         run: |
           cd sdk/javascript && (npm ci || npm install) && npm run build

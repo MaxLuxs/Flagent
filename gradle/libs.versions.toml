@@ -40,7 +40,7 @@ google-pubsub = "1.147.0"
 
 # Security
 jjwt = "0.13.0"
-dependency-check = "11.1.1"
+dependency-check = "12.2.0"
 
 # Billing
 stripe = "31.2.0"

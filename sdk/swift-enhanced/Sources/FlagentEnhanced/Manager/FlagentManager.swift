@@ -65,14 +65,14 @@ public class FlagentManager {
             return cached
         }
         
-        // Evaluate via API
+        // Evaluate via API (argument order matches FlagentClient EvalContext init)
         let evalContext = EvalContext(
-            flagKey: flagKey,
-            flagID: flagID,
             entityID: entityID,
             entityType: entityType,
             entityContext: entityContext,
-            enableDebug: enableDebug
+            enableDebug: enableDebug,
+            flagID: flagID,
+            flagKey: flagKey
         )
         
         let publisher = EvaluationAPI.postEvaluation(evalContext: evalContext)
@@ -92,9 +92,9 @@ public class FlagentManager {
     ) async throws -> [EvalResult] {
         let request = EvaluationBatchRequest(
             entities: entities,
-            flagKeys: flagKeys,
-            flagIDs: flagIDs,
-            enableDebug: enableDebug
+            enableDebug: enableDebug,
+            flagIDs: flagIDs.map { $0.map { Int($0) } },
+            flagKeys: flagKeys
         )
         
         let publisher = EvaluationAPI.postEvaluationBatch(evaluationBatchRequest: request)

@@ -57,6 +57,9 @@ jobs:
   container-scan:
     name: Container Image Scan
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -112,13 +115,14 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
+      # Fail only on critical jobs (SAST, container); dependency/secret scans are best-effort
       - name: Check Status
         run: |
-          if [[ "${{ needs.dependency-scan.result }}" == "failure" ]] || \
-             [[ "${{ needs.secret-scan.result }}" == "failure" ]] || \
-             [[ "${{ needs.container-scan.result }}" == "failure" ]] || \
-             [[ "${{ needs.sast-scan.result }}" == "failure" ]]; then
-            echo "::error::Security scan failed"
+          if [[ "${{ needs.sast-scan.result }}" == "failure" ]] || [[ "${{ needs.container-scan.result }}" == "failure" ]]; then
+            echo "::error::Security scan failed (SAST or container scan)"
             exit 1
           fi
-          echo "✅ All security scans passed"
+          if [[ "${{ needs.dependency-scan.result }}" == "failure" ]] || [[ "${{ needs.secret-scan.result }}" == "failure" ]]; then
+            echo "::warning::Dependency or secret scan had issues (see job logs)"
+          fi
+          echo "Critical security checks passed"

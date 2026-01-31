@@ -6,7 +6,7 @@ let package = Package(
     name: "FlagentEnhanced",
     platforms: [
         .iOS(.v11),
-        .macOS(.v10_13),
+        .macOS(.v10_15),
     ],
     products: [
         .library(
