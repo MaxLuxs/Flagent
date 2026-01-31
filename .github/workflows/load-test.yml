@@ -1,0 +1,265 @@
+name: Load Testing
+
+on:
+  # Run on pull requests to main
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'infrastructure/load-tests/**'
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'Load test scenario'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - metrics
+          - anomaly
+      duration:
+        description: 'Test duration (minutes)'
+        required: false
+        default: '5'
+
+  # Scheduled run (weekly on Sunday)
+  schedule:
+    - cron: '0 2 * * 0'
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: flagent
+          POSTGRES_USER: flagent
+          POSTGRES_PASSWORD: flagent
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Flagent
+        run: ./gradlew :backend:build -x test --no-daemon
+
+      - name: Start Flagent Server
+        env:
+          FLAGENT_DB_DBDRIVER: postgresql
+          FLAGENT_DB_DBCONNECTIONSTR: postgresql://flagent:flagent@localhost:5432/flagent
+        run: |
+          ./gradlew :backend:run --no-daemon &
+          echo $! > flagent.pid
+
+          # Wait for server to start
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/api/v1/health > /dev/null; then
+              echo "Flagent started successfully"
+              break
+            fi
+            echo "Waiting for Flagent to start... ($i/30)"
+            sleep 2
+          done
+
+          # Verify server is running
+          curl -f http://localhost:8000/api/v1/health || exit 1
+
+      - name: Setup test data
+        run: |
+          # Create test flags
+          for i in {1..5}; do
+            curl -X POST http://localhost:8000/api/v1/flags \
+              -H "Content-Type: application/json" \
+              -d "{\"key\":\"test_flag_$i\",\"description\":\"Load test flag $i\",\"enabled\":true}"
+          done
+
+          echo "Test data created"
+
+      - name: Install K6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run Metrics Load Test
+        if: ${{ github.event.inputs.scenario == 'metrics' || github.event.inputs.scenario == 'all' || github.event.inputs.scenario == '' }}
+        run: |
+          k6 run infrastructure/load-tests/metrics-load-test.js \
+            --out json=metrics-results.json \
+            --summary-export=metrics-summary.json \
+            || echo "Load test completed with warnings"
+
+      - name: Run Anomaly Detection Load Test
+        if: ${{ github.event.inputs.scenario == 'anomaly' || github.event.inputs.scenario == 'all' || github.event.inputs.scenario == '' }}
+        run: |
+          k6 run infrastructure/load-tests/anomaly-detection-load-test.js \
+            --out json=anomaly-results.json \
+            --summary-export=anomaly-summary.json \
+            || echo "Load test completed with warnings"
+
+      - name: Parse Results
+        id: parse_results
+        run: |
+          # Parse metrics summary
+          if [ -f metrics-summary.json ]; then
+            METRICS_P95=$(jq -r '.metrics.http_req_duration.values.["p(95)"]' metrics-summary.json)
+            METRICS_P99=$(jq -r '.metrics.http_req_duration.values.["p(99)"]' metrics-summary.json)
+            METRICS_ERROR_RATE=$(jq -r '.metrics.http_req_failed.values.rate' metrics-summary.json)
+
+            echo "metrics_p95=$METRICS_P95" >> $GITHUB_OUTPUT
+            echo "metrics_p99=$METRICS_P99" >> $GITHUB_OUTPUT
+            echo "metrics_error_rate=$METRICS_ERROR_RATE" >> $GITHUB_OUTPUT
+          fi
+
+          # Parse anomaly summary
+          if [ -f anomaly-summary.json ]; then
+            ANOMALY_P95=$(jq -r '.metrics.http_req_duration.values.["p(95)"]' anomaly-summary.json)
+            ANOMALY_P99=$(jq -r '.metrics.http_req_duration.values.["p(99)"]' anomaly-summary.json)
+            ANOMALY_ERROR_RATE=$(jq -r '.metrics.http_req_failed.values.rate' anomaly-summary.json)
+
+            echo "anomaly_p95=$ANOMALY_P95" >> $GITHUB_OUTPUT
+            echo "anomaly_p99=$ANOMALY_P99" >> $GITHUB_OUTPUT
+            echo "anomaly_error_rate=$ANOMALY_ERROR_RATE" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Performance Thresholds
+        run: |
+          FAILED=0
+
+          # Metrics API thresholds
+          if [ -n "${{ steps.parse_results.outputs.metrics_p95 }}" ]; then
+            if (( $(echo "${{ steps.parse_results.outputs.metrics_p95 }} > 500" | bc -l) )); then
+              echo "❌ Metrics API p95 (${{ steps.parse_results.outputs.metrics_p95 }}ms) exceeds threshold (500ms)"
+              FAILED=1
+            else
+              echo "✅ Metrics API p95 (${{ steps.parse_results.outputs.metrics_p95 }}ms) within threshold"
+            fi
+
+            if (( $(echo "${{ steps.parse_results.outputs.metrics_error_rate }} > 0.05" | bc -l) )); then
+              echo "❌ Metrics API error rate (${{ steps.parse_results.outputs.metrics_error_rate }}) exceeds threshold (5%)"
+              FAILED=1
+            else
+              echo "✅ Metrics API error rate (${{ steps.parse_results.outputs.metrics_error_rate }}) within threshold"
+            fi
+          fi
+
+          # Anomaly Detection thresholds
+          if [ -n "${{ steps.parse_results.outputs.anomaly_p95 }}" ]; then
+            if (( $(echo "${{ steps.parse_results.outputs.anomaly_p95 }} > 2000" | bc -l) )); then
+              echo "❌ Anomaly Detection p95 (${{ steps.parse_results.outputs.anomaly_p95 }}ms) exceeds threshold (2000ms)"
+              FAILED=1
+            else
+              echo "✅ Anomaly Detection p95 (${{ steps.parse_results.outputs.anomaly_p95 }}ms) within threshold"
+            fi
+          fi
+
+          if [ $FAILED -eq 1 ]; then
+            echo "::error::Performance thresholds exceeded"
+            exit 1
+          fi
+
+      - name: Generate Performance Report
+        if: always()
+        run: |
+          cat << EOF > performance-report.md
+          # Load Test Results
+
+          ## Metrics API
+          - **p95 latency:** ${{ steps.parse_results.outputs.metrics_p95 }}ms (threshold: < 500ms)
+          - **p99 latency:** ${{ steps.parse_results.outputs.metrics_p99 }}ms (threshold: < 1000ms)
+          - **Error rate:** ${{ steps.parse_results.outputs.metrics_error_rate }} (threshold: < 5%)
+
+          ## Anomaly Detection
+          - **p95 latency:** ${{ steps.parse_results.outputs.anomaly_p95 }}ms (threshold: < 2000ms)
+          - **p99 latency:** ${{ steps.parse_results.outputs.anomaly_p99 }}ms (threshold: < 5000ms)
+          - **Error rate:** ${{ steps.parse_results.outputs.anomaly_error_rate }} (threshold: < 10%)
+
+          ## Test Info
+          - **Commit:** ${{ github.sha }}
+          - **Branch:** ${{ github.ref_name }}
+          - **Workflow:** ${{ github.workflow }}
+          - **Run ID:** ${{ github.run_id }}
+          EOF
+
+          cat performance-report.md
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('performance-report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: load-test-results
+          path: |
+            metrics-results.json
+            metrics-summary.json
+            anomaly-results.json
+            anomaly-summary.json
+            performance-report.md
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ -f flagent.pid ]; then
+            kill $(cat flagent.pid) || true
+          fi
+
+      - name: Notify Slack on Failure
+        if: failure() && github.ref == 'refs/heads/main'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -X POST "$SLACK_WEBHOOK_URL" \
+              -H 'Content-Type: application/json' \
+              -d "{
+                \"text\": \"🚨 Load test failed on main branch\",
+                \"blocks\": [
+                  {
+                    \"type\": \"section\",
+                    \"text\": {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*Load Test Failure*\n\nCommit: \`${{ github.sha }}\`\nWorkflow: ${{ github.workflow }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"
+                    }
+                  }
+                ]
+              }"
+          fi

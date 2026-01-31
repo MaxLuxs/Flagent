@@ -89,6 +89,8 @@ docker run -it -p 18000:18000 ghcr.io/maxluxs/flagent:latest
 - **`.github/workflows/ci.yml`** - Основной CI: тесты, сборка, покрытие кода
 - **`.github/workflows/cd_docker.yml`** - CD: публикация Docker образов при релизе
 - **`.github/workflows/ci_codeql.yml`** - Анализ безопасности кода (CodeQL)
+- **`.github/workflows/load-test.yml`** - Load testing (k6: metrics, anomaly detection)
+- **`.github/workflows/security-scan.yml`** - Security scan (dependency check, TruffleHog, Trivy, SAST)
 - **`.github/workflows/pages.yml`** - Деплой документации на GitHub Pages
 - **`.github/workflows/stale.yml`** - Автоматическое помечание неактивных issues/PR как stale
 
