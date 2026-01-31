@@ -2,6 +2,8 @@ package flagent.service
 
 import flagent.domain.entity.Segment
 import flagent.domain.repository.ISegmentRepository
+import flagent.service.command.CreateSegmentCommand
+import flagent.service.command.PutSegmentCommand
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlin.test.*
@@ -60,13 +62,13 @@ class SegmentServiceTest {
     
     @Test
     fun testCreateSegment_SetsDefaultRank() = runBlocking {
-        val segment = Segment(id = 0, flagId = 1, description = "New segment", rank = 0, rolloutPercent = 100)
-        val createdSegment = segment.copy(id = 1, rank = SegmentService.SegmentDefaultRank)
+        val command = CreateSegmentCommand(flagId = 1, description = "New segment", rolloutPercent = 100)
+        val createdSegment = Segment(id = 1, flagId = 1, description = "New segment", rank = SegmentService.SegmentDefaultRank, rolloutPercent = 100)
         
         coEvery { segmentRepository.create(any()) } returns createdSegment
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = segmentService.createSegment(segment)
+        val result = segmentService.createSegment(command)
         
         assertEquals(SegmentService.SegmentDefaultRank, result.rank)
         coVerify { segmentRepository.create(match { it.rank == SegmentService.SegmentDefaultRank }) }
@@ -75,27 +77,33 @@ class SegmentServiceTest {
     
     @Test
     fun testUpdateSegment() = runBlocking {
-        val segment = Segment(id = 1, flagId = 1, description = "Updated segment", rank = 1, rolloutPercent = 75)
+        val existingSegment = Segment(id = 1, flagId = 1, description = "Original", rank = 1, rolloutPercent = 50)
+        val updatedSegment = existingSegment.copy(description = "Updated segment", rolloutPercent = 75)
         
-        coEvery { segmentRepository.update(any()) } returns segment
+        coEvery { segmentRepository.findById(1) } returns existingSegment
+        coEvery { segmentRepository.update(any()) } returns updatedSegment
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = segmentService.updateSegment(segment)
+        val command = PutSegmentCommand(description = "Updated segment", rolloutPercent = 75)
+        val result = segmentService.updateSegment(1, command)
         
         assertEquals("Updated segment", result.description)
         assertEquals(75, result.rolloutPercent)
-        coVerify { segmentRepository.update(segment) }
+        coVerify { segmentRepository.update(any()) }
         coVerify { flagSnapshotService.saveFlagSnapshot(1, null) }
     }
     
     @Test
     fun testUpdateSegment_WithUpdatedBy() = runBlocking {
-        val segment = Segment(id = 1, flagId = 1, description = "Updated segment", rank = 1, rolloutPercent = 75)
+        val existingSegment = Segment(id = 1, flagId = 1, description = "Original", rank = 1, rolloutPercent = 50)
+        val updatedSegment = existingSegment.copy(description = "Updated segment", rolloutPercent = 75)
         
-        coEvery { segmentRepository.update(any()) } returns segment
+        coEvery { segmentRepository.findById(1) } returns existingSegment
+        coEvery { segmentRepository.update(any()) } returns updatedSegment
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = segmentService.updateSegment(segment, updatedBy = "test-user")
+        val command = PutSegmentCommand(description = "Updated segment", rolloutPercent = 75)
+        val result = segmentService.updateSegment(1, command, updatedBy = "test-user")
         
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
     }
@@ -176,13 +184,13 @@ class SegmentServiceTest {
     
     @Test
     fun testCreateSegment_WithUpdatedBy() = runBlocking {
-        val segment = Segment(id = 0, flagId = 1, description = "New segment", rank = 0, rolloutPercent = 100)
-        val createdSegment = segment.copy(id = 1, rank = SegmentService.SegmentDefaultRank)
+        val command = CreateSegmentCommand(flagId = 1, description = "New segment", rolloutPercent = 100)
+        val createdSegment = Segment(id = 1, flagId = 1, description = "New segment", rank = SegmentService.SegmentDefaultRank, rolloutPercent = 100)
         
         coEvery { segmentRepository.create(any()) } returns createdSegment
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = segmentService.createSegment(segment, updatedBy = "test-user")
+        val result = segmentService.createSegment(command, updatedBy = "test-user")
         
         assertEquals(1, result.id)
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }

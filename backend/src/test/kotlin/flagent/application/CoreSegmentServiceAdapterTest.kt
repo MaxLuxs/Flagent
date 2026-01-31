@@ -55,13 +55,13 @@ class CoreSegmentServiceAdapterTest {
             distributions = emptyList()
         )
         coEvery { segmentService.getSegment(2) } returns segment
-        coEvery { segmentService.updateSegment(any()) } returns segment.copy(rolloutPercent = 75)
+        coEvery { segmentService.updateSegment(2, any(), any()) } returns segment.copy(rolloutPercent = 75)
         val adapter = CoreSegmentServiceAdapter(segmentService)
 
         adapter.updateSegmentRollout(2, 75)
 
         coVerify { segmentService.getSegment(2) }
-        coVerify { segmentService.updateSegment(match { it.id == 2 && it.rolloutPercent == 75 }) }
+        coVerify { segmentService.updateSegment(2, match { it.rolloutPercent == 75 }, null) }
     }
 
     @Test
@@ -73,6 +73,6 @@ class CoreSegmentServiceAdapterTest {
         adapter.updateSegmentRollout(99, 100)
 
         coVerify(exactly = 1) { segmentService.getSegment(99) }
-        coVerify(exactly = 0) { segmentService.updateSegment(any()) }
+        coVerify(exactly = 0) { segmentService.updateSegment(any(), any(), any()) }
     }
 }

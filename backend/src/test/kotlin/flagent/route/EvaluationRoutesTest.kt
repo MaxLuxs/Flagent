@@ -1,9 +1,11 @@
 package flagent.route
 
 import flagent.cache.impl.EvalCache
+import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.repository.Database
 import flagent.repository.impl.FlagRepository
 import flagent.service.EvaluationService
+import flagent.service.adapter.SharedFlagEvaluatorAdapter
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -24,7 +26,8 @@ class EvaluationRoutesTest {
             val flagRepository = FlagRepository()
             val evalCache = EvalCache(flagRepository)
             evalCache.start()
-            val evaluationService = EvaluationService(evalCache)
+            val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+            val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
             
             application {
                 install(ContentNegotiation) {
@@ -55,7 +58,8 @@ class EvaluationRoutesTest {
             val flagRepository = FlagRepository()
             val evalCache = EvalCache(flagRepository)
             evalCache.start()
-            val evaluationService = EvaluationService(evalCache)
+            val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+            val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
             
             application {
                 install(ContentNegotiation) {

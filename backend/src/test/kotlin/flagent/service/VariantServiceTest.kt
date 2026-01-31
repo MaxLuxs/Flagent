@@ -4,6 +4,8 @@ import flagent.domain.entity.*
 import flagent.domain.repository.IDistributionRepository
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.IVariantRepository
+import flagent.service.command.CreateVariantCommand
+import flagent.service.command.PutVariantCommand
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlin.test.*
@@ -41,12 +43,12 @@ class VariantServiceTest {
     
     @Test
     fun testCreateVariant_ThrowsException_WhenFlagNotFound() = runBlocking {
-        val variant = Variant(flagId = 1, key = "test-variant")
+        val command = CreateVariantCommand(flagId = 1, key = "test-variant", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns null
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { variantService.createVariant(1, variant) }
+            runBlocking { variantService.createVariant(command) }
         }
         
         coVerify { flagRepository.findById(1) }
@@ -56,38 +58,38 @@ class VariantServiceTest {
     @Test
     fun testCreateVariant_ThrowsException_WhenKeyIsEmpty() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
-        val variant = Variant(flagId = 1, key = "")
+        val command = CreateVariantCommand(flagId = 1, key = "", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { variantService.createVariant(1, variant) }
+            runBlocking { variantService.createVariant(command) }
         }
     }
     
     @Test
     fun testCreateVariant_ThrowsException_WhenKeyIsTooLong() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
-        val variant = Variant(flagId = 1, key = "a".repeat(64))
+        val command = CreateVariantCommand(flagId = 1, key = "a".repeat(64), attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { variantService.createVariant(1, variant) }
+            runBlocking { variantService.createVariant(command) }
         }
     }
     
     @Test
     fun testCreateVariant_Success() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
-        val variant = Variant(flagId = 1, key = "test-variant")
-        val createdVariant = variant.copy(id = 1, flagId = 1)
+        val command = CreateVariantCommand(flagId = 1, key = "test-variant", attachment = null)
+        val createdVariant = Variant(id = 1, flagId = 1, key = "test-variant")
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.create(any()) } returns createdVariant
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = variantService.createVariant(1, variant)
+        val result = variantService.createVariant(command)
         
         assertEquals(1, result.id)
         assertEquals(1, result.flagId)
@@ -99,25 +101,25 @@ class VariantServiceTest {
     
     @Test
     fun testUpdateVariant_ThrowsException_WhenFlagNotFound() = runBlocking {
-        val variant = Variant(id = 1, flagId = 1, key = "updated-variant")
+        val command = PutVariantCommand(flagId = 1, variantId = 1, key = "updated-variant", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns null
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { variantService.updateVariant(1, 1, variant) }
+            runBlocking { variantService.updateVariant(command) }
         }
     }
     
     @Test
     fun testUpdateVariant_ThrowsException_WhenVariantNotFound() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
-        val variant = Variant(id = 1, flagId = 1, key = "updated-variant")
+        val command = PutVariantCommand(flagId = 1, variantId = 1, key = "updated-variant", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.findById(1) } returns null
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { variantService.updateVariant(1, 1, variant) }
+            runBlocking { variantService.updateVariant(command) }
         }
     }
     
@@ -125,13 +127,13 @@ class VariantServiceTest {
     fun testUpdateVariant_ThrowsException_WhenVariantDoesNotBelongToFlag() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
         val existingVariant = Variant(id = 1, flagId = 2, key = "variant")
-        val variant = Variant(id = 1, flagId = 1, key = "updated-variant")
+        val command = PutVariantCommand(flagId = 1, variantId = 1, key = "updated-variant", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.findById(1) } returns existingVariant
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { variantService.updateVariant(1, 1, variant) }
+            runBlocking { variantService.updateVariant(command) }
         }
     }
     
@@ -139,8 +141,8 @@ class VariantServiceTest {
     fun testUpdateVariant_Success() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
         val existingVariant = Variant(id = 1, flagId = 1, key = "old-variant")
-        val variant = Variant(id = 1, flagId = 1, key = "updated-variant")
-        val updatedVariant = variant.copy(flagId = 1)
+        val updatedVariant = existingVariant.copy(key = "updated-variant")
+        val command = PutVariantCommand(flagId = 1, variantId = 1, key = "updated-variant", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.findById(1) } returns existingVariant
@@ -148,7 +150,7 @@ class VariantServiceTest {
         coEvery { distributionRepository.updateVariantKeyByVariantId(1, "updated-variant") } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = variantService.updateVariant(1, 1, variant)
+        val result = variantService.updateVariant(command)
         
         assertEquals("updated-variant", result.key)
         coVerify { variantRepository.update(any()) }
@@ -160,8 +162,8 @@ class VariantServiceTest {
     fun testUpdateVariant_WithUpdatedBy() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
         val existingVariant = Variant(id = 1, flagId = 1, key = "old-variant")
-        val variant = Variant(id = 1, flagId = 1, key = "updated-variant")
-        val updatedVariant = variant.copy(flagId = 1)
+        val updatedVariant = existingVariant.copy(key = "updated-variant")
+        val command = PutVariantCommand(flagId = 1, variantId = 1, key = "updated-variant", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.findById(1) } returns existingVariant
@@ -169,7 +171,7 @@ class VariantServiceTest {
         coEvery { distributionRepository.updateVariantKeyByVariantId(1, "updated-variant") } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = variantService.updateVariant(1, 1, variant, updatedBy = "test-user")
+        val result = variantService.updateVariant(command, updatedBy = "test-user")
         
         assertEquals("updated-variant", result.key)
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
@@ -232,8 +234,8 @@ class VariantServiceTest {
     fun testUpdateVariant_UpdatesDistributionsVariantKey() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
         val existingVariant = Variant(id = 1, flagId = 1, key = "old-variant")
-        val variant = Variant(id = 1, flagId = 1, key = "new-variant")
-        val updatedVariant = variant.copy(flagId = 1)
+        val updatedVariant = existingVariant.copy(key = "new-variant")
+        val command = PutVariantCommand(flagId = 1, variantId = 1, key = "new-variant", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.findById(1) } returns existingVariant
@@ -244,7 +246,7 @@ class VariantServiceTest {
         coEvery { distributionRepository.updateVariantKeyByVariantId(1, "new-variant") } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = variantService.updateVariant(1, 1, variant)
+        val result = variantService.updateVariant(command)
         
         assertEquals("new-variant", result.key)
         coVerify { distributionRepository.updateVariantKeyByVariantId(1, "new-variant") }
@@ -327,14 +329,14 @@ class VariantServiceTest {
     @Test
     fun testCreateVariant_WithUpdatedBy() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
-        val variant = Variant(flagId = 1, key = "test-variant")
-        val createdVariant = variant.copy(id = 1, flagId = 1)
+        val command = CreateVariantCommand(flagId = 1, key = "test-variant", attachment = null)
+        val createdVariant = Variant(id = 1, flagId = 1, key = "test-variant")
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.create(any()) } returns createdVariant
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = variantService.createVariant(1, variant, updatedBy = "test-user")
+        val result = variantService.createVariant(command, updatedBy = "test-user")
         
         assertEquals(1, result.id)
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
@@ -343,12 +345,12 @@ class VariantServiceTest {
     @Test
     fun testCreateVariant_WithInvalidKeyCharacters() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
-        val variant = Variant(flagId = 1, key = "invalid@key")
+        val command = CreateVariantCommand(flagId = 1, key = "invalid@key", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            variantService.createVariant(1, variant)
+            variantService.createVariant(command)
         }
     }
     
@@ -365,8 +367,8 @@ class VariantServiceTest {
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
         validKeys.forEach { key ->
-            val variant = Variant(flagId = 1, key = key)
-            val result = variantService.createVariant(1, variant)
+            val command = CreateVariantCommand(flagId = 1, key = key, attachment = null)
+            val result = variantService.createVariant(command)
             assertEquals(key, result.key)
         }
     }
@@ -375,13 +377,13 @@ class VariantServiceTest {
     fun testUpdateVariant_WithInvalidKey() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test")
         val existingVariant = Variant(id = 1, flagId = 1, key = "old-variant")
-        val variant = Variant(id = 1, flagId = 1, key = "invalid key with spaces")
+        val command = PutVariantCommand(flagId = 1, variantId = 1, key = "invalid key with spaces", attachment = null)
         
         coEvery { flagRepository.findById(1) } returns flag
         coEvery { variantRepository.findById(1) } returns existingVariant
         
         assertFailsWith<IllegalArgumentException> {
-            variantService.updateVariant(1, 1, variant)
+            variantService.updateVariant(command)
         }
     }
     

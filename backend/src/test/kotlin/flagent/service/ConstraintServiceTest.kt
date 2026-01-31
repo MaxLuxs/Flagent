@@ -2,6 +2,8 @@ package flagent.service
 
 import flagent.domain.entity.Constraint
 import flagent.domain.repository.IConstraintRepository
+import flagent.service.command.CreateConstraintCommand
+import flagent.service.command.PutConstraintCommand
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlin.test.*
@@ -61,10 +63,10 @@ class ConstraintServiceTest {
     
     @Test
     fun testCreateConstraint_ThrowsException_WhenInvalid() = runBlocking {
-        val constraint = Constraint(segmentId = 1, property = "", operator = "GT", value = "18")
+        val command = CreateConstraintCommand(segmentId = 1, property = "", operator = "GT", value = "18")
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { constraintService.createConstraint(constraint) }
+            runBlocking { constraintService.createConstraint(command) }
         }
         
         coVerify(exactly = 0) { constraintRepository.create(any()) }
@@ -73,29 +75,29 @@ class ConstraintServiceTest {
     @Test
     fun testCreateConstraint_Success() = runBlocking {
         val segment = flagent.domain.entity.Segment(id = 1, flagId = 1, description = "Test segment", rank = 1, rolloutPercent = 100)
-        val constraint = Constraint(segmentId = 1, property = "age", operator = "GT", value = "18")
-        val createdConstraint = constraint.copy(id = 1)
+        val command = CreateConstraintCommand(segmentId = 1, property = "age", operator = "GT", value = "18")
+        val createdConstraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "18")
         
         coEvery { segmentRepository.findById(1) } returns segment
         coEvery { constraintRepository.create(any()) } returns createdConstraint
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = constraintService.createConstraint(constraint)
+        val result = constraintService.createConstraint(command)
         
         assertEquals(1, result.id)
         assertEquals("age", result.property)
-        coVerify { constraintRepository.create(constraint) }
+        coVerify { constraintRepository.create(any()) }
         coVerify { flagSnapshotService.saveFlagSnapshot(1, null) }
     }
     
     @Test
     fun testCreateConstraint_ThrowsException_WhenSegmentNotFound() = runBlocking {
-        val constraint = Constraint(segmentId = 1, property = "age", operator = "GT", value = "18")
+        val command = CreateConstraintCommand(segmentId = 1, property = "age", operator = "GT", value = "18")
         
         coEvery { segmentRepository.findById(1) } returns null
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { constraintService.createConstraint(constraint) }
+            runBlocking { constraintService.createConstraint(command) }
         }
         
         coVerify(exactly = 0) { constraintRepository.create(any()) }
@@ -104,14 +106,14 @@ class ConstraintServiceTest {
     @Test
     fun testCreateConstraint_WithUpdatedBy() = runBlocking {
         val segment = flagent.domain.entity.Segment(id = 1, flagId = 1, description = "Test segment", rank = 1, rolloutPercent = 100)
-        val constraint = Constraint(segmentId = 1, property = "age", operator = "GT", value = "18")
-        val createdConstraint = constraint.copy(id = 1)
+        val command = CreateConstraintCommand(segmentId = 1, property = "age", operator = "GT", value = "18")
+        val createdConstraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "18")
         
         coEvery { segmentRepository.findById(1) } returns segment
         coEvery { constraintRepository.create(any()) } returns createdConstraint
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = constraintService.createConstraint(constraint, updatedBy = "test-user")
+        val result = constraintService.createConstraint(command, updatedBy = "test-user")
         
         assertEquals(1, result.id)
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
@@ -119,10 +121,13 @@ class ConstraintServiceTest {
     
     @Test
     fun testUpdateConstraint_ThrowsException_WhenInvalid() = runBlocking {
-        val constraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "INVALID", value = "18")
+        val existingConstraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "18")
+        val command = PutConstraintCommand(property = "age", operator = "INVALID", value = "18")
+        
+        coEvery { constraintRepository.findById(1) } returns existingConstraint
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { constraintService.updateConstraint(constraint) }
+            runBlocking { constraintService.updateConstraint(1, command) }
         }
         
         coVerify(exactly = 0) { constraintRepository.update(any()) }
@@ -131,27 +136,32 @@ class ConstraintServiceTest {
     @Test
     fun testUpdateConstraint_Success() = runBlocking {
         val segment = flagent.domain.entity.Segment(id = 1, flagId = 1, description = "Test segment", rank = 1, rolloutPercent = 100)
-        val constraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "21")
+        val existingConstraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "18")
+        val updatedConstraint = existingConstraint.copy(value = "21")
+        val command = PutConstraintCommand(property = "age", operator = "GT", value = "21")
         
+        coEvery { constraintRepository.findById(1) } returns existingConstraint
         coEvery { segmentRepository.findById(1) } returns segment
-        coEvery { constraintRepository.update(any()) } returns constraint
+        coEvery { constraintRepository.update(any()) } returns updatedConstraint
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = constraintService.updateConstraint(constraint)
+        val result = constraintService.updateConstraint(1, command)
         
         assertEquals("21", result.value)
-        coVerify { constraintRepository.update(constraint) }
+        coVerify { constraintRepository.update(any()) }
         coVerify { flagSnapshotService.saveFlagSnapshot(1, null) }
     }
     
     @Test
     fun testUpdateConstraint_ThrowsException_WhenSegmentNotFound() = runBlocking {
-        val constraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "21")
+        val existingConstraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "18")
+        val command = PutConstraintCommand(property = "age", operator = "GT", value = "21")
         
+        coEvery { constraintRepository.findById(1) } returns existingConstraint
         coEvery { segmentRepository.findById(1) } returns null
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { constraintService.updateConstraint(constraint) }
+            runBlocking { constraintService.updateConstraint(1, command) }
         }
         
         coVerify(exactly = 0) { constraintRepository.update(any()) }
@@ -160,13 +170,16 @@ class ConstraintServiceTest {
     @Test
     fun testUpdateConstraint_WithUpdatedBy() = runBlocking {
         val segment = flagent.domain.entity.Segment(id = 1, flagId = 1, description = "Test segment", rank = 1, rolloutPercent = 100)
-        val constraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "21")
+        val existingConstraint = Constraint(id = 1, segmentId = 1, property = "age", operator = "GT", value = "18")
+        val updatedConstraint = existingConstraint.copy(value = "21")
+        val command = PutConstraintCommand(property = "age", operator = "GT", value = "21")
         
+        coEvery { constraintRepository.findById(1) } returns existingConstraint
         coEvery { segmentRepository.findById(1) } returns segment
-        coEvery { constraintRepository.update(any()) } returns constraint
+        coEvery { constraintRepository.update(any()) } returns updatedConstraint
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = constraintService.updateConstraint(constraint, updatedBy = "test-user")
+        val result = constraintService.updateConstraint(1, command, updatedBy = "test-user")
         
         assertEquals("21", result.value)
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }

@@ -76,10 +76,7 @@ class ResponseMappersTest {
 
     @Test
     fun mapVariantToResponseMapsKeyAndAttachment() {
-        val attachment = buildJsonObject {
-            put("url", "https://example.com")
-            put("enabled", true)
-        }
+        val attachment = mapOf("url" to "https://example.com", "enabled" to "true")
         val variant = Variant(id = 1, flagId = 1, key = "treatment", attachment = attachment)
 
         val response = ResponseMappers.mapVariantToResponse(variant)

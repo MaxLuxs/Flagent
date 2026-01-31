@@ -2,6 +2,8 @@ package flagent.service
 
 import flagent.domain.entity.*
 import flagent.domain.repository.IFlagRepository
+import flagent.service.command.CreateFlagCommand
+import flagent.service.command.PutFlagCommand
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlin.test.*
@@ -135,13 +137,13 @@ class FlagServiceTest {
     
     @Test
     fun testCreateFlag_GeneratesKey_WhenKeyIsEmpty() = runBlocking {
-        val flag = Flag(key = "", description = "Test flag")
-        val createdFlag = flag.copy(id = 1, key = "k123456789abcdef")
+        val command = CreateFlagCommand(key = "", description = "Test flag", template = null)
+        val createdFlag = Flag(id = 1, key = "k123456789abcdef", description = "Test flag")
         
         coEvery { flagRepository.create(any()) } returns createdFlag
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.createFlag(flag)
+        val result = flagService.createFlag(command)
         
         assertNotNull(result)
         assertTrue(result.key.startsWith("k"))
@@ -150,13 +152,13 @@ class FlagServiceTest {
     
     @Test
     fun testCreateFlag_UsesProvidedKey_WhenKeyIsValid() = runBlocking {
-        val flag = Flag(key = "my-flag", description = "Test flag")
-        val createdFlag = flag.copy(id = 1)
+        val command = CreateFlagCommand(key = "my-flag", description = "Test flag", template = null)
+        val createdFlag = Flag(id = 1, key = "my-flag", description = "Test flag")
         
         coEvery { flagRepository.create(any()) } returns createdFlag
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.createFlag(flag)
+        val result = flagService.createFlag(command)
         
         assertEquals("my-flag", result.key)
         coVerify { flagRepository.create(match { it.key == "my-flag" }) }
@@ -164,16 +166,24 @@ class FlagServiceTest {
     
     @Test
     fun testUpdateFlag() = runBlocking {
-        val flag = Flag(id = 1, key = "test-flag", description = "Updated description")
-        val updatedFlag = flag.copy(description = "Updated description")
+        val existingFlag = Flag(id = 1, key = "test-flag", description = "Original")
+        val updatedFlag = existingFlag.copy(description = "Updated description")
         
+        coEvery { flagRepository.findById(1) } returns existingFlag
         coEvery { flagRepository.update(any()) } returns updatedFlag
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.updateFlag(flag)
+        val command = PutFlagCommand(
+            description = "Updated description",
+            key = null,
+            dataRecordsEnabled = null,
+            entityType = null,
+            notes = null
+        )
+        val result = flagService.updateFlag(1, command)
         
         assertEquals("Updated description", result.description)
-        coVerify { flagRepository.update(flag) }
+        coVerify { flagRepository.update(any()) }
     }
     
     @Test
@@ -327,49 +337,48 @@ class FlagServiceTest {
     
     @Test
     fun testCreateFlag_WithSimpleBooleanFlagTemplate() = runBlocking {
-        val flag = Flag(key = "my-flag", description = "Test flag")
-        val createdFlag = flag.copy(id = 1)
+        val command = CreateFlagCommand(key = "my-flag", description = "Test flag", template = "simple_boolean_flag")
+        val createdFlag = Flag(id = 1, key = "my-flag", description = "Test flag")
         val segment = Segment(id = 1, flagId = 1, rank = SegmentService.SegmentDefaultRank, rolloutPercent = 100)
         val variant = Variant(id = 1, flagId = 1, key = "on")
-        val distribution = Distribution(segmentId = 1, variantId = 1, variantKey = "on", percent = 100)
         
         coEvery { flagRepository.create(any()) } returns createdFlag
         coEvery { segmentService.createSegment(any(), any()) } returns segment
-        coEvery { variantService.createVariant(any(), any(), any()) } returns variant
-        coEvery { distributionService.updateDistributions(any(), any(), any(), any()) } just Runs
+        coEvery { variantService.createVariant(any(), any()) } returns variant
+        coEvery { distributionService.updateDistributions(any(), any()) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.createFlag(flag, template = "simple_boolean_flag", updatedBy = "test-user")
+        val result = flagService.createFlag(command, updatedBy = "test-user")
         
         assertEquals("my-flag", result.key)
         coVerify { flagRepository.create(any()) }
         coVerify { segmentService.createSegment(any(), "test-user") }
-        coVerify { variantService.createVariant(1, any(), "test-user") }
-        coVerify { distributionService.updateDistributions(1, 1, any(), "test-user") }
+        coVerify { variantService.createVariant(any(), "test-user") }
+        coVerify { distributionService.updateDistributions(any(), "test-user") }
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
     }
     
     @Test
     fun testCreateFlag_ThrowsException_WhenUnknownTemplate() = runBlocking {
-        val flag = Flag(key = "my-flag", description = "Test flag")
-        val createdFlag = flag.copy(id = 1)
+        val command = CreateFlagCommand(key = "my-flag", description = "Test flag", template = "unknown_template")
+        val createdFlag = Flag(id = 1, key = "my-flag", description = "Test flag")
         
         coEvery { flagRepository.create(any()) } returns createdFlag
         
         assertFailsWith<IllegalArgumentException> {
-            flagService.createFlag(flag, template = "unknown_template")
+            flagService.createFlag(command)
         }
     }
     
     @Test
     fun testCreateFlag_SavesSnapshot_WhenFlagSnapshotServiceProvided() = runBlocking {
-        val flag = Flag(key = "my-flag", description = "Test flag")
-        val createdFlag = flag.copy(id = 1)
+        val command = CreateFlagCommand(key = "my-flag", description = "Test flag", template = null)
+        val createdFlag = Flag(id = 1, key = "my-flag", description = "Test flag")
         
         coEvery { flagRepository.create(any()) } returns createdFlag
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.createFlag(flag, updatedBy = "test-user")
+        val result = flagService.createFlag(command, updatedBy = "test-user")
         
         assertEquals("my-flag", result.key)
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
@@ -377,13 +386,21 @@ class FlagServiceTest {
     
     @Test
     fun testUpdateFlag_WithUpdatedBy() = runBlocking {
-        val flag = Flag(id = 1, key = "test-flag", description = "Updated description")
-        val updatedFlag = flag.copy(description = "Updated description", updatedBy = "test-user")
+        val existingFlag = Flag(id = 1, key = "test-flag", description = "Original")
+        val updatedFlag = existingFlag.copy(description = "Updated description", updatedBy = "test-user")
         
+        coEvery { flagRepository.findById(1) } returns existingFlag
         coEvery { flagRepository.update(any()) } returns updatedFlag
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.updateFlag(flag, updatedBy = "test-user")
+        val command = PutFlagCommand(
+            description = "Updated description",
+            key = null,
+            dataRecordsEnabled = null,
+            entityType = null,
+            notes = null
+        )
+        val result = flagService.updateFlag(1, command, updatedBy = "test-user")
         
         assertEquals("Updated description", result.description)
         assertEquals("test-user", result.updatedBy)
@@ -393,14 +410,22 @@ class FlagServiceTest {
     
     @Test
     fun testUpdateFlag_WithEntityType() = runBlocking {
-        val flag = Flag(id = 1, key = "test-flag", description = "Test", entityType = "user")
-        val updatedFlag = flag.copy(updatedBy = "test-user")
+        val existingFlag = Flag(id = 1, key = "test-flag", description = "Test")
+        val updatedFlag = existingFlag.copy(entityType = "user", updatedBy = "test-user")
         
+        coEvery { flagRepository.findById(1) } returns existingFlag
         coEvery { flagRepository.update(any()) } returns updatedFlag
         coEvery { flagEntityTypeService.createOrGet("user") } returns FlagEntityType(id = 1, key = "user")
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.updateFlag(flag, updatedBy = "test-user")
+        val command = PutFlagCommand(
+            description = null,
+            key = null,
+            dataRecordsEnabled = null,
+            entityType = "user",
+            notes = null
+        )
+        val result = flagService.updateFlag(1, command, updatedBy = "test-user")
         
         assertNotNull(result)
         coVerify { flagEntityTypeService.createOrGet("user") }
@@ -409,13 +434,21 @@ class FlagServiceTest {
     
     @Test
     fun testUpdateFlag_DoesNotCreateEntityType_WhenEmpty() = runBlocking {
-        val flag = Flag(id = 1, key = "test-flag", description = "Test", entityType = "")
-        val updatedFlag = flag.copy(updatedBy = "test-user")
+        val existingFlag = Flag(id = 1, key = "test-flag", description = "Test", entityType = "")
+        val updatedFlag = existingFlag.copy(updatedBy = "test-user")
         
+        coEvery { flagRepository.findById(1) } returns existingFlag
         coEvery { flagRepository.update(any()) } returns updatedFlag
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.updateFlag(flag, updatedBy = "test-user")
+        val command = PutFlagCommand(
+            description = null,
+            key = null,
+            dataRecordsEnabled = null,
+            entityType = "",
+            notes = null
+        )
+        val result = flagService.updateFlag(1, command, updatedBy = "test-user")
         
         assertNotNull(result)
         coVerify(exactly = 0) { flagEntityTypeService.createOrGet(any()) }
@@ -455,13 +488,21 @@ class FlagServiceTest {
     
     @Test
     fun testUpdateFlag_ValidatesKey_WhenKeyNotEmpty() = runBlocking {
-        val flag = Flag(id = 1, key = "valid-key", description = "Test")
-        val updatedFlag = flag.copy()
+        val existingFlag = Flag(id = 1, key = "valid-key", description = "Test")
+        val updatedFlag = existingFlag.copy()
         
+        coEvery { flagRepository.findById(1) } returns existingFlag
         coEvery { flagRepository.update(any()) } returns updatedFlag
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = flagService.updateFlag(flag)
+        val command = PutFlagCommand(
+            description = null,
+            key = "valid-key",
+            dataRecordsEnabled = null,
+            entityType = null,
+            notes = null
+        )
+        val result = flagService.updateFlag(1, command)
         
         assertNotNull(result)
         coVerify { flagRepository.update(match { it.key == "valid-key" }) }
@@ -469,10 +510,18 @@ class FlagServiceTest {
     
     @Test
     fun testUpdateFlag_ThrowsException_WhenKeyIsInvalid() = runBlocking {
-        val flag = Flag(id = 1, key = "invalid key with spaces", description = "Test")
+        val existingFlag = Flag(id = 1, key = "test-flag", description = "Test")
+        coEvery { flagRepository.findById(1) } returns existingFlag
         
+        val command = PutFlagCommand(
+            description = null,
+            key = "invalid key with spaces",
+            dataRecordsEnabled = null,
+            entityType = null,
+            notes = null
+        )
         assertFailsWith<IllegalArgumentException> {
-            flagService.updateFlag(flag)
+            flagService.updateFlag(1, command)
         }
         
         coVerify(exactly = 0) { flagRepository.update(any()) }

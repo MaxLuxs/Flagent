@@ -3,7 +3,9 @@ package flagent.service
 import flagent.cache.impl.EvalCache
 import flagent.config.AppConfig
 import flagent.domain.entity.*
+import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.recorder.DataRecordingService
+import flagent.service.adapter.SharedFlagEvaluatorAdapter
 import io.mockk.*
 import kotlin.test.*
 import kotlinx.serialization.json.*
@@ -12,12 +14,14 @@ class EvaluationServiceTest {
     private lateinit var evalCache: EvalCache
     private lateinit var dataRecordingService: DataRecordingService
     private lateinit var evaluationService: EvaluationService
-    
+
+    private val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+
     @BeforeTest
     fun setup() {
         evalCache = mockk()
         dataRecordingService = mockk(relaxed = true)
-        evaluationService = EvaluationService(evalCache, dataRecordingService)
+        evaluationService = EvaluationService(evalCache, evaluateFlagUseCase, dataRecordingService)
     }
     
     @Test

@@ -1,5 +1,6 @@
 package flagent.service
 
+import flagent.cache.impl.toEvalCacheExport
 import flagent.domain.entity.*
 import flagent.domain.repository.IFlagEntityTypeRepository
 import flagent.domain.repository.IFlagRepository
@@ -207,7 +208,7 @@ class ExportServiceTest {
         val snapshot = FlagSnapshot(
             flagId = createdFlag.id,
             updatedBy = "test-user",
-            flag = Json.encodeToString(Flag.serializer(), createdFlag)
+            flag = Json.encodeToString(createdFlag.toEvalCacheExport())
         )
         flagSnapshotRepository.create(snapshot)
         
@@ -243,7 +244,7 @@ class ExportServiceTest {
         val snapshot = FlagSnapshot(
             flagId = createdFlag.id,
             updatedBy = "test-user",
-            flag = Json.encodeToString(Flag.serializer(), createdFlag)
+            flag = Json.encodeToString(createdFlag.toEvalCacheExport())
         )
         val createdSnapshot = flagSnapshotRepository.create(snapshot)
         

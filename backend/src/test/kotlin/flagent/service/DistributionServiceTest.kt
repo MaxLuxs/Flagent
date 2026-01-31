@@ -3,6 +3,8 @@ package flagent.service
 import flagent.domain.entity.*
 import flagent.domain.repository.IDistributionRepository
 import flagent.domain.repository.IFlagRepository
+import flagent.service.command.DistributionItemCommand
+import flagent.service.command.PutDistributionsCommand
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlin.test.*
@@ -39,13 +41,17 @@ class DistributionServiceTest {
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenSumNot100() = runBlocking {
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, percent = 50),
-            Distribution(segmentId = 1, variantId = 2, percent = 30) // Sum = 80, not 100
+        val command = PutDistributionsCommand(
+            flagId = 1,
+            segmentId = 1,
+            distributions = listOf(
+                DistributionItemCommand(variantID = 1, percent = 50),
+                DistributionItemCommand(variantID = 2, percent = 30) // Sum = 80, not 100
+            )
         )
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
         
         coVerify(exactly = 0) { distributionRepository.updateDistributions(any(), any()) }
@@ -53,14 +59,12 @@ class DistributionServiceTest {
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenFlagNotFound() = runBlocking {
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, percent = 100)
-        )
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(DistributionItemCommand(variantID = 1, percent = 100)))
         
         coEvery { flagRepository.findById(1) } returns null
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
     }
     
@@ -72,14 +76,12 @@ class DistributionServiceTest {
             description = "Test",
             variants = listOf(Variant(id = 1, flagId = 1, key = "variant1"))
         )
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 999, percent = 100) // Variant 999 doesn't exist
-        )
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(DistributionItemCommand(variantID = 999, percent = 100)))
         
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
     }
     
@@ -91,14 +93,12 @@ class DistributionServiceTest {
             description = "Test",
             variants = listOf(Variant(id = 1, flagId = 1, key = "variant1"))
         )
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, variantKey = "wrong-key", percent = 100)
-        )
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(DistributionItemCommand(variantID = 1, variantKey = "wrong-key", percent = 100)))
         
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
     }
     
@@ -113,19 +113,23 @@ class DistributionServiceTest {
                 Variant(id = 2, flagId = 1, key = "variant2")
             )
         )
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 60),
-            Distribution(segmentId = 1, variantId = 2, variantKey = "variant2", percent = 40)
+        val command = PutDistributionsCommand(
+            flagId = 1,
+            segmentId = 1,
+            distributions = listOf(
+                DistributionItemCommand(variantID = 1, variantKey = "variant1", percent = 60),
+                DistributionItemCommand(variantID = 2, variantKey = "variant2", percent = 40)
+            )
         )
         
         coEvery { flagRepository.findById(1) } returns flag
-        coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { distributionRepository.updateDistributions(1, any()) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        distributionService.updateDistributions(1, 1, distributions)
+        distributionService.updateDistributions(command)
         
         coVerify { flagRepository.findById(1) }
-        coVerify { distributionRepository.updateDistributions(1, distributions) }
+        coVerify { distributionRepository.updateDistributions(1, any()) }
         coVerify { flagSnapshotService.saveFlagSnapshot(1, null) }
     }
     
@@ -140,16 +144,20 @@ class DistributionServiceTest {
                 Variant(id = 2, flagId = 1, key = "variant2")
             )
         )
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 60),
-            Distribution(segmentId = 1, variantId = 2, variantKey = "variant2", percent = 40)
+        val command = PutDistributionsCommand(
+            flagId = 1,
+            segmentId = 1,
+            distributions = listOf(
+                DistributionItemCommand(variantID = 1, variantKey = "variant1", percent = 60),
+                DistributionItemCommand(variantID = 2, variantKey = "variant2", percent = 40)
+            )
         )
         
         coEvery { flagRepository.findById(1) } returns flag
-        coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { distributionRepository.updateDistributions(1, any()) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        distributionService.updateDistributions(1, 1, distributions, updatedBy = "test-user")
+        distributionService.updateDistributions(command, updatedBy = "test-user")
         
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
     }
@@ -166,19 +174,23 @@ class DistributionServiceTest {
                 Variant(id = 3, flagId = 1, key = "variant3")
             )
         )
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 40),
-            Distribution(segmentId = 1, variantId = 2, variantKey = "variant2", percent = 35),
-            Distribution(segmentId = 1, variantId = 3, variantKey = "variant3", percent = 25)
+        val command = PutDistributionsCommand(
+            flagId = 1,
+            segmentId = 1,
+            distributions = listOf(
+                DistributionItemCommand(variantID = 1, variantKey = "variant1", percent = 40),
+                DistributionItemCommand(variantID = 2, variantKey = "variant2", percent = 35),
+                DistributionItemCommand(variantID = 3, variantKey = "variant3", percent = 25)
+            )
         )
         
         coEvery { flagRepository.findById(1) } returns flag
-        coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { distributionRepository.updateDistributions(1, any()) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        distributionService.updateDistributions(1, 1, distributions)
+        distributionService.updateDistributions(command)
         
-        coVerify { distributionRepository.updateDistributions(1, distributions) }
+        coVerify { distributionRepository.updateDistributions(1, any()) }
     }
     
     @Test
@@ -189,17 +201,15 @@ class DistributionServiceTest {
             description = "Test",
             variants = listOf(Variant(id = 1, flagId = 1, key = "variant1"))
         )
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 100)
-        )
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(DistributionItemCommand(variantID = 1, variantKey = "variant1", percent = 100)))
         
         coEvery { flagRepository.findById(1) } returns flag
-        coEvery { distributionRepository.updateDistributions(1, distributions) } just Runs
+        coEvery { distributionRepository.updateDistributions(1, any()) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        distributionService.updateDistributions(1, 1, distributions)
+        distributionService.updateDistributions(command)
         
-        coVerify { distributionRepository.updateDistributions(1, distributions) }
+        coVerify { distributionRepository.updateDistributions(1, any()) }
     }
     
     @Test
@@ -213,34 +223,34 @@ class DistributionServiceTest {
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenSumGreaterThan100() = runBlocking {
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, percent = 60),
-            Distribution(segmentId = 1, variantId = 2, percent = 50) // Sum = 110, not 100
-        )
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(
+            DistributionItemCommand(variantID = 1, percent = 60),
+            DistributionItemCommand(variantID = 2, percent = 50) // Sum = 110, not 100
+        ))
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
     }
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenSumLessThan100() = runBlocking {
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, percent = 30),
-            Distribution(segmentId = 1, variantId = 2, percent = 40) // Sum = 70, not 100
-        )
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(
+            DistributionItemCommand(variantID = 1, percent = 30),
+            DistributionItemCommand(variantID = 2, percent = 40) // Sum = 70, not 100
+        ))
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
     }
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenEmptyDistributions() = runBlocking {
-        val distributions = emptyList<Distribution>()
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = emptyList())
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
     }
     
@@ -252,14 +262,12 @@ class DistributionServiceTest {
             description = "Test",
             variants = listOf(Variant(id = 1, flagId = 1, key = "variant1"))
         )
-        val distributions = listOf(
-            Distribution(segmentId = 1, variantId = 1, variantKey = "variant1", percent = 50) // Not 100
-        )
+        val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(DistributionItemCommand(variantID = 1, variantKey = "variant1", percent = 50)))
         
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { distributionService.updateDistributions(1, 1, distributions) }
+            runBlocking { distributionService.updateDistributions(command) }
         }
     }
 }

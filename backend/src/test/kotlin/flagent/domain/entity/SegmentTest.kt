@@ -3,11 +3,14 @@ package flagent.domain.entity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
+/**
+ * Tests for Segment domain entity.
+ * Evaluation logic (prepareEvaluation, DistributionArray, rollout) moved to shared evaluator.
+ */
 class SegmentTest {
     @Test
-    fun `prepareEvaluation creates SegmentEvaluation with distribution array`() {
+    fun `Segment with distributions contains correct data`() {
         val distribution1 = Distribution(
             id = 1,
             segmentId = 1,
@@ -20,7 +23,7 @@ class SegmentTest {
             variantId = 2,
             percent = 50
         )
-        
+
         val segment = Segment(
             id = 1,
             flagId = 1,
@@ -29,18 +32,17 @@ class SegmentTest {
             rolloutPercent = 100,
             distributions = listOf(distribution1, distribution2)
         )
-        
-        val evaluation = segment.prepareEvaluation()
-        
-        assertNotNull(evaluation)
-        assertNotNull(evaluation.distributionArray)
-        assertEquals(2, evaluation.distributionArray.variantIds.size)
-        assertEquals(listOf(1, 2), evaluation.distributionArray.variantIds)
-        assertEquals(listOf(500, 1000), evaluation.distributionArray.percentsAccumulated)
+
+        assertNotNull(segment)
+        assertEquals(1, segment.id)
+        assertEquals(1, segment.flagId)
+        assertEquals(100, segment.rolloutPercent)
+        assertEquals(2, segment.distributions.size)
+        assertEquals(listOf(1, 2), segment.distributions.map { it.variantId })
     }
-    
+
     @Test
-    fun `prepareEvaluation with empty distributions creates empty arrays`() {
+    fun `Segment with empty distributions`() {
         val segment = Segment(
             id = 1,
             flagId = 1,
@@ -49,71 +51,30 @@ class SegmentTest {
             rolloutPercent = 100,
             distributions = emptyList()
         )
-        
-        val evaluation = segment.prepareEvaluation()
-        
-        assertNotNull(evaluation)
-        assertNotNull(evaluation.distributionArray)
-        assertTrue(evaluation.distributionArray.variantIds.isEmpty())
-        assertTrue(evaluation.distributionArray.percentsAccumulated.isEmpty())
+
+        assertNotNull(segment)
+        assert(segment.distributions.isEmpty())
     }
-    
+
     @Test
-    fun `rollout returns variant ID when rollout matches`() {
+    fun `Segment copy preserves distributions`() {
         val distribution = Distribution(
             id = 1,
             segmentId = 1,
             variantId = 1,
             percent = 100
         )
-        
         val segment = Segment(
             id = 1,
             flagId = 1,
-            description = "Test segment",
             rank = 1,
-            rolloutPercent = 100,
+            rolloutPercent = 50,
             distributions = listOf(distribution)
         )
-        
-        val evaluation = segment.prepareEvaluation()
-        val (variantID, log) = evaluation.distributionArray.rollout(
-            entityID = "test_entity",
-            salt = "1",
-            rolloutPercent = 100
-        )
-        
-        assertNotNull(variantID)
-        assertEquals(1, variantID)
-        assertTrue(log.contains("rollout yes"))
-    }
-    
-    @Test
-    fun `rollout returns null when rollout percent is 0`() {
-        val distribution = Distribution(
-            id = 1,
-            segmentId = 1,
-            variantId = 1,
-            percent = 100
-        )
-        
-        val segment = Segment(
-            id = 1,
-            flagId = 1,
-            description = "Test segment",
-            rank = 1,
-            rolloutPercent = 0,
-            distributions = listOf(distribution)
-        )
-        
-        val evaluation = segment.prepareEvaluation()
-        val (variantID, log) = evaluation.distributionArray.rollout(
-            entityID = "test_entity",
-            salt = "1",
-            rolloutPercent = 0
-        )
-        
-        assertEquals(null, variantID)
-        assertTrue(log.contains("rollout no"))
+        val copied = segment.copy(rolloutPercent = 75)
+
+        assertEquals(75, copied.rolloutPercent)
+        assertEquals(1, copied.distributions.size)
+        assertEquals(1, copied.distributions[0].variantId)
     }
 }

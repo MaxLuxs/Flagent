@@ -3,7 +3,6 @@ package flagent.domain.entity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlinx.serialization.json.*
 
 class VariantTest {
     @Test
@@ -35,11 +34,11 @@ class VariantTest {
     
     @Test
     fun `create Variant with attachment`() {
-        val attachment = buildJsonObject {
-            put("color", "red")
-            put("size", 42)
-            put("enabled", true)
-        }
+        val attachment = mapOf(
+            "color" to "red",
+            "size" to "42",
+            "enabled" to "true"
+        )
         
         val variant = Variant(
             id = 1,
@@ -49,9 +48,9 @@ class VariantTest {
         )
         
         assertEquals(attachment, variant.attachment)
-        assertEquals("red", variant.attachment?.get("color")?.jsonPrimitive?.content)
-        assertEquals(42, variant.attachment?.get("size")?.jsonPrimitive?.int)
-        assertEquals(true, variant.attachment?.get("enabled")?.jsonPrimitive?.boolean)
+        assertEquals("red", variant.attachment?.get("color"))
+        assertEquals("42", variant.attachment?.get("size"))
+        assertEquals("true", variant.attachment?.get("enabled"))
     }
     
     @Test

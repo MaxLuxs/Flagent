@@ -1,5 +1,8 @@
 package flagent.service
 
+import flagent.cache.impl.EvalCacheFlagExport
+import flagent.cache.impl.toEvalCacheExport
+import flagent.cache.impl.toFlag
 import flagent.domain.entity.*
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.IFlagSnapshotRepository
@@ -63,7 +66,7 @@ class FlagSnapshotServiceTest {
             )
         )
         
-        val flagJson = Json.encodeToString(flag)
+        val flagJson = Json.encodeToString(flag.toEvalCacheExport())
         val createdSnapshot = FlagSnapshot(
             id = 10,
             flagId = flagId,
@@ -128,7 +131,7 @@ class FlagSnapshotServiceTest {
             enabled = true
         )
         
-        val flagJson = Json.encodeToString(flag)
+        val flagJson = Json.encodeToString(flag.toEvalCacheExport())
         val createdSnapshot = FlagSnapshot(
             id = 10,
             flagId = flagId,
@@ -236,7 +239,7 @@ class FlagSnapshotServiceTest {
         
         // Assert
         assertNotNull(capturedSnapshot)
-        val deserializedFlag = Json.decodeFromString<Flag>(capturedSnapshot!!.flag)
+        val deserializedFlag = Json.decodeFromString<EvalCacheFlagExport>(capturedSnapshot!!.flag).toFlag()
         assertEquals(flagId, deserializedFlag.id)
         assertEquals("test-flag", deserializedFlag.key)
         assertEquals(1, deserializedFlag.segments.size)

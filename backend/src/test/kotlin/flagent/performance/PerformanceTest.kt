@@ -2,9 +2,11 @@ package flagent.performance
 
 import flagent.cache.impl.EvalCache
 import flagent.domain.entity.*
+import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.repository.Database
 import flagent.repository.impl.*
 import flagent.service.EvaluationService
+import flagent.service.adapter.SharedFlagEvaluatorAdapter
 import flagent.domain.value.EntityID
 import flagent.domain.value.EvaluationContext
 import kotlinx.coroutines.*
@@ -35,7 +37,8 @@ class PerformanceTest {
     fun testEvaluationPerformance_Single() = runBlocking {
         val flagRepository = FlagRepository()
         val evalCache = EvalCache(flagRepository)
-        val evaluationService = EvaluationService(evalCache)
+        val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+        val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
         
         // Create test flag with segments and constraints
         val flag = createTestFlag()
@@ -70,7 +73,8 @@ class PerformanceTest {
     fun testEvaluationPerformance_Batch() = runBlocking {
         val flagRepository = FlagRepository()
         val evalCache = EvalCache(flagRepository)
-        val evaluationService = EvaluationService(evalCache)
+        val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+        val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
         
         // Create test flag
         val flag = createTestFlag()
@@ -185,7 +189,8 @@ class PerformanceTest {
     fun testConcurrentRequests() = runBlocking {
         val flagRepository = FlagRepository()
         val evalCache = EvalCache(flagRepository)
-        val evaluationService = EvaluationService(evalCache)
+        val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+        val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
         
         // Create test flag
         val flag = createTestFlag()
@@ -232,7 +237,8 @@ class PerformanceTest {
         val constraintRepository = ConstraintRepository()
         val distributionRepository = DistributionRepository()
         val evalCache = EvalCache(flagRepository)
-        val evaluationService = EvaluationService(evalCache)
+        val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+        val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
         
         // Create flag first
         val flag = Flag(

@@ -4,6 +4,7 @@ import flagent.domain.entity.Flag
 import flagent.domain.entity.Tag
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.ITagRepository
+import flagent.service.command.CreateTagCommand
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlin.test.*
@@ -71,7 +72,7 @@ class TagServiceTest {
         coEvery { flagRepository.findById(1) } returns null
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { tagService.createTag(1, "new-tag") }
+            runBlocking { tagService.createTag(CreateTagCommand(flagId = 1, value = "new-tag")) }
         }
     }
     
@@ -82,7 +83,7 @@ class TagServiceTest {
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { tagService.createTag(1, "") }
+            runBlocking { tagService.createTag(CreateTagCommand(flagId = 1, value = "")) }
         }
     }
     
@@ -94,7 +95,7 @@ class TagServiceTest {
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { tagService.createTag(1, longValue) }
+            runBlocking { tagService.createTag(CreateTagCommand(flagId = 1, value = longValue)) }
         }
     }
     
@@ -109,7 +110,7 @@ class TagServiceTest {
         coEvery { tagRepository.addTagToFlag(1, 1) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = tagService.createTag(1, "new-tag")
+        val result = tagService.createTag(CreateTagCommand(flagId = 1, value = "new-tag"))
         
         assertEquals("new-tag", result.value)
         coVerify { tagRepository.create(match { it.value == "new-tag" }) }
@@ -127,7 +128,7 @@ class TagServiceTest {
         coEvery { tagRepository.addTagToFlag(1, 1) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = tagService.createTag(1, "existing-tag")
+        val result = tagService.createTag(CreateTagCommand(flagId = 1, value = "existing-tag"))
         
         assertEquals("existing-tag", result.value)
         coVerify(exactly = 0) { tagRepository.create(any()) }
@@ -146,7 +147,7 @@ class TagServiceTest {
         coEvery { tagRepository.addTagToFlag(1, 1) } just Runs
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
-        val result = tagService.createTag(1, "new-tag", updatedBy = "test-user")
+        val result = tagService.createTag(CreateTagCommand(flagId = 1, value = "new-tag"), updatedBy = "test-user")
         
         assertEquals("new-tag", result.value)
         coVerify { flagSnapshotService.saveFlagSnapshot(1, "test-user") }
@@ -159,7 +160,7 @@ class TagServiceTest {
         coEvery { flagRepository.findById(1) } returns flag
         
         assertFailsWith<IllegalArgumentException> {
-            runBlocking { tagService.createTag(1, "invalid@tag") }
+            runBlocking { tagService.createTag(CreateTagCommand(flagId = 1, value = "invalid@tag")) }
         }
     }
     
@@ -177,7 +178,7 @@ class TagServiceTest {
             coEvery { tagRepository.addTagToFlag(1, 1) } just Runs
             coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
             
-            val result = tagService.createTag(1, value)
+            val result = tagService.createTag(CreateTagCommand(flagId = 1, value = value))
             assertEquals(value, result.value)
         }
     }
