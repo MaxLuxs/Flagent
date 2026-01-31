@@ -6,6 +6,11 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    versionCatalogs {
+        create("libs") {
+            from(files("../../gradle/libs.versions.toml"))
+        }
+    }
     repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         mavenCentral()
@@ -15,9 +20,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "Flagent Kotlin Sample"
 
-// Include SDK modules
-include(":sdk:kotlin")
-project(":sdk:kotlin").projectDir = file("../../sdk/kotlin")
+// Include SDK modules (use same project names as main monorepo for kotlin-enhanced's findProject)
+include(":kotlin-client")
+project(":kotlin-client").projectDir = file("../../sdk/kotlin")
 
-include(":sdk:kotlin-enhanced")
-project(":sdk:kotlin-enhanced").projectDir = file("../../sdk/kotlin-enhanced")
+include(":kotlin-enhanced")
+project(":kotlin-enhanced").projectDir = file("../../sdk/kotlin-enhanced")

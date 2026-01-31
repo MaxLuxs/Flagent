@@ -1,0 +1,21 @@
+# Runs only when Swift SDK changes — saves macOS minutes on typical pushes/PRs.
+name: ci-swift
+
+on:
+  push:
+    branches: ['main']
+    paths: ['sdk/swift/**', 'sdk/swift-enhanced/**', 'sdk/swift-debug-ui/**']
+  pull_request:
+    paths: ['sdk/swift/**', 'sdk/swift-enhanced/**', 'sdk/swift-debug-ui/**']
+
+jobs:
+  swift-sdk:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build sdk/swift
+        run: cd sdk/swift && swift build
+      - name: Build sdk/swift-enhanced
+        run: cd sdk/swift-enhanced && swift build
+      - name: Build sdk/swift-debug-ui
+        run: cd sdk/swift-debug-ui && swift build

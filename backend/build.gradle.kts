@@ -26,9 +26,10 @@ dependencies {
     // Shared models
     implementation(project(":shared"))
 
-    // Enterprise module (optional, when internal/flagent-enterprise submodule is present)
+    // Enterprise module (optional, when internal/flagent-enterprise submodule is present).
+    // runtimeOnly to avoid circular dependency: flagent-enterprise depends on backend for EnterpriseConfigurator interface.
     if (project.findProject(":flagent-enterprise") != null) {
-        implementation(project(":flagent-enterprise"))
+        runtimeOnly(project(":flagent-enterprise"))
     }
 
     // Ktor Server

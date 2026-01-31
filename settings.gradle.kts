@@ -23,6 +23,10 @@ include(":kotlin-debug-ui")
 include(":android-sample")
 include(":android-sample:app")
 
+// Standalone samples (Ktor, Kotlin)
+include(":sample-ktor")
+include(":sample-kotlin")
+
 // Enterprise module (optional submodule)
 if (file("internal/flagent-enterprise/build.gradle.kts").exists()) {
     include(":flagent-enterprise")
@@ -40,3 +44,6 @@ project(":kotlin-debug-ui").projectDir = file("sdk/kotlin-debug-ui")
 
 project(":android-sample").projectDir = file("sdk/android-sample")
 project(":android-sample:app").projectDir = file("sdk/android-sample/app")
+
+project(":sample-ktor").projectDir = file("samples/ktor")
+project(":sample-kotlin").projectDir = file("samples/kotlin")

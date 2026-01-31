@@ -12,7 +12,7 @@ java {
     }
 }
 
-group = "io.ktor"
+group = "com.flagent"
 
 dependencies {
     // Shared models

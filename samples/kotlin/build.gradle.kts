@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
     application
 }
 
@@ -12,8 +12,8 @@ repositories {
 
 dependencies {
     // Flagent Kotlin SDK (local)
-    implementation(project(":sdk:kotlin"))
-    implementation(project(":sdk:kotlin-enhanced"))
+    implementation(project(":kotlin-client"))
+    implementation(project(":kotlin-enhanced"))
     
     // Kotlinx Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
@@ -27,8 +27,14 @@ application {
     mainClass.set("flagent.sample.MainKt")
 }
 
+java {
+    toolchain {
+        languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(21))
+    }
+}
+
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "17"
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     }
 }

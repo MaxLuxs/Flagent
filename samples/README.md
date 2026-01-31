@@ -48,8 +48,8 @@ open samples/javascript/index.html
 
 **Запуск:**
 ```bash
-cd samples/kotlin
-./gradlew run
+# Из корня monorepo
+./gradlew :sample-kotlin:run
 ```
 
 ### Swift Sample (`swift/`)
@@ -82,8 +82,8 @@ swift run
 
 **Запуск:**
 ```bash
-cd samples/ktor
-./gradlew run
+# Из корня monorepo
+./gradlew :sample-ktor:run
 ```
 
 ## Общие требования

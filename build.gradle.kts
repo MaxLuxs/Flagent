@@ -1,3 +1,5 @@
+import org.gradle.api.publish.PublishingExtension
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
@@ -7,13 +9,32 @@ plugins {
     alias(libs.plugins.android.application) apply false
 }
 
+val projectVersion: String = project.findProperty("version")?.toString() ?: "1.0.0"
+
 allprojects {
     group = "com.flagent"
-    version = "1.0.0"
-    
+    version = projectVersion
+
     repositories {
         mavenCentral()
         google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
+}
+
+subprojects {
+    plugins.withId("maven-publish") {
+        extensions.configure<PublishingExtension> {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/MaxLuxs/Flagent")
+                    credentials {
+                        username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR").orEmpty()
+                        password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN").orEmpty()
+                    }
+                }
+            }
+        }
     }
 }
