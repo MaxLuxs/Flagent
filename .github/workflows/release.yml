@@ -108,7 +108,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${GITHUB_REF#refs/tags/v}"
-          ./gradlew :shared:publish :ktor-flagent:publish :kotlin-client:publish :kotlin-enhanced:publish :kotlin-debug-ui:publish --no-daemon -Pversion=$VERSION
+          ./gradlew :shared:publish :ktor-flagent:publish :kotlin-client:publish :kotlin-enhanced:publish :kotlin-debug-ui:publish --no-daemon -Pversion="$VERSION"
       
       - name: Extract version from tag
         id: tag

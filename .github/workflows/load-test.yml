@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -131,9 +131,11 @@ jobs:
             METRICS_P99=$(jq -r '.metrics.http_req_duration.values.["p(99)"]' metrics-summary.json)
             METRICS_ERROR_RATE=$(jq -r '.metrics.http_req_failed.values.rate' metrics-summary.json)
 
-            echo "metrics_p95=$METRICS_P95" >> $GITHUB_OUTPUT
-            echo "metrics_p99=$METRICS_P99" >> $GITHUB_OUTPUT
-            echo "metrics_error_rate=$METRICS_ERROR_RATE" >> $GITHUB_OUTPUT
+            {
+              echo "metrics_p95=${METRICS_P95}"
+              echo "metrics_p99=${METRICS_P99}"
+              echo "metrics_error_rate=${METRICS_ERROR_RATE}"
+            } >> "$GITHUB_OUTPUT"
           fi
 
           # Parse anomaly summary
@@ -142,9 +144,11 @@ jobs:
             ANOMALY_P99=$(jq -r '.metrics.http_req_duration.values.["p(99)"]' anomaly-summary.json)
             ANOMALY_ERROR_RATE=$(jq -r '.metrics.http_req_failed.values.rate' anomaly-summary.json)
 
-            echo "anomaly_p95=$ANOMALY_P95" >> $GITHUB_OUTPUT
-            echo "anomaly_p99=$ANOMALY_P99" >> $GITHUB_OUTPUT
-            echo "anomaly_error_rate=$ANOMALY_ERROR_RATE" >> $GITHUB_OUTPUT
+            {
+              echo "anomaly_p95=${ANOMALY_P95}"
+              echo "anomaly_p99=${ANOMALY_P99}"
+              echo "anomaly_error_rate=${ANOMALY_ERROR_RATE}"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Check Performance Thresholds
@@ -210,7 +214,7 @@ jobs:
 
       - name: Comment PR with Results
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
@@ -225,7 +229,7 @@ jobs:
 
       - name: Upload Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: load-test-results
           path: |
@@ -239,7 +243,7 @@ jobs:
         if: always()
         run: |
           if [ -f flagent.pid ]; then
-            kill $(cat flagent.pid) || true
+            kill "$(cat flagent.pid)" || true
           fi
 
       - name: Notify Slack on Failure

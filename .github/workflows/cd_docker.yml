@@ -13,6 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    # Use github.actor (user) namespace to avoid "installation not allowed to Create organization package"
+    # when repo is under an org. For org-level package, grant workflow permissions in org/repo settings.
     - name: Extract version from tag or release
       run: |
         if [[ "${{ github.event_name }}" == "push" ]]; then
@@ -20,7 +22,7 @@ jobs:
         else
           echo "RELEASE_VERSION=${{ github.event.release.tag_name }}" >> "$GITHUB_ENV"
         fi
-        echo "REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+        echo "IMAGE_OWNER=$(echo '${{ github.actor }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
     
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -43,7 +45,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ghcr.io/${{ env.REPO_NAME }}:latest
-          ghcr.io/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }}
+          ghcr.io/${{ env.IMAGE_OWNER }}/flagent:latest
+          ghcr.io/${{ env.IMAGE_OWNER }}/flagent:${{ env.RELEASE_VERSION }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
