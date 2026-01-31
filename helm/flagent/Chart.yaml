@@ -2,8 +2,8 @@ apiVersion: v2
 name: flagent
 description: A Helm chart for Flagent feature flag and experimentation platform
 type: application
-version: 1.0.0
-appVersion: "1.0.0"
+version: 0.1.0
+appVersion: "0.1.0"
 keywords:
   - feature-flags
   - experimentation

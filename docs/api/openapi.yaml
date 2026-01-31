@@ -44,7 +44,7 @@ info:
     - Use `enableDebug: true` only in development environments
     - Preload flags with `preload=true` parameter when fetching flags to reduce subsequent API calls
     - Use tags to organize and filter flags efficiently
-  version: 1.0.0
+  version: 0.1.0
   contact:
     name: Flagent API Support
   license:
@@ -1829,7 +1829,7 @@ components:
           nullable: true
           description: Git commit hash
       example:
-        version: "1.0.0"
+        version: "0.1.0"
         buildTime: "2024-01-01T00:00:00Z"
         gitCommit: "abc123"
 

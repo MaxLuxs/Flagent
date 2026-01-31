@@ -14,7 +14,7 @@ java {
 }
 
 group = "com.flagent"
-version = "1.0.0"
+// version inherited from root (VERSION file)
 
 repositories {
     mavenCentral()
@@ -25,7 +25,7 @@ dependencies {
     if (findProject(":kotlin-client") != null) {
         implementation(project(":kotlin-client"))
     } else {
-        implementation("com.flagent:flagent-kotlin-client:1.0.0")
+        implementation("com.flagent:flagent-kotlin-client:0.1.0")
     }
     
     // Shared evaluator (single source of truth for rollout/constraint logic)

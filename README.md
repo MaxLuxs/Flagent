@@ -130,6 +130,8 @@ flagent/
 
 ## Development
 
+**Version:** single source is root file `VERSION`. Gradle reads it; run `./scripts/sync-version.sh` to propagate to npm/pip/Go/Swift/Helm/Java. See [docs/versioning.md](docs/versioning.md).
+
 ### Requirements
 - JDK 21+
 - Gradle 9.0
@@ -193,19 +195,19 @@ repositories {
 
 dependencies {
     // Ktor plugin (server)
-    implementation("com.flagent:ktor-flagent:1.0.0")
+    implementation("com.flagent:ktor-flagent:0.1.0")
     // Kotlin client
-    implementation("com.flagent:kotlin-client:1.0.0")
+    implementation("com.flagent:kotlin-client:0.1.0")
     // Kotlin Enhanced (offline eval, SSE)
-    implementation("com.flagent:kotlin-enhanced:1.0.0")
+    implementation("com.flagent:kotlin-enhanced:0.1.0")
     // Kotlin Debug UI
-    implementation("com.flagent:kotlin-debug-ui:1.0.0")
+    implementation("com.flagent:kotlin-debug-ui:0.1.0")
     // Shared (KMP; pulled transitively by ktor-flagent, or use for multi-platform)
-    implementation("com.flagent:shared:1.0.0")
+    implementation("com.flagent:shared:0.1.0")
 }
 ```
 
-Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace `1.0.0` with the [release version](https://github.com/MaxLuxs/Flagent/releases).
+Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace `0.1.0` with the [release version](https://github.com/MaxLuxs/Flagent/releases).
 
 ### Server-Side Integration
 

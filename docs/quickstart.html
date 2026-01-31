@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Flagent Quick Start Guide - Get started in 5 minutes">
+    <title data-i18n="quickstart.title">Flagent Quick Start Guide</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <a href="index.html" style="text-decoration: none;"><span class="logo-text">Flagent</span></a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html" data-i18n="nav.home">Главная</a>
+                    <a href="quickstart.html" data-i18n="nav.quickstart">Quick Start</a>
+                    <a href="sdk.html" data-i18n="nav.sdk">SDKs</a>
+                    <a href="api-docs.html" data-i18n="nav.api">API</a>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/docs" target="_blank" rel="noopener" data-i18n="nav.docs">Docs</a>
+                    <div class="lang-switcher">
+                        <button class="lang-btn active" data-lang="ru">RU</button>
+                        <button class="lang-btn" data-lang="en">EN</button>
+                    </div>
+                    <a href="https://github.com/MaxLuxs/Flagent" class="nav-github" target="_blank" rel="noopener">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title" data-i18n="quickstart.header.title">Quick Start Guide</h1>
+            <p class="page-subtitle" data-i18n="quickstart.header.subtitle">
+                Запустите Flagent за 5 минут и начните использовать feature flags в вашем приложении
+            </p>
+        </div>
+    </section>
+
+    <!-- Option 1: Docker -->
+    <section class="content-section">
+        <div class="container">
+            <div class="quickstart-option">
+                <div class="option-header">
+                    <span class="option-number">1</span>
+                    <h2 data-i18n="docker.title">Option 1: Docker (Recommended)</h2>
+                </div>
+                <p class="option-description" data-i18n="docker.desc">
+                    Самый быстрый способ запустить Flagent - использовать Docker образ.
+                    Не требует установки зависимостей или настройки базы данных.
+                </p>
+
+                <div class="step">
+                    <h3 data-i18n="docker.step1.title">Step 1: Pull Docker Image</h3>
+                    <div class="code-block">
+                        <pre><code>docker pull ghcr.io/maxluxs/flagent</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="docker.step2.title">Step 2: Run Container</h3>
+                    <div class="code-block">
+                        <pre><code>docker run -it -p 18000:18000 ghcr.io/maxluxs/flagent</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <p class="step-note" data-i18n="docker.step2.note">
+                        По умолчанию Flagent использует SQLite в памяти, что идеально для тестирования.
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="docker.step3.title">Step 3: Open Flagent UI</h3>
+                    <p data-i18n="docker.step3.desc">
+                        Откройте браузер и перейдите на:
+                    </p>
+                    <div class="code-block">
+                        <pre><code>http://localhost:18000</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="docker.step4.title">Step 4: Default Credentials</h3>
+                    <p data-i18n="docker.step4.desc">
+                        Если аутентификация включена, используйте:
+                    </p>
+                    <div class="credentials-box">
+                        <div class="credential-item">
+                            <strong data-i18n="docker.step4.username">Username:</strong>
+                            <code>admin</code>
+                        </div>
+                        <div class="credential-item">
+                            <strong data-i18n="docker.step4.password">Password:</strong>
+                            <code>admin</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="docker.step5.title">Step 5: Verify Installation</h3>
+                    <p data-i18n="docker.step5.desc">
+                        Проверьте, что сервер работает:
+                    </p>
+                    <div class="code-block">
+                        <pre><code>curl http://localhost:18000/api/v1/health</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <p class="step-note" data-i18n="docker.step5.note">
+                        Должен вернуться JSON с информацией о состоянии сервера.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Option 2: Docker Compose -->
+    <section class="content-section bg-alt">
+        <div class="container">
+            <div class="quickstart-option">
+                <div class="option-header">
+                    <span class="option-number">2</span>
+                    <h2 data-i18n="compose.title">Option 2: Docker Compose</h2>
+                </div>
+                <p class="option-description" data-i18n="compose.desc">
+                    Для полной настройки с PostgreSQL используйте Docker Compose.
+                    Это обеспечивает персистентность данных и готовность к production.
+                </p>
+
+                <div class="step">
+                    <h3 data-i18n="compose.step1.title">Step 1: Clone Repository</h3>
+                    <div class="code-block">
+                        <pre><code>git clone https://github.com/MaxLuxs/Flagent.git
+cd Flagent</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="compose.step2.title">Step 2: Start Services</h3>
+                    <div class="code-block">
+                        <pre><code>docker compose up -d</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <p class="step-note" data-i18n="compose.step2.note">
+                        Это запустит Flagent и PostgreSQL в отдельных контейнерах.
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="compose.step3.title">Step 3: Access Services</h3>
+                    <div class="access-links">
+                        <div class="access-item">
+                            <strong data-i18n="compose.step3.ui">Flagent UI:</strong>
+                            <a href="http://localhost:18000" target="_blank" rel="noopener">http://localhost:18000</a>
+                        </div>
+                        <div class="access-item">
+                            <strong data-i18n="compose.step3.api">API:</strong>
+                            <a href="http://localhost:18000/api/v1" target="_blank" rel="noopener">http://localhost:18000/api/v1</a>
+                        </div>
+                        <div class="access-item">
+                            <strong data-i18n="compose.step3.swagger">Swagger UI:</strong>
+                            <a href="http://localhost:18000/docs" target="_blank" rel="noopener">http://localhost:18000/docs</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Option 3: From Source -->
+    <section class="content-section">
+        <div class="container">
+            <div class="quickstart-option">
+                <div class="option-header">
+                    <span class="option-number">3</span>
+                    <h2 data-i18n="source.title">Option 3: From Source</h2>
+                </div>
+                <p class="option-description" data-i18n="source.desc">
+                    Соберите и запустите Flagent из исходного кода для разработки и кастомизации.
+                </p>
+
+                <div class="step">
+                    <h3 data-i18n="source.step1.title">Step 1: Prerequisites</h3>
+                    <div class="requirements-list">
+                        <div class="requirement-item">
+                            <strong>JDK 21+</strong>
+                            <span data-i18n="source.step1.jdk">Для компиляции и запуска Kotlin кода</span>
+                        </div>
+                        <div class="requirement-item">
+                            <strong>Gradle 9.0</strong>
+                            <span data-i18n="source.step1.gradle">Система сборки проекта</span>
+                        </div>
+                        <div class="requirement-item">
+                            <strong>Database</strong>
+                            <span data-i18n="source.step1.db">PostgreSQL, MySQL или SQLite</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="source.step2.title">Step 2: Clone Repository</h3>
+                    <div class="code-block">
+                        <pre><code>git clone https://github.com/MaxLuxs/Flagent.git
+cd Flagent/flagent</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="source.step3.title">Step 3: Build Project</h3>
+                    <div class="code-block">
+                        <pre><code>./gradlew build</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <p class="step-note" data-i18n="source.step3.note">
+                        Это соберет все модули и запустит тесты.
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="source.step4.title">Step 4: Configure Environment</h3>
+                    <p data-i18n="source.step4.desc">
+                        Установите переменные окружения для подключения к базе данных:
+                    </p>
+                    <div class="config-options">
+                        <div class="config-option">
+                            <h4 data-i18n="source.step4.sqlite">SQLite (for testing)</h4>
+                            <div class="code-block">
+                                <pre><code>export FLAGENT_DB_DBDRIVER=sqlite3
+export FLAGENT_DB_DBCONNECTIONSTR=flagent.sqlite
+export PORT=18000</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="config-option">
+                            <h4 data-i18n="source.step4.postgres">PostgreSQL</h4>
+                            <div class="code-block">
+                                <pre><code>export FLAGENT_DB_DBDRIVER=postgresql
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=postgres&password=postgres
+export PORT=18000</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="config-option">
+                            <h4 data-i18n="source.step4.mysql">MySQL</h4>
+                            <div class="code-block">
+                                <pre><code>export FLAGENT_DB_DBDRIVER=mysql
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:mysql://localhost:3306/flagent?user=root&password=root
+export PORT=18000</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 data-i18n="source.step5.title">Step 5: Run Backend</h3>
+                    <div class="code-block">
+                        <pre><code>./gradlew :backend:run</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <p class="step-note" data-i18n="source.step5.note">
+                        Сервер запустится на http://localhost:18000
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Next Steps -->
+    <section class="content-section bg-alt">
+        <div class="container">
+            <div class="content-box">
+                <h2 data-i18n="next.title">Next Steps</h2>
+                <p data-i18n="next.desc">
+                    После успешного запуска Flagent вы можете:
+                </p>
+                <div class="next-steps">
+                    <div class="next-step">
+                        <h4>1. <span data-i18n="next.step1">Create Your First Flag</span></h4>
+                        <p data-i18n="next.step1.desc">
+                            Используйте UI или API для создания первого feature flag
+                        </p>
+                        <a href="http://localhost:18000" target="_blank" rel="noopener" class="btn-secondary" data-i18n="next.step1.link">
+                            Open UI
+                        </a>
+                    </div>
+                    <div class="next-step">
+                        <h4>2. <span data-i18n="next.step2">Try Evaluation API</span></h4>
+                        <p data-i18n="next.step2.desc">
+                            Протестируйте evaluation API через curl или Swagger UI
+                        </p>
+                        <div class="code-block">
+                            <pre><code>curl --request POST \
+  --url http://localhost:18000/api/v1/evaluation \
+  --header 'content-type: application/json' \
+  --data '{
+    "entityID": "user-123",
+    "entityType": "user",
+    "entityContext": {
+      "state": "NY",
+      "tier": "premium"
+    },
+    "flagID": 1,
+    "enableDebug": true
+  }'</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+                    <div class="next-step">
+                        <h4>3. <span data-i18n="next.step3">Connect SDK</span></h4>
+                        <p data-i18n="next.step3.desc">
+                            Интегрируйте Flagent SDK в ваше приложение
+                        </p>
+                        <a href="sdk.html" class="btn-secondary" data-i18n="next.step3.link">
+                            View SDKs
+                        </a>
+                    </div>
+                    <div class="next-step">
+                        <h4>4. <span data-i18n="next.step4">Explore Documentation</span></h4>
+                        <p data-i18n="next.step4.desc">
+                            Изучите полную документацию для продвинутых возможностей
+                        </p>
+                        <a href="https://github.com/MaxLuxs/Flagent/tree/main/docs" target="_blank" rel="noopener" class="btn-secondary" data-i18n="next.step4.link">
+                            View Docs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Troubleshooting -->
+    <section class="content-section">
+        <div class="container">
+            <div class="content-box">
+                <h2 data-i18n="troubleshooting.title">Troubleshooting</h2>
+                <div class="troubleshooting-list">
+                    <div class="trouble-item">
+                        <h4 data-i18n="troubleshooting.port.title">Port Already in Use</h4>
+                        <p data-i18n="troubleshooting.port.desc">
+                            Если порт 18000 уже занят, измените его через переменную окружения:
+                        </p>
+                        <div class="code-block">
+                            <pre><code>export PORT=18001
+docker run -it -p 18001:18001 -e PORT=18001 ghcr.io/maxluxs/flagent</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                    </div>
+                    <div class="trouble-item">
+                        <h4 data-i18n="troubleshooting.db.title">Database Connection Issues</h4>
+                        <p data-i18n="troubleshooting.db.desc">
+                            Убедитесь, что строка подключения к БД правильная и база данных доступна.
+                            Проверьте логи контейнера для деталей.
+                        </p>
+                    </div>
+                    <div class="trouble-item">
+                        <h4 data-i18n="troubleshooting.auth.title">Authentication Issues</h4>
+                        <p data-i18n="troubleshooting.auth.desc">
+                            Если включена аутентификация, используйте правильные credentials.
+                            По умолчанию: admin/admin. Проверьте настройки через переменные окружения.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Flagent</h4>
+                    <p class="footer-description" data-i18n="footer.description">
+                        Open source feature flagging, A/B testing, and dynamic configuration microservice в Kotlin/Ktor.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer.product">Продукт</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MaxLuxs/Flagent/tree/main/docs" target="_blank" rel="noopener" data-i18n="footer.docs">Документация</a></li>
+                        <li><a href="index.html" data-i18n="footer.home">Главная</a></li>
+                        <li><a href="quickstart.html" data-i18n="footer.quickstart">Quick Start</a></li>
+                        <li><a href="sdk.html" data-i18n="footer.sdk">SDKs</a></li>
+                        <li><a href="https://github.com/MaxLuxs/Flagent/blob/main/docs/deployment.md" target="_blank" rel="noopener" data-i18n="footer.deployment">Развертывание</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer.resources">Ресурсы</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a></li>
+                        <li><a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener" data-i18n="footer.issues">Issues</a></li>
+                        <li><a href="api/openapi.yaml" data-i18n="footer.openapi">OpenAPI Spec</a></li>
+                        <li><a href="http://localhost:18000/docs" target="_blank" rel="noopener" data-i18n="footer.swagger">Swagger UI</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Flagent. <span data-i18n="footer.license">Open source под Apache 2.0</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Copy code functionality
+        function copyCode(btn) {
+            const codeBlock = btn.previousElementSibling;
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

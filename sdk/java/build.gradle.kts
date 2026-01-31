@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.flagent"
-version = "1.0.0"
+// version inherited from root (VERSION file)
 
 java {
     toolchain {

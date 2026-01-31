@@ -65,12 +65,12 @@ open http://localhost:18000
    ./gradlew build
    ```
 
-   Это создаст JAR файл в `backend/build/libs/flagent-1.0.0.jar`
+   Это создаст JAR файл в `backend/build/libs/flagent-0.1.0.jar`
 
 3. **Запустить приложение**
 
    ```bash
-   java -jar backend/build/libs/flagent-1.0.0.jar
+   java -jar backend/build/libs/flagent-0.1.0.jar
    ```
 
 ### Конфигурация
@@ -87,7 +87,7 @@ export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flag
 export FLAGENT_LOGRUS_LEVEL=info
 export FLAGENT_LOGRUS_FORMAT=json
 
-java -jar backend/build/libs/flagent-1.0.0.jar
+java -jar backend/build/libs/flagent-0.1.0.jar
 ```
 
 ## Production настройка

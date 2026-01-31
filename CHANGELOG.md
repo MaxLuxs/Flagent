@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - SDK documentation is now included in repository for better discoverability
 
-## [1.0.0] - 18-01-2025
+## [0.1.0] - 18-01-2025
 
 ### Added
 - Professional CI/CD infrastructure with GitHub Actions
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Added CodeQL security scanning workflow
 
-## [1.0.0] - 2024-XX-XX
+## [0.1.0] - 2024-XX-XX
 
 ### Added
 - Initial release of Flagent
@@ -61,5 +61,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenAPI/Swagger documentation
 - Kotlin and JavaScript SDKs
 
-[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/MaxLuxs/Flagent/releases/tag/v1.0.0
+[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/MaxLuxs/Flagent/releases/tag/v0.1.0

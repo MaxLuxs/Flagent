@@ -5,7 +5,7 @@ All notable changes to the Flagent Go SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-01-27
+## [0.1.0] - 2026-01-27
 
 ### Added
 - Initial release of Flagent Go SDK
@@ -29,4 +29,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error Hierarchy** - Structured error types for better error handling
 - **Configurable** - Multiple client options for customization
 
-[1.0.0]: https://github.com/MaxLuxs/Flagent/releases/tag/go-sdk-v1.0.0
+[0.1.0]: https://github.com/MaxLuxs/Flagent/releases/tag/go-sdk-v0.1.0

@@ -65,12 +65,12 @@ See `docker-compose.yml` for the complete configuration.
    ./gradlew build
    ```
 
-   This creates a JAR file in `backend/build/libs/flagent-1.0.0.jar`
+   This creates a JAR file in `backend/build/libs/flagent-0.1.0.jar`
 
 3. **Run the application**
 
    ```bash
-   java -jar backend/build/libs/flagent-1.0.0.jar
+   java -jar backend/build/libs/flagent-0.1.0.jar
    ```
 
 ### Configuration
@@ -87,7 +87,7 @@ export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flag
 export FLAGENT_LOGRUS_LEVEL=info
 export FLAGENT_LOGRUS_FORMAT=json
 
-java -jar backend/build/libs/flagent-1.0.0.jar
+java -jar backend/build/libs/flagent-0.1.0.jar
 ```
 
 ## Production Setup

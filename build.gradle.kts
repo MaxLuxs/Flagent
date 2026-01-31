@@ -9,7 +9,11 @@ plugins {
     alias(libs.plugins.android.application) apply false
 }
 
-val projectVersion: String = project.findProperty("version")?.toString() ?: "1.0.0"
+val projectVersion: String = run {
+    val versionFile = rootProject.layout.projectDirectory.file("VERSION")
+    if (versionFile.asFile.exists()) versionFile.asFile.readText().trim()
+    else project.findProperty("version")?.toString() ?: "0.1.0"
+}
 
 allprojects {
     group = "com.flagent"

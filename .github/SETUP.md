@@ -46,7 +46,7 @@ docker run -it -p 18000:18000 ghcr.io/maxluxs/flagent:latest
 
 1. Создайте новый релиз в GitHub:
    - **Settings** → **Releases** → **Create a new release**
-   - Или используйте тег: `git tag -a v1.0.0 -m "Release version 1.0.0"` и `git push --tags`
+   - Или используйте тег: `git tag -a v0.1.0 -m "Release version 0.1.0"` и `git push --tags`
 2. Workflow `cd_docker.yml` автоматически соберет и опубликует Docker образ
 
 ## 5. Проверка CI/CD

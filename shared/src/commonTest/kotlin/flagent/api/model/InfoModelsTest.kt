@@ -14,7 +14,7 @@ class InfoModelsTest {
     @Test
     fun testInfoResponseSerialization() {
         val info = InfoResponse(
-            version = "1.0.0",
+            version = "0.1.0",
             buildTime = "2024-01-01T00:00:00Z",
             gitCommit = "abc123"
         )
@@ -22,7 +22,7 @@ class InfoModelsTest {
         assertNotNull(jsonString)
         
         val deserialized = json.decodeFromString(InfoResponse.serializer(), jsonString)
-        assertEquals("1.0.0", deserialized.version)
+        assertEquals("0.1.0", deserialized.version)
         assertEquals("2024-01-01T00:00:00Z", deserialized.buildTime)
         assertEquals("abc123", deserialized.gitCommit)
     }

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.flagent"
-version = "1.0.0"
+// version inherited from root (VERSION file)
 
 repositories {
     mavenCentral()
@@ -18,7 +18,7 @@ dependencies {
     if (findProject(":kotlin-enhanced") != null) {
         implementation(project(":kotlin-enhanced"))
     } else {
-        implementation("com.flagent:flagent-kotlin-enhanced-client:1.0.0")
+        implementation("com.flagent:flagent-kotlin-enhanced-client:0.1.0")
     }
     
     // Compose for UI - using Compose Multiplatform

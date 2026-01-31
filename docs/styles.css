@@ -338,6 +338,203 @@ body::before {
     margin-top: var(--spacing-xs);
 }
 
+.hero-badge {
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: rgba(14, 165, 233, 0.1);
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    margin-bottom: var(--spacing-md);
+    letter-spacing: 0.02em;
+}
+
+.hero-tagline {
+    font-size: 1.375rem;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-md);
+    line-height: 1.5;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-visual {
+    margin-top: var(--spacing-2xl);
+    display: flex;
+    justify-content: center;
+}
+
+.hero-visual-inner {
+    max-width: 560px;
+    width: 100%;
+}
+
+.hero-illustration {
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+}
+
+.btn-github {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* Why Flagent */
+.why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+}
+
+.why-card {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    text-align: center;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.why-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.why-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.why-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text);
+}
+
+.why-card p {
+    color: var(--color-text-light);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+/* SDKs teaser */
+.sdks-teaser {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.sdk-teaser-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.sdk-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+.sdk-badge.enhanced {
+    background: rgba(14, 165, 233, 0.1);
+    color: var(--color-primary);
+    border-color: rgba(14, 165, 233, 0.3);
+}
+
+.section-cta {
+    text-align: center;
+    margin-top: var(--spacing-lg);
+}
+
+/* CTA Section */
+.cta-section {
+    padding: var(--spacing-3xl) 0;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    color: white;
+}
+
+.cta-box {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.cta-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: var(--spacing-md);
+    color: white;
+}
+
+.cta-subtitle {
+    font-size: 1.125rem;
+    opacity: 0.95;
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.6;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-xl);
+}
+
+.cta-section .btn-primary-large {
+    background: white;
+    color: var(--color-primary);
+}
+
+.cta-section .btn-primary-large:hover {
+    background: var(--color-bg-alt);
+    color: var(--color-primary-dark);
+}
+
+.cta-section .btn-secondary-large {
+    border-color: rgba(255, 255, 255, 0.8);
+    color: white;
+}
+
+.cta-section .btn-secondary-large:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: white;
+    color: white;
+}
+
+.cta-code {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
+    display: inline-block;
+}
+
+.cta-code pre {
+    margin: 0;
+    color: white;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.feature-icon {
+    font-size: 1.75rem;
+    margin-bottom: var(--spacing-sm);
+}
+
 .section-header {
     text-align: center;
     max-width: 800px;

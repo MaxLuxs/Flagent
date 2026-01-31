@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="flagent-python-client",
-    version="1.0.0",
+    version="0.1.0",
     author="Flagent Team",
     author_email="support@flagent.io",
     description="Python client for Flagent feature flags and experimentation platform",

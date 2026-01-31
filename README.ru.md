@@ -105,6 +105,8 @@ flagent/
 └── docs/roadmap.md   # Roadmap разработки
 ```
 
+**Версия:** единственный источник — корневой файл `VERSION`. Gradle читает его; для npm/pip/Go/Swift/Helm/Java запустите `./scripts/sync-version.sh`. См. [docs/versioning.md](docs/versioning.md).
+
 См. [README.md](README.md#development) для детальной структуры проекта и настройки разработки.
 
 ## 🛠️ Стек технологий
@@ -166,15 +168,15 @@ repositories {
 
 dependencies {
     // Ktor plugin (сервер)
-    implementation("com.flagent:ktor-flagent:1.0.0")
+    implementation("com.flagent:ktor-flagent:0.1.0")
     // Kotlin client
-    implementation("com.flagent:kotlin-client:1.0.0")
+    implementation("com.flagent:kotlin-client:0.1.0")
     // Kotlin Enhanced (offline eval, SSE)
-    implementation("com.flagent:kotlin-enhanced:1.0.0")
+    implementation("com.flagent:kotlin-enhanced:0.1.0")
     // Kotlin Debug UI
-    implementation("com.flagent:kotlin-debug-ui:1.0.0")
+    implementation("com.flagent:kotlin-debug-ui:0.1.0")
     // Shared (KMP; подтягивается ktor-flagent или для multiplatform)
-    implementation("com.flagent:shared:1.0.0")
+    implementation("com.flagent:shared:0.1.0")
 }
 ```
 

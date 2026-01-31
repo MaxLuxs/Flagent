@@ -1,20 +1,22 @@
 # Flagent Samples
 
-Эта папка содержит примеры использования Flagent SDK и плагинов для различных платформ и языков программирования.
+> [English](README.md) | [Русский](README.ru.md)
 
-## Доступные примеры
+This folder contains sample applications demonstrating Flagent SDK and plugins for various platforms and programming languages.
+
+## Available Samples
 
 ### Android Sample (`android/`)
 
-Пример Android приложения, демонстрирующий использование Flagent Kotlin SDK для Android.
+Android application demonstrating the usage of Flagent Kotlin SDK for Android.
 
-**Особенности:**
+**Features:**
 - Single flag evaluation
 - Batch evaluation
-- Enhanced SDK с кэшированием
+- Enhanced SDK with caching
 - Debug UI
 
-**Запуск:**
+**Run:**
 ```bash
 cd samples/android
 ./gradlew build
@@ -22,47 +24,47 @@ cd samples/android
 
 ### JavaScript Sample (`javascript/`)
 
-Веб-приложение с HTML/JavaScript, демонстрирующее использование Flagent API.
+Web application with HTML/JavaScript demonstrating Flagent API usage.
 
-**Особенности:**
+**Features:**
 - Single flag evaluation
 - Batch evaluation
 - Entity context support
 - Debug mode
 
-**Запуск:**
+**Run:**
 ```bash
-# Откройте index.html в браузере
+# Open index.html in browser
 open samples/javascript/index.html
 ```
 
 ### Kotlin Sample (`kotlin/`)
 
-Консольное Kotlin/JVM приложение, демонстрирующее использование Flagent Kotlin SDK.
+Kotlin/JVM console application demonstrating Flagent Kotlin SDK usage.
 
-**Особенности:**
+**Features:**
 - Single flag evaluation
 - Batch evaluation
 - Flag ID evaluation
-- Basic и Enhanced SDK
+- Basic and Enhanced SDK
 
-**Запуск:**
+**Run:**
 ```bash
-# Из корня monorepo
+# From monorepo root
 ./gradlew :sample-kotlin:run
 ```
 
 ### Swift Sample (`swift/`)
 
-Консольное Swift приложение, демонстрирующее использование Flagent Swift SDK.
+Swift console application demonstrating Flagent Swift SDK usage.
 
-**Особенности:**
+**Features:**
 - Single flag evaluation
 - Batch evaluation
 - Flag ID evaluation
-- Basic и Enhanced SDK
+- Basic and Enhanced SDK
 
-**Запуск:**
+**Run:**
 ```bash
 cd samples/swift
 swift build
@@ -71,33 +73,33 @@ swift run
 
 ### Ktor Plugin Sample (`ktor/`)
 
-Пример Ktor приложения, демонстрирующий использование Flagent Ktor плагина.
+Ktor application sample demonstrating Flagent Ktor plugin usage.
 
-**Особенности:**
+**Features:**
 - Flagent plugin integration
-- Custom endpoints с evaluation
+- Custom endpoints with evaluation
 - Batch evaluation
 - Cache usage
 - Plugin endpoints
 
-**Запуск:**
+**Run:**
 ```bash
-# Из корня monorepo
+# From monorepo root
 ./gradlew :sample-ktor:run
 ```
 
-## Общие требования
+## Common Requirements
 
-Перед запуском любого примера убедитесь, что Flagent backend сервер запущен:
+Before running any sample, ensure the Flagent backend server is running:
 
 ```bash
 cd backend
 ./gradlew run
 ```
 
-Сервер запустится на `http://localhost:18000` по умолчанию.
+The server will start on `http://localhost:18000` by default.
 
-## Структура
+## Structure
 
 ```
 samples/
@@ -106,9 +108,9 @@ samples/
 ├── kotlin/           # Kotlin/JVM sample
 ├── swift/            # Swift sample
 ├── ktor/             # Ktor plugin sample
-└── README.md         # Этот файл
+└── README.md         # This file
 ```
 
-## Лицензия
+## License
 
-Apache 2.0 - См. лицензию родительского проекта
+Apache 2.0 - See parent project license

@@ -1,6 +1,6 @@
 {
   "name": "@flagent/debug-ui",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Debug UI library for Flagent Enhanced SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

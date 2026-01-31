@@ -16,7 +16,7 @@ Ktor плагин для функциональности Flagent - feature flag
 
 ```kotlin
 dependencies {
-    implementation("io.ktor:ktor-flagent:1.0.0")
+    implementation("com.flagent:ktor-flagent:0.1.0")
 }
 ```
 

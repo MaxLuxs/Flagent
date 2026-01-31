@@ -64,7 +64,7 @@ All notable changes to the Flagent Frontend will be documented in this file.
 - 🏗️ Configured webpack for environment variables
 - 🏗️ Set up test infrastructure
 
-## [1.0.0] - Initial Release
+## [0.1.0] - Initial Release
 
 - Basic flag management (CRUD)
 - Segment management with drag & drop

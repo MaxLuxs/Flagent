@@ -16,7 +16,7 @@ npm run build
 Если пакет опубликован:
 
 ```bash
-npm install @flagent/client@1.0.0 --save
+npm install @flagent/client@0.1.0 --save
 ```
 
 Локально (не рекомендуется для production):

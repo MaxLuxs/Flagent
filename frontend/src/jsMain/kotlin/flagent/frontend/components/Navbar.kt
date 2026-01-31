@@ -105,7 +105,7 @@ fun Navbar(authViewModel: AuthViewModel? = null) {
                         fontWeight("500")
                     }
                 }) {
-                    Text("v1.0.0")
+                    Text("v0.1.0")
                 }
             }
             Div({

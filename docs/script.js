@@ -2,16 +2,21 @@
 const translations = {
     ru: {
         'title': 'Flagent - Feature Management Platform | Open Source Feature Flags',
+        'nav.home': 'Главная',
         'nav.features': 'Возможности',
+        'nav.quickstart': 'Quick Start',
         'nav.api': 'API',
         'nav.docs': 'Документация',
         'nav.community': 'Сообщество',
         'nav.get-started': 'Начать',
+        'hero.badge': 'Первая Kotlin-Native платформа для feature flags',
         'hero.title1': 'Feature Management Platform',
         'hero.title2': 'Open Source',
+        'hero.tagline': 'Типобезопасные feature flags, A/B тесты и динамическая конфигурация. Релизьте безопасно, экспериментируйте уверенно.',
+        'hero.cta.get-started': 'Начать →',
+        'hero.docs': 'Документация',
         'hero.subtitle': 'Flagent - это open source сервис на Kotlin/Ktor для управления feature flags, A/B тестирования и динамической конфигурации. Безопасные релизы, эксперименты и контроль функциональности для современных команд.',
         'hero.github': 'Star on GitHub',
-        'hero.docs': 'Документация',
         'hero.stats.open-source': '100%',
         'hero.stats.open-source-label': 'Open Source',
         'hero.stats.stack': 'Современный стек',
@@ -86,9 +91,20 @@ const translations = {
         'footer.examples': 'Примеры',
         'footer.roadmap': 'Roadmap',
         'footer.license': 'Open source под Apache 2.0',
+        'footer.home': 'Главная',
         'footer.quickstart': 'Quick Start',
         'footer.sdk': 'SDKs',
         'footer.swagger': 'Swagger UI',
+        'why.title': 'Why Flagent?',
+        'why.subtitle': 'The first Kotlin-native feature flag platform. Built for type safety, performance, and modern teams.',
+        'why.kotlin.title': 'Kotlin-Native',
+        'why.kotlin.desc': 'Type-safe SDKs, coroutine-first API, Ktor ecosystem. No more stringly-typed flags.',
+        'why.performance.title': 'High Performance',
+        'why.performance.desc': 'Sub-millisecond evaluation, EvalCache, 10k+ req/s. Client-side evaluation in Kotlin & Go Enhanced.',
+        'why.enterprise.title': 'Production-Ready',
+        'why.enterprise.desc': 'PostgreSQL, MySQL, SQLite. Kafka/Kinesis/PubSub. Docker, Admin UI, 70+ test files.',
+        'cta.title': 'Get started in 5 minutes',
+        'cta.subtitle': 'Run Flagent with Docker. No database setup required. Start experimenting with feature flags today.',
         // SDK page
         'sdk.title': 'Flagent SDKs - Client Libraries',
         'sdk.header.title': 'Flagent SDK Clients',
@@ -198,13 +214,18 @@ const translations = {
     },
     en: {
         'title': 'Flagent - Feature Management Platform | Open Source Feature Flags',
+        'nav.home': 'Home',
         'nav.features': 'Features',
+        'nav.quickstart': 'Quick Start',
         'nav.api': 'API',
         'nav.docs': 'Docs',
         'nav.community': 'Community',
         'nav.get-started': 'Get Started',
+        'hero.badge': 'First Kotlin-Native Feature Flag Platform',
         'hero.title1': 'Feature Management Platform',
         'hero.title2': 'Open Source',
+        'hero.tagline': 'Type-safe feature flags, A/B testing, and dynamic configuration. Ship safely, experiment confidently.',
+        'hero.cta.get-started': 'Get Started →',
         'hero.subtitle': 'Flagent is an open source Kotlin/Ktor service for feature flagging, A/B testing, and dynamic configuration. Safe releases, experiments, and feature control for modern teams.',
         'hero.github': 'Star on GitHub',
         'hero.docs': 'View Docs',
@@ -282,9 +303,20 @@ const translations = {
         'footer.examples': 'Examples',
         'footer.roadmap': 'Roadmap',
         'footer.license': 'Open source under Apache 2.0',
+        'footer.home': 'Home',
         'footer.quickstart': 'Quick Start',
         'footer.sdk': 'SDKs',
         'footer.swagger': 'Swagger UI',
+        'why.title': 'Why Flagent?',
+        'why.subtitle': 'The first Kotlin-native feature flag platform. Built for type safety, performance, and modern teams.',
+        'why.kotlin.title': 'Kotlin-Native',
+        'why.kotlin.desc': 'Type-safe SDKs, coroutine-first API, Ktor ecosystem. No more stringly-typed flags.',
+        'why.performance.title': 'High Performance',
+        'why.performance.desc': 'Sub-millisecond evaluation, EvalCache, 10k+ req/s. Client-side evaluation in Kotlin & Go Enhanced.',
+        'why.enterprise.title': 'Production-Ready',
+        'why.enterprise.desc': 'PostgreSQL, MySQL, SQLite. Kafka/Kinesis/PubSub. Docker, Admin UI, 70+ test files.',
+        'cta.title': 'Get started in 5 minutes',
+        'cta.subtitle': 'Run Flagent with Docker. No database setup required. Start experimenting with feature flags today.',
         // SDK page
         'sdk.title': 'Flagent SDKs - Client Libraries',
         'sdk.header.title': 'Flagent SDK Clients',
@@ -492,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Observe cards
-    document.querySelectorAll('.feature-card, .api-card, .sdk-card').forEach(card => {
+    document.querySelectorAll('.feature-card, .api-card, .sdk-card, .why-card').forEach(card => {
         card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';
         card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
