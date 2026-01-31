@@ -1,28 +1,36 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     alias(libs.plugins.ktor.plugin)
+    alias(libs.plugins.dependency.check)
     application
     jacoco
 }
 
+dependencyCheck {
+    failBuildOnCVSS = 11f  // Don't fail on CVSS, only report
+    failOnError = false    // Don't fail when NVD is unreachable (403, etc.)
+    formats = listOf("HTML", "JSON")
+}
+
 java {
     toolchain {
-        languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 dependencies {
     // Shared models
     implementation(project(":shared"))
-    
+
     // Enterprise module (optional, when internal/flagent-enterprise submodule is present)
     if (project.findProject(":flagent-enterprise") != null) {
         implementation(project(":flagent-enterprise"))
     }
-    
+
     // Ktor Server
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
@@ -33,44 +41,44 @@ dependencies {
     implementation(libs.ktor.server.routing.openapi)
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.sse)
-    
+
     // Ktor Client (for SSO/OAuth)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.content.negotiation)
-    
+
     // Database - Exposed
     implementation(libs.bundles.exposed)
-    
+
     // Database Drivers
     implementation(libs.bundles.database.drivers)
     implementation(libs.hikaricp)
-    
+
     // Kotlinx
     implementation(libs.bundles.kotlinx)
-    
+
     // Logging
     implementation(libs.bundles.logging)
-    
+
     // Monitoring
     implementation(libs.bundles.monitoring)
-    
+
     // Messaging
     implementation(libs.bundles.messaging)
-    
+
     // JWT (JJWT)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
-    
+
     // Billing
     implementation(libs.stripe.java)
-    
+
     // Utilities
     implementation(libs.commons.lang3)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.jackson.module.kotlin)
-    
+
     // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.content.negotiation)
@@ -128,13 +136,13 @@ tasks.test {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
-    
+
     reports {
         xml.required.set(true)
         html.required.set(true)
         csv.required.set(false)
     }
-    
+
     classDirectories.setFrom(
         files(classDirectories.files.map {
             fileTree(it) {
@@ -148,7 +156,7 @@ tasks.jacocoTestReport {
 }
 
 // Configure shadowJar to use zip64 for large archives
-tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+tasks.named<ShadowJar>("shadowJar") {
     isZip64 = true
 }
 
