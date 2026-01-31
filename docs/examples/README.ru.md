@@ -1,20 +1,18 @@
-# Flagent Usage Examples
+# Примеры использования Flagent
 
-> [English](README.md) | [Русский](README.ru.md)
+## Содержание
 
-## Table of Contents
-
-- [Basic Usage](#basic-usage)
-- [Configuration](#configuration)
+- [Базовое использование](#базовое-использование)
+- [Конфигурация](#конфигурация)
 - [Ktor Plugin](#ktor-plugin)
 - [Data Recording](#data-recording)
 
-## Basic Usage
+## Базовое использование
 
-### Creating and Configuring a Flag
+### Создание и настройка флага
 
 ```kotlin
-// Create flag
+// Создать флаг
 POST /api/v1/flags
 {
   "description": "New payment flow",
@@ -22,7 +20,7 @@ POST /api/v1/flags
   "enabled": true
 }
 
-// Create variant
+// Создать вариант
 POST /api/v1/flags/{flagId}/variants
 {
   "key": "control"
@@ -33,14 +31,14 @@ POST /api/v1/flags/{flagId}/variants
   "key": "treatment"
 }
 
-// Create segment
+// Создать сегмент
 POST /api/v1/flags/{flagId}/segments
 {
   "description": "US users",
   "rolloutPercent": 100
 }
 
-// Add constraint
+// Добавить constraint
 POST /api/v1/flags/{flagId}/segments/{segmentId}/constraints
 {
   "property": "country",
@@ -48,7 +46,7 @@ POST /api/v1/flags/{flagId}/segments/{segmentId}/constraints
   "value": "US"
 }
 
-// Configure distribution
+// Настроить распределение
 PUT /api/v1/flags/{flagId}/segments/{segmentId}/distributions
 {
   "distributions": [
@@ -69,7 +67,7 @@ PUT /api/v1/flags/{flagId}/segments/{segmentId}/distributions
 ### Evaluation
 
 ```kotlin
-// Single evaluation
+// Одиночная evaluation
 POST /api/v1/evaluation
 {
   "flagID": 1,
@@ -99,12 +97,12 @@ POST /api/v1/evaluation/batch
 }
 ```
 
-## Configuration
+## Конфигурация
 
-### Basic Configuration
+### Базовая конфигурация
 
 ```kotlin
-// application.conf or environment variables
+// application.conf или environment variables
 FLAGENT_DB_DBDRIVER=postgres
 FLAGENT_DB_DBCONNECTIONSTR=postgresql://localhost:5432/flagent
 FLAGENT_DB_USER=flagent
@@ -112,7 +110,7 @@ FLAGENT_DB_PASSWORD=password
 PORT=18000
 ```
 
-### Kafka Configuration
+### Конфигурация с Kafka
 
 ```kotlin
 FLAGENT_RECORDER_ENABLED=true
@@ -121,7 +119,7 @@ FLAGENT_RECORDER_KAFKA_BROKERS=localhost:9092
 FLAGENT_RECORDER_KAFKA_TOPIC=flagent-events
 ```
 
-### Kinesis Configuration
+### Конфигурация с Kinesis
 
 ```kotlin
 FLAGENT_RECORDER_ENABLED=true
@@ -130,7 +128,7 @@ FLAGENT_RECORDER_KINESIS_STREAM_NAME=flagent-events
 FLAGENT_RECORDER_KINESIS_REGION=us-east-1
 ```
 
-### PubSub Configuration
+### Конфигурация с PubSub
 
 ```kotlin
 FLAGENT_RECORDER_ENABLED=true
@@ -139,7 +137,7 @@ FLAGENT_RECORDER_PUBSUB_PROJECT_ID=my-project
 FLAGENT_RECORDER_PUBSUB_TOPIC_NAME=flagent-events
 ```
 
-### Authentication Configuration
+### Конфигурация аутентификации
 
 ```kotlin
 // JWT Authentication
@@ -160,7 +158,7 @@ FLAGENT_COOKIE_AUTH_USER_FIELD_JWT_CLAIM=email
 
 ## Ktor Plugin
 
-### Usage in Ktor Application
+### Использование в Ktor приложении
 
 ```kotlin
 import io.ktor.flagent.*
@@ -186,7 +184,7 @@ fun Application.module() {
 }
 ```
 
-### Using FlagentClient
+### Использование FlagentClient
 
 ```kotlin
 val client = FlagentClient(
@@ -207,7 +205,7 @@ when (result.variantKey) {
 }
 ```
 
-### Using FlagentCache
+### Использование FlagentCache
 
 ```kotlin
 val cache = FlagentCache(
@@ -263,8 +261,9 @@ val recorder = PubSubRecorder(
 recorder.record(evalResult)
 ```
 
-## See Also
+## Дополнительные примеры
 
+См. также:
 - [API Documentation](../api/endpoints.md)
 - [Architecture Documentation](../architecture/backend.md)
 - [Deployment Guide](../deployment.md)
