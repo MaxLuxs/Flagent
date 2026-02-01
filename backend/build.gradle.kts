@@ -12,8 +12,14 @@ plugins {
 
 dependencyCheck {
     failBuildOnCVSS = 11f  // Don't fail on CVSS, only report
-    failOnError = false    // Don't fail when NVD is unreachable (403, etc.)
+    failOnError = false    // Don't fail when NVD is unreachable (403, 429, etc.)
     formats = listOf("HTML", "JSON")
+    // Without NVD API key, NVD returns 429; skip update and use cache only
+    val nvdKey = System.getenv("NVD_API_KEY")
+    autoUpdate = !nvdKey.isNullOrBlank()
+    if (!nvdKey.isNullOrBlank()) {
+        nvd.apiKey = nvdKey
+    }
     val dataDir = project.findProperty("dependencyCheck.dataDirectory")?.toString()
         ?: "${System.getenv("RUNNER_TEMP") ?: layout.buildDirectory.get().asFile}/dependency-check-data"
     data.directory.set(dataDir)

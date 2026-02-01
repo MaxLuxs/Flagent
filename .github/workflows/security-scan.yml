@@ -27,10 +27,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Cache dependency-check data
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/dependency-check-data
+          key: dependency-check-${{ runner.os }}-${{ hashFiles('backend/build.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: dependency-check-${{ runner.os }}-
+
       - name: Gradle Dependency Check
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: ./gradlew :backend:dependencyCheckAnalyze -PdependencyCheck.dataDirectory=$RUNNER_TEMP/dependency-check-data
+        run: |
+          if [ -z "${NVD_API_KEY}" ]; then echo "::warning::NVD_API_KEY is empty - NVD rate limit (429) likely; add Repository secret or use cached data"; fi
+          ./gradlew :backend:dependencyCheckAnalyze --no-daemon -PdependencyCheck.dataDirectory="$RUNNER_TEMP/dependency-check-data"
 
       - name: Upload Dependency Check Results
         if: always()
