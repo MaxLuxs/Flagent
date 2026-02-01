@@ -1,9 +1,9 @@
 package flagent.recorder.impl
 
 import flagent.config.AppConfig
-import flagent.recorder.DataRecorder
 import flagent.recorder.DataRecordFrame
 import flagent.recorder.DataRecordFrameOptions
+import flagent.recorder.DataRecorder
 import flagent.service.EvalResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,30 +24,26 @@ class KinesisRecorder(
     private val streamName: String = AppConfig.recorderKinesisStreamName,
     private val region: Region = Region.US_EAST_1 // Default region, should be configurable
 ) : DataRecorder {
-    private val kinesisClient: KinesisClient
-    
-    init {
-        kinesisClient = KinesisClient.builder()
-            .region(region)
-            .credentialsProvider(DefaultCredentialsProvider.create())
-            .build()
-    }
-    
+    private val kinesisClient: KinesisClient = KinesisClient.builder()
+        .region(region)
+        .credentialsProvider(DefaultCredentialsProvider.create())
+        .build()
+
     override suspend fun record(result: EvalResult) {
         withContext(Dispatchers.IO) {
             try {
                 val frame = newDataRecordFrame(result)
                 val output = frame.output()
                 val partitionKey = frame.getPartitionKey().ifEmpty { result.flagID.toString() }
-                
+
                 val request = PutRecordRequest.builder()
                     .streamName(streamName)
                     .data(SdkBytes.fromByteArray(output))
                     .partitionKey(partitionKey)
                     .build()
-                
+
                 val response = kinesisClient.putRecord(request)
-                
+
                 if (AppConfig.recorderKinesisVerbose) {
                     logger.debug { "Sent evaluation result to Kinesis: ${response.sequenceNumber()}" }
                 }
@@ -56,7 +52,7 @@ class KinesisRecorder(
             }
         }
     }
-    
+
     override suspend fun recordBatch(results: List<EvalResult>) {
         withContext(Dispatchers.IO) {
             // Kinesis supports batch operations via PutRecords API
@@ -71,7 +67,7 @@ class KinesisRecorder(
             }
         }
     }
-    
+
     override fun newDataRecordFrame(result: EvalResult): DataRecordFrame {
         return DataRecordFrame(
             evalResult = result,
@@ -82,7 +78,7 @@ class KinesisRecorder(
             )
         )
     }
-    
+
     /**
      * Close client (should be called on shutdown)
      */

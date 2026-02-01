@@ -7,9 +7,9 @@ import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage
 import com.google.pubsub.v1.TopicName
 import flagent.config.AppConfig
-import flagent.recorder.DataRecorder
 import flagent.recorder.DataRecordFrame
 import flagent.recorder.DataRecordFrameOptions
+import flagent.recorder.DataRecorder
 import flagent.service.EvalResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -30,12 +30,12 @@ class PubSubRecorder(
     private val keyFile: String = AppConfig.recorderPubsubKeyFile
 ) : DataRecorder {
     private val publisher: Publisher
-    
+
     init {
         val topic = TopicName.of(projectId, topicName)
-        
+
         val publisherBuilder = Publisher.newBuilder(topic)
-        
+
         // Configure credentials if key file is provided
         if (keyFile.isNotEmpty()) {
             try {
@@ -46,27 +46,27 @@ class PubSubRecorder(
                 throw RuntimeException("Failed to initialize Pub/Sub publisher", e)
             }
         }
-        
+
         publisher = publisherBuilder.build()
     }
-    
+
     override suspend fun record(result: EvalResult) {
         withContext(Dispatchers.IO) {
             try {
                 val frame = newDataRecordFrame(result)
                 val output = frame.output()
-                
+
                 val message = PubsubMessage.newBuilder()
                     .setData(ByteString.copyFrom(output))
                     .build()
-                
+
                 val future = publisher.publish(message)
-                
+
                 if (AppConfig.recorderPubsubVerbose) {
                     try {
-                        kotlinx.coroutines.withTimeout(AppConfig.recorderPubsubVerboseCancelTimeout) {
+                        withTimeout(AppConfig.recorderPubsubVerboseCancelTimeout) {
                             val messageId = future.get(
-                                AppConfig.recorderPubsubVerboseCancelTimeout.inWholeMilliseconds.toLong(),
+                                AppConfig.recorderPubsubVerboseCancelTimeout.inWholeMilliseconds,
                                 TimeUnit.MILLISECONDS
                             )
                             logger.debug { "Sent evaluation result to Pub/Sub: $messageId" }
@@ -80,7 +80,7 @@ class PubSubRecorder(
             }
         }
     }
-    
+
     override suspend fun recordBatch(results: List<EvalResult>) {
         withContext(Dispatchers.IO) {
             results.forEach { result ->
@@ -92,7 +92,7 @@ class PubSubRecorder(
             }
         }
     }
-    
+
     override fun newDataRecordFrame(result: EvalResult): DataRecordFrame {
         return DataRecordFrame(
             evalResult = result,
@@ -103,7 +103,7 @@ class PubSubRecorder(
             )
         )
     }
-    
+
     /**
      * Close publisher (should be called on shutdown)
      */

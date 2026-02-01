@@ -116,14 +116,19 @@ application {
     mainClass.set("flagent.application.ApplicationKt")
 }
 
-// Run backend with dev mode: X-API-Key optional, uses first active tenant
+// Run backend with dev mode: X-API-Key optional, uses first active tenant; admin login enabled for /login
 tasks.register<JavaExec>("runDev") {
     group = "application"
-    description = "Run backend with FLAGENT_DEV_MODE+FLAGENT_DEV_SKIP_TENANT_AUTH (X-API-Key optional)"
+    description = "Run backend with FLAGENT_DEV_MODE+FLAGENT_DEV_SKIP_TENANT_AUTH (X-API-Key optional) and admin auth for login"
     mainClass.set(application.mainClass.get())
     classpath = sourceSets.main.get().runtimeClasspath
     environment("FLAGENT_DEV_MODE", "true")
     environment("FLAGENT_DEV_SKIP_TENANT_AUTH", "true")
+    environment("FLAGENT_ADMIN_AUTH_ENABLED", "true")
+    environment("FLAGENT_ADMIN_EMAIL", "admin@local")
+    environment("FLAGENT_ADMIN_PASSWORD", "admin")
+    environment("FLAGENT_JWT_AUTH_SECRET", "dev-secret-at-least-32-characters-long")
+    environment("FLAGENT_ADMIN_API_KEY", "dev-admin-key")
 }
 
 tasks.jar {
@@ -147,10 +152,16 @@ tasks.test {
         }
     }
     finalizedBy(tasks.jacocoTestReport)
-    ignoreFailures = true
     maxParallelForks = 1
     environment("FLAGENT_DB_DBDRIVER", "sqlite3")
     environment("FLAGENT_DB_DBCONNECTIONSTR", ":memory:")
+    // Admin auth for AuthRoutesTest (success, wrong email, blank)
+    environment("FLAGENT_ADMIN_AUTH_ENABLED", "true")
+    environment("FLAGENT_ADMIN_EMAIL", "admin@test.com")
+    environment("FLAGENT_ADMIN_PASSWORD", "secret123")
+    environment("FLAGENT_JWT_AUTH_SECRET", "test-secret-at-least-32-characters-long")
+    // E2ETest creates tenant via POST /admin/tenants; when enterprise is present AdminAuth requires X-Admin-Key
+    environment("FLAGENT_ADMIN_API_KEY", "test-admin-key")
     reports {
         junitXml.required.set(false)
     }

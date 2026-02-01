@@ -18,6 +18,7 @@ private val logger = KotlinLogging.logger {}
  * Evaluation service - delegates to EvaluateFlagUseCase (shared evaluator).
  * Maps to pkg/handler/eval.go from original project.
  */
+@Suppress("UNCHECKED_CAST")
 class EvaluationService(
     private val evalCache: EvalCache,
     private val evaluateFlagUseCase: EvaluateFlagUseCase,

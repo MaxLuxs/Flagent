@@ -1,19 +1,24 @@
 package flagent.route.mapper
 
-import flagent.api.model.*
-import flagent.domain.entity.Flag as DomainFlag
-import flagent.domain.entity.Segment as DomainSegment
-import flagent.domain.entity.Variant as DomainVariant
+import flagent.api.model.ConstraintResponse
+import flagent.api.model.DistributionResponse
+import flagent.api.model.FlagResponse
+import flagent.api.model.SegmentResponse
+import flagent.api.model.TagResponse
+import flagent.api.model.VariantResponse
 import flagent.domain.entity.Constraint as DomainConstraint
 import flagent.domain.entity.Distribution as DomainDistribution
+import flagent.domain.entity.Flag as DomainFlag
+import flagent.domain.entity.Segment as DomainSegment
 import flagent.domain.entity.Tag as DomainTag
+import flagent.domain.entity.Variant as DomainVariant
 
 /**
  * ResponseMappers - centralized mappers from domain entities to API response models
  * Eliminates duplication across route files
  */
 object ResponseMappers {
-    
+
     /**
      * Map Flag entity to FlagResponse
      */
@@ -35,7 +40,7 @@ object ResponseMappers {
             updatedAt = flag.updatedAt
         )
     }
-    
+
     /**
      * Map Segment entity to SegmentResponse
      */
@@ -50,7 +55,7 @@ object ResponseMappers {
             distributions = segment.distributions.map { mapDistributionToResponse(it) }
         )
     }
-    
+
     /**
      * Map Variant entity to VariantResponse
      */
@@ -59,10 +64,10 @@ object ResponseMappers {
             id = variant.id,
             flagID = variant.flagId,
             key = variant.key,
-            attachment = variant.attachment?.entries?.associate { (k, v) -> k to v.toString().trim('"') }
+            attachment = variant.attachment?.entries?.associate { (k, v) -> k to v.trim('"') }
         )
     }
-    
+
     /**
      * Map Constraint entity to ConstraintResponse
      */
@@ -75,7 +80,7 @@ object ResponseMappers {
             value = constraint.value
         )
     }
-    
+
     /**
      * Map Distribution entity to DistributionResponse
      */
@@ -88,7 +93,7 @@ object ResponseMappers {
             percent = distribution.percent
         )
     }
-    
+
     /**
      * Map Tag entity to TagResponse
      */
