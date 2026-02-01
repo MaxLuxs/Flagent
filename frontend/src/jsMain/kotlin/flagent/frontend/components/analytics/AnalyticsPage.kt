@@ -118,7 +118,7 @@ fun AnalyticsPage() {
                         cursor("pointer")
                         fontSize(14.px)
                     }
-                    onClick { Router.navigateTo(Route.Home) }
+                    onClick { Router.navigateTo(Route.FlagsList) }
                 }) {
                     Text(LocalizedStrings.createFlag)
                 }

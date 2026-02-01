@@ -86,6 +86,49 @@ fun ExperimentsPage() {
                 }
             }) {
                 Text(error!!)
+                if (error!!.contains("tenant", ignoreCase = true) || error!!.contains("Create tenant", ignoreCase = true) || error!!.contains("X-API-Key", ignoreCase = true)) {
+                    SideEffect { flagent.frontend.state.BackendOnboardingState.setBackendNeedsTenantOrAuth() }
+                    P({
+                        style {
+                            marginTop(10.px)
+                            fontSize(14.px)
+                            display(DisplayStyle.Flex)
+                            gap(12.px)
+                            flexWrap(FlexWrap.Wrap)
+                        }
+                    }) {
+                        Button({
+                            style {
+                                color(FlagentTheme.Background)
+                                textDecoration("underline")
+                                fontWeight("600")
+                                backgroundColor(Color("transparent"))
+                                border(0.px)
+                                cursor("pointer")
+                                padding(0.px)
+                                fontSize(14.px)
+                            }
+                            onClick { Router.navigateToTenantsWithCreate() }
+                        }) {
+                            Text("Create first tenant →")
+                        }
+                        Button({
+                            style {
+                                color(FlagentTheme.Background)
+                                textDecoration("underline")
+                                fontWeight("600")
+                                backgroundColor(Color("transparent"))
+                                border(0.px)
+                                cursor("pointer")
+                                padding(0.px)
+                                fontSize(14.px)
+                            }
+                            onClick { Router.navigateTo(Route.Login) }
+                        }) {
+                            Text("Log in (admin) →")
+                        }
+                    }
+                }
             }
         } else if (flags.isEmpty()) {
             Div({
@@ -127,7 +170,7 @@ fun ExperimentsPage() {
                         cursor("pointer")
                         fontSize(14.px)
                     }
-                    onClick { Router.navigateTo(Route.Home) }
+                    onClick { Router.navigateTo(Route.FlagsList) }
                 }) {
                     Text(LocalizedStrings.viewFlags)
                 }

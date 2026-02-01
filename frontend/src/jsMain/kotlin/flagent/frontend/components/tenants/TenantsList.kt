@@ -12,6 +12,7 @@ import flagent.frontend.util.borderCollapse
 import flagent.frontend.util.textTransform
 import flagent.frontend.viewmodel.TenantViewModel
 import kotlinx.browser.localStorage
+import kotlinx.browser.window
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
@@ -25,6 +26,9 @@ fun TenantsList() {
     
     LaunchedEffect(Unit) {
         viewModel.loadTenants()
+        if (window.location.search.contains("create=1")) {
+            showCreateForm.value = true
+        }
     }
     
     Div({
@@ -90,7 +94,7 @@ fun TenantsList() {
                 title = "No tenants",
                 description = "Create your first tenant to get started",
                 actionLabel = "Create Tenant",
-                onAction = { /* TODO */ }
+                onAction = { showCreateForm.value = true }
             )
         } else {
             // Tenants table

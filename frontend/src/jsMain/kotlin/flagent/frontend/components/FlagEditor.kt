@@ -3132,7 +3132,7 @@ private fun FlagDeleteCard(flagId: Int) {
                             CoroutineScope(Dispatchers.Main).launch {
                                 try {
                                     ApiClient.deleteFlag(flagId)
-                                    Router.navigateTo(Route.Home)
+                                    Router.navigateTo(Route.FlagsList)
                                 } catch (e: Exception) {
                                     error.value = e.message ?: LocalizedStrings.failedToDeleteFlag
                                     deleting.value = false

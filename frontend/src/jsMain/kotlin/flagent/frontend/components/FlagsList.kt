@@ -3,6 +3,7 @@ package flagent.frontend.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -11,17 +12,66 @@ import flagent.api.model.FlagResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
-import flagent.frontend.components.Icon
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.service.RealtimeService
 import flagent.frontend.theme.FlagentTheme
+import flagent.frontend.util.ErrorHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.InputType
-import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.*
+import org.jetbrains.compose.web.css.AlignItems
+import org.jetbrains.compose.web.css.Color
+import org.jetbrains.compose.web.css.DisplayStyle
+import org.jetbrains.compose.web.css.FlexWrap
+import org.jetbrains.compose.web.css.JustifyContent
+import org.jetbrains.compose.web.css.LineStyle
+import org.jetbrains.compose.web.css.alignItems
+import org.jetbrains.compose.web.css.backgroundColor
+import org.jetbrains.compose.web.css.border
+import org.jetbrains.compose.web.css.borderRadius
+import org.jetbrains.compose.web.css.color
+import org.jetbrains.compose.web.css.cursor
+import org.jetbrains.compose.web.css.display
+import org.jetbrains.compose.web.css.flex
+import org.jetbrains.compose.web.css.flexWrap
+import org.jetbrains.compose.web.css.fontFamily
+import org.jetbrains.compose.web.css.fontSize
+import org.jetbrains.compose.web.css.fontStyle
+import org.jetbrains.compose.web.css.fontWeight
+import org.jetbrains.compose.web.css.gap
+import org.jetbrains.compose.web.css.justifyContent
+import org.jetbrains.compose.web.css.margin
+import org.jetbrains.compose.web.css.marginBottom
+import org.jetbrains.compose.web.css.marginTop
+import org.jetbrains.compose.web.css.maxWidth
+import org.jetbrains.compose.web.css.minWidth
+import org.jetbrains.compose.web.css.opacity
+import org.jetbrains.compose.web.css.overflow
+import org.jetbrains.compose.web.css.overflowX
+import org.jetbrains.compose.web.css.padding
+import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.css.style
+import org.jetbrains.compose.web.css.textAlign
+import org.jetbrains.compose.web.css.textDecoration
+import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.Div
+import org.jetbrains.compose.web.dom.H3
+import org.jetbrains.compose.web.dom.Input
+import org.jetbrains.compose.web.dom.Option
+import org.jetbrains.compose.web.dom.P
+import org.jetbrains.compose.web.dom.Select
+import org.jetbrains.compose.web.dom.Span
+import org.jetbrains.compose.web.dom.Table
+import org.jetbrains.compose.web.dom.Tbody
+import org.jetbrains.compose.web.dom.Td
+import org.jetbrains.compose.web.dom.Text
+import org.jetbrains.compose.web.dom.Th
+import org.jetbrains.compose.web.dom.Thead
+import org.jetbrains.compose.web.dom.Tr
 
 /**
  * FlagsList component - displays list of all flags
@@ -34,7 +84,8 @@ fun FlagsList() {
     val deletedFlagsLoading = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
     val searchQuery = remember { mutableStateOf("") }
-    val statusFilter = remember { mutableStateOf<Boolean?>(null) } // null = all, true = enabled, false = disabled
+    val statusFilter =
+        remember { mutableStateOf<Boolean?>(null) } // null = all, true = enabled, false = disabled
     val sortColumn = remember { mutableStateOf<String?>(null) }
     val sortAscending = remember { mutableStateOf(true) }
     val showDeletedFlags = remember { mutableStateOf(false) }
@@ -45,15 +96,17 @@ fun FlagsList() {
         CoroutineScope(Dispatchers.Main).launch {
             loading.value = true
             error.value = null
-            try {
-                val fetchedFlags = ApiClient.getFlags()
-                flags.clear()
-                flags.addAll(fetchedFlags.reversed()) // Reverse to show newest first
-            } catch (e: Exception) {
-                error.value = e.message ?: LocalizedStrings.failedToLoadFlags
-            } finally {
-                loading.value = false
-            }
+            ErrorHandler.withErrorHandling(
+                block = {
+                    val fetchedFlags = ApiClient.getFlags()
+                    flags.clear()
+                    flags.addAll(fetchedFlags.reversed()) // Reverse to show newest first
+                },
+                onError = { err ->
+                    error.value = ErrorHandler.getUserMessage(err)
+                }
+            )
+            loading.value = false
         }
     }
 
@@ -99,7 +152,7 @@ fun FlagsList() {
 
     fun createFlag(template: String? = null) {
         if (newFlagDescription.value.isBlank()) return
-        
+
         CoroutineScope(Dispatchers.Main).launch {
             creatingFlag.value = true
             error.value = null
@@ -138,11 +191,11 @@ fun FlagsList() {
 
     // Real-time refresh trigger: when SSE fires, increment to trigger loadFlags
     val realtimeRefreshTrigger = remember { mutableStateOf(0) }
-    
+
     LaunchedEffect(Unit) {
         loadFlags()
     }
-    
+
     // Real-time auto-refresh: connect to SSE and reload flags on any flag event
     DisposableEffect(AppConfig.Features.enableRealtime) {
         if (AppConfig.Features.enableRealtime) {
@@ -156,7 +209,7 @@ fun FlagsList() {
             onDispose { }
         }
     }
-    
+
     LaunchedEffect(realtimeRefreshTrigger.value) {
         if (realtimeRefreshTrigger.value > 0) loadFlags()
     }
@@ -246,10 +299,12 @@ fun FlagsList() {
                         property("transition", "border-color 0.2s")
                     }
                     onFocus {
-                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.borderColor =
+                            FlagentTheme.Primary.toString()
                     }
                     onBlur {
-                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Border.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.borderColor =
+                            FlagentTheme.Border.toString()
                     }
                 }
                 Button({
@@ -259,11 +314,13 @@ fun FlagsList() {
                     }
                     style {
                         padding(12.px, 20.px)
-                        backgroundColor(if (creatingFlag.value || newFlagDescription.value.isBlank()) {
-                            FlagentTheme.NeutralLighter
-                        } else {
-                            FlagentTheme.Success
-                        })
+                        backgroundColor(
+                            if (creatingFlag.value || newFlagDescription.value.isBlank()) {
+                                FlagentTheme.NeutralLighter
+                            } else {
+                                FlagentTheme.Success
+                            }
+                        )
                         color(FlagentTheme.Background)
                         border {
                             width(0.px)
@@ -274,19 +331,28 @@ fun FlagsList() {
                         fontWeight("600")
                         fontSize(14.px)
                         property("transition", "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)")
-                        property("box-shadow", if (creatingFlag.value || newFlagDescription.value.isBlank()) "none" else "0 4px 12px rgba(16, 185, 129, 0.3)")
+                        property(
+                            "box-shadow",
+                            if (creatingFlag.value || newFlagDescription.value.isBlank()) "none" else "0 4px 12px rgba(16, 185, 129, 0.3)"
+                        )
                     }
                     onMouseEnter {
                         if (!creatingFlag.value && newFlagDescription.value.isNotBlank()) {
                             val element = it.target as org.w3c.dom.HTMLElement
                             element.style.transform = "translateY(-2px) scale(1.02)"
-                            element.style.setProperty("box-shadow", "0 6px 16px rgba(16, 185, 129, 0.4)")
+                            element.style.setProperty(
+                                "box-shadow",
+                                "0 6px 16px rgba(16, 185, 129, 0.4)"
+                            )
                         }
                     }
                     onMouseLeave {
                         val element = it.target as org.w3c.dom.HTMLElement
                         element.style.transform = "translateY(0) scale(1)"
-                        element.style.setProperty("box-shadow", if (creatingFlag.value || newFlagDescription.value.isBlank()) "none" else "0 4px 12px rgba(16, 185, 129, 0.3)")
+                        element.style.setProperty(
+                            "box-shadow",
+                            if (creatingFlag.value || newFlagDescription.value.isBlank()) "none" else "0 4px 12px rgba(16, 185, 129, 0.3)"
+                        )
                     }
                 }) {
                     Icon(
@@ -298,13 +364,13 @@ fun FlagsList() {
                 }
                 Select({
                     onChange { event ->
-                        val selected = (event.target as org.w3c.dom.HTMLSelectElement).value
+                        val selected = event.target.value
                         when (selected) {
                             "simple_boolean_flag" -> createFlag("simple_boolean_flag")
                             "" -> Router.navigateTo(Route.CreateFlag)
                         }
                         // Reset select to default value after selection
-                        (event.target as org.w3c.dom.HTMLSelectElement).value = ""
+                        event.target.value = ""
                     }
                     style {
                         padding(12.px, 16.px)
@@ -365,15 +431,17 @@ fun FlagsList() {
                     property("transition", "border-color 0.2s")
                 }
                 onFocus {
-                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
+                    (it.target as org.w3c.dom.HTMLElement).style.borderColor =
+                        FlagentTheme.Primary.toString()
                 }
                 onBlur {
-                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Border.toString()
+                    (it.target as org.w3c.dom.HTMLElement).style.borderColor =
+                        FlagentTheme.Border.toString()
                 }
             }
             Select({
                 onChange { event ->
-                    val selected = (event.target as org.w3c.dom.HTMLSelectElement).value
+                    val selected = event.target.value
                     statusFilter.value = when (selected) {
                         "enabled" -> true
                         "disabled" -> false
@@ -417,6 +485,11 @@ fun FlagsList() {
         if (loading.value) {
             Spinner()
         } else if (error.value != null) {
+            val err = error.value!!
+            val isTenantOrApiKeyError = err.contains("tenant", ignoreCase = true) ||
+                    err.contains("Create tenant", ignoreCase = true) ||
+                    err.contains("X-API-Key", ignoreCase = true)
+            if (isTenantOrApiKeyError) SideEffect { flagent.frontend.state.BackendOnboardingState.setBackendNeedsTenantOrAuth() }
             Div({
                 style {
                     color(FlagentTheme.Error)
@@ -425,36 +498,84 @@ fun FlagsList() {
                     borderRadius(5.px)
                 }
             }) {
-                Text("${LocalizedStrings.error}: ${error.value}")
+                Text("${LocalizedStrings.error}: $err")
+                if (isTenantOrApiKeyError) {
+                    P({
+                        style {
+                            marginTop(8.px)
+                            fontSize(14.px)
+                            display(DisplayStyle.Flex)
+                            gap(12.px)
+                            flexWrap(FlexWrap.Wrap)
+                        }
+                    }) {
+                        Button({
+                            style {
+                                color(FlagentTheme.Primary)
+                                textDecoration("underline")
+                                fontWeight("600")
+                                backgroundColor(Color("transparent"))
+                                border(0.px)
+                                cursor("pointer")
+                                padding(0.px)
+                                fontSize(14.px)
+                            }
+                            onClick { Router.navigateToTenantsWithCreate() }
+                        }) {
+                            Text("Create first tenant →")
+                        }
+                        Button({
+                            style {
+                                color(FlagentTheme.Primary)
+                                textDecoration("underline")
+                                fontWeight("600")
+                                backgroundColor(Color("transparent"))
+                                border(0.px)
+                                cursor("pointer")
+                                padding(0.px)
+                                fontSize(14.px)
+                            }
+                            onClick { Router.navigateTo(Route.Login) }
+                        }) {
+                            Text("Log in (admin) →")
+                        }
+                    }
+                }
             }
         } else {
             // Filter and sort flags
-            val filteredAndSortedFlags = remember(flags, searchQuery.value, statusFilter.value, sortColumn.value, sortAscending.value) {
+            val filteredAndSortedFlags = remember(
+                flags,
+                searchQuery.value,
+                statusFilter.value,
+                sortColumn.value,
+                sortAscending.value
+            ) {
                 var result = flags.toList()
-                
+
                 // Filter by search query
                 if (searchQuery.value.isNotBlank()) {
                     val terms = searchQuery.value.split(",").map { it.trim().lowercase() }
                     result = result.filter { flag ->
                         terms.all { term ->
                             flag.id.toString().contains(term) ||
-                            flag.key.contains(term, ignoreCase = true) ||
-                            (flag.description?.lowercase()?.contains(term) == true) ||
-                            flag.tags.any { it.value.lowercase().contains(term) }
+                                    flag.key.contains(term, ignoreCase = true) ||
+                                    flag.description.lowercase().contains(term) ||
+                                    flag.tags.any { it.value.lowercase().contains(term) }
                         }
                     }
                 }
-                
+
                 // Filter by enabled status
                 statusFilter.value?.let { enabled ->
                     result = result.filter { it.enabled == enabled }
                 }
-                
+
                 // Sort
                 sortColumn.value?.let { column ->
                     result = when (column) {
                         "id" -> result.sortedBy { it.id }
-                        "description" -> result.sortedBy { it.description ?: "" }
+                        "description" -> result.sortedBy { it.description }
                         "updatedBy" -> result.sortedBy { it.updatedBy ?: "" }
                         "updatedAt" -> result.sortedBy { it.updatedAt ?: "" }
                         else -> result
@@ -463,7 +584,7 @@ fun FlagsList() {
                         result = result.reversed()
                     }
                 }
-                
+
                 result
             }
 
@@ -548,25 +669,27 @@ fun FlagsList() {
                                         property("transition", "background-color 0.2s")
                                     }
                                     onMouseEnter {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.BackgroundDark.toString()
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.BackgroundDark.toString()
                                     }
                                     onMouseLeave {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.BackgroundAlt.toString()
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.BackgroundAlt.toString()
                                     }
+                                }) {
+                                    Span({
+                                        style {
+                                            display(DisplayStyle.Flex)
+                                            alignItems(AlignItems.Center)
+                                            gap(6.px)
+                                        }
                                     }) {
-                                        Span({
-                                            style {
-                                                display(DisplayStyle.Flex)
-                                                alignItems(AlignItems.Center)
-                                                gap(6.px)
-                                            }
-                                        }) {
-                                            Icon(
-                                                name = "tag",
-                                                size = 16.px,
-                                                color = FlagentTheme.Text
-                                            )
-                                            Text(LocalizedStrings.flagId)
+                                        Icon(
+                                            name = "tag",
+                                            size = 16.px,
+                                            color = FlagentTheme.Text
+                                        )
+                                        Text(LocalizedStrings.flagId)
                                         if (sortColumn.value == "id") {
                                             Span({
                                                 style {
@@ -587,7 +710,7 @@ fun FlagsList() {
                                         color(FlagentTheme.Text)
                                         textAlign("left")
                                     }
-                                    }) { 
+                                }) {
                                     Span({
                                         style {
                                             display(DisplayStyle.Flex)
@@ -611,7 +734,7 @@ fun FlagsList() {
                                         color(FlagentTheme.Text)
                                         textAlign("left")
                                     }
-                                }) { 
+                                }) {
                                     Span({
                                         style {
                                             display(DisplayStyle.Flex)
@@ -640,25 +763,27 @@ fun FlagsList() {
                                         property("transition", "background-color 0.2s")
                                     }
                                     onMouseEnter {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.BackgroundDark.toString()
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.BackgroundDark.toString()
                                     }
                                     onMouseLeave {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.BackgroundAlt.toString()
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.BackgroundAlt.toString()
                                     }
+                                }) {
+                                    Span({
+                                        style {
+                                            display(DisplayStyle.Flex)
+                                            alignItems(AlignItems.Center)
+                                            gap(6.px)
+                                        }
                                     }) {
-                                        Span({
-                                            style {
-                                                display(DisplayStyle.Flex)
-                                                alignItems(AlignItems.Center)
-                                                gap(6.px)
-                                            }
-                                        }) {
-                                            Icon(
-                                                name = "person",
-                                                size = 16.px,
-                                                color = FlagentTheme.Text
-                                            )
-                                            Text(LocalizedStrings.lastUpdatedBy)
+                                        Icon(
+                                            name = "person",
+                                            size = 16.px,
+                                            color = FlagentTheme.Text
+                                        )
+                                        Text(LocalizedStrings.lastUpdatedBy)
                                         if (sortColumn.value == "updatedBy") {
                                             Span({
                                                 style {
@@ -684,25 +809,27 @@ fun FlagsList() {
                                         property("transition", "background-color 0.2s")
                                     }
                                     onMouseEnter {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.BackgroundDark.toString()
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.BackgroundDark.toString()
                                     }
                                     onMouseLeave {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.BackgroundAlt.toString()
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.BackgroundAlt.toString()
                                     }
+                                }) {
+                                    Span({
+                                        style {
+                                            display(DisplayStyle.Flex)
+                                            alignItems(AlignItems.Center)
+                                            gap(6.px)
+                                        }
                                     }) {
-                                        Span({
-                                            style {
-                                                display(DisplayStyle.Flex)
-                                                alignItems(AlignItems.Center)
-                                                gap(6.px)
-                                            }
-                                        }) {
-                                            Icon(
-                                                name = "schedule",
-                                                size = 16.px,
-                                                color = FlagentTheme.Text
-                                            )
-                                            Text(LocalizedStrings.updatedAt)
+                                        Icon(
+                                            name = "schedule",
+                                            size = 16.px,
+                                            color = FlagentTheme.Text
+                                        )
+                                        Text(LocalizedStrings.updatedAt)
                                         if (sortColumn.value == "updatedAt") {
                                             Span({
                                                 style {
@@ -723,7 +850,7 @@ fun FlagsList() {
                                         fontSize(13.px)
                                         color(FlagentTheme.Text)
                                     }
-                                }) { 
+                                }) {
                                     Span({
                                         style {
                                             display(DisplayStyle.Flex)
@@ -754,13 +881,18 @@ fun FlagsList() {
                                     }
                                     onMouseEnter {
                                         val element = it.target as org.w3c.dom.HTMLElement
-                                        element.style.backgroundColor = FlagentTheme.BackgroundDark.toString()
-                                        element.style.setProperty("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+                                        element.style.backgroundColor =
+                                            FlagentTheme.BackgroundDark.toString()
+                                        element.style.setProperty(
+                                            "box-shadow",
+                                            "0 2px 8px ${FlagentTheme.Shadow}"
+                                        )
                                         element.style.transform = "translateY(-1px)"
                                     }
                                     onMouseLeave {
                                         val element = it.target as org.w3c.dom.HTMLElement
-                                        element.style.backgroundColor = if (index % 2 == 0) FlagentTheme.Background.toString() else FlagentTheme.BackgroundAlt.toString()
+                                        element.style.backgroundColor =
+                                            if (index % 2 == 0) FlagentTheme.Background.toString() else FlagentTheme.BackgroundAlt.toString()
                                         element.style.setProperty("box-shadow", "none")
                                         element.style.transform = "translateY(0)"
                                     }
@@ -772,7 +904,7 @@ fun FlagsList() {
                                             fontWeight("600")
                                             color(FlagentTheme.Primary)
                                         }
-                                    }) { 
+                                    }) {
                                         Span({
                                             style {
                                                 display(DisplayStyle.InlineBlock)
@@ -791,7 +923,7 @@ fun FlagsList() {
                                             padding(14.px, 12.px)
                                             maxWidth(300.px)
                                         }
-                                    }) { 
+                                    }) {
                                         Div({
                                             style {
                                                 fontWeight("500")
@@ -799,7 +931,7 @@ fun FlagsList() {
                                                 marginBottom(4.px)
                                             }
                                         }) {
-                                            Text(flag.description ?: "No description")
+                                            Text(flag.description)
                                         }
                                         if (flag.key.isNotEmpty()) {
                                             Div({
@@ -840,7 +972,10 @@ fun FlagsList() {
                                                         borderRadius(12.px)
                                                         fontSize(11.px)
                                                         fontWeight("500")
-                                                        property("box-shadow", "0 1px 2px ${FlagentTheme.Shadow}")
+                                                        property(
+                                                            "box-shadow",
+                                                            "0 1px 2px ${FlagentTheme.Shadow}"
+                                                        )
                                                     }
                                                 }) {
                                                     Text(tag.value)
@@ -877,7 +1012,10 @@ fun FlagsList() {
                                                 fontWeight("600")
                                                 backgroundColor(if (flag.enabled) FlagentTheme.Success else FlagentTheme.Error)
                                                 color(FlagentTheme.Background)
-                                                property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
+                                                property(
+                                                    "box-shadow",
+                                                    "0 1px 3px ${FlagentTheme.Shadow}"
+                                                )
                                             }
                                         }) {
                                             Span({
@@ -946,7 +1084,7 @@ fun FlagsList() {
                     onMouseEnter {
                         val element = it.target as org.w3c.dom.HTMLElement
                         element.style.backgroundColor = FlagentTheme.NeutralLight.toString()
-                                                    element.style.setProperty("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
+                        element.style.setProperty("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
                     }
                     onMouseLeave {
                         val element = it.target as org.w3c.dom.HTMLElement
@@ -1009,87 +1147,63 @@ fun FlagsList() {
                                     property("min-width", "600px")
                                 }
                             }) {
-                            Thead {
-                                Tr({
-                                    style {
-                                        backgroundColor(FlagentTheme.BackgroundAlt)
-                                    }
-                                }) {
-                                    Th({
-                                        style {
-                                            padding(10.px)
-                                            border {
-                                                width(1.px)
-                                                style(LineStyle.Solid)
-                                                color(FlagentTheme.Border)
-                                            }
-                                        }
-                                    }) { Text(LocalizedStrings.flagId) }
-                                    Th({
-                                        style {
-                                            padding(10.px)
-                                            border {
-                                                width(1.px)
-                                                style(LineStyle.Solid)
-                                                color(FlagentTheme.Border)
-                                            }
-                                        }
-                                    }) { Text(LocalizedStrings.description) }
-                                    Th({
-                                        style {
-                                            padding(10.px)
-                                            border {
-                                                width(1.px)
-                                                style(LineStyle.Solid)
-                                                color(FlagentTheme.Border)
-                                            }
-                                        }
-                                    }) { Text(LocalizedStrings.tags) }
-                                    Th({
-                                        style {
-                                            padding(10.px)
-                                            border {
-                                                width(1.px)
-                                                style(LineStyle.Solid)
-                                                color(FlagentTheme.Border)
-                                            }
-                                        }
-                                    }) { Text(LocalizedStrings.lastUpdatedBy) }
-                                    Th({
-                                        style {
-                                            padding(10.px)
-                                            border {
-                                                width(1.px)
-                                                style(LineStyle.Solid)
-                                                color(FlagentTheme.Border)
-                                            }
-                                        }
-                                    }) { Text(LocalizedStrings.updatedAtUtc) }
-                                    Th({
-                                        style {
-                                            padding(10.px)
-                                            textAlign("center")
-                                            border {
-                                                width(1.px)
-                                                style(LineStyle.Solid)
-                                                color(FlagentTheme.Border)
-                                            }
-                                        }
-                                    }) { Text(LocalizedStrings.action) }
-                                }
-                            }
-                            Tbody {
-                                deletedFlags.forEach { flag ->
+                                Thead {
                                     Tr({
                                         style {
-                                            border {
-                                                width(1.px)
-                                                style(LineStyle.Solid)
-                                                color(FlagentTheme.Border)
-                                            }
+                                            backgroundColor(FlagentTheme.BackgroundAlt)
                                         }
                                     }) {
-                                        Td({
+                                        Th({
+                                            style {
+                                                padding(10.px)
+                                                border {
+                                                    width(1.px)
+                                                    style(LineStyle.Solid)
+                                                    color(FlagentTheme.Border)
+                                                }
+                                            }
+                                        }) { Text(LocalizedStrings.flagId) }
+                                        Th({
+                                            style {
+                                                padding(10.px)
+                                                border {
+                                                    width(1.px)
+                                                    style(LineStyle.Solid)
+                                                    color(FlagentTheme.Border)
+                                                }
+                                            }
+                                        }) { Text(LocalizedStrings.description) }
+                                        Th({
+                                            style {
+                                                padding(10.px)
+                                                border {
+                                                    width(1.px)
+                                                    style(LineStyle.Solid)
+                                                    color(FlagentTheme.Border)
+                                                }
+                                            }
+                                        }) { Text(LocalizedStrings.tags) }
+                                        Th({
+                                            style {
+                                                padding(10.px)
+                                                border {
+                                                    width(1.px)
+                                                    style(LineStyle.Solid)
+                                                    color(FlagentTheme.Border)
+                                                }
+                                            }
+                                        }) { Text(LocalizedStrings.lastUpdatedBy) }
+                                        Th({
+                                            style {
+                                                padding(10.px)
+                                                border {
+                                                    width(1.px)
+                                                    style(LineStyle.Solid)
+                                                    color(FlagentTheme.Border)
+                                                }
+                                            }
+                                        }) { Text(LocalizedStrings.updatedAtUtc) }
+                                        Th({
                                             style {
                                                 padding(10.px)
                                                 textAlign("center")
@@ -1099,20 +1213,13 @@ fun FlagsList() {
                                                     color(FlagentTheme.Border)
                                                 }
                                             }
-                                        }) { Text(flag.id.toString()) }
-                                        Td({
+                                        }) { Text(LocalizedStrings.action) }
+                                    }
+                                }
+                                Tbody {
+                                    deletedFlags.forEach { flag ->
+                                        Tr({
                                             style {
-                                                padding(10.px)
-                                                border {
-                                                    width(1.px)
-                                                    style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
-                                                }
-                                            }
-                                        }) { Text(flag.description ?: "") }
-                                        Td({
-                                            style {
-                                                padding(10.px)
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
@@ -1120,86 +1227,129 @@ fun FlagsList() {
                                                 }
                                             }
                                         }) {
-                                            if (flag.tags.isEmpty()) {
-                                                Text("")
-                                            } else {
-                                                flag.tags.forEach { tag ->
-                                                    Span({
-                                                        style {
-                                                            display(DisplayStyle.InlineBlock)
-                                                            padding(2.px, 8.px)
-                                                            margin(2.px, 5.px)
-                                                            backgroundColor(FlagentTheme.Accent)
-                                                            color(FlagentTheme.Background)
-                                                            borderRadius(3.px)
-                                                            fontSize(12.px)
-                                                        }
-                                                    }) {
-                                                        Text(tag.value)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        Td({
-                                            style {
-                                                padding(10.px)
-                                                border {
-                                                    width(1.px)
-                                                    style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
-                                                }
-                                            }
-                                        }) { Text(flag.updatedBy ?: "") }
-                                        Td({
-                                            style {
-                                                padding(10.px)
-                                                border {
-                                                    width(1.px)
-                                                    style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
-                                                }
-                                            }
-                                        }) { Text(flag.updatedAt?.split(".")?.get(0) ?: "") }
-                                        Td({
-                                            style {
-                                                padding(14.px, 12.px)
-                                                textAlign("center")
-                                            }
-                                        }) {
-                                            Button({
-                                                onClick { restoreFlag(flag) }
+                                            Td({
                                                 style {
-                                                    padding(8.px, 16.px)
-                                                    backgroundColor(FlagentTheme.Success)
-                                                    color(FlagentTheme.Background)
+                                                    padding(10.px)
+                                                    textAlign("center")
                                                     border {
-                                                        width(0.px)
-                                                        style(LineStyle.None)
+                                                        width(1.px)
+                                                        style(LineStyle.Solid)
+                                                        color(FlagentTheme.Border)
                                                     }
-                                                    borderRadius(6.px)
-                                                    cursor("pointer")
-                                                    fontWeight("600")
-                                                    fontSize(13.px)
-                                                    property("transition", "all 0.2s")
-                                                    property("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
                                                 }
-                                                onMouseEnter {
-                                                    val element = it.target as org.w3c.dom.HTMLElement
-                                                    element.style.transform = "translateY(-1px)"
-                                                    element.style.setProperty("box-shadow", "0 4px 6px ${FlagentTheme.ShadowHover}")
+                                            }) { Text(flag.id.toString()) }
+                                            Td({
+                                                style {
+                                                    padding(10.px)
+                                                    border {
+                                                        width(1.px)
+                                                        style(LineStyle.Solid)
+                                                        color(FlagentTheme.Border)
+                                                    }
                                                 }
-                                                onMouseLeave {
-                                                    val element = it.target as org.w3c.dom.HTMLElement
-                                                    element.style.transform = "translateY(0)"
-                                                    element.style.setProperty("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
+                                            }) { Text(flag.description) }
+                                            Td({
+                                                style {
+                                                    padding(10.px)
+                                                    border {
+                                                        width(1.px)
+                                                        style(LineStyle.Solid)
+                                                        color(FlagentTheme.Border)
+                                                    }
                                                 }
                                             }) {
-                                                Icon(
-                                                    name = "restore",
-                                                    size = 18.px,
-                                                    color = FlagentTheme.Background
-                                                )
-                                                Text(LocalizedStrings.restore)
+                                                if (flag.tags.isEmpty()) {
+                                                    Text("")
+                                                } else {
+                                                    flag.tags.forEach { tag ->
+                                                        Span({
+                                                            style {
+                                                                display(DisplayStyle.InlineBlock)
+                                                                padding(2.px, 8.px)
+                                                                margin(2.px, 5.px)
+                                                                backgroundColor(FlagentTheme.Accent)
+                                                                color(FlagentTheme.Background)
+                                                                borderRadius(3.px)
+                                                                fontSize(12.px)
+                                                            }
+                                                        }) {
+                                                            Text(tag.value)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Td({
+                                                style {
+                                                    padding(10.px)
+                                                    border {
+                                                        width(1.px)
+                                                        style(LineStyle.Solid)
+                                                        color(FlagentTheme.Border)
+                                                    }
+                                                }
+                                            }) { Text(flag.updatedBy ?: "") }
+                                            Td({
+                                                style {
+                                                    padding(10.px)
+                                                    border {
+                                                        width(1.px)
+                                                        style(LineStyle.Solid)
+                                                        color(FlagentTheme.Border)
+                                                    }
+                                                }
+                                            }) { Text(flag.updatedAt?.split(".")?.get(0) ?: "") }
+                                            Td({
+                                                style {
+                                                    padding(14.px, 12.px)
+                                                    textAlign("center")
+                                                }
+                                            }) {
+                                                Button({
+                                                    onClick { restoreFlag(flag) }
+                                                    style {
+                                                        padding(8.px, 16.px)
+                                                        backgroundColor(FlagentTheme.Success)
+                                                        color(FlagentTheme.Background)
+                                                        border {
+                                                            width(0.px)
+                                                            style(LineStyle.None)
+                                                        }
+                                                        borderRadius(6.px)
+                                                        cursor("pointer")
+                                                        fontWeight("600")
+                                                        fontSize(13.px)
+                                                        property("transition", "all 0.2s")
+                                                        property(
+                                                            "box-shadow",
+                                                            "0 2px 4px ${FlagentTheme.Shadow}"
+                                                        )
+                                                    }
+                                                    onMouseEnter {
+                                                        val element =
+                                                            it.target as org.w3c.dom.HTMLElement
+                                                        element.style.transform = "translateY(-1px)"
+                                                        element.style.setProperty(
+                                                            "box-shadow",
+                                                            "0 4px 6px ${FlagentTheme.ShadowHover}"
+                                                        )
+                                                    }
+                                                    onMouseLeave {
+                                                        val element =
+                                                            it.target as org.w3c.dom.HTMLElement
+                                                        element.style.transform = "translateY(0)"
+                                                        element.style.setProperty(
+                                                            "box-shadow",
+                                                            "0 2px 4px ${FlagentTheme.Shadow}"
+                                                        )
+                                                    }
+                                                }) {
+                                                    Icon(
+                                                        name = "restore",
+                                                        size = 18.px,
+                                                        color = FlagentTheme.Background
+                                                    )
+                                                    Text(LocalizedStrings.restore)
+                                                }
                                             }
                                         }
                                     }
@@ -1210,6 +1360,5 @@ fun FlagsList() {
                 }
             }
         }
-    }
     }
 }

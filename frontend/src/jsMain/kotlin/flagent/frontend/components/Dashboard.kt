@@ -7,6 +7,7 @@ import flagent.frontend.components.metrics.OverviewChart
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.BackendOnboardingState
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.AppLogger
 import flagent.frontend.util.ErrorHandler
@@ -111,6 +112,10 @@ fun Dashboard() {
                 Text(flagent.frontend.i18n.LocalizedStrings.loading)
             }
         } else if (error != null) {
+            val isTenantOrApiKeyError = error!!.contains("tenant", ignoreCase = true) ||
+                error!!.contains("Create tenant", ignoreCase = true) ||
+                error!!.contains("X-API-Key", ignoreCase = true)
+            if (isTenantOrApiKeyError) SideEffect { BackendOnboardingState.setBackendNeedsTenantOrAuth() }
             Div({
                 style {
                     padding(20.px)
@@ -120,6 +125,48 @@ fun Dashboard() {
                 }
             }) {
                 Text(error!!)
+                if (isTenantOrApiKeyError) {
+                    P({
+                        style {
+                            marginTop(10.px)
+                            fontSize(14.px)
+                            display(DisplayStyle.Flex)
+                            gap(12.px)
+                            flexWrap(FlexWrap.Wrap)
+                        }
+                    }) {
+                        Button({
+                            style {
+                                color(Color("#DC2626"))
+                                textDecoration("underline")
+                                fontWeight("600")
+                                backgroundColor(Color("transparent"))
+                                border(0.px)
+                                cursor("pointer")
+                                padding(0.px)
+                                fontSize(14.px)
+                            }
+                            onClick { Router.navigateToTenantsWithCreate() }
+                        }) {
+                            Text("Create first tenant →")
+                        }
+                        Button({
+                            style {
+                                color(Color("#DC2626"))
+                                textDecoration("underline")
+                                fontWeight("600")
+                                backgroundColor(Color("transparent"))
+                                border(0.px)
+                                cursor("pointer")
+                                padding(0.px)
+                                fontSize(14.px)
+                            }
+                            onClick { Router.navigateTo(Route.Login) }
+                        }) {
+                            Text("Log in (admin) →")
+                        }
+                    }
+                }
             }
         } else if (stats != null) {
             // Stats Cards
@@ -357,7 +404,7 @@ fun Dashboard() {
                         Router.navigateTo(Route.CreateFlag)
                     }
                     QuickActionButton("View Flags", "flag") {
-                        Router.navigateTo(Route.Home)
+                        Router.navigateTo(Route.FlagsList)
                     }
                     QuickActionButton(flagent.frontend.i18n.LocalizedStrings.experimentsTitle, "science") {
                         Router.navigateTo(Route.Experiments)
