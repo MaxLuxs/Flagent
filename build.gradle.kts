@@ -51,3 +51,10 @@ subprojects {
         }
     }
 }
+
+// Root "run" = frontend only. Stops Gradle from running run in ALL subprojects (sample-kotlin, sample-ktor, backend, frontend).
+tasks.register("run") {
+    group = "application"
+    description = "Run frontend dev server at http://localhost:8080. For full dev: run :backend:run in another terminal first."
+    dependsOn(":frontend:run")
+}

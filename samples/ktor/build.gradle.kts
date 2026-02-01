@@ -29,6 +29,15 @@ application {
     mainClass.set("flagent.sample.ApplicationKt")
 }
 
+// Disable default "run" so root "run" (frontend only) does not trigger this sample. Use :sample-ktor:runSample to run.
+tasks.named<JavaExec>("run").configure { enabled = false }
+tasks.register<JavaExec>("runSample") {
+    group = "application"
+    description = "Run Ktor sample server on port 8080 (requires backend at http://localhost:18000)"
+    mainClass.set(application.mainClass.get())
+    classpath = sourceSets.main.get().runtimeClasspath
+}
+
 java {
     toolchain {
         languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(21))
