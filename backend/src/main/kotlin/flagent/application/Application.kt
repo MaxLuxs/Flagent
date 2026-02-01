@@ -41,6 +41,7 @@ import flagent.route.configureTagRoutes
 import flagent.route.configureVariantRoutes
 import flagent.middleware.configureSSE
 import flagent.middleware.configureRealtimeEventBus
+import flagent.route.RealtimeEventBus
 import flagent.recorder.DataRecordingService
 import flagent.route.realtimeRoutes
 import flagent.service.ConstraintService
@@ -210,26 +211,21 @@ fun Application.module() {
     val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase, dataRecordingService)
     val flagSnapshotService = FlagSnapshotService(flagSnapshotRepository, flagRepository)
     val flagEntityTypeService = FlagEntityTypeService(flagEntityTypeRepository)
-    val segmentService = SegmentService(segmentRepository, flagSnapshotService)
+    val eventBus = configureRealtimeEventBus()
+    val segmentService = SegmentService(segmentRepository, flagSnapshotService, flagRepository, eventBus)
     val constraintService = ConstraintService(constraintRepository, segmentRepository, flagSnapshotService)
     val distributionService = DistributionService(distributionRepository, flagRepository, flagSnapshotService)
-    val variantService = VariantService(variantRepository, flagRepository, distributionRepository, flagSnapshotService)
+    val variantService = VariantService(variantRepository, flagRepository, distributionRepository, flagSnapshotService, eventBus)
     val flagService = FlagService(
-        flagRepository, 
+        flagRepository,
         flagSnapshotService,
         segmentService,
         variantService,
         distributionService,
-        flagEntityTypeService
+        flagEntityTypeService,
+        eventBus
     )
     val tagService = TagService(tagRepository, flagRepository, flagSnapshotService)
-    
-    // Configure realtime event bus for SSE
-    val eventBus = configureRealtimeEventBus()
-    
-    // TODO: Integrate eventBus with services for automatic event publishing
-    // This will enable automatic SSE notifications on flag CRUD operations
-    // Example implementation needed in FlagService, SegmentService, VariantService
     val exportService = ExportService(flagRepository, flagSnapshotRepository, flagEntityTypeRepository)
     
     val enterpriseConfigurator = ServiceLoader.load(EnterpriseConfigurator::class.java).toList().firstOrNull() ?: DefaultEnterpriseConfigurator()

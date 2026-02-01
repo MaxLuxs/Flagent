@@ -1,19 +1,41 @@
 package flagent.frontend.components.auth
 
 import androidx.compose.runtime.*
+import flagent.frontend.api.ApiClient
+import flagent.frontend.api.SsoProviderResponse
 import flagent.frontend.components.Icon
 import flagent.frontend.components.common.EmptyState
+import flagent.frontend.components.common.SkeletonLoader
 import flagent.frontend.theme.FlagentTheme
+import flagent.frontend.util.ErrorHandler
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
 /**
- * SSO Providers List component (Phase 2)
+ * SSO Providers List component (Phase 2).
+ * Loads providers from GET /tenants/me/sso/providers (requires X-Tenant-ID).
  */
 @Composable
 fun SsoProvidersList() {
     val providers = remember { mutableStateOf<List<SsoProvider>>(emptyList()) }
-    
+    val isLoading = remember { mutableStateOf(true) }
+    val error = remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        isLoading.value = true
+        error.value = null
+        ErrorHandler.withErrorHandling(
+            block = {
+                val list = ApiClient.getSsoProviders()
+                providers.value = list.map { it.toSsoProvider() }
+            },
+            onError = { err ->
+                error.value = ErrorHandler.getUserMessage(err)
+            }
+        )
+        isLoading.value = false
+    }
+
     Div({
         style {
             backgroundColor(Color.white)
@@ -40,30 +62,31 @@ fun SsoProvidersList() {
             }) {
                 Text("SSO Providers")
             }
-            
-            Button({
-                onClick { /* TODO: Open create form */ }
+            // Add Provider button hidden until POST /sso/providers is implemented on backend
+        }
+
+        if (isLoading.value) {
+            Div({ style { padding(16.px) } }) {
+                repeat(3) { SkeletonLoader(height = 24.px, width = 100.percent) }
+            }
+        } else if (error.value != null) {
+            Div({
                 style {
-                    padding(10.px, 16.px)
-                    backgroundColor(FlagentTheme.Primary)
-                    color(Color.white)
-                    border(0.px)
-                    borderRadius(6.px)
-                    cursor("pointer")
-                    fontSize(14.px)
+                    padding(16.px)
+                    color(FlagentTheme.Error)
+                    property("background-color", "rgba(239, 68, 68, 0.1)")
+                    borderRadius(8.px)
                 }
             }) {
-                Text("Add Provider")
+                Text(error.value!!)
             }
-        }
-        
-        if (providers.value.isEmpty()) {
+        } else if (providers.value.isEmpty()) {
             EmptyState(
                 icon = "security",
                 title = "No SSO providers configured",
-                description = "Add SAML, OAuth, or OIDC providers for single sign-on",
-                actionLabel = "Add Provider",
-                onAction = { /* TODO */ }
+                description = "Add SAML, OAuth, or OIDC providers via admin UI or direct DB until API creation is available.",
+                actionLabel = null,
+                onAction = null
             )
         } else {
             providers.value.forEach { provider ->
@@ -129,10 +152,16 @@ private fun SsoProviderCard(provider: SsoProvider) {
     }
 }
 
-// Temporary data class (will be replaced with API model)
 data class SsoProvider(
     val id: String,
     val name: String,
     val type: String,
     val enabled: Boolean
+)
+
+private fun SsoProviderResponse.toSsoProvider() = SsoProvider(
+    id = id.toString(),
+    name = name,
+    type = type,
+    enabled = enabled
 )

@@ -59,14 +59,17 @@ object ApiClient {
         }
         
         HttpResponseValidator {
-            handleResponseExceptionWithRequest { exception, _ ->
+            handleResponseExceptionWithRequest { exception, request ->
                 val ex = exception as? ClientRequestException ?: return@handleResponseExceptionWithRequest
                 if (ex.response.status == HttpStatusCode.Unauthorized) {
-                    // Don't redirect for setup errors (no auth token = first load / API key required)
                     val hasAuth = getAuthToken() != null
-                    if (!hasAuth) {
+                    val path = request.url.encodedPath
+                    // 401 on /api/v1/* = tenant required (Create tenant first / X-API-Key) — show CTA, do NOT clear token or redirect
+                    val isTenantApi = path.contains("/api/v1/") || path.contains("/api/v1")
+                    if (isTenantApi || !hasAuth) {
                         throw exception  // Let ErrorHandler show "Create tenant first" / "Missing X-API-Key"
                     }
+                    // 401 on /admin/* = admin auth required — clear session and redirect to login (SaaS / admin session expired)
                     localStorage.removeItem(AUTH_TOKEN_KEY)
                     localStorage.removeItem(USER_KEY)
                     window.location.href = "/login"
@@ -114,7 +117,8 @@ object ApiClient {
         return localStorage.getItem("admin_api_key")?.takeIf { it.isNotBlank() }
     }
 
-    private fun getTenantId(): String? = null
+    private fun getTenantId(): String? =
+        localStorage.getItem("current_tenant")?.takeIf { it.isNotBlank() }
 
     /**
      * Admin login (email/password). Returns token and user. Throws on 401.
@@ -412,6 +416,16 @@ object ApiClient {
     
     // ========== SSO (Enterprise, requires tenant context) ==========
     
+    /** Path for tenant-scoped SSO providers list (GET /tenants/me/sso/providers). */
+    internal fun getSsoProvidersListPath(): String {
+        val baseUrl = AppConfig.apiBaseUrl.trimEnd('/')
+        return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
+            "/tenants/me/sso/providers"
+        } else {
+            "$baseUrl/tenants/me/sso/providers"
+        }
+    }
+
     internal fun getSsoPath(path: String): String {
         val baseUrl = AppConfig.apiBaseUrl
         return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
@@ -435,7 +449,7 @@ object ApiClient {
     }
     
     suspend fun getSsoProviders(): List<SsoProviderResponse> {
-        return client.get(getSsoPath("")).body()
+        return client.get(getSsoProvidersListPath()).body()
     }
     
     suspend fun createSsoProvider(request: CreateSsoProviderRequest): SsoProviderResponse {

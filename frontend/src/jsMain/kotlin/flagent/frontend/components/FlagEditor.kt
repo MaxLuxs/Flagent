@@ -467,10 +467,7 @@ private fun FlagConfigTab(flag: FlagResponse, flagId: Int) {
             onFlagUpdated = { refreshFlag() }
         )
         
-        // Variants Section - placeholder for now
         VariantsSection(flagId, flagState.value.variants, onUpdate = { refreshFlag() })
-        
-        // Segments Section - placeholder for now
         SegmentsSection(flagId, flagState.value.segments, flagState.value.variants, onUpdate = { refreshFlag() })
         
         // Debug Console

@@ -2,6 +2,7 @@ package flagent.service
 
 import flagent.domain.entity.*
 import flagent.domain.repository.IFlagRepository
+import flagent.route.RealtimeEventBus
 import flagent.service.command.CreateFlagCommand
 import flagent.service.command.CreateSegmentCommand
 import flagent.service.command.CreateVariantCommand
@@ -20,7 +21,8 @@ class FlagService(
     private val segmentService: SegmentService? = null,
     private val variantService: VariantService? = null,
     private val distributionService: DistributionService? = null,
-    private val flagEntityTypeService: FlagEntityTypeService? = null
+    private val flagEntityTypeService: FlagEntityTypeService? = null,
+    private val eventBus: RealtimeEventBus? = null
 ) {
     /**
      * Create flag key - generates random key if not provided
@@ -111,7 +113,8 @@ class FlagService(
         
         // Save flag snapshot after creation
         flagSnapshotService?.saveFlagSnapshot(created.id, updatedBy)
-        
+        eventBus?.publishFlagCreated(created.id.toLong(), created.key)
+
         return created
     }
     
@@ -190,15 +193,18 @@ class FlagService(
         }
         
         val updated = flagRepository.update(updatedFlag)
-        
+
         // Save flag snapshot after update
         flagSnapshotService?.saveFlagSnapshot(updated.id, updatedBy)
-        
+        eventBus?.publishFlagUpdated(updated.id.toLong(), updated.key)
+
         return updated
     }
     
     suspend fun deleteFlag(id: Int) {
+        val flag = flagRepository.findById(id)
         flagRepository.delete(id)
+        flag?.let { eventBus?.publishFlagDeleted(it.id.toLong(), it.key) }
     }
     
     suspend fun restoreFlag(id: Int): Flag? {
@@ -208,10 +214,11 @@ class FlagService(
     suspend fun setFlagEnabled(id: Int, enabled: Boolean, updatedBy: String? = null): Flag? {
         val flag = flagRepository.findById(id) ?: return null
         val updated = flagRepository.update(flag.copy(enabled = enabled, updatedBy = updatedBy))
-        
+
         // Save flag snapshot after enabling/disabling
         flagSnapshotService?.saveFlagSnapshot(updated.id, updatedBy)
-        
+        eventBus?.publishFlagToggled(updated.id.toLong(), updated.key, enabled)
+
         return updated
     }
 }

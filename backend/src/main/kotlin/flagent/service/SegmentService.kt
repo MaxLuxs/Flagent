@@ -1,7 +1,9 @@
 package flagent.service
 
 import flagent.domain.entity.Segment
+import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.ISegmentRepository
+import flagent.route.RealtimeEventBus
 import flagent.service.command.CreateSegmentCommand
 import flagent.service.command.PutSegmentCommand
 
@@ -11,7 +13,9 @@ import flagent.service.command.PutSegmentCommand
  */
 class SegmentService(
     private val segmentRepository: ISegmentRepository,
-    private val flagSnapshotService: FlagSnapshotService? = null
+    private val flagSnapshotService: FlagSnapshotService? = null,
+    private val flagRepository: IFlagRepository? = null,
+    private val eventBus: RealtimeEventBus? = null
 ) {
     companion object {
         const val SegmentDefaultRank = 999
@@ -33,10 +37,13 @@ class SegmentService(
         )
         val segmentWithDefaultRank = segment.copy(rank = SegmentDefaultRank)
         val created = segmentRepository.create(segmentWithDefaultRank)
-        
+
         // Save flag snapshot after creating segment
         flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
-        
+        flagRepository?.findById(command.flagId)?.let { flag ->
+            eventBus?.publishSegmentUpdated(command.flagId.toLong(), flag.key, created.id.toLong())
+        }
+
         return created
     }
     
@@ -49,10 +56,13 @@ class SegmentService(
             rolloutPercent = command.rolloutPercent
         )
         val updated = segmentRepository.update(updatedSegment)
-        
+
         // Save flag snapshot after updating segment
         flagSnapshotService?.saveFlagSnapshot(existingSegment.flagId, updatedBy)
-        
+        flagRepository?.findById(existingSegment.flagId)?.let { flag ->
+            eventBus?.publishSegmentUpdated(existingSegment.flagId.toLong(), flag.key, updated.id.toLong())
+        }
+
         return updated
     }
     
@@ -62,16 +72,22 @@ class SegmentService(
             ?: throw IllegalArgumentException("error finding segmentID $id")
         
         val flagId = segment.flagId
-        
+        flagRepository?.findById(flagId)?.let { flag ->
+            eventBus?.publishSegmentUpdated(flagId.toLong(), flag.key, id.toLong())
+        }
         segmentRepository.delete(id)
-        
+
         // Save flag snapshot after deleting segment
         flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
     }
     
     suspend fun reorderSegments(flagId: Int, segmentIds: List<Int>, updatedBy: String? = null) {
         segmentRepository.reorder(flagId, segmentIds)
-        
+        flagRepository?.findById(flagId)?.let { flag ->
+            segmentIds.firstOrNull()?.let { firstId ->
+                eventBus?.publishSegmentUpdated(flagId.toLong(), flag.key, firstId.toLong())
+            }
+        }
         // Save flag snapshot after reordering segments
         flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
     }

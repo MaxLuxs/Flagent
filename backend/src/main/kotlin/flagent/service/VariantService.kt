@@ -4,6 +4,7 @@ import flagent.domain.entity.Variant
 import flagent.domain.repository.IDistributionRepository
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.IVariantRepository
+import flagent.route.RealtimeEventBus
 import flagent.service.command.CreateVariantCommand
 import flagent.service.command.PutVariantCommand
 
@@ -15,7 +16,8 @@ class VariantService(
     private val variantRepository: IVariantRepository,
     private val flagRepository: IFlagRepository,
     private val distributionRepository: IDistributionRepository,
-    private val flagSnapshotService: FlagSnapshotService? = null
+    private val flagSnapshotService: FlagSnapshotService? = null,
+    private val eventBus: RealtimeEventBus? = null
 ) {
     suspend fun findVariantsByFlagId(flagId: Int): List<Variant> {
         return variantRepository.findByFlagId(flagId)
@@ -37,10 +39,11 @@ class VariantService(
         
         // Create variant
         val created = variantRepository.create(variant)
-        
+
         // Save flag snapshot after creating variant
         flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
-        
+        eventBus?.publishVariantUpdated(command.flagId.toLong(), flag.key, created.id.toLong())
+
         return created
     }
     
@@ -68,13 +71,14 @@ class VariantService(
         
         // Update variant
         val updated = variantRepository.update(variant)
-        
+
         // Update variantKey in distributions
         updateDistributionsVariantKey(command.variantId, command.key)
-        
+
         // Save flag snapshot after updating variant
         flagSnapshotService?.saveFlagSnapshot(command.flagId, updatedBy)
-        
+        eventBus?.publishVariantUpdated(command.flagId.toLong(), flag.key, updated.id.toLong())
+
         return updated
     }
     
@@ -97,11 +101,11 @@ class VariantService(
         
         // Delete variant (soft delete)
         variantRepository.delete(variantId)
-        
+        eventBus?.publishVariantUpdated(flagId.toLong(), flag.key, variantId.toLong())
         // Save flag snapshot after deleting variant
         flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
     }
-    
+
     private fun validateVariantKey(key: String) {
         if (key.isBlank()) {
             throw IllegalArgumentException("key cannot be empty")

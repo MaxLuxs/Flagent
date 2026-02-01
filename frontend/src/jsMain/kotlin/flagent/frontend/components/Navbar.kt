@@ -3,13 +3,16 @@ package flagent.frontend.components
 import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
+import flagent.frontend.components.tenants.TenantSwitcher
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.state.BackendOnboardingState
+import flagent.frontend.state.LocalGlobalState
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.AnomalyViewModel
 import flagent.frontend.viewmodel.AuthViewModel
+import flagent.frontend.viewmodel.TenantViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.ATarget
@@ -20,12 +23,19 @@ import org.jetbrains.compose.web.dom.*
  * Navbar component - top navigation bar
  */
 @Composable
-fun Navbar(authViewModel: AuthViewModel? = null) {
+fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewModel? = null) {
     val scope = rememberCoroutineScope()
+    val globalState = LocalGlobalState.current
     val anomalyViewModel = if (AppConfig.Features.enableAnomalyDetection) {
         remember { AnomalyViewModel() }
     } else null
-    
+
+    LaunchedEffect(tenantViewModel) {
+        tenantViewModel?.loadTenants()
+    }
+    LaunchedEffect(tenantViewModel?.currentTenant) {
+        tenantViewModel?.currentTenant?.let { globalState.currentTenant = it }
+    }
     LaunchedEffect(Unit) {
         if (anomalyViewModel != null) {
             while (true) {
@@ -178,7 +188,11 @@ fun Navbar(authViewModel: AuthViewModel? = null) {
                         }
                     }
                 }
-                
+
+                if (AppConfig.Features.enableMultiTenancy && tenantViewModel != null) {
+                    TenantSwitcher(viewModel = tenantViewModel)
+                }
+
                 NavLink("Settings", "settings", Route.Settings.PATH)
 
                 if ((AppConfig.requiresAuth || BackendOnboardingState.allowTenantsAndLogin) && authViewModel != null) {

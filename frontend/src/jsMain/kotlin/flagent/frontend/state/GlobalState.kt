@@ -52,7 +52,7 @@ class GlobalState {
 }
 
 /**
- * User model (placeholder for auth phase)
+ * User model for authenticated admin (AuthViewModel).
  */
 @Serializable
 data class User(
@@ -62,7 +62,7 @@ data class User(
 )
 
 /**
- * Tenant model (placeholder for multi-tenancy phase)
+ * Tenant model for multi-tenancy (TenantSwitcher, TenantViewModel).
  */
 data class Tenant(
     val id: String,

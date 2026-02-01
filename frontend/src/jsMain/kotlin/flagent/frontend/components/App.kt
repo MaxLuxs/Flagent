@@ -12,6 +12,7 @@ import flagent.frontend.state.LocalGlobalState
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.AppLogger
 import flagent.frontend.viewmodel.AuthViewModel
+import flagent.frontend.viewmodel.TenantViewModel
 import kotlinx.browser.localStorage
 import kotlinx.browser.sessionStorage
 import org.jetbrains.compose.web.css.*
@@ -19,6 +20,7 @@ import org.jetbrains.compose.web.dom.*
 
 private const val AUTH_TOKEN_KEY = "auth_token"
 private const val AUTH_RETURN_URL_KEY = "auth_return_url"
+private const val API_KEY_STORAGE_KEY = "api_key"
 
 /**
  * Main App component
@@ -27,6 +29,7 @@ private const val AUTH_RETURN_URL_KEY = "auth_return_url"
 fun App() {
     val globalState = remember { GlobalState() }
     val authViewModel = remember { AuthViewModel() }
+    val tenantViewModel = if (AppConfig.Features.enableMultiTenancy) remember { TenantViewModel() } else null
 
     LaunchedEffect(Unit) {
         Router.initialize()
@@ -46,6 +49,22 @@ fun App() {
             is Route.Tenants -> if (!AppConfig.Features.enableMultiTenancy && !BackendOnboardingState.allowTenantsAndLogin) Router.navigateTo(Route.Home)
             else -> {}
         }
+    }
+
+    // Tenant-first onboarding: when logged in but no tenant (no api_key), redirect from "app" routes to /tenants?create=1
+    val allowTenantsAndLogin = BackendOnboardingState.allowTenantsAndLogin
+    LaunchedEffect(route, allowTenantsAndLogin) {
+        val routeNeedsTenant = route is Route.Dashboard || route is Route.FlagsList || route is Route.Experiments ||
+            route is Route.Analytics || route is Route.CreateFlag || route is Route.FlagDetail || route is Route.DebugConsole ||
+            route is Route.FlagHistory || route is Route.FlagMetrics || route is Route.FlagRollout || route is Route.FlagAnomalies ||
+            route is Route.Alerts
+        if (!routeNeedsTenant) return@LaunchedEffect
+        val token = localStorage.getItem(AUTH_TOKEN_KEY)?.takeIf { it.isNotBlank() }
+        val apiKeyFromStorage = localStorage.getItem(API_KEY_STORAGE_KEY)?.takeIf { it.isNotBlank() }
+        val apiKeyFromEnv = (js("window.ENV_API_KEY") as? String)?.takeIf { it.isNotBlank() }
+        val hasNoApiKey = apiKeyFromStorage == null && apiKeyFromEnv == null
+        val shouldRedirect = token != null && (AppConfig.Features.enableMultiTenancy || allowTenantsAndLogin) && hasNoApiKey
+        if (shouldRedirect) Router.navigateToTenantsWithCreate()
     }
 
     // Redirect authenticated users from landing (/) to dashboard
@@ -103,7 +122,7 @@ fun App() {
                         backgroundColor(FlagentTheme.BackgroundAlt)
                     }
                 }) {
-                    Navbar(authViewModel = authViewModel)
+                    Navbar(authViewModel = authViewModel, tenantViewModel = tenantViewModel)
                     NotificationToast(
                         notifications = globalState.notifications,
                         onDismiss = { id -> globalState.removeNotification(id) }
