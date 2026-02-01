@@ -243,6 +243,19 @@ FLAGENT_COOKIE_AUTH_SECURE=true
 FLAGENT_COOKIE_AUTH_HTTP_ONLY=true
 ```
 
+### Enterprise Dev Mode (Local Development Only)
+
+> **SECURITY WARNING: NEVER set these in production.** Bypasses X-API-Key auth and multi-tenant isolation.
+
+```bash
+# Enable dev mode (required for dev-only features)
+FLAGENT_DEV_MODE=true
+
+# When FLAGENT_DEV_MODE=true: make X-API-Key optional, use first active tenant as fallback
+# Both variables must be set. Create a tenant via POST /admin/tenants first.
+FLAGENT_DEV_SKIP_TENANT_AUTH=true
+```
+
 ## Data Recording Configuration
 
 ### Kafka
