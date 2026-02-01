@@ -153,6 +153,9 @@ jobs:
 
   android-sample:
     runs-on: ubuntu-latest
+    env:
+      # PackageAndroidArtifact$IncrementalSplitterRunnable often OOMs with default heap
+      GRADLE_OPTS: -Xmx4096m -XX:MaxMetaspaceSize=512m
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
