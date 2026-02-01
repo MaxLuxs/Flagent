@@ -51,11 +51,8 @@ tasks.register("runBackendDev") {
     dependsOn(":backend:runDev")
 }
 
-// Exclude JS tests from global build to avoid compileTestKotlinJs/friendPaths ordering issue (Kotlin MPP + Compose).
-// Run :frontend:jsBrowserTest manually when needed.
-tasks.named("jsBrowserTest") {
-    enabled = false
-}
-tasks.named("compileTestKotlinJs") {
-    enabled = false
+// Ensure JS test compilation runs after main JS compilation (avoids friendPaths ordering issues
+// when building from root with Kotlin MPP + Compose). jsBrowserTest stays in check.
+tasks.named("compileTestKotlinJs").configure {
+    mustRunAfter(tasks.named("compileKotlinJs"))
 }

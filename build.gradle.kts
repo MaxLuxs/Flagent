@@ -52,9 +52,11 @@ subprojects {
     }
 }
 
-// Root "run" = frontend only. Stops Gradle from running run in ALL subprojects (sample-kotlin, sample-ktor, backend, frontend).
+// Backend (runDev = FLAGENT_DEV_MODE + FLAGENT_DEV_SKIP_TENANT_AUTH, no X-API-Key) + frontend.
+// Both run in parallel (different subprojects). Use: ./gradlew run --parallel (or org.gradle.parallel=true in gradle.properties).
+// Ctrl+C stops both.
 tasks.register("run") {
     group = "application"
-    description = "Run frontend dev server at http://localhost:8080. For full dev: run :backend:run in another terminal first."
-    dependsOn(":frontend:run")
+    description = "Backend (dev, no token) + frontend at http://localhost:8080. Requires org.gradle.parallel=true (see gradle.properties)."
+    dependsOn(":backend:runDev", ":frontend:jsBrowserDevelopmentRun")
 }
