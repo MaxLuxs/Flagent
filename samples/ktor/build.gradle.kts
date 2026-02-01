@@ -11,18 +11,18 @@ repositories {
 }
 
 dependencies {
-    // Ktor server
-    implementation("io.ktor:ktor-server-core:2.3.12")
-    implementation("io.ktor:ktor-server-netty:2.3.12")
-    implementation("io.ktor:ktor-server-content-negotiation:2.3.12")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
-    implementation("io.ktor:ktor-server-status-pages:2.3.12")
-    
+    // Ktor server (use same version as ktor-flagent / libs.versions.toml to avoid NoSuchMethodError)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.server.status.pages)
+
     // Flagent Ktor plugin (local)
     implementation(project(":ktor-flagent"))
-    
+
     // Logging
-    implementation("ch.qos.logback:logback-classic:1.5.12")
+    implementation(libs.logback.classic)
 }
 
 application {
