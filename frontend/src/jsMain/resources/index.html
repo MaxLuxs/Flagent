@@ -34,6 +34,7 @@
         // window.ENV_PLAN = "open_source";
         
         // Core Feature flags (available in both editions)
+        // ENV_FEATURE_AUTH=true → show login first (redirect to /login when no token). Default false for self-hosted OSS.
         window.ENV_FEATURE_AUTH = window.ENV_FEATURE_AUTH || "false";
         window.ENV_FEATURE_REALTIME = window.ENV_FEATURE_REALTIME || "true";
         

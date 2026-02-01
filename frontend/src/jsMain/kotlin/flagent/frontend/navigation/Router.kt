@@ -12,6 +12,10 @@ sealed class Route {
     object Home : Route() {
         const val PATH = "/"
     }
+
+    object FlagsList : Route() {
+        const val PATH = "/flags"
+    }
     
     object Dashboard : Route() {
         const val PATH = "/dashboard"
@@ -113,6 +117,13 @@ object Router {
         navigateTo(route)
     }
 
+    /** Navigate to /tenants with ?create=1 so TenantsList opens Create Tenant modal. */
+    fun navigateToTenantsWithCreate() {
+        currentRoute = Route.Tenants
+        history.add(Route.Tenants)
+        window.history.pushState(null, "", "${Route.Tenants.PATH}?create=1")
+    }
+
     private fun parseRouteFromUrl() {
         val path = window.location.pathname
         val search = window.location.search
@@ -126,6 +137,7 @@ object Router {
     private fun parseRouteFromPath(path: String, search: String = ""): Route {
         return when {
             path == Route.Home.PATH -> Route.Home
+            path == Route.FlagsList.PATH -> Route.FlagsList
             path == Route.Dashboard.PATH -> Route.Dashboard
             path == Route.Experiments.PATH -> Route.Experiments
             path == Route.Analytics.PATH -> Route.Analytics
@@ -137,27 +149,27 @@ object Router {
             
             path.startsWith("/flags/") && path.endsWith("/history") -> {
                 val flagId = path.removePrefix("/flags/").removeSuffix("/history").toIntOrNull()
-                if (flagId != null) Route.FlagHistory(flagId) else Route.Home
+                if (flagId != null) Route.FlagHistory(flagId) else Route.FlagsList
             }
             
             path.startsWith("/flags/") && path.endsWith("/metrics") -> {
                 val flagId = path.removePrefix("/flags/").removeSuffix("/metrics").toIntOrNull()
-                if (flagId != null) Route.FlagMetrics(flagId) else Route.Home
+                if (flagId != null) Route.FlagMetrics(flagId) else Route.FlagsList
             }
             
             path.startsWith("/flags/") && path.endsWith("/rollout") -> {
                 val flagId = path.removePrefix("/flags/").removeSuffix("/rollout").toIntOrNull()
-                if (flagId != null) Route.FlagRollout(flagId) else Route.Home
+                if (flagId != null) Route.FlagRollout(flagId) else Route.FlagsList
             }
             
             path.startsWith("/flags/") && path.endsWith("/anomalies") -> {
                 val flagId = path.removePrefix("/flags/").removeSuffix("/anomalies").toIntOrNull()
-                if (flagId != null) Route.FlagAnomalies(flagId) else Route.Home
+                if (flagId != null) Route.FlagAnomalies(flagId) else Route.FlagsList
             }
 
             path.startsWith("/flags/") -> {
                 val flagId = path.removePrefix("/flags/").toIntOrNull()
-                if (flagId != null) Route.FlagDetail(flagId) else Route.Home
+                if (flagId != null) Route.FlagDetail(flagId) else Route.FlagsList
             }
 
             path == "/debug" -> {
@@ -172,6 +184,7 @@ object Router {
     fun Route.path(): String {
         return when (this) {
             is Route.Home -> Route.Home.PATH
+            is Route.FlagsList -> Route.FlagsList.PATH
             is Route.Dashboard -> Route.Dashboard.PATH
             is Route.Experiments -> Route.Experiments.PATH
             is Route.Analytics -> Route.Analytics.PATH

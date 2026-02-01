@@ -1,6 +1,8 @@
 package flagent.frontend.viewmodel
 
 import androidx.compose.runtime.*
+import flagent.frontend.api.ApiClient
+import flagent.frontend.api.LoginResponse
 import flagent.frontend.state.User
 import flagent.frontend.util.AppLogger
 import flagent.frontend.util.ErrorHandler
@@ -60,24 +62,23 @@ class AuthViewModel {
             ErrorHandler.withErrorHandling(
                 block = {
                     AppLogger.info(TAG, "Logging in user: $email")
-                    // TODO: Implement actual login API call
-                    // For now, just simulate
-                    val token = "simulated_token"
+                    val response: LoginResponse = ApiClient.login(email, password)
                     val user = User(
-                        id = "1",
-                        email = email,
-                        name = email.substringBefore("@")
+                        id = response.user.id,
+                        email = response.user.email,
+                        name = response.user.name
                     )
-                    
-                    localStorage.setItem(TOKEN_KEY, token)
+                    localStorage.setItem(TOKEN_KEY, response.token)
                     localStorage.setItem(USER_KEY, Json.encodeToString(User.serializer(), user))
                     currentUser = user
                     isAuthenticated = true
-
                     onSuccess()
                 },
                 onError = { err ->
-                    error = ErrorHandler.getUserMessage(err)
+                    val msg = ErrorHandler.getUserMessage(err)
+                    error = if (msg.contains("Admin auth is disabled", ignoreCase = true)) {
+                        "Server has admin login disabled. On the backend set FLAGENT_ADMIN_AUTH_ENABLED=true and configure FLAGENT_ADMIN_EMAIL, FLAGENT_ADMIN_PASSWORD, FLAGENT_JWT_AUTH_SECRET (min 32 chars)."
+                    } else msg
                     AppLogger.error(TAG, "Login failed", err.cause)
                 }
             )

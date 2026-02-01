@@ -60,7 +60,7 @@ fun Breadcrumbs() {
             A(href = "#", attrs = {
                 onClick { 
                     it.preventDefault()
-                    Router.navigateTo(Route.Home) 
+                    Router.navigateTo(Route.FlagsList) 
                 }
                 style {
                     textDecoration("none")

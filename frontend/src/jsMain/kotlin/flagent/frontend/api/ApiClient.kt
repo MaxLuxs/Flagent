@@ -23,11 +23,14 @@ import kotlinx.serialization.json.Json
 private const val AUTH_TOKEN_KEY = "auth_token"
 private const val USER_KEY = "current_user"
 private const val API_KEY_STORAGE_KEY = "api_key"
+private const val ADMIN_API_KEY_HEADER = "X-Admin-Key"
 
 object ApiClient {
     private const val TAG = "ApiClient"
     
     internal val client = HttpClient {
+        expectSuccess = true  // Throw ClientRequestException on 4xx before body parsing
+        
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -59,6 +62,11 @@ object ApiClient {
             handleResponseExceptionWithRequest { exception, _ ->
                 val ex = exception as? ClientRequestException ?: return@handleResponseExceptionWithRequest
                 if (ex.response.status == HttpStatusCode.Unauthorized) {
+                    // Don't redirect for setup errors (no auth token = first load / API key required)
+                    val hasAuth = getAuthToken() != null
+                    if (!hasAuth) {
+                        throw exception  // Let ErrorHandler show "Create tenant first" / "Missing X-API-Key"
+                    }
                     localStorage.removeItem(AUTH_TOKEN_KEY)
                     localStorage.removeItem(USER_KEY)
                     window.location.href = "/login"
@@ -87,6 +95,12 @@ object ApiClient {
             "$baseUrl/admin$path"
         }
     }
+
+    /** Auth API path for login (no API key required). */
+    internal fun getAuthPath(path: String): String {
+        val base = AppConfig.apiBaseUrl.trimEnd('/')
+        return if (base.isEmpty()) path else "$base$path"
+    }
     
     private fun getApiKey(): String? {
         (js("window.ENV_API_KEY") as? String)?.takeIf { it.isNotBlank() }?.let { return it }
@@ -95,7 +109,22 @@ object ApiClient {
 
     private fun getAuthToken(): String? = localStorage.getItem(AUTH_TOKEN_KEY)
 
+    private fun getAdminApiKey(): String? {
+        (js("window.ENV_ADMIN_API_KEY") as? String)?.takeIf { it.isNotBlank() }?.let { return it }
+        return localStorage.getItem("admin_api_key")?.takeIf { it.isNotBlank() }
+    }
+
     private fun getTenantId(): String? = null
+
+    /**
+     * Admin login (email/password). Returns token and user. Throws on 401.
+     */
+    suspend fun login(email: String, password: String): LoginResponse {
+        return client.post(getAuthPath("/auth/login")) {
+            contentType(ContentType.Application.Json)
+            setBody(LoginRequest(email = email, password = password))
+        }.body()
+    }
     
     /**
      * Get all flags
@@ -306,23 +335,30 @@ object ApiClient {
     
     suspend fun getTenants(includeDeleted: Boolean = false): List<TenantResponse> {
         val url = getAdminPath("/tenants") + if (includeDeleted) "?includeDeleted=true" else ""
-        return client.get(url).body()
+        return client.get(url) {
+            if (getAuthToken() == null) getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
+        }.body()
     }
     
     suspend fun getTenant(key: String): TenantResponse {
-        return client.get(getAdminPath("/tenants/$key")).body()
+        return client.get(getAdminPath("/tenants/$key")) {
+            if (getAuthToken() == null) getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
+        }.body()
     }
     
     suspend fun createTenant(request: CreateTenantRequest): CreateTenantResponse {
         return client.post(getAdminPath("/tenants")) {
             contentType(ContentType.Application.Json)
             setBody(request)
+            if (getAuthToken() == null) getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
         }.body()
     }
     
     suspend fun deleteTenant(id: Long, immediate: Boolean = false) {
         val url = getAdminPath("/tenants/$id") + if (immediate) "?immediate=true" else ""
-        client.delete(url)
+        client.delete(url) {
+            if (getAuthToken() == null) getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
+        }
     }
     
     // ========== Billing (Enterprise, requires auth) ==========
@@ -443,3 +479,12 @@ object ApiClient {
         return client.get(url).body()
     }
 }
+
+@Serializable
+data class LoginRequest(val email: String = "", val password: String = "")
+
+@Serializable
+data class LoginUserResponse(val id: String, val email: String, val name: String)
+
+@Serializable
+data class LoginResponse(val token: String, val user: LoginUserResponse)

@@ -6,6 +6,7 @@ import flagent.frontend.components.common.NotificationToast
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.BackendOnboardingState
 import flagent.frontend.state.GlobalState
 import flagent.frontend.state.LocalGlobalState
 import flagent.frontend.theme.FlagentTheme
@@ -35,25 +36,34 @@ fun App() {
     val requiresAuth = AppConfig.requiresAuth
     val route = Router.currentRoute
 
-    // Redirect enterprise-only routes when edition is open-source
+    // Redirect enterprise-only routes when edition is open-source; allow /tenants and /login when backend needs tenant (401 tenant message)
     LaunchedEffect(route) {
         when (route) {
             is Route.FlagMetrics -> if (!AppConfig.Features.enableMetrics) Router.navigateTo(Route.Home)
             is Route.FlagRollout -> if (!AppConfig.Features.enableSmartRollout) Router.navigateTo(Route.Home)
             is Route.FlagAnomalies -> if (!AppConfig.Features.enableAnomalyDetection) Router.navigateTo(Route.Home)
             is Route.Alerts -> if (!AppConfig.Features.enableAnomalyDetection) Router.navigateTo(Route.Home)
-            is Route.Tenants -> if (!AppConfig.Features.enableMultiTenancy) Router.navigateTo(Route.Home)
+            is Route.Tenants -> if (!AppConfig.Features.enableMultiTenancy && !BackendOnboardingState.allowTenantsAndLogin) Router.navigateTo(Route.Home)
             else -> {}
         }
     }
 
+    // Redirect authenticated users from landing (/) to dashboard
     LaunchedEffect(requiresAuth, route) {
+        if (route is Route.Home && requiresAuth) {
+            val token = localStorage.getItem(AUTH_TOKEN_KEY)
+            if (token != null) {
+                Router.navigateTo(Route.Dashboard)
+                return@LaunchedEffect
+            }
+        }
         if (!requiresAuth) return@LaunchedEffect
         if (route is Route.Login) return@LaunchedEffect
         val token = localStorage.getItem(AUTH_TOKEN_KEY)
         if (token != null) return@LaunchedEffect
         val returnPath = when (val r = route) {
             is Route.Home -> Route.Home.PATH
+            is Route.FlagsList -> Route.FlagsList.PATH
             is Route.Dashboard -> Route.Dashboard.PATH
             is Route.Experiments -> Route.Experiments.PATH
             is Route.Analytics -> Route.Analytics.PATH
@@ -112,7 +122,8 @@ fun App() {
                             else -> {}
                         }
                         when (val r = Router.currentRoute) {
-                            is Route.Home -> FlagsList()
+                            is Route.Home -> LandingPage()
+                            is Route.FlagsList -> FlagsList()
                             is Route.Dashboard -> Dashboard()
                             is Route.Experiments -> flagent.frontend.components.experiments.ExperimentsPage()
                             is Route.Analytics -> flagent.frontend.components.analytics.AnalyticsPage()

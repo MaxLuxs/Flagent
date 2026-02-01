@@ -6,6 +6,7 @@ import flagent.frontend.components.Icon
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.BackendOnboardingState
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.AnomalyViewModel
 import flagent.frontend.viewmodel.AuthViewModel
@@ -116,7 +117,7 @@ fun Navbar(authViewModel: AuthViewModel? = null) {
                 }
             }) {
                 NavLink("Dashboard", "dashboard", Route.Dashboard.PATH)
-                NavLink("Flags", "flag", Route.Home.PATH)
+                NavLink("Flags", "flag", Route.FlagsList.PATH)
                 NavLink("Experiments", "science", Route.Experiments.PATH)
                 NavLink("Analytics", "analytics", Route.Analytics.PATH)
                 
@@ -180,7 +181,7 @@ fun Navbar(authViewModel: AuthViewModel? = null) {
                 
                 NavLink("Settings", "settings", Route.Settings.PATH)
 
-                if (AppConfig.requiresAuth && authViewModel != null) {
+                if ((AppConfig.requiresAuth || BackendOnboardingState.allowTenantsAndLogin) && authViewModel != null) {
                     if (authViewModel.isAuthenticated) {
                         Span({
                             style {

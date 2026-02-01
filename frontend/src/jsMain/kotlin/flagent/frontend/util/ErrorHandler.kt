@@ -19,6 +19,27 @@ sealed class AppError(open val message: String, open val cause: Throwable? = nul
 }
 
 /**
+ * Extracts server error from JsonDecodingException message.
+ * Format: "... JSON input: {\"error\":\"Create tenant first: POST /admin/tenants\"}"
+ */
+private fun extractErrorFromJsonDecodingMessage(message: String?): String? {
+    if (message.isNullOrBlank()) return null
+    // Direct extract: "error":"value" or "error": "value"
+    Regex(""""error"\s*:\s*"([^"]+)"""").find(message)?.groupValues?.getOrNull(1)?.let {
+        return it.replace("\\\"", "\"")
+    }
+    // Try parsing JSON object from "JSON input: {...}"
+    Regex("""JSON input:\s*(\{.*\})""").find(message)?.groupValues?.getOrNull(1)?.let { jsonStr ->
+        return runCatching {
+            val obj = Json.parseToJsonElement(jsonStr) as? JsonObject ?: return@runCatching null
+            (obj["error"] as? JsonPrimitive)?.content?.takeIf { it.isNotBlank() }
+                ?: (obj["message"] as? JsonPrimitive)?.content?.takeIf { it.isNotBlank() }
+        }.getOrNull()
+    }
+    return null
+}
+
+/**
  * Parses JSON response body for "message" or "error" field to show server message to user.
  */
 private fun parseResponseMessage(body: String): String? {
@@ -61,7 +82,22 @@ object ErrorHandler {
                 }
             }
             is HttpRequestTimeoutException -> AppError.NetworkError("Request timeout", error)
-            else -> AppError.UnknownError(error.message ?: "Unknown error", error)
+            else -> {
+                // JsonDecodingException when API returns error object but client expects array
+                val isJsonDecoding = error::class.simpleName == "JsonDecodingException" ||
+                    (error.message?.contains("JSON input:") == true && error.message?.contains("Expected") == true)
+                if (isJsonDecoding) {
+                    val serverMsg = extractErrorFromJsonDecodingMessage(error.message)
+                    when {
+                        serverMsg != null && serverMsg.contains("tenant", ignoreCase = true) ->
+                            AppError.Unauthorized(serverMsg, error)
+                        serverMsg != null -> AppError.UnknownError(serverMsg, error)
+                        else -> AppError.UnknownError(error.message ?: "Invalid response format", error)
+                    }
+                } else {
+                    AppError.UnknownError(error.message ?: "Unknown error", error)
+                }
+            }
         }
     }
     
@@ -71,12 +107,16 @@ object ErrorHandler {
     fun getUserMessage(error: AppError): String {
         return when (error) {
             is AppError.NetworkError -> "Network error. Please check your connection."
-            is AppError.Unauthorized -> "Please login to continue."
-            is AppError.Forbidden -> "You don't have permission to perform this action."
-            is AppError.NotFound -> "Resource not found."
+            is AppError.Unauthorized ->
+                if (error.message != "Unauthorized") error.message else "Please login to continue."
+            is AppError.Forbidden ->
+                if (error.message != "Forbidden") error.message else "You don't have permission to perform this action."
+            is AppError.NotFound ->
+                if (error.message != "Not Found") error.message else "Resource not found."
             is AppError.ServerError -> error.message
             is AppError.ValidationError -> error.message
-            is AppError.UnknownError -> "An unexpected error occurred."
+            is AppError.UnknownError ->
+                if (error.message != "Unknown error") error.message else "An unexpected error occurred."
         }
     }
     

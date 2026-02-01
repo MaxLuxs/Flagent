@@ -6,6 +6,16 @@ import flagent.frontend.util.randomId
 import kotlinx.serialization.Serializable
 
 /**
+ * Set to true when backend returns 401 with tenant/API-key message (e.g. "Create tenant first").
+ * Allows /tenants and /login in OSS frontend when backend is enterprise.
+ */
+object BackendOnboardingState {
+    var allowTenantsAndLogin by mutableStateOf(false)
+        private set
+    fun setBackendNeedsTenantOrAuth() { allowTenantsAndLogin = true }
+}
+
+/**
  * Global application state
  */
 class GlobalState {
