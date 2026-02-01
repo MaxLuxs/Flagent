@@ -19,11 +19,7 @@ class ConstraintEvaluator {
         if (constraints.isEmpty()) {
             return true
         }
-        
-        if (context.entityContext == null) {
-            return false
-        }
-        
+
         return constraints.all { constraint ->
             evaluateConstraint(constraint, context)
         }
@@ -36,7 +32,7 @@ class ConstraintEvaluator {
         constraint: FlagEvaluator.EvaluableConstraint,
         context: EvalContext
     ): Boolean {
-        val propertyValue = context.entityContext?.get(constraint.property) ?: return false
+        val propertyValue = context.entityContext[constraint.property] ?: return false
         val constraintValue = constraint.value
         
         return when (constraint.operator) {
@@ -85,7 +81,7 @@ class ConstraintEvaluator {
             val propNum = propertyValue.toString().toDouble()
             val constraintNum = constraintValue.toDouble()
             comparator(propNum, constraintNum)
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             false
         }
     }
@@ -94,7 +90,7 @@ class ConstraintEvaluator {
         return try {
             val regex = constraintValue.toRegex()
             regex.matches(propertyValue.toString())
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
