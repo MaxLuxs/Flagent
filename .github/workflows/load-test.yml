@@ -68,6 +68,7 @@ jobs:
 
       - name: Start Flagent Server
         env:
+          PORT: 8000
           FLAGENT_DB_DBDRIVER: postgresql
           FLAGENT_DB_DBCONNECTIONSTR: postgresql://flagent:flagent@localhost:5432/flagent
         run: |

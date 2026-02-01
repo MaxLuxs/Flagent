@@ -84,6 +84,15 @@ docker run -it -p 18000:18000 ghcr.io/maxluxs/flagent:latest
 2. Нажмите **New repository secret**
 3. Добавьте необходимые секреты (например, API ключи для интеграций)
 
+### NVD_API_KEY (для Security Scan — Dependency Check)
+
+Для стабильной работы шага **Dependency Vulnerability Scan** в workflow `security-scan.yml` добавьте секрет **NVD_API_KEY**:
+
+- **Name:** `NVD_API_KEY`
+- **Value:** бесплатный API-ключ с [NVD — Request an API Key](https://nvd.nist.gov/developers/request-an-api-key)
+
+Без ключа запросы к NVD часто получают 403/rate limit, сканирование долго ретраится и может падать. С ключом обновление базы CVE быстрее и стабильнее.
+
 ## Структура workflows
 
 - **`.github/workflows/ci.yml`** - Основной CI: тесты, сборка, покрытие кода

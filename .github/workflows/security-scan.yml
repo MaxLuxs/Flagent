@@ -30,7 +30,7 @@ jobs:
       - name: Gradle Dependency Check
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: ./gradlew :backend:dependencyCheckAnalyze
+        run: ./gradlew :backend:dependencyCheckAnalyze -PdependencyCheck.dataDirectory=$RUNNER_TEMP/dependency-check-data
 
       - name: Upload Dependency Check Results
         if: always()
@@ -47,13 +47,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      # On push use event.before so BASE != HEAD; on PR use PR base/head
+      - name: Resolve base SHA
+        id: resolve_base
+        run: |
+          if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          else
+            BASE=$(git rev-parse HEAD^ 2>/dev/null || true)
+            echo "base=${BASE:-${{ github.sha }}}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: TruffleHog Scan
+        if: steps.resolve_base.outputs.base != github.sha
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.pull_request.base.sha || github.event.before || github.event.repository.default_branch }}
-          head: ${{ github.event.pull_request.head.sha || github.sha }}
+          base: ${{ steps.resolve_base.outputs.base }}
+          head: ${{ github.sha }}
 
   container-scan:
     name: Container Image Scan

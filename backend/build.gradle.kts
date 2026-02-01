@@ -14,6 +14,9 @@ dependencyCheck {
     failBuildOnCVSS = 11f  // Don't fail on CVSS, only report
     failOnError = false    // Don't fail when NVD is unreachable (403, etc.)
     formats = listOf("HTML", "JSON")
+    val dataDir = project.findProperty("dependencyCheck.dataDirectory")?.toString()
+        ?: "${System.getenv("RUNNER_TEMP") ?: layout.buildDirectory.get().asFile}/dependency-check-data"
+    data.directory.set(dataDir)
 }
 
 java {
@@ -66,6 +69,8 @@ dependencies {
 
     // Messaging
     implementation(libs.bundles.messaging)
+    // Override transitive lz4-java (kafka-clients pulls org.lz4:1.8.0); root build substitutes with at.yawk.lz4 fork
+    implementation(libs.lz4.java)
 
     // JWT (JJWT)
     implementation(libs.jjwt.api)
