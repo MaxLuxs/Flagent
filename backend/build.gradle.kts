@@ -116,6 +116,16 @@ application {
     mainClass.set("flagent.application.ApplicationKt")
 }
 
+// Run backend with dev mode: X-API-Key optional, uses first active tenant
+tasks.register<JavaExec>("runDev") {
+    group = "application"
+    description = "Run backend with FLAGENT_DEV_MODE+FLAGENT_DEV_SKIP_TENANT_AUTH (X-API-Key optional)"
+    mainClass.set(application.mainClass.get())
+    classpath = sourceSets.main.get().runtimeClasspath
+    environment("FLAGENT_DEV_MODE", "true")
+    environment("FLAGENT_DEV_SKIP_TENANT_AUTH", "true")
+}
+
 tasks.jar {
     manifest {
         attributes(
