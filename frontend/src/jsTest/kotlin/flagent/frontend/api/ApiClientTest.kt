@@ -4,21 +4,37 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * Tests for ApiClient
- * Note: These are basic unit tests for path construction
- * Full integration tests would require a mock server
+ * Tests for ApiClient path construction.
+ * Full integration tests (login, API calls) would require a mock server or test backend.
  */
 class ApiClientTest {
+
     @Test
-    fun testApiClientPathConstruction() {
-        // Test getApiPath method
+    fun getApiPathContainsApiV1AndPath() {
         val path = ApiClient.getApiPath("/flags")
         assertTrue(path.contains("/api/v1/flags"), "Path should contain /api/v1/flags")
     }
-    
+
     @Test
-    fun testApiClientExists() {
-        // Verify ApiClient singleton exists and is accessible
+    fun getApiPathWithEmptyBaseUsesRelativePath() {
+        val path = ApiClient.getApiPath("/health")
+        assertTrue(path.contains("/api/v1/health"), "Path should contain /api/v1/health")
+    }
+
+    @Test
+    fun getAdminPathContainsAdminAndPath() {
+        val path = ApiClient.getAdminPath("/tenants")
+        assertTrue(path.contains("/admin/tenants"), "Path should contain /admin/tenants")
+    }
+
+    @Test
+    fun getAuthPathReturnsPathWithLeadingSlashWhenBaseEmpty() {
+        val path = ApiClient.getAuthPath("/auth/login")
+        assertTrue(path == "/auth/login" || path.endsWith("/auth/login"), "Auth path should end with /auth/login")
+    }
+
+    @Test
+    fun apiClientSingletonAccessible() {
         val client = ApiClient
         assertTrue(client != null, "ApiClient should be accessible as singleton")
     }

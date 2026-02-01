@@ -12,6 +12,7 @@ class RouterTest {
     @Test
     fun testRoutePathGeneration() {
         assertEquals("/", Route.Home.PATH)
+        assertEquals("/flags", Route.FlagsList.PATH)
         assertEquals("/flags/new", Route.CreateFlag.PATH)
         
         val flagDetail = Route.FlagDetail(123)

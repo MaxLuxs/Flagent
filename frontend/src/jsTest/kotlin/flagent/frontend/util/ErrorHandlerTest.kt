@@ -52,6 +52,20 @@ class ErrorHandlerTest {
     fun testUnknownErrorMessage() {
         val error = AppError.UnknownError("Something went wrong")
         val message = ErrorHandler.getUserMessage(error)
+        assertEquals("Something went wrong", message)
+    }
+
+    @Test
+    fun testUnauthorizedWithCustomMessage() {
+        val error = AppError.Unauthorized("Create tenant first: POST /admin/tenants")
+        val message = ErrorHandler.getUserMessage(error)
+        assertEquals("Create tenant first: POST /admin/tenants", message)
+    }
+
+    @Test
+    fun testUnknownErrorWithDefaultMessage() {
+        val error = AppError.UnknownError("Unknown error")
+        val message = ErrorHandler.getUserMessage(error)
         assertEquals("An unexpected error occurred.", message)
     }
 }
