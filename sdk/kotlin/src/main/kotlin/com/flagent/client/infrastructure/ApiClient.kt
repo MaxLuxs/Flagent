@@ -1,11 +1,15 @@
 package com.flagent.client.infrastructure
 
-
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.forms.FormDataContent
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.datetime.Instant
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -33,6 +37,13 @@ open class ApiClient(
     private val clientConfig: (HttpClientConfig<*>) -> Unit by lazy {
         {
             it.install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                    encodeDefaults = true
+                    serializersModule = SerializersModule {
+                        contextual(Instant::class, InstantEpochMillisecondsSerializer)
+                    }
+                })
             }
             httpClientConfig?.invoke(it)
         }

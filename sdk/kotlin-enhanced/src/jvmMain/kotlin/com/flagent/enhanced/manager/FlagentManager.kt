@@ -2,6 +2,7 @@ package com.flagent.enhanced.manager
 
 import com.flagent.client.apis.EvaluationApi
 import com.flagent.client.models.EvalContext
+import io.ktor.client.statement.bodyAsText
 import com.flagent.client.models.EvalResult
 import com.flagent.client.models.EvaluationBatchRequest
 import com.flagent.client.models.EvaluationEntity
@@ -74,6 +75,10 @@ class FlagentManager(
             enableDebug = enableDebug
         )
         val response = evaluationApi.postEvaluation(evalContext)
+        if (!response.success) {
+            val body = response.response.bodyAsText()
+            throw IllegalStateException("Evaluation failed: ${response.status} - $body")
+        }
         val result = response.body()
         cache?.put(cacheKey, result)
         result
@@ -92,6 +97,10 @@ class FlagentManager(
             enableDebug = enableDebug
         )
         val response = evaluationApi.postEvaluationBatch(request)
+        if (!response.success) {
+            val body = response.response.bodyAsText()
+            throw IllegalStateException("Batch evaluation failed: ${response.status} - $body")
+        }
         response.body().evaluationResults
     }
 
