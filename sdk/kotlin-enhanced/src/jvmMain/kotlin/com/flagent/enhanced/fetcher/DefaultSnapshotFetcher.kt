@@ -19,11 +19,11 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 
 /**
  * JVM implementation of [SnapshotFetcher] using kotlin-client ExportApi/FlagApi.
  */
+@Suppress("UNCHECKED_CAST")
 class DefaultSnapshotFetcher(
     private val exportApi: ExportApi,
     private val flagApi: FlagApi
@@ -41,7 +41,7 @@ class DefaultSnapshotFetcher(
                 fetchedAt = currentTimeMs(),
                 ttlMs = ttlMs
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             fetchSnapshotFallback(ttlMs)
         }
     }
@@ -59,7 +59,7 @@ class DefaultSnapshotFetcher(
             tags = null
         )
         val flagsList = response.body()
-        val flags = flagsList.mapNotNull { flagDto ->
+        val flags = flagsList.associate { flagDto ->
             val flagId = flagDto.id
             val segments = flagDto.segments?.map { segmentDto ->
                 LocalSegment(
@@ -102,7 +102,7 @@ class DefaultSnapshotFetcher(
                 entityType = flagDto.entityType,
                 updatedAt = null
             )
-        }.toMap()
+        }
         return FlagSnapshot(
             flags = flags,
             revision = generateRevision(),
@@ -136,7 +136,8 @@ class DefaultSnapshotFetcher(
             LocalSegment(
                 id = segmentObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
                 rank = segmentObj["rank"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
-                rolloutPercent = segmentObj["rolloutPercent"]?.jsonPrimitive?.content?.toIntOrNull() ?: 100,
+                rolloutPercent = segmentObj["rolloutPercent"]?.jsonPrimitive?.content?.toIntOrNull()
+                    ?: 100,
                 constraints = segmentObj["constraints"]?.jsonArray?.map { constraintEl ->
                     val constraintObj = constraintEl.jsonObject
                     LocalConstraint(
