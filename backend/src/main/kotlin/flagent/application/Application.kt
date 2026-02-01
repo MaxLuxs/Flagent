@@ -25,6 +25,7 @@ import flagent.middleware.configurePrometheusMetrics
 import flagent.middleware.configureStatsDMetrics
 import flagent.middleware.configureSentry
 import flagent.middleware.configureNewRelic
+import flagent.route.configureAuthRoutes
 import flagent.route.configureConstraintRoutes
 import flagent.route.configureDistributionRoutes
 import flagent.route.configureEvaluationRoutes
@@ -243,6 +244,7 @@ fun Application.module() {
     routing {
         val routeConfig: Routing.() -> Unit = {
             configureHealthRoutes()
+            configureAuthRoutes()
             configureInfoRoutes()
             configureEvaluationRoutes(evaluationService)
             

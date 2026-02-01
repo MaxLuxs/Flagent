@@ -232,6 +232,13 @@ object AppConfig {
     // Web Prefix
     val webPrefix: String = System.getenv("FLAGENT_WEB_PREFIX") ?: ""
 
+    // Admin Auth (for POST /auth/login and /admin/* protection when used with enterprise)
+    val adminAuthEnabled: Boolean = System.getenv("FLAGENT_ADMIN_AUTH_ENABLED")?.toBoolean() ?: false
+    val adminEmail: String = System.getenv("FLAGENT_ADMIN_EMAIL") ?: ""
+    val adminPassword: String = System.getenv("FLAGENT_ADMIN_PASSWORD") ?: ""
+    val adminPasswordHash: String = System.getenv("FLAGENT_ADMIN_PASSWORD_HASH") ?: ""
+    val adminApiKey: String = System.getenv("FLAGENT_ADMIN_API_KEY") ?: ""
+
     // Enterprise (multi-tenancy, Stripe, SSO, Slack) is configured in flagent-enterprise via EnterpriseConfig
 
     private fun parseDuration(s: String): Duration {
