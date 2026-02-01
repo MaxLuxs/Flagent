@@ -24,6 +24,15 @@ allprojects {
         google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
+
+    // Replace org.lz4:lz4-java with at.yawk.lz4 fork to fix CVE-2025-12183, CVE-2025-66566 (transitive from kafka-clients)
+    configurations.all {
+        resolutionStrategy {
+            dependencySubstitution {
+                substitute(module("org.lz4:lz4-java")).using(module("at.yawk.lz4:lz4-java:1.10.2"))
+            }
+        }
+    }
 }
 
 subprojects {

@@ -101,14 +101,59 @@ jobs:
         run: |
           ./gradlew build --no-daemon -x test
           ./gradlew :backend:distZip --no-daemon
-          ./gradlew :backend:jar :ktor-flagent:jar :kotlin-client:jar :kotlin-client:sourcesJar :kotlin-client:javadocJar --no-daemon
+          ./gradlew :backend:jar :ktor-flagent:jar :kotlin-client:jar :kotlin-client:sourcesJar :kotlin-client:javadocJar :kotlin-enhanced:jar :kotlin-debug-ui:jar :java-client:jar :java-client:sourcesJar :java-client:javadocJar :flagent-spring-boot-starter:jar :flagent-spring-boot-starter:sourcesJar --no-daemon
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set version for JS SDKs
+        id: js_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and pack JavaScript SDKs
+        run: |
+          VERSION="${{ steps.js_version.outputs.VERSION }}"
+          for dir in sdk/javascript sdk/javascript-enhanced sdk/javascript-debug-ui; do
+            (cd "$dir" && sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" package.json && npm install && npm run build && npm pack)
+          done
+
+      - name: Pack Go SDKs
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          tar czvf flagent-go-sdk-$VERSION.tar.gz -C sdk go
+          tar czvf flagent-go-enhanced-sdk-$VERSION.tar.gz -C sdk go-enhanced
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build and pack Python SDK
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          cd sdk/python
+          sed -i "s/version=\"[^\"]*\"/version=\"$VERSION\"/" setup.py
+          sed -i "s/__version__ = \"[^\"]*\"/__version__ = \"$VERSION\"/" src/flagent/__init__.py 2>/dev/null || true
+          pip install build
+          python -m build --sdist --wheel
+          mv dist/*.tar.gz dist/*.whl ../..
+          cd ../..
+
+      - name: Pack Swift SDKs
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          tar czvf flagent-swift-sdk-$VERSION.tar.gz -C sdk swift
+          tar czvf flagent-swift-enhanced-sdk-$VERSION.tar.gz -C sdk swift-enhanced
+          tar czvf flagent-swift-debug-ui-sdk-$VERSION.tar.gz -C sdk swift-debug-ui
 
       - name: Publish to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${GITHUB_REF#refs/tags/v}"
-          ./gradlew :shared:publish :ktor-flagent:publish :kotlin-client:publish :kotlin-enhanced:publish :kotlin-debug-ui:publish --no-daemon -Pversion="$VERSION"
+          ./gradlew :shared:publish :ktor-flagent:publish :kotlin-client:publish :kotlin-enhanced:publish :kotlin-debug-ui:publish :java-client:publish :flagent-spring-boot-starter:publish --no-daemon -Pversion="$VERSION"
       
       - name: Extract version from tag
         id: tag
@@ -126,5 +171,19 @@ jobs:
             backend/build/libs/*.jar
             ktor-flagent/build/libs/*.jar
             sdk/kotlin/build/libs/*.jar
+            sdk/kotlin-enhanced/build/libs/*.jar
+            sdk/kotlin-debug-ui/build/libs/*.jar
+            sdk/java/build/libs/*.jar
+            sdk/spring-boot-starter/build/libs/*.jar
+            sdk/javascript/*.tgz
+            sdk/javascript-enhanced/*.tgz
+            sdk/javascript-debug-ui/*.tgz
+            flagent-go-sdk-*.tar.gz
+            flagent-go-enhanced-sdk-*.tar.gz
+            flagent-python-client-*.tar.gz
+            flagent_python_client-*.whl
+            flagent-swift-sdk-*.tar.gz
+            flagent-swift-enhanced-sdk-*.tar.gz
+            flagent-swift-debug-ui-sdk-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

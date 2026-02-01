@@ -36,7 +36,7 @@
   
   <p>
     <a href="#-quick-start">Quick Start</a> •
-    <a href="https://maxluxs.github.io/Flagent">Documentation</a> •
+    <a href="https://maxluxs.github.io/Flagent/getting-started.md">Documentation</a> •
     <a href="#-key-features">Features</a> •
     <a href="#-sdks">SDKs</a> •
     <a href="#-use-cases">Use Cases</a> •
@@ -63,8 +63,8 @@
 - **A/B Insights** - Automated experiment analysis
 
 ### Enterprise-Ready
-- **Production-Proven** - 70+ test files, comprehensive coverage
-- **High Performance** - Sub-millisecond evaluation, 10k+ req/s
+- **Extensive test coverage** - 200+ test files
+- **High Performance** - Low latency, high throughput (see backend PerformanceTest: >100 req/s)
 - **Multi-Tenancy** - Isolated environments for teams (Roadmap)
 - **Real-Time Updates** - SSE in Kotlin Enhanced, Go Enhanced
 
@@ -93,8 +93,8 @@ open http://localhost:18000
 - ✅ **Advanced Targeting** - Segment users by attributes, percentages, or complex constraint rules
 - ✅ **Multi-Environment** - Separate configurations for dev, staging, and production
 - ✅ **Data Recorders** - Kafka, Kinesis, PubSub integration for analytics
-- ✅ **High Performance** - Sub-millisecond evaluation with EvalCache and TTL
-- ✅ **Client-Side Evaluation** - Offline-first local evaluation (< 1ms) in Kotlin Enhanced, Go Enhanced
+- ✅ **High Performance** - Low-latency evaluation with EvalCache and TTL
+- ✅ **Client-Side Evaluation** - Offline-first local evaluation in Kotlin Enhanced, Go Enhanced
 - ✅ **Real-Time Updates** - SSE for instant flag changes in Kotlin Enhanced, Go Enhanced
 - ✅ **Multiple Databases** - PostgreSQL, MySQL, SQLite support
 - ✅ **Docker Ready** - Production-ready Docker images with Compose
@@ -112,10 +112,10 @@ open http://localhost:18000
 
 ## 📖 Documentation
 
-- 📖 **[Full Documentation](https://maxluxs.github.io/Flagent)** - Complete guides, API reference, and examples
-- 📖 **[Getting Started Guide](README.md#-quick-start)** - Quick start and setup instructions
-- 📖 **[API Documentation](https://maxluxs.github.io/Flagent/api/openapi.yaml)** - OpenAPI specification
-- 📖 **[Architecture Documentation](https://maxluxs.github.io/Flagent/#/architecture/backend)** - System architecture and design
+- 📖 **[Getting Started](https://maxluxs.github.io/Flagent/getting-started.md)** - Quick start and setup
+- 📖 **[API Reference](https://maxluxs.github.io/Flagent)** - API docs and OpenAPI
+- 📖 **[OpenAPI spec](https://maxluxs.github.io/Flagent/api/openapi.yaml)** - OpenAPI specification
+- 📖 **[Architecture](https://maxluxs.github.io/Flagent/architecture/backend.md)** - System design
 
 ## 🏗️ Project Structure
 
@@ -134,7 +134,7 @@ flagent/
 
 ### Requirements
 - JDK 21+
-- Gradle 9.0
+- Gradle 8.13 (wrapper)
 
 ### Build
 ```bash
@@ -213,7 +213,7 @@ Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-fla
 
 - **Ktor Plugin** - [ktor-flagent](ktor-flagent) - First-class Ktor integration with middleware support
 
-See [SDK Documentation](https://maxluxs.github.io/Flagent) for detailed usage guides.
+See [Getting Started](https://maxluxs.github.io/Flagent/getting-started.md) and [API Reference](https://maxluxs.github.io/Flagent) for usage guides.
 
 ## 🛠️ Technology Stack
 
@@ -250,7 +250,7 @@ cd Flagent
 ./gradlew :backend:run
 ```
 
-See [Deployment Guide](https://maxluxs.github.io/Flagent/#/deployment) for production setup.
+See [Deployment Guide](https://maxluxs.github.io/Flagent/deployment.md) for production setup.
 
 ## 🤝 Contributing
 
@@ -260,7 +260,7 @@ We welcome contributions from the community! Flagent is built with love by devel
 
 1. **Fork the repository**
 2. **Create your feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes** - Follow our [code style guidelines](https://maxluxs.github.io/Flagent/#/contributing)
+3. **Make your changes** - Follow our [code style guidelines](https://maxluxs.github.io/Flagent/contributing.md)
 4. **Add tests** - Ensure your changes are well-tested
 5. **Commit your changes** (`git commit -m 'Add some amazing feature'`)
 6. **Push to the branch** (`git push origin feature/amazing-feature`)
@@ -276,7 +276,7 @@ We welcome contributions from the community! Flagent is built with love by devel
 - ⚡ **Performance** - Optimize evaluation speed
 - 🧪 **Tests** - Increase test coverage
 
-For more details, see our [Contributing Guide](https://maxluxs.github.io/Flagent/#/contributing) and [Development Setup](README.md#development).
+For more details, see our [Contributing Guide](https://maxluxs.github.io/Flagent/contributing.md) and [Development Setup](README.md#development).
 
 ## 📄 License
 
@@ -341,9 +341,8 @@ Join our growing community of developers building better feature flag systems!
 
 ### Get Help
 
-- 💬 **[GitHub Discussions](https://github.com/MaxLuxs/Flagent/discussions)** - Ask questions, share ideas, and connect with other users
-- 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Report bugs or request new features
-- 📚 **[Documentation](https://maxluxs.github.io/Flagent)** - Comprehensive guides, API reference, and tutorials
+- 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Ask questions, report bugs, or request features
+- 📚 **[Documentation](https://maxluxs.github.io/Flagent/getting-started.md)** - Guides and API reference
 - 💻 **[Code Examples](samples)** - Real-world examples in Kotlin, Python, JavaScript, Swift, and Go
 - 🎯 **[Roadmap](docs/roadmap.md)** - Our journey to becoming the best open-source feature flag platform
 
@@ -362,7 +361,7 @@ Need help deploying Flagent in production? Want custom features or SLA guarantee
 - 🔒 **Priority Support** - Faster response times and dedicated Slack channel
 - 🚀 **Managed Hosting** (Coming Soon) - Fully managed SaaS solution
 
-Contact us at: **support@flagent.io** (Coming Soon)
+Contact: **max.developer.luxs@gmail.com**
 
 ## 🎯 Use Cases
 
@@ -377,11 +376,11 @@ Contact us at: **support@flagent.io** (Coming Soon)
 
 ## 📊 Performance & Scalability
 
-- **Sub-millisecond latency** - Typical evaluation time under 1ms
-- **10,000+ evaluations/second** per instance
+- **Low latency** - Typical evaluation under 10ms (see backend PerformanceTest)
+- **High throughput** - 100+ req/s per instance (see backend PerformanceTest)
 - **Horizontal scaling** - Stateless architecture supports multiple instances
-- **Low memory footprint** - ~200MB base memory usage
-- **EvalCache with TTL** - Intelligent caching reduces database load by 90%
+- **Modest memory** - Approximately 200MB typical base usage
+- **EvalCache with TTL** - Caching significantly reduces database load
 - **Deterministic bucketing** - Consistent user assignments using MurmurHash3
 
 ## 👥 Who's Using Flagent?
@@ -392,14 +391,15 @@ Flagent is trusted by teams building high-performance Kotlin applications:
 - 🔬 **Research Projects** - Used in academic and research environments
 - 🏢 **Internal Tools** - Powering feature flags for internal applications
 
-*Are you using Flagent in production? [Let us know!](https://github.com/MaxLuxs/Flagent/discussions/new?category=show-and-tell)*
+*Are you using Flagent in production? [Let us know](https://github.com/MaxLuxs/Flagent/issues) or email max.developer.luxs@gmail.com.*
 
 ## 🔗 Links
 
-- 📖 **[Documentation](https://maxluxs.github.io/Flagent)**
-- 🐳 **[Docker Hub](https://github.com/MaxLuxs/Flagent/pkgs/container/flagent)**
+- 📖 **[Documentation](https://maxluxs.github.io/Flagent/getting-started.md)**
+- 📖 **[API Reference](https://maxluxs.github.io/Flagent)**
+- 🐳 **[Container image (GHCR)](https://github.com/MaxLuxs/Flagent/pkgs/container/flagent)**
 - 📦 **[Releases](https://github.com/MaxLuxs/Flagent/releases)**
-- 💬 **[Discussions](https://github.com/MaxLuxs/Flagent/discussions)**
+- 🐛 **[Issues](https://github.com/MaxLuxs/Flagent/issues)**
 
 ---
 

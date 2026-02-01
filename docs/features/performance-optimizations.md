@@ -228,7 +228,7 @@ data class DataRecordingConfig(
 
 - **Evaluation Latency (p50)**: < 1ms (client-side), < 5ms (server-side)
 - **Evaluation Latency (p99)**: < 10ms (client-side), < 50ms (server-side)
-- **Throughput**: > 10,000 req/s на одном сервере
+- **Throughput**: > 100 req/s на одном сервере (см. backend PerformanceTest)
 - **Cache Hit Rate**: > 95%
 - **Batch Processing**: > 1,000 evaluations/second
 

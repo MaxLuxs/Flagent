@@ -158,11 +158,11 @@ Yes! The recommended way is the **Flagent Spring Boot Starter** (`flagent-spring
 
 ### How fast is Flagent?
 
-Flagent achieves sub-millisecond evaluation times with in-memory caching. Typical evaluation time is under 1ms per request.
+Flagent provides low-latency evaluation with in-memory caching. Typical evaluation is under 10ms per request (see backend PerformanceTest).
 
 ### How many evaluations per second can Flagent handle?
 
-Flagent can handle 10,000+ evaluations per second per instance, depending on hardware and configuration.
+Flagent handles 100+ evaluations per second per instance in tests (see backend PerformanceTest), depending on hardware and configuration.
 
 ### Can Flagent scale horizontally?
 
@@ -170,7 +170,7 @@ Yes! Flagent is stateless and can be deployed behind a load balancer. Each insta
 
 ### How much memory does Flagent use?
 
-Base memory usage is approximately 200MB, varying based on the number of flags and cache size.
+Base memory usage is typically around 200MB, varying with the number of flags and cache size.
 
 ### Does Flagent cache flags?
 
@@ -296,14 +296,14 @@ Check the [Roadmap](roadmap.md) or [GitHub Issues](https://github.com/MaxLuxs/Fl
 
 ### Where can I get help?
 
-- **GitHub Discussions** - Ask questions and share ideas
-- **GitHub Issues** - Report bugs or request features
-- **Documentation** - Complete guides and API reference
-- **Code Examples** - Real-world examples and tutorials
+- **GitHub Issues** - Ask questions, report bugs, or request features
+- **Documentation** - Guides and API reference at https://maxluxs.github.io/Flagent/getting-started.md
+- **Code Examples** - Real-world examples in the [samples](https://github.com/MaxLuxs/Flagent/tree/main/samples) folder
+- **Contact** - max.developer.luxs@gmail.com
 
 ### Is there commercial support available?
 
-Commercial support may be available in the future. Contact us via GitHub for inquiries.
+Contact max.developer.luxs@gmail.com for inquiries.
 
 ## License
 
@@ -317,4 +317,4 @@ Yes! Apache 2.0 allows commercial use without restrictions.
 
 ---
 
-**Still have questions?** [Open a GitHub Discussion](https://github.com/MaxLuxs/Flagent/discussions) or [create an issue](https://github.com/MaxLuxs/Flagent/issues).
+**Still have questions?** [Open an issue](https://github.com/MaxLuxs/Flagent/issues) or email max.developer.luxs@gmail.com.

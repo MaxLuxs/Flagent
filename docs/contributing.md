@@ -18,7 +18,7 @@ There are many ways to contribute to Flagent:
 ### Prerequisites
 
 - **JDK 21+** for backend development
-- **Gradle 9.0+** for building
+- **Gradle 8.13** (wrapper) for building
 - **Docker** for running services
 - **Git** for version control
 
@@ -266,9 +266,9 @@ Create an issue on [GitHub](https://github.com/MaxLuxs/Flagent/issues) with the 
 
 ## Questions?
 
-- [GitHub Discussions](https://github.com/MaxLuxs/Flagent/discussions) - Ask questions
-- [GitHub Issues](https://github.com/MaxLuxs/Flagent/issues) - Report bugs or request features
+- [GitHub Issues](https://github.com/MaxLuxs/Flagent/issues) - Ask questions, report bugs, or request features
 - [Documentation](getting-started.md) - Read the documentation
+- **Contact** - max.developer.luxs@gmail.com
 
 ## Recognition
 

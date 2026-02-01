@@ -406,14 +406,14 @@ let client = FlagentClient(baseURL: "http://localhost:18000/api/v1")
 val manager = OfflineFlagentManager(exportApi, flagApi)
 manager.bootstrap() // Загрузить снимок один раз
 
-// Быстрая локальная оценка (< 1ms, без API вызова)
+// Быстрая локальная оценка без API вызова
 val result = manager.evaluate(flagKey = "feature", entityID = "user123")
 ```
 
 **Преимущества:**
-- В 50-200 раз быстрее (< 1ms vs 50-200ms)
+- Значительно быстрее, чем запросы к серверу
 - Работает offline
-- Снижение нагрузки на сервер на 90%+
+- Значительное снижение нагрузки на сервер
 
 См. [Руководство по Client-Side Evaluation](https://github.com/MaxLuxs/Flagent/blob/main/sdk/kotlin-enhanced/CLIENT_SIDE_EVALUATION.md)
 
@@ -468,7 +468,7 @@ manager.enableRealtimeUpdates(baseUrl = "http://localhost:18000")
 **Проблема**: Оценка флага занимает > 100ms
 
 **Решения**:
-1. Используйте client-side evaluation для латентности < 1ms
+1. Используйте client-side evaluation для меньшей латентности
 2. Включите кэширование в SDK
 3. Используйте batch оценку для нескольких флагов
 4. Проверьте сетевую латентность до сервера
@@ -484,9 +484,9 @@ manager.enableRealtimeUpdates(baseUrl = "http://localhost:18000")
 
 ## Поддержка
 
-- **Документация**: https://maxluxs.github.io/Flagent
+- **Документация**: https://maxluxs.github.io/Flagent/getting-started.ru.md
 - **GitHub Issues**: https://github.com/MaxLuxs/Flagent/issues
-- **Обсуждения**: https://github.com/MaxLuxs/Flagent/discussions
+- **Контакт**: max.developer.luxs@gmail.com
 
 ## Лицензия
 

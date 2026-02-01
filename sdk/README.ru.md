@@ -95,5 +95,5 @@ Base Kotlin SDK генерируется из OpenAPI и имеет достат
 
 ## Совместимость API
 
-Все base SDK генерируются из OpenAPI спецификации. Русская версия спецификации: [OpenAPI (RU)](https://maxluxs.github.io/Flagent/api/openapi.ru.yaml).
+Все base SDK генерируются из OpenAPI спецификации: [OpenAPI](https://maxluxs.github.io/Flagent/api/openapi.yaml).
 

@@ -1,7 +1,7 @@
 package com.flagent.enhanced.evaluator
 
 import com.flagent.enhanced.model.*
-import com.flagent.enhanced.evaluator.LocalToEvaluableAdapter.toEvaluable
+import com.flagent.enhanced.evaluator.toEvaluable
 import flagent.evaluator.FlagEvaluator
 import flagent.evaluator.RolloutAlgorithm
 import org.junit.jupiter.api.Assertions.*

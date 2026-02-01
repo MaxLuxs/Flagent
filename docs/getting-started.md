@@ -411,9 +411,8 @@ val result = manager.evaluate(flagKey = "feature", entityID = "user123")
 ```
 
 **Benefits:**
-- 50-200x faster (< 1ms vs 50-200ms)
-- Works offline
-- 90%+ server load reduction
+- Much faster than server round-trips (works offline)
+- Significantly reduces server load
 
 See [Client-Side Evaluation Guide](https://github.com/MaxLuxs/Flagent/blob/main/sdk/kotlin-enhanced/CLIENT_SIDE_EVALUATION.md)
 
@@ -484,9 +483,9 @@ See [Real-Time Updates Guide](https://github.com/MaxLuxs/Flagent/blob/main/sdk/k
 
 ## Support
 
-- **Documentation**: https://maxluxs.github.io/Flagent
+- **Documentation**: https://maxluxs.github.io/Flagent/getting-started.md
 - **GitHub Issues**: https://github.com/MaxLuxs/Flagent/issues
-- **Discussions**: https://github.com/MaxLuxs/Flagent/discussions
+- **Contact**: max.developer.luxs@gmail.com
 
 ## License
 

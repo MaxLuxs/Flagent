@@ -41,5 +41,5 @@ asyncio.run(main())
 ## Ссылки
 
 - Полный (англ.) README: [`README.md`](./README.md)
-- OpenAPI (RU): [OpenAPI (RU)](https://maxluxs.github.io/Flagent/api/openapi.ru.yaml)
+- OpenAPI: [OpenAPI spec](https://maxluxs.github.io/Flagent/api/openapi.yaml)
 

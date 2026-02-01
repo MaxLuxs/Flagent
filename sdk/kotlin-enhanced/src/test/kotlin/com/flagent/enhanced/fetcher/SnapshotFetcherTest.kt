@@ -52,7 +52,7 @@ class SnapshotFetcherTest {
             }
         )
 
-        val fetcher = SnapshotFetcher(exportApi, flagApi)
+        val fetcher = DefaultSnapshotFetcher(exportApi, flagApi)
         val snapshot = fetcher.fetchSnapshot(ttlMs = 60_000)
 
         assertNotNull(snapshot)
@@ -85,7 +85,7 @@ class SnapshotFetcherTest {
             }
         )
 
-        val fetcher = SnapshotFetcher(exportApi, flagApi)
+        val fetcher = DefaultSnapshotFetcher(exportApi, flagApi)
         val snapshot = fetcher.fetchSnapshot(ttlMs = 60_000)
 
         assertNotNull(snapshot)
@@ -127,7 +127,7 @@ class SnapshotFetcherTest {
             )
         } returns httpResponseWithBody(ktorResponse, listOf(flag))
 
-        val fetcher = SnapshotFetcher(exportApi, flagApi)
+        val fetcher = DefaultSnapshotFetcher(exportApi, flagApi)
         val snapshot = fetcher.fetchSnapshot(ttlMs = 60_000)
 
         assertNotNull(snapshot)
@@ -169,7 +169,7 @@ class SnapshotFetcherTest {
             flagApi.findFlags(any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns httpResponseWithBody(ktorResponse, listOf(flag))
 
-        val fetcher = SnapshotFetcher(exportApi, flagApi)
+        val fetcher = DefaultSnapshotFetcher(exportApi, flagApi)
         val snapshot = fetcher.fetchSnapshot(ttlMs = 60_000)
 
         assertNotNull(snapshot)
@@ -198,7 +198,7 @@ class SnapshotFetcherTest {
         val ktorResponse = mockk<KtorResponse>(relaxed = true)
         coEvery { exportApi.getExportEvalCacheJSON() } returns httpResponseWithBody(ktorResponse, body)
 
-        val fetcher = SnapshotFetcher(exportApi, flagApi)
+        val fetcher = DefaultSnapshotFetcher(exportApi, flagApi)
         val snapshot = fetcher.fetchDelta(lastRevision = "old-rev", ttlMs = 60_000)
 
         assertNotNull(snapshot)
