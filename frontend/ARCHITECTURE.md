@@ -34,13 +34,15 @@ The Flagent frontend follows **Clean Architecture** principles with clear separa
 **Components**:
 - `common/` - Reusable UI components (Pagination, SkeletonLoader, EmptyState, etc.)
 - `flags/` - Flag management UI
-- `metrics/` - Metrics visualization
-- `rollout/` - Smart rollout UI
-- `anomaly/` - Anomaly alerts UI
+- `metrics/` - Metrics visualization (Enterprise-only when `AppConfig.Features.enableMetrics`)
+- `rollout/` - Smart rollout UI (Enterprise-only)
+- `anomaly/` - Anomaly alerts UI (Enterprise-only)
 - `auth/` - Authentication UI
-- `tenants/` - Multi-tenancy UI
-- `billing/` - Billing UI
+- `tenants/` - Multi-tenancy UI (Enterprise-only)
+- `billing/` - Billing UI (Enterprise-only)
 - `realtime/` - Real-time status indicators
+
+Feature visibility is controlled by `AppConfig` (edition and feature flags). See [EDITION_GUIDE.md](EDITION_GUIDE.md).
 
 **Rules**:
 - Components are **stateless** where possible
@@ -158,12 +160,14 @@ ErrorHandler.withErrorHandling(
 
 ## Routing
 
-Type-safe routing with sealed classes:
+Type-safe routing with sealed classes (`navigation/Router.kt`):
 
 ```kotlin
 sealed class Route {
     object Home : Route()
-    data class FlagDetail(val id: Int) : Route()
+    data class FlagDetail(val flagId: Int) : Route()
+    object CreateFlag : Route()
+    data class DebugConsole(val flagKey: String? = null) : Route()
     // ...
 }
 ```

@@ -2,16 +2,16 @@
 
 ## Overview
 
-Flagent поддерживает две версии (editions):
+Flagent supports two editions:
 
-1. **Open Source Edition** (по умолчанию) - бесплатная, self-hosted версия с core функциями
-2. **Enterprise Edition** - платная версия с расширенными enterprise features
+1. **Open Source Edition** (default) - Free, self-hosted version with core features
+2. **Enterprise Edition** - Paid version with advanced enterprise features
 
-Разделение реализовано через feature flags на frontend и backend сабмодуль.
+The split is implemented via feature flags on the frontend and a backend submodule.
 
 ---
 
-## Архитектура разделения
+## Architecture
 
 ```
 flagent/                          # Public repository (Open Source + Frontend)
@@ -26,24 +26,18 @@ flagent/                          # Public repository (Open Source + Frontend)
 │   │       └── resources/
 │   │           └── index.html            # ENV_EDITION config
 │   └── build.gradle.kts
-├── backend/                      # Open Source backend (or stub)
-└── README.md
-
-flagent-enterprise/               # Private submodule (Enterprise Backend)
-├── backend/                      # Full Enterprise backend
-│   ├── src/
-│   │   └── main/kotlin/flagent/
-│   │       ├── service/
-│   │       │   ├── BillingService.kt
-│   │       │   ├── SsoService.kt
-│   │       │   └── TenantProvisioningService.kt
-│   │       └── route/
-│   │           ├── BillingRoutes.kt
-│   │           ├── SsoRoutes.kt
-│   │           └── TenantRoutes.kt
-│   └── build.gradle.kts
+├── backend/                      # Open Source backend
+├── internal/                     # Optional private submodule
+│   └── flagent-enterprise/       # Enterprise plugin (routes, services, billing, SSO, tenants)
+│       ├── build.gradle.kts
+│       └── src/main/kotlin/flagent/enterprise/
+│           ├── route/            # BillingRoutes, SsoRoutes, TenantRoutes, MetricsRoutes, etc.
+│           ├── service/          # BillingService, SsoService, TenantProvisioningService, etc.
+│           └── ...
 └── README.md
 ```
+
+The frontend reads `window.ENV_EDITION` (or `?edition=open_source` / `?edition=enterprise` in the URL). The backend optionally loads the `:flagent-enterprise` module from `internal/flagent-enterprise` when the submodule is present.
 
 ---
 
@@ -69,12 +63,10 @@ object AppConfig {
     val isOpenSource: Boolean get() = edition == Edition.OPEN_SOURCE
     
     object Features {
-        // Open Source Features (available in both)
-        val enableMetrics: Boolean = true
-        val enableSmartRollout: Boolean = true
-        val enableAnomalyDetection: Boolean = true
-        
-        // Enterprise-Only Features
+        // All gated by isEnterprise in code (Metrics, Smart Rollout, Anomaly are Enterprise-only)
+        val enableMetrics: Boolean = isEnterprise && ...
+        val enableSmartRollout: Boolean = isEnterprise && ...
+        val enableAnomalyDetection: Boolean = isEnterprise && ...
         val enableMultiTenancy: Boolean = isEnterprise && ...
         val enableSso: Boolean = isEnterprise && ...
         val enableBilling: Boolean = isEnterprise && ...
@@ -83,15 +75,17 @@ object AppConfig {
 }
 ```
 
-### Условное отображение UI
+Additional config: `ENV_DEPLOYMENT_MODE` (`self_hosted` | `saas`) and `ENV_PLAN` (`open_source` | `enterprise` | `saas_enterprise` | `saas_lowprice`) control plan/tier when using SaaS deployment.
+
+### Conditional UI
 
 ```kotlin
-// Показывать компонент только в Enterprise
+// Show component only in Enterprise
 if (AppConfig.Features.enableMultiTenancy) {
     TenantsList()
 }
 
-// Или через badge
+// Or via badge
 if (AppConfig.isEnterprise) {
     Span { Text("ENTERPRISE") }
 }
@@ -103,19 +97,21 @@ if (AppConfig.isEnterprise) {
 
 ### Open Source Edition (default)
 
-**index.html или .env:**
+**index.html or .env:**
 ```javascript
-window.ENV_EDITION = "open_source";  // или не указывать вообще
+window.ENV_EDITION = "open_source";  // or omit entirely
 ```
 
-**Доступные features:**
+You can also override edition via URL: `?edition=open_source` or `?edition=enterprise` (see `src/jsMain/resources/index.html`).
+
+**Available features:**
 - ✅ Flags CRUD
 - ✅ Segments, Constraints, Variants
 - ✅ Evaluation
-- ✅ Metrics & Analytics
-- ✅ Smart Rollout (AI-powered)
-- ✅ Anomaly Detection
-- ✅ Real-time Updates
+- ✅ Real-time Updates (SSE)
+- ❌ Metrics & Analytics (Enterprise only)
+- ❌ Smart Rollout (AI-powered) (Enterprise only)
+- ❌ Anomaly Detection (Enterprise only)
 - ❌ Multi-Tenancy
 - ❌ SSO/SAML
 - ❌ Billing (Stripe)
@@ -126,13 +122,13 @@ window.ENV_EDITION = "open_source";  // или не указывать вооб�
 
 ### Enterprise Edition
 
-**index.html или .env:**
+**index.html or .env:**
 ```javascript
 window.ENV_EDITION = "enterprise";
 ```
 
-**Доступные features:**
-- ✅ Все Open Source features
+**Available features:**
+- ✅ All Open Source features
 - ✅ Multi-Tenancy
 - ✅ SSO/SAML (OAuth, OIDC)
 - ✅ Billing (Stripe)
@@ -141,105 +137,74 @@ window.ENV_EDITION = "enterprise";
 - ✅ Audit Logs
 - ✅ RBAC
 
+**API key (required):** Enterprise backend requires `X-API-Key` header for `/api/v1/*` routes. Configure via:
+1. **ENV_API_KEY** in index.html: `window.ENV_API_KEY = "your-api-key"`
+2. **localStorage** after creating a tenant: the API key is stored automatically when you create a tenant via the UI
+3. **Manual setup:** `curl -X POST http://localhost:18000/admin/tenants -H "Content-Type: application/json" -d '{"key":"dev","name":"Dev","plan":"STARTER","ownerEmail":"dev@local"}'` — copy `apiKey` from the response
+
+4. **Dev mode (backend env, local only):** set both `FLAGENT_DEV_MODE=true` and `FLAGENT_DEV_SKIP_TENANT_AUTH=true` when starting the backend — X-API-Key becomes optional; the first active tenant is used as fallback. Useful for local debugging without removing the enterprise submodule. Create a tenant via POST /admin/tenants first. **SECURITY: NEVER use in production.** Both vars required to prevent accidental enablement.
+
 ---
 
-## Backend: Приватный сабмодуль
+## Backend: Private Submodule
 
 ### Setup Git Submodule
 
-```bash
-# В public repository (flagent/)
-git submodule add git@github.com:YourOrg/flagent-enterprise.git enterprise
+The Enterprise plugin lives in a private submodule at `internal/flagent-enterprise`. The public repo uses `internal/` for optional submodules.
 
-# Клонирование с сабмодулем
+```bash
+# Clone with submodule (from your org's clone URL)
 git clone --recursive git@github.com:YourOrg/flagent.git
 
-# Или после клонирования
+# Or after cloning
 git submodule update --init --recursive
 ```
 
-### Структура с сабмодулем
+### Structure with Submodule
 
 ```
 flagent/                          # Public repo
-├── frontend/                     # Public frontend (поддерживает обе версии)
-├── backend/                      # Open Source backend (базовая функциональность)
-├── enterprise/                   # Private submodule (Enterprise backend)
-│   ├── .git                      # Ссылка на приватный репозиторий
-│   ├── backend/
-│   │   └── src/main/kotlin/
-│   │       └── flagent/enterprise/
-│   │           ├── service/      # Enterprise services
-│   │           └── route/        # Enterprise routes
-│   └── README.md
-└── settings.gradle.kts           # Условное подключение enterprise модуля
+├── frontend/                     # Public frontend (supports both editions)
+├── backend/                      # Open Source backend (base functionality)
+├── internal/                     # Optional private submodule(s)
+│   └── flagent-enterprise/       # Enterprise plugin (:flagent-enterprise)
+│       ├── .git                  # Link to private repository
+│       ├── build.gradle.kts
+│       └── src/main/kotlin/flagent/enterprise/
+│           ├── route/            # BillingRoutes, SsoRoutes, TenantRoutes, MetricsRoutes, etc.
+│           ├── service/          # BillingService, SsoService, TenantProvisioningService, etc.
+│           └── ...
+└── settings.gradle.kts           # Conditionally includes :flagent-enterprise when present
 ```
 
 ### Gradle Configuration
 
 **settings.gradle.kts:**
 ```kotlin
-rootProject.name = "flagent"
-
-include(":frontend")
+include(":shared")
 include(":backend")
+include(":frontend")
 
-// Условно подключаем enterprise модуль, если он существует
-if (file("enterprise/backend").exists()) {
-    include(":enterprise-backend")
-    project(":enterprise-backend").projectDir = file("enterprise/backend")
+// Enterprise module (optional, when internal/flagent-enterprise submodule is present)
+if (file("internal/flagent-enterprise/build.gradle.kts").exists()) {
+    include(":flagent-enterprise")
+    project(":flagent-enterprise").projectDir = file("internal/flagent-enterprise")
 }
 ```
 
 **backend/build.gradle.kts:**
 ```kotlin
 dependencies {
-    // Базовые зависимости для Open Source
-    implementation("io.ktor:ktor-server-core:$ktor_version")
+    implementation(project(":shared"))
+    // Enterprise plugin loaded at runtime when present
+    if (project.findProject(":flagent-enterprise") != null) {
+        runtimeOnly(project(":flagent-enterprise"))
+    }
     // ...
-    
-    // Условно подключаем Enterprise модуль
-    if (project.findProject(":enterprise-backend") != null) {
-        implementation(project(":enterprise-backend"))
-    }
 }
 ```
 
-### Backend: Edition Detection
-
-**backend/src/main/kotlin/flagent/config/AppConfig.kt:**
-```kotlin
-object AppConfig {
-    val edition: Edition = when (System.getenv("FLAGENT_EDITION")?.lowercase()) {
-        "enterprise" -> Edition.ENTERPRISE
-        else -> Edition.OPEN_SOURCE
-    }
-    
-    val multiTenancyEnabled: Boolean = 
-        edition == Edition.ENTERPRISE && 
-        System.getenv("FLAGENT_MULTI_TENANCY_ENABLED")?.toBoolean() ?: true
-        
-    val stripeEnabled: Boolean = 
-        edition == Edition.ENTERPRISE && 
-        System.getenv("FLAGENT_STRIPE_ENABLED")?.toBoolean() ?: false
-}
-```
-
-**backend/src/main/kotlin/flagent/application/Application.kt:**
-```kotlin
-fun Application.module() {
-    // Core routes (всегда доступны)
-    configureFlagRoutes(flagService)
-    configureEvaluationRoutes(evaluationService)
-    
-    // Enterprise routes (только если модуль подключен)
-    if (AppConfig.edition == Edition.ENTERPRISE) {
-        configureBillingRoutes(billingService)
-        tenantRoutes(tenantProvisioningService)
-        ssoRoutes(ssoService)
-    }
-}
-```
+The backend discovers the Enterprise plugin via `META-INF/services` (e.g. `EnterpriseConfigurator`). No hardcoded edition check in Application.kt is required for route registration; the plugin registers its routes when present.
 
 ---
 
@@ -300,21 +265,23 @@ services:
 
 ### Open Source Development
 
+Run from the **repository root**:
+
 ```bash
 # Clone repository
 git clone git@github.com:YourOrg/flagent.git
 cd flagent
 
 # Build frontend
-cd frontend
-./gradlew build
+./gradlew :frontend:build
 
 # Run backend (Open Source)
-cd flagent./backend
-./gradlew run
+./gradlew :backend:run
 ```
 
 ### Enterprise Development
+
+Run from the **repository root** (there is no `gradlew` in `frontend/`):
 
 ```bash
 # Clone with submodule
@@ -322,17 +289,16 @@ git clone --recursive git@github.com:YourOrg/flagent.git
 cd flagent
 
 # Update submodule
-git submodule update --remote enterprise
+git submodule update --remote internal/flagent-enterprise
 
-# Build frontend (с Enterprise поддержкой)
-cd frontend
-./gradlew build
+# Build frontend (with Enterprise support)
+./gradlew :frontend:build
 
-# Run backend (Enterprise)
-cd flagent./enterprise/backend
-export FLAGENT_EDITION=enterprise
-./gradlew run
+# Run backend (Enterprise: loads :flagent-enterprise when submodule is present)
+./gradlew :backend:run
 ```
+
+Edition can be switched in the browser via `?edition=enterprise` or `?edition=open_source` (see `index.html`).
 
 ---
 
@@ -348,10 +314,10 @@ export FLAGENT_EDITION=enterprise
 | Tags | ✅ | ✅ |
 | Export | ✅ | ✅ |
 | Debug Console | ✅ | ✅ |
-| Metrics & Analytics | ✅ | ✅ |
-| Smart Rollout (AI) | ✅ | ✅ |
-| Anomaly Detection | ✅ | ✅ |
 | Real-time Updates (SSE) | ✅ | ✅ |
+| **Metrics & Analytics** | ❌ | ✅ |
+| **Smart Rollout (AI)** | ❌ | ✅ |
+| **Anomaly Detection** | ❌ | ✅ |
 | **Multi-Tenancy** | ❌ | ✅ |
 | **SSO/SAML** | ❌ | ✅ |
 | **Billing (Stripe)** | ❌ | ✅ |
@@ -401,53 +367,53 @@ FLAGENT_SLACK_WEBHOOK_URL=https://hooks.slack.com/...
 
 ## FAQ
 
-### Q: Можно ли включить Enterprise features в Open Source версии?
+### Q: Can I enable Enterprise features in the Open Source version?
 
-**A:** Нет. Enterprise features автоматически отключаются, если `ENV_EDITION != "enterprise"`. Это контролируется через `AppConfig.isEnterprise`.
+**A:** No. Enterprise features are disabled when `ENV_EDITION != "enterprise"`. This is controlled via `AppConfig.isEnterprise`.
 
-### Q: Как обновить Enterprise backend?
+### Q: How do I update the Enterprise submodule?
 
-**A:** 
+**A:**
 ```bash
 cd internal/flagent-enterprise
 git pull origin main
-cd flagent.
-git add enterprise
+cd ../..
+git add internal
 git commit -m "Update enterprise submodule"
 ```
 
-### Q: Что если enterprise сабмодуль не инициализирован?
+### Q: What if the enterprise submodule is not initialized?
 
-**A:** Frontend продолжит работать в Open Source режиме. Enterprise features будут скрыты, но все core features доступны.
+**A:** The frontend continues to work in Open Source mode. Enterprise features are hidden; core features (flags, segments, evaluation, real-time) remain available.
 
-### Q: Можно ли собрать один Docker образ для обеих версий?
+### Q: Can I build a single Docker image for both editions?
 
-**A:** Да, но лучше разделить:
+**A:** Yes, but separate images are recommended:
 - `flagent/flagent:latest` - Open Source
 - `flagent/flagent-enterprise:latest` - Enterprise
 
-Это упрощает licensing и deployment.
+This simplifies licensing and deployment.
 
 ---
 
 ## License
 
 - **Open Source Edition**: MIT License (flagent/)
-- **Enterprise Edition**: Commercial License (flagent-enterprise/, приватный репозиторий)
+- **Enterprise Edition**: Commercial License (flagent-enterprise/, private repository)
 
 ---
 
 ## Summary
 
-Flagent использует **compile-time и runtime feature flags** для разделения Open Source и Enterprise версий:
+Flagent uses **compile-time and runtime feature flags** to separate Open Source and Enterprise editions:
 
-1. **Frontend** - единый код, условное отображение через `AppConfig.Features`
-2. **Backend** - Open Source в публичном репозитории, Enterprise в приватном сабмодуле
-3. **Конфигурация** - через `ENV_EDITION` и `FLAGENT_EDITION`
-4. **Deployment** - отдельные Docker образы для каждой версии
+1. **Frontend** - Single codebase, conditional UI via `AppConfig.Features`
+2. **Backend** - Open Source in the public repo, Enterprise in a private submodule
+3. **Configuration** - Via `ENV_EDITION` and `FLAGENT_EDITION`
+4. **Deployment** - Separate Docker images per edition
 
-Это позволяет:
-- ✅ Поддерживать обе версии из одного codebase (frontend)
-- ✅ Защитить Enterprise код в приватном репозитории
-- ✅ Легко переключаться между версиями через environment variables
-- ✅ Предотвратить случайное включение Enterprise features в Open Source
+This allows:
+- ✅ Maintaining both editions from one frontend codebase
+- ✅ Keeping Enterprise code in a private repository
+- ✅ Switching editions via environment variables
+- ✅ Preventing accidental enablement of Enterprise features in Open Source

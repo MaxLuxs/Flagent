@@ -6,6 +6,8 @@ Tests are organized in `src/jsTest/kotlin/` with the same package structure as m
 
 ## Running Tests
 
+Run from the **repository root**:
+
 ```bash
 # Run all tests
 ./gradlew :frontend:jsTest
@@ -16,6 +18,8 @@ Tests are organized in `src/jsTest/kotlin/` with the same package structure as m
 # Run with coverage
 ./gradlew :frontend:jsTest --coverage
 ```
+
+**Note:** In `frontend/build.gradle.kts`, the tasks `jsBrowserTest` and `compileTestKotlinJs` are currently **disabled** (`enabled = false`) to avoid Kotlin MPP + Compose ordering issues in the global build. So `./gradlew :frontend:jsTest` may not execute the browser tests by default. To run JS tests, re-enable these tasks in `build.gradle.kts` and run `./gradlew :frontend:jsBrowserTest` when needed.
 
 ## Test Categories
 
@@ -97,10 +101,12 @@ fun testButtonClick() = runTest {
 
 ## CI/CD Integration
 
-Tests run automatically on:
+When JS tests are enabled, they can run on:
 - Pull request creation
 - Commit to main branch
 - Release tag creation
+
+(Currently JS test tasks are disabled in the default build; see note above.)
 
 ## Debugging Tests
 

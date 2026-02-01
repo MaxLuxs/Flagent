@@ -61,6 +61,8 @@ frontend/
 
 ### Build
 
+Run from the **repository root** (no `gradlew` in `frontend/`):
+
 ```bash
 # Build the project
 ./gradlew :frontend:build
@@ -74,19 +76,26 @@ frontend/
 
 ### Environment Configuration
 
-Configure environment variables in `index.html`:
+Configure environment variables in `src/jsMain/resources/index.html` (or via your deployment):
 
 ```javascript
 window.ENV_API_BASE_URL = "http://localhost:18000";
 window.ENV_DEBUG_MODE = "true";
 window.ENV_API_TIMEOUT = "30000";
 
-// Feature flags
+// Edition: "open_source" (default) or "enterprise"
+window.ENV_EDITION = "open_source";
+
+// Feature flags (Enterprise-only features are gated by ENV_EDITION in code)
 window.ENV_FEATURE_AUTH = "true";
-window.ENV_FEATURE_MULTI_TENANCY = "true";
-window.ENV_FEATURE_METRICS = "true";
 window.ENV_FEATURE_REALTIME = "true";
+window.ENV_FEATURE_METRICS = "true";   // effective only when ENV_EDITION=enterprise
+window.ENV_FEATURE_MULTI_TENANCY = "true";
+window.ENV_FEATURE_SSO = "true";
+window.ENV_FEATURE_BILLING = "true";
 ```
+
+See [EDITION_GUIDE.md](EDITION_GUIDE.md) for Open Source vs Enterprise and all env vars.
 
 ## Development
 
@@ -165,32 +174,36 @@ fun MyComponent() {
 ## Testing
 
 ```bash
-# Run tests
+# Run tests (from repo root)
 ./gradlew :frontend:jsTest
 
 # Run with coverage
 ./gradlew :frontend:jsTest --coverage
 ```
 
+Note: JS tests are currently disabled in the default build (`jsBrowserTest` and `compileTestKotlinJs` are set to `enabled = false` in `build.gradle.kts`). See [TESTING.md](TESTING.md).
+
 ## Deployment
 
 ### Production Build
+
+From repo root:
 
 ```bash
 ./gradlew :frontend:jsBrowserProductionWebpack
 ```
 
-Output will be in `build/distributions/`.
+Output will be in `frontend/build/distributions/`.
 
 ### Serve Static Files
 
 ```bash
-# Using Python
-cd build/distributions
+# From repo root after production build
+cd frontend/build/distributions
 python3 -m http.server 8080
 
-# Using Node.js
-npx serve build/distributions
+# Or
+npx serve frontend/build/distributions
 ```
 
 ## Troubleshooting

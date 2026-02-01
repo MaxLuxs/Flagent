@@ -38,6 +38,19 @@ kotlin {
     }
 }
 
+tasks.register("run") {
+    group = "application"
+    description = "Run frontend dev server (webpack dev server at http://localhost:8080)"
+    dependsOn(tasks.named("jsBrowserDevelopmentRun"))
+}
+
+// Run backend with dev mode (X-API-Key optional) - use with :frontend:run for full dev
+tasks.register("runBackendDev") {
+    group = "application"
+    description = "Run backend with FLAGENT_DEV_MODE+FLAGENT_DEV_SKIP_TENANT_AUTH (X-API-Key optional)"
+    dependsOn(":backend:runDev")
+}
+
 // Exclude JS tests from global build to avoid compileTestKotlinJs/friendPaths ordering issue (Kotlin MPP + Compose).
 // Run :frontend:jsBrowserTest manually when needed.
 tasks.named("jsBrowserTest") {

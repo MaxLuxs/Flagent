@@ -22,6 +22,7 @@ import kotlinx.serialization.json.Json
  */
 private const val AUTH_TOKEN_KEY = "auth_token"
 private const val USER_KEY = "current_user"
+private const val API_KEY_STORAGE_KEY = "api_key"
 
 object ApiClient {
     private const val TAG = "ApiClient"
@@ -40,6 +41,10 @@ object ApiClient {
         }
         
         defaultRequest {
+            val apiKey = getApiKey()
+            if (apiKey != null) {
+                header(ApiConstants.Headers.API_KEY, apiKey)
+            }
             val token = getAuthToken()
             if (token != null) {
                 header(HttpHeaders.Authorization, "Bearer $token")
@@ -83,8 +88,13 @@ object ApiClient {
         }
     }
     
+    private fun getApiKey(): String? {
+        (js("window.ENV_API_KEY") as? String)?.takeIf { it.isNotBlank() }?.let { return it }
+        return localStorage.getItem(API_KEY_STORAGE_KEY)?.takeIf { it.isNotBlank() }
+    }
+
     private fun getAuthToken(): String? = localStorage.getItem(AUTH_TOKEN_KEY)
-    
+
     private fun getTenantId(): String? = null
     
     /**

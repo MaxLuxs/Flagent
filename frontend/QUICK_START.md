@@ -9,15 +9,17 @@
 
 ### Installation
 
+Run all commands from the **repository root** (there is no `gradlew` in `frontend/`):
+
 ```bash
 # Clone the repository
-cd frontend
+git clone <repo-url> flagent && cd flagent
 
 # Build the project
-./gradlew build
+./gradlew :frontend:build
 
 # Run in development mode
-./gradlew jsBrowserDevelopmentRun
+./gradlew :frontend:jsBrowserDevelopmentRun
 
 # The app will be available at http://localhost:8080
 ```
@@ -25,12 +27,11 @@ cd frontend
 ### Production Build
 
 ```bash
-# Build for production
-./gradlew jsBrowserProductionWebpack
+# Build for production (from repo root)
+./gradlew :frontend:jsBrowserProductionWebpack
 
-# Output will be in build/distributions/
-# Serve with any static file server:
-cd build/distributions
+# Output will be in frontend/build/distributions/
+cd frontend/build/distributions
 python3 -m http.server 8080
 ```
 
@@ -45,11 +46,19 @@ Edit `src/jsMain/resources/index.html`:
 ```javascript
 window.ENV_API_BASE_URL = "http://localhost:18000";
 window.ENV_DEBUG_MODE = "true";
+// Edition: "open_source" (default) or "enterprise"
+window.ENV_EDITION = "open_source";
 
-// Feature flags
+// Feature flags (Enterprise-only features require ENV_EDITION=enterprise)
 window.ENV_FEATURE_METRICS = "true";
 window.ENV_FEATURE_REALTIME = "true";
+
+// Enterprise only: API key for X-API-Key header. Required when backend has multi-tenancy.
+// Create tenant via POST /admin/tenants, then set apiKey from response:
+// window.ENV_API_KEY = "your-api-key";
 ```
+
+You can also override edition via URL: `?edition=enterprise` or `?edition=open_source`. See [EDITION_GUIDE.md](EDITION_GUIDE.md) for all options.
 
 ### API Base URL
 
@@ -85,16 +94,20 @@ frontend/
 
 ## 🧪 Running Tests
 
+From repo root:
+
 ```bash
 # Run all tests
-./gradlew jsTest
+./gradlew :frontend:jsTest
 
 # Run with verbose output
-./gradlew jsTest --info
+./gradlew :frontend:jsTest --info
 
 # Run specific test
-./gradlew jsTest --tests "FlagsViewModelTest"
+./gradlew :frontend:jsTest --tests "FlagsViewModelTest"
 ```
+
+Note: JS tests are currently disabled in the default build; see [TESTING.md](TESTING.md).
 
 ---
 
@@ -212,20 +225,22 @@ class MyViewModelTest {
 
 ### API Connection Issues
 
-1. Check backend is running on `http://localhost:18000`
-2. Verify `ENV_API_BASE_URL` in `index.html`
+1. Check backend is running: `./gradlew :backend:run` (default port 18000)
+2. Verify `ENV_API_BASE_URL` in `src/jsMain/resources/index.html`
 3. Check browser console for CORS errors
+
+**Enterprise edition:** If you see `Missing X-API-Key header` error, the backend requires an API key. Options: (1) Create tenant via `POST /admin/tenants` with body `{"key":"dev","name":"Dev","plan":"STARTER","ownerEmail":"dev@local"}`, get `apiKey`, then set `window.ENV_API_KEY = "..."` in index.html or `localStorage.setItem("api_key", "...")` and reload. (2) For local dev: run backend with `FLAGENT_DEV_MODE=true FLAGENT_DEV_SKIP_TENANT_AUTH=true` — X-API-Key becomes optional (NEVER use in production).
 
 ### Module Loading Errors
 
-Clear browser cache and rebuild:
+Clear browser cache and rebuild (from repo root):
 ```bash
-./gradlew clean build
+./gradlew clean :frontend:build
 ```
 
 ### Chart.js Not Working
 
-Ensure Chart.js is loaded in `index.html`:
+Ensure Chart.js is loaded in `src/jsMain/resources/index.html`:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 ```
@@ -236,6 +251,7 @@ Ensure Chart.js is loaded in `index.html`:
 
 - [README.md](README.md) - Comprehensive guide
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Architecture details
+- [EDITION_GUIDE.md](EDITION_GUIDE.md) - Open Source vs Enterprise, env vars, submodule
 - [TESTING.md](TESTING.md) - Testing guide
 - [CHANGELOG.md](CHANGELOG.md) - Version history
 
@@ -262,6 +278,8 @@ For issues or questions:
 ---
 
 ## 🎯 Next Steps
+
+From repo root:
 
 1. ✅ Start backend: `./gradlew :backend:run`
 2. ✅ Start frontend: `./gradlew :frontend:jsBrowserDevelopmentRun`

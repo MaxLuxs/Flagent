@@ -11,6 +11,7 @@ import flagent.frontend.util.borderBottom
 import flagent.frontend.util.borderCollapse
 import flagent.frontend.util.textTransform
 import flagent.frontend.viewmodel.TenantViewModel
+import kotlinx.browser.localStorage
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
@@ -74,8 +75,8 @@ fun TenantsList() {
                 onDismiss = { showCreateForm.value = false },
                 onCreate = { key, name, plan, ownerEmail ->
                     viewModel.createTenant(key, name, plan, ownerEmail) { _, apiKey ->
+                        localStorage.setItem("api_key", apiKey)
                         showCreateForm.value = false
-                        // Optionally show apiKey to user (e.g. copy to clipboard)
                     }
                 }
             )
