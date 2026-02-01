@@ -85,6 +85,51 @@ open http://localhost:18000
 - Username: `admin`
 - Password: `admin`
 
+## Self-Hosted (Open Source) from GitHub
+
+Run backend and frontend from the public repo (no Enterprise submodule = single-tenant, no X-API-Key).
+
+**1. Clone (without internal submodule):**
+```bash
+git clone https://github.com/MaxLuxs/Flagent.git flagent && cd flagent
+# Do not run: git submodule update --init internal  (that would pull Enterprise)
+```
+
+**2. Run backend and frontend together (dev):**
+```bash
+./gradlew run
+```
+- Backend: http://localhost:18000 (API, health, Swagger at /docs)
+- Frontend: http://localhost:8080 (Compose dev server; uses `ENV_API_BASE_URL` → 18000)
+- Requires `org.gradle.parallel=true` (default in `gradle.properties`). Ctrl+C stops both.
+
+**3. Or run separately:**
+```bash
+# Terminal 1 – backend
+./gradlew :backend:run
+
+# Terminal 2 – frontend
+./gradlew :frontend:jsBrowserDevelopmentRun
+```
+Then open http://localhost:8080. Frontend defaults to edition `open_source` and `ENV_API_BASE_URL=http://localhost:18000` in `frontend/src/jsMain/resources/index.html`.
+
+**4. Production-like (single process):** build frontend so backend can serve static files, then run backend from repo root:
+```bash
+./gradlew :frontend:jsBrowserDevelopmentWebpack
+./gradlew :backend:run
+```
+Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when present; open http://localhost:18000.
+
+**Docker:** The image at `ghcr.io/maxluxs/flagent` is backend-only (no UI in image). For full self-hosted UI, use option 2 or 3 above, or build frontend and mount it into a custom image.
+
+**With Enterprise (internal submodule):** Admin login and protected `/admin/*` are available. See [frontend/EDITION_GUIDE.md](frontend/EDITION_GUIDE.md) for first run (admin env → login → create tenant) and [docs/configuration.md](docs/configuration.md) for Admin Auth variables.
+
+**OSS frontend + Enterprise backend:** If you build the frontend as Open Source (default) but run the backend with `internal` (enterprise), you will get 401 until a tenant exists. The UI shows "Create tenant first: POST /admin/tenants" and two actions: **Create first tenant** (opens /tenants) and **Log in (admin)** (opens /login). Set on the backend: `FLAGENT_ADMIN_AUTH_ENABLED=true`, `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET` (min 32 chars), and optionally `FLAGENT_ADMIN_API_KEY`. Then log in at /login or create a tenant at /tenants.
+
+**"Admin auth is disabled"** when logging in means the backend has admin login turned off. Set `FLAGENT_ADMIN_AUTH_ENABLED=true` and the env vars above on the backend and restart. See [docs/configuration.md](docs/configuration.md) → Admin Auth.
+
+**Login first (always show login screen):** In the frontend set `ENV_FEATURE_AUTH=true` (e.g. in `frontend/src/jsMain/resources/index.html` or via `?ENV_FEATURE_AUTH=true`). Unauthenticated users will be redirected to /login before seeing the dashboard.
+
 ## ✨ Key Features
 
 ### Core Features (Available Now)

@@ -256,6 +256,20 @@ FLAGENT_DEV_MODE=true
 FLAGENT_DEV_SKIP_TENANT_AUTH=true
 ```
 
+## Admin Auth (Enterprise)
+
+При включении маршруты `/admin/*` (создание/список tenants) требуют JWT от `POST /auth/login` (email/пароль админа) или заголовок `X-Admin-Key`. По умолчанию выключено.
+
+```bash
+FLAGENT_ADMIN_AUTH_ENABLED=true
+FLAGENT_ADMIN_EMAIL=admin@example.com
+FLAGENT_ADMIN_PASSWORD=your-secret-password
+FLAGENT_ADMIN_API_KEY=your-admin-api-key   # опционально
+FLAGENT_JWT_AUTH_SECRET=at-least-32-characters-secret
+```
+
+**Шаги:** 1) Задать переменные. 2) Открыть UI → Вход (email/пароль) или использовать `X-Admin-Key`. 3) Tenants → Создать первого tenant → использовать выданный API key для `/api/v1/*`.
+
 ## Конфигурация записи данных
 
 ### Kafka

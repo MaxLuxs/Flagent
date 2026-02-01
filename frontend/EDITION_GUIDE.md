@@ -144,6 +144,17 @@ window.ENV_EDITION = "enterprise";
 
 4. **Dev mode (backend env, local only):** set both `FLAGENT_DEV_MODE=true` and `FLAGENT_DEV_SKIP_TENANT_AUTH=true` when starting the backend — X-API-Key becomes optional; the first active tenant is used as fallback. Useful for local debugging without removing the enterprise submodule. Create a tenant via POST /admin/tenants first. **SECURITY: NEVER use in production.** Both vars required to prevent accidental enablement.
 
+### First run (Enterprise, with admin auth)
+
+When admin auth is enabled (`FLAGENT_ADMIN_AUTH_ENABLED=true`):
+
+1. **Backend:** Set `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD` (or `FLAGENT_ADMIN_PASSWORD_HASH`), optionally `FLAGENT_ADMIN_API_KEY`, and `FLAGENT_JWT_AUTH_SECRET`. See [docs/configuration.md](../docs/configuration.md) → Admin Auth.
+2. **Open UI** → if required, you will be prompted to **Login** (admin email/password). Alternatively use **Admin API Key** in settings or `ENV_ADMIN_API_KEY` for API-only access.
+3. Go to **Tenants** → **Create first tenant** (or use "Create first tenant" from error messages). Save the returned **API key** (it is stored in localStorage automatically when created via UI).
+4. Use that API key for all `/api/v1/*` requests (flags, segments, evaluation). The UI sends it as `X-API-Key` when set.
+
+Without admin auth, `/admin/tenants` remains open (anyone who can reach the server can create tenants). Enable admin auth in production.
+
 ---
 
 ## Backend: Private Submodule

@@ -256,6 +256,30 @@ FLAGENT_DEV_MODE=true
 FLAGENT_DEV_SKIP_TENANT_AUTH=true
 ```
 
+## Admin Auth (Enterprise)
+
+When enabled, `/admin/*` routes (e.g. create/list tenants) require either a JWT from `POST /auth/login` (admin email/password) or the `X-Admin-Key` header. Disabled by default for backward compatibility.
+
+```bash
+# Enable admin auth (default: false)
+FLAGENT_ADMIN_AUTH_ENABLED=true
+
+# Admin login (for POST /auth/login)
+FLAGENT_ADMIN_EMAIL=admin@example.com
+FLAGENT_ADMIN_PASSWORD=your-secret-password
+
+# Optional: bcrypt hash instead of plain password (future)
+# FLAGENT_ADMIN_PASSWORD_HASH=$2a$10$...
+
+# Optional: API key for admin requests without login (X-Admin-Key header)
+FLAGENT_ADMIN_API_KEY=your-admin-api-key
+
+# JWT secret for signing admin tokens (required when admin auth enabled)
+FLAGENT_JWT_AUTH_SECRET=at-least-32-characters-secret
+```
+
+**Flow:** 1) Set the variables above. 2) Open UI → Login with admin email/password (or use `X-Admin-Key` in API requests). 3) After login, go to Tenants → Create first tenant → use the returned API key for `/api/v1/*` requests.
+
 ## Data Recording Configuration
 
 ### Kafka
