@@ -71,10 +71,12 @@ class E2ETest {
     }
 
     /**
-     * When enterprise is present, TenantContextMiddleware requires X-API-Key.
-     * Try to create a tenant via /admin/tenants (skipped by middleware) and use its API key for all requests.
+     * When enterprise is present, TenantContextMiddleware requires X-API-Key for API routes,
+     * and AdminAuthMiddleware requires X-Admin-Key or Bearer JWT for POST /admin/tenants.
+     * Create a tenant via /admin/tenants (with X-Admin-Key when FLAGENT_ADMIN_API_KEY is set) and use its API key.
      */
     private suspend fun ApplicationTestBuilder.createE2EClient(): HttpClient {
+        val adminKey = System.getenv("FLAGENT_ADMIN_API_KEY")
         val baseClient = createClient {
             install(ContentNegotiation) {
                 json(Json { ignoreUnknownKeys = true })
@@ -83,6 +85,7 @@ class E2ETest {
         val apiKey = try {
             val r = baseClient.post("/admin/tenants") {
                 contentType(ContentType.Application.Json)
+                if (adminKey != null) header("X-Admin-Key", adminKey)
                 setBody(buildJsonObject {
                     put("key", "e2e-tenant-${System.currentTimeMillis()}")
                     put("name", "E2E Test Tenant")
@@ -103,7 +106,9 @@ class E2ETest {
                 install(DefaultRequest) {
                     header("X-API-Key", apiKey)
                 }
-                // No ContentNegotiation so setBody(jsonString) sends raw JSON (avoids Map mixed-type serialization)
+                install(ContentNegotiation) {
+                    json(Json { ignoreUnknownKeys = true })
+                }
             }
         } else baseClient
     }
