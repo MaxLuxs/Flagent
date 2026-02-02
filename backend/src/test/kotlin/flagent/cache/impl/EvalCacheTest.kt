@@ -490,14 +490,12 @@ class EvalCacheTest {
         cache.refresh()
         
         // Test lookup by ID
-        val result: Flag? = cache.getByFlagKeyOrID(500)
-        assertNotNull(result)
-        assertEquals("flag_500", result!!.key)
+        val result = requireNotNull(cache.getByFlagKeyOrID(500))
+        assertEquals("flag_500", result.key)
         
         // Test lookup by key
-        val resultByKey: Flag? = cache.getByFlagKeyOrID("flag_750")
-        assertNotNull(resultByKey)
-        assertEquals(750, resultByKey!!.id)
+        val resultByKey = requireNotNull(cache.getByFlagKeyOrID("flag_750"))
+        assertEquals(750, resultByKey.id)
         
         // Test lookup by tags
         val resultsByTag = cache.getByTags(listOf("tag_0"), null)

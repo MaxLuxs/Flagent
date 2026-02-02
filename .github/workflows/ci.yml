@@ -67,11 +67,10 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: test
           POSTGRES_PASSWORD: test
           POSTGRES_DB: flagent_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd pg_isready -U postgres
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -93,7 +92,7 @@ jobs:
       - name: Run integration tests
         env:
           FLAGENT_DB_DBDRIVER: postgres
-          FLAGENT_DB_DBCONNECTIONSTR: jdbc:postgresql://localhost:5432/flagent_test?user=test&password=test
+          FLAGENT_DB_DBCONNECTIONSTR: jdbc:postgresql://localhost:5432/flagent_test?user=postgres&password=test
         run: ./gradlew :backend:test --no-daemon -PincludeIntegrationTests --tests "*IntegrationTest"
   
   actionlint:
