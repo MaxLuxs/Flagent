@@ -43,7 +43,7 @@ kotlin {
                 if (findProject(":kotlin-client") != null) {
                     implementation(project(":kotlin-client"))
                 } else {
-                    implementation("com.flagent:flagent-kotlin-client:0.1.0")
+                    implementation("com.flagent:flagent-kotlin-client:0.1.4")
                 }
                 implementation(libs.ktor.client.cio)
                 implementation(libs.kotlin.logging.jvm)

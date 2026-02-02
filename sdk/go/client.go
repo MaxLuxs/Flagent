@@ -14,7 +14,7 @@ import (
 
 const (
 	defaultTimeout     = 30 * time.Second
-	defaultUserAgent   = "flagent-go-client/0.1.0"
+	defaultUserAgent   = "flagent-go-client/0.1.4"
 	defaultMaxRetries  = 3
 	defaultRetryDelay  = 1 * time.Second
 )

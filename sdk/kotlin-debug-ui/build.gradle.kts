@@ -18,7 +18,7 @@ dependencies {
     if (findProject(":kotlin-enhanced") != null) {
         implementation(project(":kotlin-enhanced"))
     } else {
-        implementation("com.flagent:flagent-kotlin-enhanced-client:0.1.0")
+        implementation("com.flagent:flagent-kotlin-enhanced-client:0.1.4")
     }
     
     // Compose for UI - using Compose Multiplatform
