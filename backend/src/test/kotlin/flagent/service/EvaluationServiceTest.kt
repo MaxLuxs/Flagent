@@ -5,6 +5,7 @@ import flagent.config.AppConfig
 import flagent.domain.entity.*
 import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.recorder.DataRecordingService
+import flagent.integration.firebase.FirebaseAnalyticsReporter
 import flagent.service.adapter.SharedFlagEvaluatorAdapter
 import io.mockk.*
 import kotlin.test.*
@@ -540,6 +541,40 @@ class EvaluationServiceTest {
         verify(exactly = 1) { dataRecordingService.recordAsync(result) }
         verify { evalCache.getByFlagKeyOrID(1) }
         
+        unmockkObject(AppConfig)
+    }
+
+    @Test
+    fun testEvaluateFlag_CallsFirebaseAnalyticsReporter_WhenEnabled() {
+        val firebaseReporter = mockk<FirebaseAnalyticsReporter>(relaxed = true)
+        val serviceWithFirebase = EvaluationService(
+            evalCache, evaluateFlagUseCase, dataRecordingService, firebaseReporter
+        )
+        val variant = Variant(id = 1, flagId = 1, key = "variant1")
+        val distribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val segment = Segment(
+            id = 1, flagId = 1, description = "Test", rank = 1, rolloutPercent = 100,
+            constraints = emptyList(), distributions = listOf(distribution)
+        )
+        val flag = Flag(
+            id = 1, key = "test_flag", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant)
+        )
+        every { evalCache.getByFlagKeyOrID(1) } returns flag
+
+        mockkObject(AppConfig)
+        every { AppConfig.firebaseAnalyticsEnabled } returns true
+
+        serviceWithFirebase.evaluateFlag(
+            flagID = 1,
+            flagKey = null,
+            entityID = "user123",
+            entityType = "user",
+            entityContext = mapOf("client_id" to "web-456"),
+            enableDebug = false
+        )
+
+        verify(exactly = 1) { firebaseReporter.recordAsync(match { it.flagKey == "test_flag" }) }
         unmockkObject(AppConfig)
     }
     

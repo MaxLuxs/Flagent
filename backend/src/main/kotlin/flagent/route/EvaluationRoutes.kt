@@ -7,6 +7,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.http.*
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
@@ -32,7 +33,20 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
             }
             
             post("/evaluation/batch") {
-                val request = call.receive<EvaluationBatchRequest>()
+                val request = try {
+                    call.receive<EvaluationBatchRequest>()
+                } catch (e: Exception) {
+                    return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to ("Invalid request body: ${e.message}")))
+                }
+                
+                val hasFlagSelector = request.flagIDs.isNotEmpty() || request.flagKeys.isNotEmpty() || request.flagTags.isNotEmpty()
+                if (!hasFlagSelector) {
+                    return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "At least one of flagIDs, flagKeys, or flagTags is required"))
+                }
+                if (request.entities.isEmpty()) {
+                    return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "entities must not be empty when flagIDs, flagKeys, or flagTags are provided"))
+                }
+                
                 val results = mutableListOf<EvaluationResponse>()
                 
                 // Evaluate by tags

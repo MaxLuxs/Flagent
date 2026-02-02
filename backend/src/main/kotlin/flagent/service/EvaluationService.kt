@@ -6,6 +6,7 @@ import flagent.domain.entity.Flag
 import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.domain.value.EntityID
 import flagent.domain.value.EvaluationContext
+import flagent.integration.firebase.FirebaseAnalyticsReporter
 import flagent.recorder.DataRecordingService
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
@@ -22,7 +23,8 @@ private val logger = KotlinLogging.logger {}
 class EvaluationService(
     private val evalCache: EvalCache,
     private val evaluateFlagUseCase: EvaluateFlagUseCase,
-    private val dataRecordingService: DataRecordingService? = null
+    private val dataRecordingService: DataRecordingService? = null,
+    private val firebaseAnalyticsReporter: FirebaseAnalyticsReporter? = null
 ) {
     private val random = Random()
 
@@ -160,6 +162,9 @@ class EvaluationService(
 
         if (AppConfig.recorderEnabled && AppConfig.evalLoggingEnabled) {
             dataRecordingService?.recordAsync(result)
+        }
+        if (AppConfig.firebaseAnalyticsEnabled) {
+            firebaseAnalyticsReporter?.recordAsync(result)
         }
 
         return result

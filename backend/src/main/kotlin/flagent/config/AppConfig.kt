@@ -185,6 +185,31 @@ object AppConfig {
         System.getenv("FLAGENT_RECORDER_PUBSUB_VERBOSE_CANCEL_TIMEOUT")?.let { parseDuration(it) }
             ?: 5.seconds
 
+    // Firebase Remote Config sync
+    val firebaseRcSyncEnabled: Boolean =
+        System.getenv("FLAGENT_FIREBASE_RC_SYNC_ENABLED")?.toBoolean() ?: false
+    val firebaseRcProjectId: String = System.getenv("FLAGENT_FIREBASE_RC_PROJECT_ID") ?: ""
+    val firebaseRcCredentialsJson: String = System.getenv("FLAGENT_FIREBASE_RC_CREDENTIALS_JSON") ?: ""
+    val firebaseRcCredentialsFile: String =
+        System.getenv("FLAGENT_FIREBASE_RC_CREDENTIALS_FILE") ?: ""
+    val firebaseRcSyncInterval: Duration =
+        System.getenv("FLAGENT_FIREBASE_RC_SYNC_INTERVAL")?.let { parseDuration(it) }
+            ?: 5.seconds
+    val firebaseRcParameterPrefix: String =
+        System.getenv("FLAGENT_FIREBASE_RC_PARAMETER_PREFIX") ?: ""
+
+    // Firebase Analytics (GA4 Measurement Protocol)
+    val firebaseAnalyticsEnabled: Boolean =
+        System.getenv("FLAGENT_FIREBASE_ANALYTICS_ENABLED")?.toBoolean() ?: false
+    val firebaseAnalyticsApiSecret: String =
+        System.getenv("FLAGENT_FIREBASE_ANALYTICS_API_SECRET") ?: ""
+    val firebaseAnalyticsMeasurementId: String =
+        System.getenv("FLAGENT_FIREBASE_ANALYTICS_MEASUREMENT_ID") ?: ""
+    val firebaseAnalyticsAppInstanceIdKey: String =
+        System.getenv("FLAGENT_FIREBASE_ANALYTICS_APP_INSTANCE_ID_KEY") ?: "app_instance_id"
+    val firebaseAnalyticsClientIdKey: String =
+        System.getenv("FLAGENT_FIREBASE_ANALYTICS_CLIENT_ID_KEY") ?: "client_id"
+
     // JWT Auth
     val jwtAuthEnabled: Boolean = System.getenv("FLAGENT_JWT_AUTH_ENABLED")?.toBoolean() ?: false
     val jwtAuthDebug: Boolean = System.getenv("FLAGENT_JWT_AUTH_DEBUG")?.toBoolean() ?: false

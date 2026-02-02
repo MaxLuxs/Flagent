@@ -42,6 +42,8 @@ import flagent.route.configureVariantRoutes
 import flagent.middleware.configureSSE
 import flagent.middleware.configureRealtimeEventBus
 import flagent.route.RealtimeEventBus
+import flagent.integration.firebase.FirebaseAnalyticsReporter
+import flagent.integration.firebase.FirebaseRCSyncService
 import flagent.recorder.DataRecordingService
 import flagent.route.realtimeRoutes
 import flagent.service.ConstraintService
@@ -75,17 +77,21 @@ import java.util.ServiceLoader
 private val logger = KotlinLogging.logger {}
 
 fun main() {
-    embeddedServer(
-        factory = Netty,
-        configure = {
-            connector {
-                host = AppConfig.host
-                port = AppConfig.port
+    try {
+        embeddedServer(
+            factory = Netty,
+            configure = {
+                connector {
+                    host = AppConfig.host
+                    port = AppConfig.port
+                }
             }
-        }
-    ) {
-        module()
-    }.start(wait = true)
+        ) {
+            module()
+        }.start(wait = true)
+    } catch (e: Exception) {
+        throw e
+    }
 }
 
 fun Application.module() {
@@ -194,7 +200,22 @@ fun Application.module() {
     }
     evalCache.start()
     logger.info { "EvalCache started with driver: ${AppConfig.dbDriver}" }
-    
+
+    // Firebase Remote Config sync (optional)
+    val firebaseRcSyncService = if (AppConfig.firebaseRcSyncEnabled && AppConfig.firebaseRcProjectId.isNotBlank()) {
+        try {
+            FirebaseRCSyncService(evalCache).also {
+                it.start()
+                logger.info { "Firebase RC sync started for project ${AppConfig.firebaseRcProjectId}" }
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to start Firebase RC sync, continuing without it" }
+            null
+        }
+    } else {
+        null
+    }
+
     // Initialize data recording service
     val dataRecordingService = try {
         DataRecordingService().also {
@@ -204,11 +225,28 @@ fun Application.module() {
         logger.error(e) { "Failed to initialize DataRecordingService, continuing without recording" }
         null
     }
-    
+
+    // Firebase Analytics reporter (GA4 Measurement Protocol)
+    val firebaseAnalyticsReporter = if (AppConfig.firebaseAnalyticsEnabled &&
+        AppConfig.firebaseAnalyticsApiSecret.isNotBlank() &&
+        AppConfig.firebaseAnalyticsMeasurementId.isNotBlank()
+    ) {
+        FirebaseAnalyticsReporter().also {
+            logger.info { "Firebase Analytics reporter enabled" }
+        }
+    } else {
+        null
+    }
+
     // Initialize evaluation: shared evaluator as single source of truth
     val sharedFlagEvaluatorAdapter = SharedFlagEvaluatorAdapter()
     val evaluateFlagUseCase = EvaluateFlagUseCase(sharedFlagEvaluatorAdapter)
-    val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase, dataRecordingService)
+    val evaluationService = EvaluationService(
+        evalCache,
+        evaluateFlagUseCase,
+        dataRecordingService,
+        firebaseAnalyticsReporter
+    )
     val flagSnapshotService = FlagSnapshotService(flagSnapshotRepository, flagRepository)
     val flagEntityTypeService = FlagEntityTypeService(flagEntityTypeRepository)
     val eventBus = configureRealtimeEventBus()
@@ -295,6 +333,8 @@ fun Application.module() {
     // Shutdown hook
     environment.monitor.subscribe(ApplicationStopped) {
         evalCache.stop()
+        firebaseRcSyncService?.stop()
+        firebaseAnalyticsReporter?.close()
         dataRecordingService?.stop()
         Database.close()
     }
@@ -309,10 +349,26 @@ private fun Routing.configureStaticFiles() {
     val frontendDir = run {
         val currentDir = File(System.getProperty("user.dir"))
         val possiblePaths = listOf(
-            File(currentDir, "flagent/frontend/build/dist/js/developmentExecutable"), // From project root
-            File(currentDir.parentFile, "frontend/build/dist/js/developmentExecutable"), // From backend directory
-            File(currentDir.parentFile?.parentFile, "flagent/frontend/build/dist/js/developmentExecutable"), // From workspace root
-            File("./flagent/frontend/build/dist/js/developmentExecutable") // Relative path
+            File(currentDir, "frontend/build/kotlin-webpack/js/developmentExecutable"),
+            File(currentDir, "frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir, "frontend/build/dist/js/productionExecutable"),
+            File(currentDir, "frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir, "frontend/build/dist/js/developmentExecutable"),
+            File(currentDir, "flagent/frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir, "flagent/frontend/build/kotlin-webpack/js/developmentExecutable"),
+            File(currentDir, "flagent/frontend/build/dist/js/productionExecutable"),
+            File(currentDir, "flagent/frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir, "flagent/frontend/build/dist/js/developmentExecutable"),
+            File(currentDir.parentFile, "frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir.parentFile, "frontend/build/kotlin-webpack/js/developmentExecutable"),
+            File(currentDir.parentFile, "frontend/build/dist/js/productionExecutable"),
+            File(currentDir.parentFile, "frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir.parentFile, "frontend/build/dist/js/developmentExecutable"),
+            File(currentDir.parentFile?.parentFile, "flagent/frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir.parentFile?.parentFile, "flagent/frontend/build/kotlin-webpack/js/developmentExecutable"),
+            File(currentDir.parentFile?.parentFile, "flagent/frontend/build/dist/js/productionExecutable"),
+            File(currentDir.parentFile?.parentFile, "flagent/frontend/build/kotlin-webpack/js/productionExecutable"),
+            File(currentDir.parentFile?.parentFile, "flagent/frontend/build/dist/js/developmentExecutable")
         )
         possiblePaths.firstOrNull { it.exists() && it.isDirectory }
     }

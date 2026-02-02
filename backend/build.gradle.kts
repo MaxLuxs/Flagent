@@ -86,6 +86,9 @@ dependencies {
     // Billing
     implementation(libs.stripe.java)
 
+    // Firebase / Google Auth (for Remote Config REST API)
+    implementation(libs.google.auth.library.oauth2.http)
+
     // Utilities
     implementation(libs.commons.lang3)
     implementation(libs.jackson.dataformat.yaml)
@@ -94,6 +97,7 @@ dependencies {
     // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.content.negotiation)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -122,6 +126,7 @@ tasks.register<JavaExec>("runDev") {
     description = "Run backend with FLAGENT_DEV_MODE+FLAGENT_DEV_SKIP_TENANT_AUTH (X-API-Key optional) and admin auth for login"
     mainClass.set(application.mainClass.get())
     classpath = sourceSets.main.get().runtimeClasspath
+    workingDir = rootProject.projectDir
     environment("FLAGENT_DEV_MODE", "true")
     environment("FLAGENT_DEV_SKIP_TENANT_AUTH", "true")
     environment("FLAGENT_ADMIN_AUTH_ENABLED", "true")
