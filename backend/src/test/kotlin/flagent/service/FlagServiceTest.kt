@@ -188,10 +188,13 @@ class FlagServiceTest {
     
     @Test
     fun testDeleteFlag() = runBlocking {
+        val flag = Flag(id = 1, key = "test-flag", description = "Test")
+        coEvery { flagRepository.findById(1) } returns flag
         coEvery { flagRepository.delete(1) } just Runs
-        
+
         flagService.deleteFlag(1)
-        
+
+        coVerify { flagRepository.findById(1) }
         coVerify { flagRepository.delete(1) }
     }
     
