@@ -1,0 +1,21 @@
+{
+  "name": "flagent-frontend-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "E2E tests for Flagent frontend",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report",
+    "test:oss": "./scripts/run-e2e-with-backend.sh oss",
+    "test:tenant": "./scripts/run-e2e-with-backend.sh tenant",
+    "test:auth": "./scripts/run-e2e-with-backend.sh auth",
+    "test:all-scenarios": "./scripts/run-e2e-with-backend.sh oss && ./scripts/run-e2e-with-backend.sh tenant && ./scripts/run-e2e-with-backend.sh auth"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "typescript": "^5.7.0"
+  }
+}

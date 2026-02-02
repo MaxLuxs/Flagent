@@ -365,40 +365,7 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- Load dependencies: dev (separate kotlin modules) or prod (single frontend.js bundle) -->
-    <script>
-        (function() {
-            function loadProd() {
-                var s = document.createElement('script');
-                s.src = 'frontend.js';
-                document.body.appendChild(s);
-            }
-            var test = document.createElement('script');
-            test.src = 'kotlin/kotlin-kotlin-stdlib.js';
-            test.onerror = function() { loadProd(); };
-            test.onload = function() {
-                var modules = [
-                    'kotlin/ktor-ktor-io.js', 'kotlin/ktor-ktor-utils.js', 'kotlin/ktor-ktor-http.js',
-                    'kotlin/ktor-ktor-serialization.js', 'kotlin/ktor-ktor-client-core.js',
-                    'kotlin/ktor-ktor-client-content-negotiation.js',
-                    'kotlin/kotlinx-serialization-kotlinx-serialization-json.js',
-                    'kotlin/ktor-ktor-serialization-kotlinx-json.js', 'kotlin/kotlinx-coroutines-core.js',
-                    'kotlin/flagent-shared.js', 'kotlin/compose-multiplatform-core-compose-runtime-runtime.js',
-                    'kotlin/html-internal-html-core-runtime.js', 'kotlin/html-html-core.js'
-                ];
-                var i = 0;
-                function next() {
-                    if (i >= modules.length) { loadProd(); return; }
-                    var s = document.createElement('script');
-                    s.src = modules[i++];
-                    s.onload = next;
-                    s.onerror = next;
-                    document.body.appendChild(s);
-                }
-                next();
-            };
-            document.body.appendChild(test);
-        })();
-    </script>
+    <!-- Production: single bundle, no kotlin/ modules (avoids SPA fallback returning HTML for missing .js) -->
+    <script src="/frontend.js"></script>
 </body>
 </html>

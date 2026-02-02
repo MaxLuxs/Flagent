@@ -39,13 +39,36 @@ Test component interactions:
 - **Navigation** - Route changes and browser history
 - **Component Lifecycle** - Mount, update, unmount
 
-### E2E Tests (Future)
+### E2E Tests (Playwright)
 
-End-to-end user flows:
+End-to-end user flows in `frontend/e2e/`:
 
-- Flag creation and editing
-- Metrics visualization
-- Smart rollout execution
+- **Landing page** - Title, description, navigation buttons
+- **Dashboard** - Stats, layout
+- **Flags** - List, create flag, flag detail
+- **Debug Console** - Evaluation testing
+- **Navigation** - Navbar, URL routing
+
+**Run E2E tests:**
+
+```bash
+# 1. Start backend + frontend (from repo root)
+./gradlew run
+
+# 2. In another terminal
+cd frontend/e2e && npm install && npm run test
+
+# Or use Gradle task (servers must be running)
+./gradlew :frontend:e2e
+```
+
+**CI mode** (auto-starts servers):
+
+```bash
+cd frontend/e2e && CI=true npm run test
+```
+
+See `frontend/e2e/README.md` for details.
 
 ## Writing Tests
 

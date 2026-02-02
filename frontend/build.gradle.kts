@@ -7,6 +7,9 @@ plugins {
 
 kotlin {
     js(IR) {
+        compilerOptions {
+            freeCompilerArgs.add("-Xir-minimized-member-names=false")
+        }
         browser {
             commonWebpackConfig {
                 cssSupport {
@@ -44,6 +47,32 @@ tasks.register("run") {
     dependsOn(tasks.named("jsBrowserDevelopmentRun"))
 }
 
+// Copy production index (loads only frontend.js; dev index loads kotlin/ modules, SPA fallback returns HTML for missing .js)
+tasks.named("jsBrowserProductionWebpack").configure {
+    doLast {
+        val outDir = file("$buildDir/kotlin-webpack/js/productionExecutable")
+        if (outDir.exists()) {
+            val indexProd = file("$projectDir/src/jsMain/resources/index.production.html")
+            if (indexProd.exists()) {
+                indexProd.copyTo(file("$outDir/index.html"), overwrite = true)
+            }
+        }
+    }
+}
+
+// Development bundle works (production has CoroutineContext.Element.minusKey "this" undefined bug). Copy index for backend serving.
+tasks.named("jsBrowserDevelopmentWebpack").configure {
+    doLast {
+        val outDir = file("$buildDir/kotlin-webpack/js/developmentExecutable")
+        if (outDir.exists()) {
+            val indexProd = file("$projectDir/src/jsMain/resources/index.production.html")
+            if (indexProd.exists()) {
+                indexProd.copyTo(file("$outDir/index.html"), overwrite = true)
+            }
+        }
+    }
+}
+
 // Run backend with dev mode (X-API-Key optional) - use with :frontend:run for full dev
 tasks.register("runBackendDev") {
     group = "application"
@@ -55,4 +84,14 @@ tasks.register("runBackendDev") {
 // when building from root with Kotlin MPP + Compose). jsBrowserTest stays in check.
 tasks.named("compileTestKotlinJs").configure {
     mustRunAfter(tasks.named("compileKotlinJs"))
+}
+
+// E2E tests (Playwright) - run from frontend/e2e with: npm run test
+// Requires backend + frontend running (./gradlew run from root) or CI=true for auto-start
+tasks.register<Exec>("e2e") {
+    group = "verification"
+    description = "Run Playwright E2E tests. Start servers first: ./gradlew run"
+    workingDir = file("e2e")
+    commandLine("npm", "run", "test")
+    isIgnoreExitValue = false
 }
