@@ -144,6 +144,8 @@ cd Flagent
 ./gradlew :backend:run
 ```
 
+**Требуется Java 21.** При ошибке `UnsupportedClassVersionError` задайте `JAVA_HOME` на JDK 21 (например, `~/.gradle/jdks/eclipse_adoptium-21-*/jdk-*/Contents/Home` при auto-provisioning Gradle).
+
 См. [Руководство по развертыванию](https://maxluxs.github.io/Flagent/deployment.ru.md) для production настройки.
 
 ## 🎯 SDK и интеграции

@@ -75,27 +75,18 @@ POST /api/v1/evaluation
   "flagID": 1,
   "entityContext": {
     "country": "US",
-    "age": 25
+    "age": "25"
   }
 }
 
-// Batch evaluation
+// Batch evaluation (entities = entity contexts, flagKeys/flagIDs = which flags to evaluate)
 POST /api/v1/evaluation/batch
 {
   "entities": [
-    {
-      "flagID": 1,
-      "entityContext": {
-        "country": "US"
-      }
-    },
-    {
-      "flagKey": "new_payment_flow",
-      "entityContext": {
-        "country": "CA"
-      }
-    }
-  ]
+    {"entityID": "user1", "entityContext": {"country": "US"}},
+    {"entityID": "user2", "entityContext": {"country": "CA"}}
+  ],
+  "flagKeys": ["flag1", "new_payment_flow"]
 }
 ```
 

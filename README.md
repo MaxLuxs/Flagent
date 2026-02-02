@@ -100,6 +100,7 @@ git clone https://github.com/MaxLuxs/Flagent.git flagent && cd flagent
 ./gradlew run
 ```
 - Backend: http://localhost:18000 (API, health, Swagger at /docs)
+- **Java 21 required.** If you see `UnsupportedClassVersionError`, set `JAVA_HOME` to JDK 21 (e.g. `~/.gradle/jdks/eclipse_adoptium-21-*/jdk-*/Contents/Home` when Gradle auto-provisions it)
 - Frontend: http://localhost:8080 (Compose dev server; uses `ENV_API_BASE_URL` → 18000)
 - Requires `org.gradle.parallel=true` (default in `gradle.properties`). Ctrl+C stops both.
 

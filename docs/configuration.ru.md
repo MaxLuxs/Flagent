@@ -324,6 +324,55 @@ FLAGENT_PUBSUB_TOPIC_NAME=flagent-evaluations
 FLAGENT_PUBSUB_CREDENTIALS_FILE=/path/to/credentials.json
 ```
 
+## Интеграция Firebase
+
+### Синхронизация Firebase Remote Config
+
+Синхронизирует флаги Flagent в Firebase Remote Config, чтобы мобильные приложения продолжали читать из Firebase, а Flagent оставался источником правды.
+
+```bash
+# Включить синхронизацию (по умолчанию: false)
+FLAGENT_FIREBASE_RC_SYNC_ENABLED=true
+
+# ID проекта Firebase (обязательно при включённой синхронизации)
+FLAGENT_FIREBASE_RC_PROJECT_ID=your-firebase-project-id
+
+# Учётные данные сервисного аккаунта: JSON или путь к файлу
+FLAGENT_FIREBASE_RC_CREDENTIALS_JSON={"type":"service_account",...}
+# Или:
+FLAGENT_FIREBASE_RC_CREDENTIALS_FILE=/path/to/service-account.json
+# Или переменная GOOGLE_APPLICATION_CREDENTIALS
+
+# Интервал синхронизации (по умолчанию: 5s). Примеры: 5s, 1m, 5m
+FLAGENT_FIREBASE_RC_SYNC_INTERVAL=5m
+
+# Опциональный префикс для ключей параметров в Firebase RC (напр. flagent_)
+FLAGENT_FIREBASE_RC_PARAMETER_PREFIX=flagent_
+```
+
+**Маппинг:** Один флаг Flagent → один параметр Firebase RC. Boolean-флаги → `"true"`/`"false"`. Эксперименты → JSON `{"variant":"control","attachment":{...}}`. Лимит Firebase RC: 2000 параметров.
+
+### Firebase Analytics (GA4 Measurement Protocol)
+
+Отправляет события оценок в GA4 для отображения в том же property, что и Firebase Analytics.
+
+```bash
+# Включить reporter (по умолчанию: false)
+FLAGENT_FIREBASE_ANALYTICS_ENABLED=true
+
+# API secret Measurement Protocol (GA4 Admin → Data streams → Measurement Protocol)
+FLAGENT_FIREBASE_ANALYTICS_API_SECRET=your-api-secret
+
+# Measurement ID (напр. G-XXXXXXXXXX) или Firebase App ID для мобильных
+FLAGENT_FIREBASE_ANALYTICS_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# Ключи в entityContext для идентификации пользователя в GA4 (по умолчанию: app_instance_id, client_id)
+FLAGENT_FIREBASE_ANALYTICS_APP_INSTANCE_ID_KEY=app_instance_id
+FLAGENT_FIREBASE_ANALYTICS_CLIENT_ID_KEY=client_id
+```
+
+**Требуется:** Передавать `app_instance_id` (Firebase app) или `client_id` (web) в `entityContext` при evaluation, чтобы события привязывались к пользователю в GA4.
+
 ## Примеры файлов конфигурации
 
 ### Разработка

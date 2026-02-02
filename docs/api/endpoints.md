@@ -2,92 +2,93 @@
 
 ## Base Path
 
-Все API endpoints имеют базовый путь `/api/v1`
+All API endpoints use the base path `/api/v1`.
 
 ## API Documentation
 
 ### Swagger UI
 
-Интерактивная документация API доступна через Swagger UI:
+Interactive API documentation is available via Swagger UI:
 
 - **Swagger UI**: `http://localhost:18000/docs`
-- **OpenAPI спецификация (YAML)**: `http://localhost:18000/api/v1/openapi.yaml`
-- **OpenAPI спецификация (JSON)**: `http://localhost:18000/api/v1/openapi.json`
+- **OpenAPI specification (YAML)**: `http://localhost:18000/api/v1/openapi.yaml`
+- **OpenAPI specification (JSON)**: `http://localhost:18000/api/v1/openapi.json`
 
-Swagger UI позволяет:
-- Просматривать все доступные endpoints
-- Тестировать API прямо из браузера
-- Просматривать схемы данных (request/response models)
-- Видеть примеры запросов и ответов
+Swagger UI allows you to:
+- View all available endpoints
+- Test the API directly from the browser
+- View data schemas (request/response models)
+- See request and response examples
 
 ### OpenAPI Specification
 
-Полная OpenAPI 3.0 спецификация находится в файле `docs/api/openapi.yaml`.
+The full OpenAPI 3.0 specification is in `docs/api/openapi.yaml`.
 
 ## Endpoints
 
 ### Health Check
 
-- `GET /api/v1/health` - проверка здоровья сервиса
+- `GET /api/v1/health` - service health check
 
 ### Flags
 
-- `GET /api/v1/flags` - список флагов
-- `POST /api/v1/flags` - создание флага
-- `GET /api/v1/flags/{flagID}` - получение флага
-- `PUT /api/v1/flags/{flagID}` - обновление флага
-- `DELETE /api/v1/flags/{flagID}` - удаление флага
-- `PUT /api/v1/flags/{flagID}/enabled` - включить/выключить флаг
-- `PUT /api/v1/flags/{flagID}/restore` - восстановить удаленный флаг
-- `GET /api/v1/flags/{flagID}/snapshots` - история снимков флага
-- `GET /api/v1/flags/entity_types` - типы сущностей
+- `GET /api/v1/flags` - list flags
+- `POST /api/v1/flags` - create flag
+- `GET /api/v1/flags/{flagID}` - get flag
+- `PUT /api/v1/flags/{flagID}` - update flag
+- `DELETE /api/v1/flags/{flagID}` - delete flag
+- `PUT /api/v1/flags/{flagID}/enabled` - enable/disable flag
+- `PUT /api/v1/flags/{flagID}/restore` - restore deleted flag
+- `GET /api/v1/flags/{flagID}/snapshots` - flag snapshot history
+- `GET /api/v1/flags/entity_types` - entity types
 
 ### Segments
 
-- `GET /api/v1/flags/{flagID}/segments` - список сегментов
-- `POST /api/v1/flags/{flagID}/segments` - создание сегмента
-- `PUT /api/v1/flags/{flagID}/segments/{segmentID}` - обновление сегмента
-- `DELETE /api/v1/flags/{flagID}/segments/{segmentID}` - удаление сегмента
-- `PUT /api/v1/flags/{flagID}/segments/reorder` - изменение порядка сегментов
+- `GET /api/v1/flags/{flagID}/segments` - list segments
+- `POST /api/v1/flags/{flagID}/segments` - create segment
+- `PUT /api/v1/flags/{flagID}/segments/{segmentID}` - update segment
+- `DELETE /api/v1/flags/{flagID}/segments/{segmentID}` - delete segment
+- `PUT /api/v1/flags/{flagID}/segments/reorder` - reorder segments
 
 ### Constraints
 
-- `GET /api/v1/flags/{flagID}/segments/{segmentID}/constraints` - список ограничений
-- `POST /api/v1/flags/{flagID}/segments/{segmentID}/constraints` - создание ограничения
-- `PUT /api/v1/flags/{flagID}/segments/{segmentID}/constraints/{constraintID}` - обновление ограничения
-- `DELETE /api/v1/flags/{flagID}/segments/{segmentID}/constraints/{constraintID}` - удаление ограничения
+- `GET /api/v1/flags/{flagID}/segments/{segmentID}/constraints` - list constraints
+- `POST /api/v1/flags/{flagID}/segments/{segmentID}/constraints` - create constraint
+- `PUT /api/v1/flags/{flagID}/segments/{segmentID}/constraints/{constraintID}` - update constraint
+- `DELETE /api/v1/flags/{flagID}/segments/{segmentID}/constraints/{constraintID}` - delete constraint
+
+Supported operators: `EQ`, `NEQ`, `LT`, `LTE`, `GT`, `GTE`, `EREG`, `NEREG`, `IN`, `NOTIN`, `CONTAINS`, `NOTCONTAINS`
 
 ### Distributions
 
-- `GET /api/v1/flags/{flagID}/segments/{segmentID}/distributions` - список распределений
-- `PUT /api/v1/flags/{flagID}/segments/{segmentID}/distributions` - обновление распределений
+- `GET /api/v1/flags/{flagID}/segments/{segmentID}/distributions` - list distributions
+- `PUT /api/v1/flags/{flagID}/segments/{segmentID}/distributions` - update distributions
 
 ### Variants
 
-- `GET /api/v1/flags/{flagID}/variants` - список вариантов
-- `POST /api/v1/flags/{flagID}/variants` - создание варианта
-- `PUT /api/v1/flags/{flagID}/variants/{variantID}` - обновление варианта
-- `DELETE /api/v1/flags/{flagID}/variants/{variantID}` - удаление варианта
+- `GET /api/v1/flags/{flagID}/variants` - list variants
+- `POST /api/v1/flags/{flagID}/variants` - create variant
+- `PUT /api/v1/flags/{flagID}/variants/{variantID}` - update variant
+- `DELETE /api/v1/flags/{flagID}/variants/{variantID}` - delete variant
 
 ### Tags
 
-- `GET /api/v1/tags` - список всех тегов
-- `POST /api/v1/tags` - создание тега
-- `GET /api/v1/flags/{flagID}/tags` - теги флага
-- `POST /api/v1/flags/{flagID}/tags` - добавление тега к флагу
-- `DELETE /api/v1/flags/{flagID}/tags/{tagID}` - удаление тега у флага
+- `GET /api/v1/tags` - list all tags
+- `GET /api/v1/flags/{flagID}/tags` - flag tags
+- `POST /api/v1/flags/{flagID}/tags` - create tag by `value` (or find existing) and attach to flag. Body: `{"value": "..."}`
+- `DELETE /api/v1/flags/{flagID}/tags/{tagID}` - remove tag from flag
 
 ### Evaluation
 
-- `POST /api/v1/evaluation` - оценка одного флага
-- `POST /api/v1/evaluation/batch` - пакетная оценка флагов
+- `POST /api/v1/evaluation` - evaluate single flag
+- `POST /api/v1/evaluation/batch` - batch flag evaluation
 
 ### Export
 
-- `GET /api/v1/export/sqlite` - экспорт в SQLite файл
-- `GET /api/v1/export/eval_cache/json` - экспорт кэша в JSON
+- `GET /api/v1/export/sqlite` - export to SQLite file
+- `GET /api/v1/export/eval_cache/json` - export eval cache to JSON
 
-## Референс
+## Reference
 
-- **OpenAPI спецификация**: `docs/api/openapi.yaml`
-- **Swagger UI**: доступен на `/docs` после запуска сервера
+- **OpenAPI specification**: `docs/api/openapi.yaml`
+- **Swagger UI**: available at `/docs` when the server is running

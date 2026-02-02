@@ -334,6 +334,55 @@ FLAGENT_PUBSUB_TOPIC_NAME=flagent-evaluations
 FLAGENT_PUBSUB_CREDENTIALS_FILE=/path/to/credentials.json
 ```
 
+## Firebase Integration
+
+### Firebase Remote Config Sync
+
+Syncs Flagent flags to Firebase Remote Config so mobile apps can continue reading from Firebase while Flagent remains the source of truth.
+
+```bash
+# Enable Firebase RC sync (default: false)
+FLAGENT_FIREBASE_RC_SYNC_ENABLED=true
+
+# Firebase project ID (required when sync enabled)
+FLAGENT_FIREBASE_RC_PROJECT_ID=your-firebase-project-id
+
+# Service account credentials: JSON string or file path
+FLAGENT_FIREBASE_RC_CREDENTIALS_JSON={"type":"service_account",...}
+# Or:
+FLAGENT_FIREBASE_RC_CREDENTIALS_FILE=/path/to/service-account.json
+# Or use GOOGLE_APPLICATION_CREDENTIALS env var
+
+# Sync interval (default: 5s). Examples: 5s, 1m, 5m
+FLAGENT_FIREBASE_RC_SYNC_INTERVAL=5m
+
+# Optional prefix for parameter keys in Firebase RC (e.g. flagent_)
+FLAGENT_FIREBASE_RC_PARAMETER_PREFIX=flagent_
+```
+
+**Mapping:** One Flagent flag → one Firebase RC parameter. Boolean flags → `"true"`/`"false"`. Experiments → JSON `{"variant":"control","attachment":{...}}`. Firebase RC limit: 2000 parameters.
+
+### Firebase Analytics (GA4 Measurement Protocol)
+
+Sends evaluation events to GA4 so they appear in the same property as Firebase Analytics.
+
+```bash
+# Enable Firebase Analytics reporter (default: false)
+FLAGENT_FIREBASE_ANALYTICS_ENABLED=true
+
+# GA4 Measurement Protocol API secret (from GA4 Admin → Data streams → Measurement Protocol)
+FLAGENT_FIREBASE_ANALYTICS_API_SECRET=your-api-secret
+
+# Measurement ID (e.g. G-XXXXXXXXXX) or Firebase App ID for mobile
+FLAGENT_FIREBASE_ANALYTICS_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# Keys in entityContext for GA4 user identity (default: app_instance_id, client_id)
+FLAGENT_FIREBASE_ANALYTICS_APP_INSTANCE_ID_KEY=app_instance_id
+FLAGENT_FIREBASE_ANALYTICS_CLIENT_ID_KEY=client_id
+```
+
+**Required:** Pass `app_instance_id` (Firebase app) or `client_id` (web) in `entityContext` when evaluating so events attach to the correct user in GA4.
+
 ## Example Configuration Files
 
 ### Development
