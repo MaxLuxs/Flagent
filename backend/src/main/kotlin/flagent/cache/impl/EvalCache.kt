@@ -55,7 +55,13 @@ class EvalCache(
                         reloadCache()
                     }
                 } catch (e: Exception) {
-                    logger.error(e) { "Failed to reload evaluation cache" }
+                    // During shutdown/tests DB may be closed; avoid noisy stack trace
+                    val isClosed = generateSequence<Throwable>(e) { it.cause }.any { it.message?.contains("has been closed") == true }
+                    if (isClosed) {
+                        logger.debug { "EvalCache refresh skipped: DB closed" }
+                    } else {
+                        logger.error(e) { "Failed to reload evaluation cache" }
+                    }
                 }
             }
         }
@@ -175,7 +181,10 @@ class EvalCache(
             
             logger.debug { "EvalCache reloaded: ${flags.size} flags" }
         } catch (e: Exception) {
-            logger.error(e) { "Error reloading EvalCache" }
+            val isClosed = generateSequence<Throwable>(e) { it.cause }.any { it.message?.contains("has been closed") == true }
+            if (!isClosed) {
+                logger.error(e) { "Error reloading EvalCache" }
+            }
             throw e
         }
     }

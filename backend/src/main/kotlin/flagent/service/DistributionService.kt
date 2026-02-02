@@ -19,15 +19,21 @@ class DistributionService(
     }
     
     suspend fun updateDistributions(command: PutDistributionsCommand, updatedBy: String? = null) {
+        val flagId = command.flagId
+        val flag = flagRepository.findById(flagId)
+            ?: throw IllegalArgumentException("error finding flagID $flagId")
+        val variantMap = flag.variants.associateBy { it.id }
         val distributions = command.distributions.map {
+            val variant = variantMap[it.variantID]
+                ?: throw IllegalArgumentException("error finding variantID ${it.variantID} under this flag. expecting ${flag.variants.map { v -> v.id }}")
+            val resolvedVariantKey = it.variantKey ?: variant.key
             Distribution(
                 segmentId = command.segmentId,
                 variantId = it.variantID,
-                variantKey = it.variantKey,
+                variantKey = resolvedVariantKey,
                 percent = it.percent
             )
         }
-        val flagId = command.flagId
         validateDistributions(flagId, distributions)
         distributionRepository.updateDistributions(command.segmentId, distributions)
         

@@ -1,15 +1,23 @@
 package flagent.route
 
 import flagent.application.module
-import flagent.repository.Database
-import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.*
+import flagent.test.bodyJsonArray
+import flagent.test.bodyJsonObject
+import flagent.test.createAuthenticatedClient
+import flagent.test.intOrNull
+import flagent.test.isNullOrJsonNull
+import flagent.test.requireSuccess
+import flagent.test.stringOrNull
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.put
 import kotlin.test.*
 
 /**
@@ -18,97 +26,91 @@ import kotlin.test.*
  */
 class EvaluationRoutesIntegrationTest {
     
-    @BeforeTest
-    fun setup() {
-        Database.init()
-    }
-    
-    @AfterTest
-    fun cleanup() {
-        Database.close()
-    }
-    
     @Test
     fun testEvaluation_CompleteFlow() = testApplication {
         application {
             module()
         }
         
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
+        val client = createAuthenticatedClient()
         
         try {
             // 1. Create flag
+            val flagKey = "eval_test_flag_${System.currentTimeMillis()}"
             val flag = client.post("/api/v1/flags") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "description" to "Evaluation test flag",
-                    "key" to "eval_test_flag"
-                ))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Evaluation test flag")
+                    put("key", flagKey)
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val flagId = (flag["id"] as Number).toInt()
+            val flagId = flag.intOrNull("id") ?: error("Missing id")
             
             // 2. Enable flag
             client.put("/api/v1/flags/$flagId/enabled") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("enabled" to true))
+                setBody(buildJsonObject { put("enabled", true) }.toString())
             }
             
             // 3. Create segment
             val segment = client.post("/api/v1/flags/$flagId/segments") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "description" to "Test segment",
-                    "rolloutPercent" to 100
-                ))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Test segment")
+                    put("rolloutPercent", 100)
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val segmentId = (segment["id"] as Number).toInt()
+            val segmentId = segment.intOrNull("id") ?: error("Missing id")
             
             // 4. Create variant
             val variant = client.post("/api/v1/flags/$flagId/variants") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("key" to "variant_a"))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject { put("key", "variant_a") }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val variantId = (variant["id"] as Number).toInt()
+            val variantId = variant.intOrNull("id") ?: error("Missing id")
             
             // 5. Create distribution
             client.put("/api/v1/flags/$flagId/segments/$segmentId/distributions") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "distributions" to listOf(
-                        mapOf(
-                            "variantID" to variantId,
-                            "percent" to 100
-                        )
-                    )
-                ))
+                setBody(buildJsonObject {
+                    put("distributions", buildJsonArray {
+                        add(buildJsonObject {
+                            put("variantID", variantId)
+                            put("percent", 100)
+                        })
+                    })
+                }.toString())
             }
             
-            // Wait for cache refresh
-            delay(200)
+            // Wait for cache refresh (FLAGENT_EVALCACHE_REFRESHINTERVAL=100ms in integration tests)
+            delay(350)
             
-            // 6. Evaluate flag by ID
+            // 6. Evaluate flag by ID (enableDebug to diagnose when variantID is null)
             val evalResponse = client.post("/api/v1/evaluation") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "flagID" to flagId,
-                    "entityID" to "test_entity_123",
-                    "entityType" to "user"
-                ))
+                setBody(buildJsonObject {
+                    put("flagID", flagId)
+                    put("entityID", "test_entity")
+                    put("entityType", "user")
+                    put("enableDebug", true)
+                }.toString())
             }
             
             assertEquals(HttpStatusCode.OK, evalResponse.status)
-            val result = evalResponse.body<Map<String, Any>>()
-            assertEquals(flagId, (result["flagID"] as Number).toInt())
-            assertNotNull(result["variantID"])
-            assertEquals(variantId, (result["variantID"] as Number).toInt())
-            assertEquals("variant_a", result["variantKey"])
+            val result = evalResponse.bodyJsonObject()
+            assertEquals(flagId, result.intOrNull("flagID"))
+            if (result["variantID"].isNullOrJsonNull()) {
+                val debugLog = result["evalDebugLog"]
+                val msg = (debugLog as? kotlinx.serialization.json.JsonObject)?.get("msg")?.toString()
+                val segmentLogs = (debugLog as? kotlinx.serialization.json.JsonObject)?.get("segmentDebugLogs")
+                fail("variantID is null; evalDebugLog.msg=$msg; segmentDebugLogs=$segmentLogs; result=$result")
+            }
+            assertFalse(result["variantID"].isNullOrJsonNull())
+            assertEquals(variantId, result.intOrNull("variantID"))
+            assertEquals("variant_a", result.stringOrNull("variantKey"))
             
         } finally {
             client.close()
@@ -121,67 +123,68 @@ class EvaluationRoutesIntegrationTest {
             module()
         }
         
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
+        val client = createAuthenticatedClient()
         
         try {
             // Create flag with known key
+            val flagKey = "eval_by_key_flag_${System.currentTimeMillis()}"
             val flag = client.post("/api/v1/flags") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "description" to "Evaluation by key test",
-                    "key" to "eval_by_key_flag"
-                ))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Evaluation by key test")
+                    put("key", flagKey)
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val flagId = (flag["id"] as Number).toInt()
+            val flagId = flag.intOrNull("id") ?: error("Missing id")
             
             // Setup flag (enable, segment, variant, distribution)
             client.put("/api/v1/flags/$flagId/enabled") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("enabled" to true))
+                setBody(buildJsonObject { put("enabled", true) }.toString())
             }
             
             val segment = client.post("/api/v1/flags/$flagId/segments") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("rolloutPercent" to 100))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Test segment")
+                    put("rolloutPercent", 100)
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
             val variant = client.post("/api/v1/flags/$flagId/variants") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("key" to "test_variant"))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject { put("key", "test_variant") }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            client.put("/api/v1/flags/$flagId/segments/${(segment["id"] as Number).toInt()}/distributions") {
+            val segmentId = segment.intOrNull("id") ?: error("Missing segment id")
+            client.put("/api/v1/flags/$flagId/segments/$segmentId/distributions") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "distributions" to listOf(
-                        mapOf(
-                            "variantID" to (variant["id"] as Number).toInt(),
-                            "percent" to 100
-                        )
-                    )
-                ))
+                setBody(buildJsonObject {
+                    put("distributions", buildJsonArray {
+                        add(buildJsonObject {
+                            put("variantID", variant.intOrNull("id")!!)
+                            put("percent", 100)
+                        })
+                    })
+                }.toString())
             }
             
-            delay(200)
+            delay(350)
             
             // Evaluate by key
             val evalResponse = client.post("/api/v1/evaluation") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "flagKey" to "eval_by_key_flag",
-                    "entityID" to "test_entity"
-                ))
+                setBody(buildJsonObject {
+                    put("flagKey", flagKey)
+                    put("entityID", "test_entity")
+                }.toString())
             }
             
             assertEquals(HttpStatusCode.OK, evalResponse.status)
-            val result = evalResponse.body<Map<String, Any>>()
-            assertEquals(flagId, (result["flagID"] as Number).toInt())
-            assertEquals("eval_by_key_flag", result["flagKey"])
+            val result = evalResponse.bodyJsonObject()
+            assertEquals(flagId, result.intOrNull("flagID"))
+            assertEquals(flagKey, result.stringOrNull("flagKey"))
             
         } finally {
             client.close()
@@ -194,79 +197,78 @@ class EvaluationRoutesIntegrationTest {
             module()
         }
         
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
+        val client = createAuthenticatedClient()
         
         try {
             // Create flag with constraint
             val flag = client.post("/api/v1/flags") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "description" to "Context test flag",
-                    "key" to "context_test_flag"
-                ))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Context test flag")
+                    put("key", "context_test_flag_${System.currentTimeMillis()}")
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val flagId = (flag["id"] as Number).toInt()
+            val flagId = flag.intOrNull("id") ?: error("Missing id")
             
             client.put("/api/v1/flags/$flagId/enabled") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("enabled" to true))
+                setBody(buildJsonObject { put("enabled", true) }.toString())
             }
             
             val segment = client.post("/api/v1/flags/$flagId/segments") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("rolloutPercent" to 100))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Test segment")
+                    put("rolloutPercent", 100)
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val segmentId = (segment["id"] as Number).toInt()
+            val segmentId = segment.intOrNull("id") ?: error("Missing segment id")
             
             // Add constraint
             client.post("/api/v1/flags/$flagId/segments/$segmentId/constraints") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "property" to "region",
-                    "operator" to "EQ",
-                    "value" to "US"
-                ))
+                setBody(buildJsonObject {
+                    put("property", "region")
+                    put("operator", "EQ")
+                    put("value", "US")
+                }.toString())
             }
             
             val variant = client.post("/api/v1/flags/$flagId/variants") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("key" to "us_variant"))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject { put("key", "us_variant") }.toString())
+            }.requireSuccess().bodyJsonObject()
             
             client.put("/api/v1/flags/$flagId/segments/$segmentId/distributions") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "distributions" to listOf(
-                        mapOf(
-                            "variantID" to (variant["id"] as Number).toInt(),
-                            "percent" to 100
-                        )
-                    )
-                ))
+                setBody(buildJsonObject {
+                    put("distributions", buildJsonArray {
+                        add(buildJsonObject {
+                            put("variantID", variant.intOrNull("id")!!)
+                            put("percent", 100)
+                        })
+                    })
+                }.toString())
             }
             
-            delay(200)
+            delay(350)
             
             // Evaluate with matching context
             val evalResponse = client.post("/api/v1/evaluation") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "flagID" to flagId,
-                    "entityID" to "test_entity",
-                    "entityContext" to mapOf("region" to "US")
-                ))
+                setBody(buildJsonObject {
+                    put("flagID", flagId)
+                    put("entityID", "test_entity")
+                    put("entityContext", buildJsonObject { put("region", "US") })
+                }.toString())
             }
             
             assertEquals(HttpStatusCode.OK, evalResponse.status)
-            val result = evalResponse.body<Map<String, Any>>()
-            assertEquals(flagId, (result["flagID"] as Number).toInt())
-            assertNotNull(result["variantID"])
+            val result = evalResponse.bodyJsonObject()
+            assertEquals(flagId, result.intOrNull("flagID"))
+            assertFalse(result["variantID"].isNullOrJsonNull())
             
         } finally {
             client.close()
@@ -279,38 +281,34 @@ class EvaluationRoutesIntegrationTest {
             module()
         }
         
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
+        val client = createAuthenticatedClient()
         
         try {
             val flag = client.post("/api/v1/flags") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "description" to "Disabled flag",
-                    "key" to "disabled_eval_flag"
-                ))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Disabled flag")
+                    put("key", "disabled_eval_flag_${System.currentTimeMillis()}")
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val flagId = (flag["id"] as Number).toInt()
+            val flagId = flag.intOrNull("id") ?: error("Missing id")
             
             // Don't enable flag
             
-            delay(200)
+            delay(350)
             
             val evalResponse = client.post("/api/v1/evaluation") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "flagID" to flagId,
-                    "entityID" to "test_entity"
-                ))
+                setBody(buildJsonObject {
+                    put("flagID", flagId)
+                    put("entityID", "test_entity")
+                }.toString())
             }
             
             assertEquals(HttpStatusCode.OK, evalResponse.status)
-            val result = evalResponse.body<Map<String, Any>>()
-            assertNull(result["variantID"])
+            val result = evalResponse.bodyJsonObject()
+            assertTrue(result["variantID"].isNullOrJsonNull())
             
         } finally {
             client.close()
@@ -323,67 +321,69 @@ class EvaluationRoutesIntegrationTest {
             module()
         }
         
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
+        val client = createAuthenticatedClient()
         
         try {
             // Create flag
             val flag = client.post("/api/v1/flags") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("key" to "batch_test_flag"))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Batch test flag")
+                    put("key", "batch_test_flag_${System.currentTimeMillis()}")
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val flagId = (flag["id"] as Number).toInt()
+            val flagId = flag.intOrNull("id") ?: error("Missing id")
             
             // Setup flag
             client.put("/api/v1/flags/$flagId/enabled") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("enabled" to true))
+                setBody(buildJsonObject { put("enabled", true) }.toString())
             }
             
             val segment = client.post("/api/v1/flags/$flagId/segments") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("rolloutPercent" to 100))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Test segment")
+                    put("rolloutPercent", 100)
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
             val variant = client.post("/api/v1/flags/$flagId/variants") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("key" to "batch_variant"))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject { put("key", "batch_variant") }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            client.put("/api/v1/flags/$flagId/segments/${(segment["id"] as Number).toInt()}/distributions") {
+            val segmentId = segment.intOrNull("id") ?: error("Missing segment id")
+            client.put("/api/v1/flags/$flagId/segments/$segmentId/distributions") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "distributions" to listOf(
-                        mapOf(
-                            "variantID" to (variant["id"] as Number).toInt(),
-                            "percent" to 100
-                        )
-                    )
-                ))
+                setBody(buildJsonObject {
+                    put("distributions", buildJsonArray {
+                        add(buildJsonObject {
+                            put("variantID", variant.intOrNull("id")!!)
+                            put("percent", 100)
+                        })
+                    })
+                }.toString())
             }
             
-            delay(200)
+            delay(350)
             
             // Batch evaluate
             val batchResponse = client.post("/api/v1/evaluation/batch") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "flagIDs" to listOf(flagId),
-                    "entities" to listOf(
-                        mapOf("entityID" to "entity1"),
-                        mapOf("entityID" to "entity2")
-                    )
-                ))
+                setBody(buildJsonObject {
+                    put("flagIDs", buildJsonArray { add(JsonPrimitive(flagId)) })
+                    put("entities", buildJsonArray {
+                        add(buildJsonObject { put("entityID", "entity1") })
+                        add(buildJsonObject { put("entityID", "entity2") })
+                    })
+                }.toString())
             }
             
             assertEquals(HttpStatusCode.OK, batchResponse.status)
-            val batchResult = batchResponse.body<Map<String, Any>>()
-            @Suppress("UNCHECKED_CAST")
-            val results = batchResult["evaluationResults"] as? List<Map<String, Any>> ?: emptyList()
+            val batchResult = batchResponse.bodyJsonObject()
+            val results = batchResult["evaluationResults"]?.jsonArray ?: buildJsonArray { }
             assertEquals(2, results.size) // 2 entities * 1 flag = 2 results
             
         } finally {
@@ -397,24 +397,20 @@ class EvaluationRoutesIntegrationTest {
             module()
         }
         
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
+        val client = createAuthenticatedClient()
         
         try {
             val evalResponse = client.post("/api/v1/evaluation") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "flagID" to 99999,
-                    "entityID" to "test_entity"
-                ))
+                setBody(buildJsonObject {
+                    put("flagID", 99999)
+                    put("entityID", "test_entity")
+                }.toString())
             }
             
             assertEquals(HttpStatusCode.OK, evalResponse.status)
-            val result = evalResponse.body<Map<String, Any>>()
-            assertNull(result["variantID"])
+            val result = evalResponse.bodyJsonObject()
+            assertTrue(result["variantID"].isNullOrJsonNull())
             
         } finally {
             client.close()
@@ -427,61 +423,64 @@ class EvaluationRoutesIntegrationTest {
             module()
         }
         
-        val client = createClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
+        val client = createAuthenticatedClient()
         
         try {
             val flag = client.post("/api/v1/flags") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("key" to "debug_test_flag"))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Debug test flag")
+                    put("key", "debug_test_flag_${System.currentTimeMillis()}")
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            val flagId = (flag["id"] as Number).toInt()
+            val flagId = flag.intOrNull("id") ?: error("Missing id")
             
             client.put("/api/v1/flags/$flagId/enabled") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("enabled" to true))
+                setBody(buildJsonObject { put("enabled", true) }.toString())
             }
             
             val segment = client.post("/api/v1/flags/$flagId/segments") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("rolloutPercent" to 100))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject {
+                    put("description", "Test segment")
+                    put("rolloutPercent", 100)
+                }.toString())
+            }.requireSuccess().bodyJsonObject()
             
             val variant = client.post("/api/v1/flags/$flagId/variants") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("key" to "debug_variant"))
-            }.body<Map<String, Any>>()
+                setBody(buildJsonObject { put("key", "debug_variant") }.toString())
+            }.requireSuccess().bodyJsonObject()
             
-            client.put("/api/v1/flags/$flagId/segments/${(segment["id"] as Number).toInt()}/distributions") {
+            val segmentId = segment.intOrNull("id") ?: error("Missing segment id")
+            client.put("/api/v1/flags/$flagId/segments/$segmentId/distributions") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "distributions" to listOf(
-                        mapOf(
-                            "variantID" to (variant["id"] as Number).toInt(),
-                            "percent" to 100
-                        )
-                    )
-                ))
+                setBody(buildJsonObject {
+                    put("distributions", buildJsonArray {
+                        add(buildJsonObject {
+                            put("variantID", variant.intOrNull("id")!!)
+                            put("percent", 100)
+                        })
+                    })
+                }.toString())
             }
             
-            delay(200)
+            delay(350)
             
             val evalResponse = client.post("/api/v1/evaluation") {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf(
-                    "flagID" to flagId,
-                    "entityID" to "test_entity",
-                    "enableDebug" to true
-                ))
+                setBody(buildJsonObject {
+                    put("flagID", flagId)
+                    put("entityID", "test_entity")
+                    put("enableDebug", true)
+                }.toString())
             }
             
             assertEquals(HttpStatusCode.OK, evalResponse.status)
-            val result = evalResponse.body<Map<String, Any>>()
-            assertNotNull(result["evalDebugLog"])
+            val result = evalResponse.bodyJsonObject()
+            assertFalse(result["evalDebugLog"].isNullOrJsonNull())
             
         } finally {
             client.close()

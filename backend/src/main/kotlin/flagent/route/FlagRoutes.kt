@@ -1,6 +1,7 @@
 package flagent.route
 
 import flagent.api.constants.ApiConstants
+import mu.KotlinLogging
 import flagent.api.model.*
 import flagent.service.FlagService
 import flagent.service.command.CreateFlagCommand
@@ -12,6 +13,8 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+
+private val log = KotlinLogging.logger {}
 
 /**
  * Flag routes - CRUD operations for flags
@@ -61,6 +64,7 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                     } catch (e: IllegalArgumentException) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Invalid request")))
                     } catch (e: Exception) {
+                        log.warn(e) { "Flag creation failed: ${e.message}" }
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (e.message ?: "Internal server error")))
                     }
                 }

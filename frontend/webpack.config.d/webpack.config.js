@@ -75,6 +75,8 @@
     if (!config.devServer) {
         config.devServer = {};
     }
+    // SPA: serve index.html for all routes (e.g. /login, /tenants) so client-side router works after full page load
+    config.devServer.historyApiFallback = true;
     if (!config.devServer.static) {
         config.devServer.static = [];
     }

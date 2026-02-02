@@ -153,8 +153,19 @@ tasks.test {
     }
     finalizedBy(tasks.jacocoTestReport)
     maxParallelForks = 1
-    environment("FLAGENT_DB_DBDRIVER", "sqlite3")
-    environment("FLAGENT_DB_DBCONNECTIONSTR", ":memory:")
+    // DB env: use Postgres when CI runs integration tests (-PincludeIntegrationTests); else SQLite in-memory
+    if (!project.hasProperty("includeIntegrationTests")) {
+        environment("FLAGENT_DB_DBDRIVER", "sqlite3")
+        environment("FLAGENT_DB_DBCONNECTIONSTR", ":memory:")
+    } else {
+        // Local integration tests: use SQLite in-memory when Postgres not configured
+        if (System.getenv("FLAGENT_DB_DBDRIVER").isNullOrBlank()) {
+            environment("FLAGENT_DB_DBDRIVER", "sqlite3")
+            environment("FLAGENT_DB_DBCONNECTIONSTR", ":memory:")
+        }
+        // Fast cache refresh for integration tests (eval needs fresh data after flag setup)
+        environment("FLAGENT_EVALCACHE_REFRESHINTERVAL", "100ms")
+    }
     // Admin auth for AuthRoutesTest (success, wrong email, blank)
     environment("FLAGENT_ADMIN_AUTH_ENABLED", "true")
     environment("FLAGENT_ADMIN_EMAIL", "admin@test.com")

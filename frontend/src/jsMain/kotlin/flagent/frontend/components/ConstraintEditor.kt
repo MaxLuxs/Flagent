@@ -88,7 +88,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
             borderRadius(5.px)
         }
     }) {
-        H3 { 
+        H3 {
             Text(if (constraintId != null) LocalizedStrings.editConstraint else LocalizedStrings.createConstraint)
             InfoTooltip(
                 title = LocalizedStrings.constraintsTooltipTitle,
@@ -135,7 +135,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                     Select(attrs = {
                         attr("value", operator.value)
                         onChange { event ->
-                            val selected = (event.target as org.w3c.dom.HTMLSelectElement).value
+                            val selected = event.target.value
                             operator.value = selected
                         }
                         style {

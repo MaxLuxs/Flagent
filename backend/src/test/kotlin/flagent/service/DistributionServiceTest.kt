@@ -41,6 +41,16 @@ class DistributionServiceTest {
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenSumNot100() = runBlocking {
+        val flag = Flag(
+            id = 1,
+            key = "test-flag",
+            description = "Test",
+            variants = listOf(
+                Variant(id = 1, flagId = 1, key = "variant1"),
+                Variant(id = 2, flagId = 1, key = "variant2")
+            )
+        )
+        coEvery { flagRepository.findById(1) } returns flag
         val command = PutDistributionsCommand(
             flagId = 1,
             segmentId = 1,
@@ -223,6 +233,16 @@ class DistributionServiceTest {
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenSumGreaterThan100() = runBlocking {
+        val flag = Flag(
+            id = 1,
+            key = "test-flag",
+            description = "Test",
+            variants = listOf(
+                Variant(id = 1, flagId = 1, key = "variant1"),
+                Variant(id = 2, flagId = 1, key = "variant2")
+            )
+        )
+        coEvery { flagRepository.findById(1) } returns flag
         val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(
             DistributionItemCommand(variantID = 1, percent = 60),
             DistributionItemCommand(variantID = 2, percent = 50) // Sum = 110, not 100
@@ -235,6 +255,16 @@ class DistributionServiceTest {
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenSumLessThan100() = runBlocking {
+        val flag = Flag(
+            id = 1,
+            key = "test-flag",
+            description = "Test",
+            variants = listOf(
+                Variant(id = 1, flagId = 1, key = "variant1"),
+                Variant(id = 2, flagId = 1, key = "variant2")
+            )
+        )
+        coEvery { flagRepository.findById(1) } returns flag
         val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = listOf(
             DistributionItemCommand(variantID = 1, percent = 30),
             DistributionItemCommand(variantID = 2, percent = 40) // Sum = 70, not 100
@@ -247,6 +277,8 @@ class DistributionServiceTest {
     
     @Test
     fun testUpdateDistributions_ThrowsException_WhenEmptyDistributions() = runBlocking {
+        val flag = Flag(id = 1, key = "test-flag", description = "Test", variants = emptyList())
+        coEvery { flagRepository.findById(1) } returns flag
         val command = PutDistributionsCommand(flagId = 1, segmentId = 1, distributions = emptyList())
         
         assertFailsWith<IllegalArgumentException> {
