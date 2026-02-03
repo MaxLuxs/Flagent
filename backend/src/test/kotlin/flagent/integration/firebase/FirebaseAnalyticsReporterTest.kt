@@ -135,6 +135,7 @@ class FirebaseAnalyticsReporterTest {
         val reporter = FirebaseAnalyticsReporter(
             apiSecret = "secret",
             measurementId = "G-XXX",
+            clientIdKey = "client_id",
             httpClient = HttpClient(mockEngine)
         )
         val result = createEvalResult(
@@ -142,7 +143,11 @@ class FirebaseAnalyticsReporterTest {
             entityContext = buildJsonObject { put("client_id", "web-456") }
         )
         reporter.recordAsync(result)
-        delay(200)
+        var waited = 0
+        while (requestCount < 1 && waited < 3000) {
+            delay(50)
+            waited += 50
+        }
         reporter.close()
 
         assertEquals(1, requestCount)

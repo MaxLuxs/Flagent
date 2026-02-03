@@ -67,9 +67,10 @@ jobs:
   
   integration_test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15-alpine
         env:
           POSTGRES_PASSWORD: test
           POSTGRES_DB: flagent_test
@@ -119,6 +120,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+          cache: false  # go.sum in sdk/go/ and sdk/go-enhanced/, not in root
       - name: Build sdk/go
         run: cd sdk/go && go build ./...
       - name: Build sdk/go-enhanced

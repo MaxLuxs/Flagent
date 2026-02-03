@@ -87,3 +87,41 @@ export async function login(
 export function getBackendUrl(): string {
   return BACKEND_URL;
 }
+
+export interface CreateFlagResult {
+  id: number;
+  key: string;
+  apiKey?: string;
+}
+
+/**
+ * Ensure at least one flag exists. Creates tenant (if enterprise) and flag via API.
+ * Returns { id, key, apiKey? } or null. Caller should set localStorage api_key when apiKey is returned.
+ */
+export async function ensureFlagExists(
+  request: import('@playwright/test').APIRequestContext
+): Promise<CreateFlagResult | null> {
+  let apiKey: string | undefined;
+  const tenant = await createTenant(request);
+  if (tenant) {
+    apiKey = tenant.apiKey;
+  }
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (apiKey) headers['X-API-Key'] = apiKey;
+
+  try {
+    const key = `e2e_fixture_${Date.now()}`;
+    const response = await request.post(`${BACKEND_URL}/api/v1/flags`, {
+      headers,
+      data: { description: 'E2E flag editor fixture', key },
+    });
+    if (response.status() !== 200) return null;
+    const body = (await response.json()) as { id?: number; key?: string };
+    const id = body.id;
+    if (!id || typeof id !== 'number') return null;
+    return { id, key: body.key || key, apiKey };
+  } catch {
+    return null;
+  }
+}

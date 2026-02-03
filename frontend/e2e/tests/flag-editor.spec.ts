@@ -1,11 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { ensureFlagExists } from '../helpers/api';
 
 const E2E_FLAG_PREFIX = `e2e_full_${Date.now()}`;
 
+async function ensureFlagAndNavigate(
+  page: import('@playwright/test').Page,
+  request: import('@playwright/test').APIRequestContext
+) {
+  const result = await ensureFlagExists(request);
+  if (result?.apiKey) {
+    await page.addInitScript(
+      (key: string) => {
+        localStorage.setItem('api_key', key);
+      },
+      result.apiKey
+    );
+  }
+  await page.goto('/flags');
+  await page.waitForLoadState('domcontentloaded');
+  await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 15000 });
+}
+
 test.describe('Flag Editor - Full Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/flags');
-    await page.waitForLoadState('domcontentloaded');
+  test.beforeEach(async ({ page, request }) => {
+    await ensureFlagAndNavigate(page, request);
   });
 
   test('opens flag detail and shows Config tab', async ({ page }) => {
