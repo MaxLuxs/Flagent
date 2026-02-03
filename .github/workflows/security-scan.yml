@@ -2,13 +2,17 @@ name: Security Scan
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   schedule:
     # Weekly scan on Sunday at 2 AM
     - cron: '0 2 * * 0'
   workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   dependency-scan:

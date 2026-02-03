@@ -4,6 +4,10 @@ on:
   schedule:
   - cron: '17 21 * * *'
 
+concurrency:
+  group: stale
+  cancel-in-progress: false
+
 jobs:
   stale:
 

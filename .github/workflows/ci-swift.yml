@@ -8,6 +8,10 @@ on:
   pull_request:
     paths: ['sdk/swift/**', 'sdk/swift-enhanced/**', 'sdk/swift-debug-ui/**']
 
+concurrency:
+  group: ci-swift-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   swift-sdk:
     runs-on: macos-latest
