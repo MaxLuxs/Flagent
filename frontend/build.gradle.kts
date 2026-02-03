@@ -1,3 +1,6 @@
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.tasks.Sync
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
@@ -58,6 +61,10 @@ tasks.named("jsBrowserProductionWebpack").configure {
             }
         }
     }
+}
+
+tasks.named<Sync>("jsBrowserDistribution").configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 // Development bundle works (production has CoroutineContext.Element.minusKey "this" undefined bug). Copy index for backend serving.
