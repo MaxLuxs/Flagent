@@ -8,12 +8,14 @@ import flagent.config.AppConfig
 import flagent.repository.Database
 import flagent.repository.impl.ConstraintRepository
 import flagent.repository.impl.DistributionRepository
+import flagent.repository.impl.EvaluationEventRepository
 import flagent.repository.impl.FlagEntityTypeRepository
 import flagent.repository.impl.FlagRepository
 import flagent.repository.impl.FlagSnapshotRepository
 import flagent.repository.impl.SegmentRepository
 import flagent.repository.impl.TagRepository
 import flagent.repository.impl.VariantRepository
+import flagent.repository.impl.WebhookRepository
 import flagent.middleware.configureErrorHandling
 import flagent.middleware.configureCompression
 import flagent.middleware.configureLogging
@@ -27,9 +29,11 @@ import flagent.middleware.configureSentry
 import flagent.middleware.configureNewRelic
 import flagent.route.configureAuthRoutes
 import flagent.route.configureConstraintRoutes
+import flagent.route.configureCoreMetricsRoutes
 import flagent.route.configureDistributionRoutes
 import flagent.route.configureEvaluationRoutes
 import flagent.route.configureExportRoutes
+import flagent.route.configureImportRoutes
 import flagent.route.configureFlagEntityTypeRoutes
 import flagent.route.configureFlagRoutes
 import flagent.route.configureFlagSnapshotRoutes
@@ -39,14 +43,18 @@ import flagent.route.configureProfilingRoutes
 import flagent.route.configureSegmentRoutes
 import flagent.route.configureTagRoutes
 import flagent.route.configureVariantRoutes
+import flagent.route.configureWebhookRoutes
 import flagent.middleware.configureSSE
 import flagent.middleware.configureRealtimeEventBus
 import flagent.route.RealtimeEventBus
 import flagent.integration.firebase.FirebaseAnalyticsReporter
 import flagent.integration.firebase.FirebaseRCSyncService
 import flagent.recorder.DataRecordingService
+import flagent.recorder.EvaluationEventRecorder
+import flagent.recorder.EvaluationEventsCleanupJob
 import flagent.route.realtimeRoutes
 import flagent.service.ConstraintService
+import flagent.service.CoreMetricsService
 import flagent.service.DistributionService
 import flagent.service.EvaluationService
 import flagent.service.adapter.SharedFlagEvaluatorAdapter
@@ -57,7 +65,9 @@ import flagent.service.FlagSnapshotService
 import flagent.service.SegmentService
 import flagent.service.TagService
 import flagent.service.VariantService
+import flagent.service.WebhookService
 import flagent.service.ExportService
+import flagent.service.ImportService
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -133,12 +143,20 @@ fun Application.module() {
                 }
             }
             
-            // Configure allowed origins
-            AppConfig.corsAllowedOrigins.forEach { origin ->
-                if (origin == "*") {
-                    anyHost()
-                } else {
-                    allowHost(origin)
+            // Configure allowed origins. With allowCredentials=true, "*" is invalid per CORS spec.
+            val origins = AppConfig.corsAllowedOrigins
+            val useWildcard = origins.any { it == "*" } && !AppConfig.corsAllowCredentials
+            if (useWildcard) {
+                anyHost()
+            } else {
+                origins.filter { it != "*" }.forEach { origin ->
+                    val hostPort = origin.removePrefix("http://").removePrefix("https://")
+                    allowHost(hostPort)
+                }
+                if (origins.any { it == "*" }) {
+                    listOf("localhost:8080", "localhost:8081", "localhost:18000",
+                        "127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:18000")
+                        .forEach { allowHost(it) }
                 }
             }
             
@@ -238,6 +256,18 @@ fun Application.module() {
         null
     }
 
+    // Core metrics: evaluation event recording (OSS)
+    val evaluationEventRepository = EvaluationEventRepository()
+    val evaluationEventRecorder = if (!AppConfig.evalOnlyMode) {
+        EvaluationEventRecorder(evaluationEventRepository).also {
+            logger.info { "EvaluationEventRecorder initialized for core metrics" }
+        }
+    } else null
+    val coreMetricsService = if (!AppConfig.evalOnlyMode) CoreMetricsService(evaluationEventRepository) else null
+    val evaluationEventsCleanupJob = if (!AppConfig.evalOnlyMode) {
+        EvaluationEventsCleanupJob(evaluationEventRepository).also { it.start() }
+    } else null
+
     // Initialize evaluation: shared evaluator as single source of truth
     val sharedFlagEvaluatorAdapter = SharedFlagEvaluatorAdapter()
     val evaluateFlagUseCase = EvaluateFlagUseCase(sharedFlagEvaluatorAdapter)
@@ -245,7 +275,8 @@ fun Application.module() {
         evalCache,
         evaluateFlagUseCase,
         dataRecordingService,
-        firebaseAnalyticsReporter
+        firebaseAnalyticsReporter,
+        evaluationEventRecorder
     )
     val flagSnapshotService = FlagSnapshotService(flagSnapshotRepository, flagRepository)
     val flagEntityTypeService = FlagEntityTypeService(flagEntityTypeRepository)
@@ -254,6 +285,8 @@ fun Application.module() {
     val constraintService = ConstraintService(constraintRepository, segmentRepository, flagSnapshotService)
     val distributionService = DistributionService(distributionRepository, flagRepository, flagSnapshotService)
     val variantService = VariantService(variantRepository, flagRepository, distributionRepository, flagSnapshotService, eventBus)
+    val webhookRepository = WebhookRepository()
+    val webhookService = WebhookService(webhookRepository, flagRepository)
     val flagService = FlagService(
         flagRepository,
         flagSnapshotService,
@@ -261,10 +294,12 @@ fun Application.module() {
         variantService,
         distributionService,
         flagEntityTypeService,
-        eventBus
+        eventBus,
+        webhookService
     )
     val tagService = TagService(tagRepository, flagRepository, flagSnapshotService)
     val exportService = ExportService(flagRepository, flagSnapshotRepository, flagEntityTypeRepository)
+    val importService = ImportService(flagService, segmentService, variantService, distributionService, constraintService, flagRepository)
     
     val enterpriseConfigurator = ServiceLoader.load(EnterpriseConfigurator::class.java).toList().firstOrNull() ?: DefaultEnterpriseConfigurator()
     EnterprisePresence.enterpriseEnabled = enterpriseConfigurator !is DefaultEnterpriseConfigurator
@@ -299,7 +334,14 @@ fun Application.module() {
                 configureFlagSnapshotRoutes(flagSnapshotService)
                 configureFlagEntityTypeRoutes(flagEntityTypeService)
                 configureExportRoutes(evalCache, exportService)
-                
+                configureImportRoutes(importService)
+                configureWebhookRoutes(webhookService)
+
+                // Core metrics overview (OSS only, when enterprise absent)
+                if (!EnterprisePresence.enterpriseEnabled && coreMetricsService != null) {
+                    configureCoreMetricsRoutes(coreMetricsService, flagService)
+                }
+
                 // Tenant, billing, SSO, AI rollouts: registered by enterprise when present
                 enterpriseConfigurator.configureRoutes(this, backendContext)
             } else {
@@ -336,6 +378,8 @@ fun Application.module() {
         firebaseRcSyncService?.stop()
         firebaseAnalyticsReporter?.close()
         dataRecordingService?.stop()
+        evaluationEventRecorder?.stop()
+        evaluationEventsCleanupJob?.stop()
         Database.close()
     }
 }

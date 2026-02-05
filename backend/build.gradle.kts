@@ -180,6 +180,7 @@ tasks.test {
     environment("FLAGENT_ADMIN_API_KEY", "test-admin-key")
     reports {
         junitXml.required.set(false)
+        html.required.set(false)
     }
 }
 

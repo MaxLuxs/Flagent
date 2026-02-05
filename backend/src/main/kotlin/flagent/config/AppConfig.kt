@@ -2,6 +2,7 @@ package flagent.config
 
 import flagent.api.constants.ApiConstants
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -58,6 +59,15 @@ object AppConfig {
         System.getenv("FLAGENT_DB_DBCONNECTION_RETRY_DELAY")?.let { parseDuration(it) }
             ?: 100.milliseconds
 
+    // Evaluation events retention (core metrics cleanup)
+    val evaluationEventsRetentionDays: Int =
+        System.getenv("FLAGENT_EVALUATION_EVENTS_RETENTION_DAYS")?.toIntOrNull() ?: 90
+    val evaluationEventsCleanupEnabled: Boolean =
+        System.getenv("FLAGENT_EVALUATION_EVENTS_CLEANUP_ENABLED")?.toBoolean() ?: true
+    val evaluationEventsCleanupInterval: Duration =
+        System.getenv("FLAGENT_EVALUATION_EVENTS_CLEANUP_INTERVAL")?.let { parseDuration(it) }
+            ?: 24.hours
+
     // CORS
     val corsEnabled: Boolean = System.getenv("FLAGENT_CORS_ENABLED")?.toBoolean() ?: true
     val corsAllowCredentials: Boolean =
@@ -70,14 +80,27 @@ object AppConfig {
                 "Content-Type",
                 "X-Requested-With",
                 "Authorization",
+                "X-API-Key",
+                "X-Tenant-ID",
+                "X-Admin-Key",
                 "Time_Zone"
             )
     val corsAllowedMethods: List<String> =
         System.getenv("FLAGENT_CORS_ALLOWED_METHODS")?.split(",")?.map { it.trim() }
-            ?: listOf("GET", "POST", "PUT", "DELETE", "PATCH")
+            ?: listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+    // With allowCredentials=true, "*" is invalid per CORS spec. Use explicit origins for dev.
+    // Format: "host:port" (Ktor allowHost) or full URL (we strip scheme for allowHost)
     val corsAllowedOrigins: List<String> =
-        System.getenv("FLAGENT_CORS_ALLOWED_ORIGINS")?.split(",")?.map { it.trim() }
-            ?: listOf("*")
+        System.getenv("FLAGENT_CORS_ALLOWED_ORIGINS")?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() }
+            ?.takeIf { it.isNotEmpty() }
+            ?: listOf(
+                "localhost:8080",
+                "localhost:8081",
+                "localhost:18000",
+                "127.0.0.1:8080",
+                "127.0.0.1:8081",
+                "127.0.0.1:18000"
+            )
     val corsExposedHeaders: List<String> =
         System.getenv("FLAGENT_CORS_EXPOSED_HEADERS")?.split(",")?.map { it.trim() }
             ?: listOf("WWW-Authenticate")
@@ -258,7 +281,7 @@ object AppConfig {
     val webPrefix: String = System.getenv("FLAGENT_WEB_PREFIX") ?: ""
 
     // Admin Auth (for POST /auth/login and /admin/* protection when used with enterprise)
-    val adminAuthEnabled: Boolean = System.getenv("FLAGENT_ADMIN_AUTH_ENABLED")?.toBoolean() ?: false
+    val adminAuthEnabled: Boolean = System.getenv("FLAGENT_ADMIN_AUTH_ENABLED")?.toBoolean() ?: true
     val adminEmail: String = System.getenv("FLAGENT_ADMIN_EMAIL") ?: ""
     val adminPassword: String = System.getenv("FLAGENT_ADMIN_PASSWORD") ?: ""
     val adminPasswordHash: String = System.getenv("FLAGENT_ADMIN_PASSWORD_HASH") ?: ""

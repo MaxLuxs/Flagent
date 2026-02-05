@@ -44,6 +44,16 @@ interface EnterpriseBackendContext {
 }
 
 /**
+ * Provider for request-scoped environment ID (used for evaluation filtering).
+ * Enterprise sets this to extract environmentId from TenantContext.
+ * Accepts Any (ApplicationCall) to avoid Ktor dependency in api package.
+ */
+object EvalEnvironmentProvider {
+    @Volatile
+    var getEnvironmentId: (Any) -> Long? = { null }
+}
+
+/**
  * Core backend dependencies passed to enterprise for features that need them (smart rollout, anomaly detection).
  * CoreSegmentService and CoreFlagRepository are from shared (flagent.api).
  */
