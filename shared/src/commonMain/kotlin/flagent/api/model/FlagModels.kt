@@ -10,7 +10,8 @@ import kotlinx.serialization.Serializable
 data class CreateFlagRequest(
     val description: String,
     val key: String? = null,
-    val template: String? = null
+    val template: String? = null,
+    val environmentId: Long? = null
 )
 
 @Serializable
@@ -19,7 +20,8 @@ data class PutFlagRequest(
     val key: String? = null,
     val dataRecordsEnabled: Boolean? = null,
     val entityType: String? = null,
-    val notes: String? = null
+    val notes: String? = null,
+    val environmentId: Long? = null
 )
 
 @Serializable
@@ -34,6 +36,7 @@ data class FlagResponse(
     val notes: String? = null,
     val dataRecordsEnabled: Boolean,
     val entityType: String? = null,
+    val environmentId: Long? = null,
     val segments: List<SegmentResponse> = emptyList(),
     val variants: List<VariantResponse> = emptyList(),
     val tags: List<TagResponse> = emptyList(),
@@ -85,6 +88,12 @@ data class TagResponse(
 
 @Serializable
 data class SetFlagEnabledRequest(
+    val enabled: Boolean
+)
+
+@Serializable
+data class BatchFlagEnabledRequest(
+    val ids: List<Int>,
     val enabled: Boolean
 )
 
