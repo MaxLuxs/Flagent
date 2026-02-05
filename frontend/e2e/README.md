@@ -9,28 +9,32 @@ Playwright-based end-to-end tests for the Flagent web UI.
 
 ## Quick Start
 
-### E2E with Production Build (recommended)
+### Local Development (dev server)
 
-One server, no webpack dev. Script builds production frontend and runs tests against backend.
-
-1. Start backend from repo root:
+1. Start backend and frontend from repo root:
    ```bash
-   ./gradlew :backend:runDev
+   ./gradlew run
    ```
+   (backend 18000, frontend 8080)
 
 2. In another terminal, run E2E:
    ```bash
    cd frontend/e2e
    npm install
    npx playwright install chromium   # first-time only
-   npm run test:oss   # or test:tenant, test:auth
+   npm run test:smoke   # fast smoke (~1-2 min)
+   # or
+   npm run test:full    # full OSS suite
    ```
-   The script builds `:frontend:jsBrowserProductionWebpack` and uses backend (18000) for both API and UI.
 
-### Local Development (dev server)
+Auth is set up once per run (login + tenant) and saved to `playwright/.auth/user.json` for all tests.
 
-1. Start both from repo root: `./gradlew run` (backend 18000, frontend 8080)
-2. Run tests: `npm run test` (uses FRONTEND_URL=8080)
+### E2E with Production Build
+
+One server, no webpack dev. Script builds production frontend and runs tests against backend.
+
+1. Start backend from repo root: `./gradlew :backend:runDev`
+2. In another terminal: `cd frontend/e2e && npm run test:oss-scenario` (or `test:tenant`, `test:auth`)
 
 ### CI Mode
 
@@ -41,14 +45,18 @@ When `CI=true`, Playwright starts servers via `./gradlew run` before tests.
 | Command | Description |
 |---------|-------------|
 | `npm run test` | Run all E2E tests (headless, requires backend running) |
+| `npm run test:smoke` | **Smoke tests** — 8 key tests (~1-2 min), use for quick validation |
+| `npm run test:full` | **Full OSS suite** — all @oss tests |
 | `npm run test:headed` | Run tests with browser visible |
 | `npm run test:ui` | Open Playwright UI mode |
 | `npm run test:debug` | Run in debug mode |
 | `npm run report` | Open last test report |
-| `npm run test:oss` | **Run OSS scenario** (starts backend, creates tenant, runs "Open Source" tests) |
-| `npm run test:tenant` | **Run Tenant scenario** (starts backend, runs "With Tenant" tests) |
-| `npm run test:auth` | **Run Auth scenario** (starts backend, runs "With Auth" tests) |
-| `npm run test:all-scenarios` | **Run all 3 scenarios sequentially** (OSS → Tenant → Auth) |
+| `npm run test:oss` | Run OSS tests (FLAGENT_EDITION=oss) |
+| `npm run test:enterprise` | Run Enterprise tests (FLAGENT_EDITION=enterprise) |
+| `npm run test:oss-scenario` | **OSS scenario** (run with backend; creates tenant, runs create-flag Open Source) |
+| `npm run test:tenant` | **Run Tenant scenario** (with backend, create-flag With Tenant) |
+| `npm run test:auth` | **Run Auth scenario** (with backend, create-flag With Auth) |
+| `npm run test:all-scenarios` | **Run all 3 scenarios** (oss-scenario → tenant → auth) |
 
 ## Environment Variables
 
@@ -57,9 +65,28 @@ When `CI=true`, Playwright starts servers via `./gradlew run` before tests.
 | `FRONTEND_URL` | http://localhost:8080 (or BACKEND_URL for prod) | Frontend base URL |
 | `BACKEND_URL` | http://localhost:18000 | Backend API URL |
 | `CI` | - | When set, starts servers automatically |
+| `FLAGENT_EDITION` | - | `oss` or `enterprise` — run only tests tagged @oss or @enterprise |
+| `E2E_MODE` | - | `smoke` — run only @smoke tests |
 | `FLAGENT_ADMIN_EMAIL` | admin@local | Admin email for auth scenario |
 | `FLAGENT_ADMIN_PASSWORD` | admin | Admin password for auth scenario (matches runDev) |
 | `FLAGENT_ADMIN_API_KEY` | - | X-Admin-Key for tenant creation (when admin auth enabled) |
+
+## Edition and Mode Filtering
+
+Tests are tagged with `@oss`, `@enterprise`, and `@smoke`. Use `FLAGENT_EDITION` and `E2E_MODE` to filter:
+
+| FLAGENT_EDITION | E2E_MODE | Runs |
+|-----------------|----------|------|
+| `oss` | `smoke` | @oss + @smoke: dashboard, flags, create-flag, navigation, landing, debug-console, settings, analytics |
+| `oss` | (full) | All @oss tests |
+| `enterprise` | - | Tests tagged @enterprise |
+
+```bash
+npm run test:smoke       # Smoke tests (fast, for CI)
+npm run test:full        # Full OSS suite
+npm run test:oss         # Same as test:full
+npm run test:enterprise  # Enterprise tests only
+```
 
 ## Test Structure
 
@@ -70,7 +97,7 @@ When `CI=true`, Playwright starts servers via `./gradlew run` before tests.
 - `tests/create-flag.spec.ts` - Create flag via /flags/new (3 scenarios: OSS, With Tenant, With Auth)
 - `tests/debug-console.spec.ts` - Debug console evaluation
 - `tests/navigation.spec.ts` - Navbar, URL navigation, all routes
-- `tests/analytics.spec.ts` - Analytics page
+- `tests/analytics.spec.ts` - Analytics page (Overview, By flags, per-flag metrics). Seed data: creates flags and evaluation events. For full coverage (Overview cards, chart, top flags), use OSS backend with Core metrics.
 - `tests/settings.spec.ts` - Settings page
 - `tests/experiments.spec.ts` - Experiments (A/B) page
 

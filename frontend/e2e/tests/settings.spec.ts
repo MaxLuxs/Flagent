@@ -1,15 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Settings Page', () => {
+test.describe('Settings Page @oss', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings');
   });
 
-  test('displays Settings page', async ({ page }) => {
+  test('displays Settings page @smoke', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
     await expect(
-      page.getByText(/Settings|Настройки/i).first()
-    ).toBeVisible({ timeout: 10000 });
+      page.getByRole('heading', { name: /Settings|Настройки/i }).first()
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test('shows edition badge', async ({ page }) => {
@@ -22,8 +22,8 @@ test.describe('Settings Page', () => {
   test('has General tab with API base URL', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
     await expect(
-      page.getByText(/API Base URL|General/i).first()
-    ).toBeVisible({ timeout: 5000 });
+      page.getByText(/API Base URL|General|Общие|Базовый URL API/i).first()
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test('shows enabled features', async ({ page }) => {

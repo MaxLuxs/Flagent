@@ -10,7 +10,7 @@ async function setupLocalStorage(
   await page.addInitScript((opts: { apiKey?: string; authToken?: string; clear?: boolean }) => {
     if (opts.clear) {
       localStorage.removeItem('api_key');
-      localStorage.removeItem('auth_token');
+      // Keep auth_token (from storageState) so tests can access app
     }
     if (opts.apiKey) localStorage.setItem('api_key', opts.apiKey);
     if (opts.authToken) localStorage.setItem('auth_token', opts.authToken);
@@ -37,13 +37,13 @@ async function isCreateFormVisible(page: import('@playwright/test').Page): Promi
   return false;
 }
 
-test.describe('Create Flag - Open Source (no tenant)', () => {
+test.describe('Create Flag - Open Source (no tenant) @oss', () => {
   test.beforeEach(async ({ page }) => {
     await setupLocalStorage(page, { clear: true });
     await page.goto('/flags/new');
   });
 
-  test('displays create flag form', async ({ page }) => {
+  test('displays create flag form @smoke', async ({ page }) => {
     const formVisible = await isCreateFormVisible(page);
     if (!formVisible) {
       test.skip(true, 'Create form not available');
@@ -80,7 +80,7 @@ test.describe('Create Flag - Open Source (no tenant)', () => {
   });
 });
 
-test.describe('Create Flag - With Tenant (api_key)', () => {
+test.describe('Create Flag - With Tenant (api_key) @enterprise', () => {
   test.beforeEach(async ({ page, request }) => {
     const result = await createTenant(request);
     if (!result) {
@@ -127,7 +127,7 @@ test.describe('Create Flag - With Tenant (api_key)', () => {
   });
 });
 
-test.describe('Create Flag - With Auth (login + tenant)', () => {
+test.describe('Create Flag - With Auth (login + tenant) @enterprise', () => {
   test.beforeEach(async ({ page, request }) => {
     const loginResult = await login(request);
     if (!loginResult) {

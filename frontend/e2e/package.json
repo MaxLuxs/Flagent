@@ -9,7 +9,11 @@
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "report": "playwright show-report",
-    "test:oss": "./scripts/run-e2e-with-backend.sh oss",
+    "test:oss": "FLAGENT_EDITION=oss playwright test --project=chromium",
+    "test:enterprise": "FLAGENT_EDITION=enterprise playwright test --project=chromium",
+    "test:smoke": "E2E_MODE=smoke FLAGENT_EDITION=oss npx playwright test --project=chromium",
+    "test:full": "FLAGENT_EDITION=oss npx playwright test --project=chromium",
+    "test:oss-scenario": "./scripts/run-e2e-with-backend.sh oss",
     "test:tenant": "./scripts/run-e2e-with-backend.sh tenant",
     "test:auth": "./scripts/run-e2e-with-backend.sh auth",
     "test:all-scenarios": "./scripts/run-e2e-with-backend.sh oss && ./scripts/run-e2e-with-backend.sh tenant && ./scripts/run-e2e-with-backend.sh auth"

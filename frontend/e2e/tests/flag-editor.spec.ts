@@ -21,7 +21,7 @@ async function ensureFlagAndNavigate(
   await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 15000 });
 }
 
-test.describe('Flag Editor - Full Flow', () => {
+test.describe('Flag Editor - Full Flow @oss', () => {
   test.beforeEach(async ({ page, request }) => {
     await ensureFlagAndNavigate(page, request);
   });
@@ -141,7 +141,7 @@ test.describe('Flag Editor - Full Flow', () => {
   });
 });
 
-test.describe('Flag Editor - Delete', () => {
+test.describe('Flag Editor - Delete @oss', () => {
   test('can delete flag with confirmation', async ({ page }) => {
     await page.goto('/flags');
     await page.waitForLoadState('domcontentloaded');

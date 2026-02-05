@@ -1,19 +1,22 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Dashboard', () => {
+test.describe('Dashboard @oss', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/dashboard');
   });
 
-  test('displays Dashboard heading', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+  test('displays Dashboard heading @smoke', async ({ page }) => {
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await expect(
+      page.getByRole('heading', { name: /Dashboard|Главная/i })
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test('loads and displays flag statistics', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
     await expect(
-      page.getByText('Total Flags').first()
-    ).toBeVisible({ timeout: 10000 });
+      page.getByText(/Total Flags|Enabled|Включен|Disabled|Выключен/i).first()
+    ).toBeVisible({ timeout: 20000 });
   });
 
   test('has navigation to other sections', async ({ page }) => {

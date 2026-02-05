@@ -2,15 +2,15 @@ import { test, expect } from '@playwright/test';
 
 const E2E_FLAG_DESCRIPTION = `E2E test flag ${Date.now()}`;
 
-test.describe('Flags List', () => {
+test.describe('Flags List @oss', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/flags');
   });
 
-  test('displays Feature Flags page', async ({ page }) => {
+  test('displays Feature Flags page @smoke', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
     await expect(
-      page.getByText(/Feature Flags|Create New Flag|Создать новый флаг/i)
+      page.getByText(/Feature Flags|Create New Flag|Создать новый флаг/i).first()
     ).toBeVisible({ timeout: 10000 });
   });
 
@@ -38,7 +38,7 @@ test.describe('Flags List', () => {
   });
 });
 
-test.describe('Flag Detail', () => {
+test.describe('Flag Detail @oss', () => {
   test('can open flag detail from list', async ({ page }) => {
     await page.goto('/flags');
     await page.waitForLoadState('domcontentloaded');

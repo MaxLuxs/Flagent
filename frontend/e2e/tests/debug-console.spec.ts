@@ -1,21 +1,24 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Debug Console', () => {
+test.describe('Debug Console @oss', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/debug');
   });
 
-  test('displays Debug Console heading', async ({ page }) => {
+  test('displays Debug Console heading @smoke', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
     await expect(
-      page.getByRole('heading', { name: /Debug Console|Консоль отладки/i })
-    ).toBeVisible({ timeout: 10000 });
+      page.locator('h2:has-text("Debug Console"), h2:has-text("Консоль отладки")')
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test('has Single and Batch evaluation tabs', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
     await expect(
-      page.getByText(/Single|Batch|Одиночная|Пакетная/i)
+      page.getByRole('button', { name: /Оценка|Evaluation/i }).first()
+    ).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByRole('button', { name: /Пакетная оценка|Batch Evaluation/i }).first()
     ).toBeVisible({ timeout: 5000 });
   });
 
@@ -27,7 +30,7 @@ test.describe('Debug Console', () => {
     await keyInput.fill('integration_test_flag');
 
     const evaluateBtn = page.getByRole('button', {
-      name: /Evaluate|Вычислить/i,
+      name: /Evaluate|Оценить/i,
     });
     if ((await evaluateBtn.count()) > 0) {
       await evaluateBtn.first().click();
