@@ -22,7 +22,8 @@ class FlagService(
     private val variantService: VariantService? = null,
     private val distributionService: DistributionService? = null,
     private val flagEntityTypeService: FlagEntityTypeService? = null,
-    private val eventBus: RealtimeEventBus? = null
+    private val eventBus: RealtimeEventBus? = null,
+    private val webhookService: WebhookService? = null
 ) {
     /**
      * Create flag key - generates random key if not provided
@@ -85,6 +86,24 @@ class FlagService(
             tags = tags
         )
     }
+
+    suspend fun countFlags(
+        enabled: Boolean? = null,
+        description: String? = null,
+        key: String? = null,
+        descriptionLike: String? = null,
+        deleted: Boolean = false,
+        tags: String? = null
+    ): Long {
+        return flagRepository.countAll(
+            enabled = enabled,
+            description = description,
+            key = key,
+            descriptionLike = descriptionLike,
+            deleted = deleted,
+            tags = tags
+        )
+    }
     
     suspend fun getFlag(id: Int): Flag? {
         return flagRepository.findById(id)
@@ -95,7 +114,8 @@ class FlagService(
         val flag = Flag(
             key = key,
             description = command.description,
-            enabled = false
+            enabled = false,
+            environmentId = command.environmentId
         )
         val created = flagRepository.create(flag)
         
@@ -114,6 +134,7 @@ class FlagService(
         // Save flag snapshot after creation
         flagSnapshotService?.saveFlagSnapshot(created.id, updatedBy)
         eventBus?.publishFlagCreated(created.id.toLong(), created.key)
+        webhookService?.dispatchFlagCreated(created.id)
 
         return created
     }
@@ -180,6 +201,7 @@ class FlagService(
             key = key,
             dataRecordsEnabled = command.dataRecordsEnabled ?: existingFlag.dataRecordsEnabled,
             entityType = command.entityType ?: existingFlag.entityType,
+            environmentId = command.environmentId ?: existingFlag.environmentId,
             notes = command.notes ?: existingFlag.notes,
             updatedBy = updatedBy
         )
@@ -197,6 +219,7 @@ class FlagService(
         // Save flag snapshot after update
         flagSnapshotService?.saveFlagSnapshot(updated.id, updatedBy)
         eventBus?.publishFlagUpdated(updated.id.toLong(), updated.key)
+        webhookService?.dispatchFlagUpdated(updated.id)
 
         return updated
     }
@@ -204,7 +227,10 @@ class FlagService(
     suspend fun deleteFlag(id: Int) {
         val flag = flagRepository.findById(id)
         flagRepository.delete(id)
-        flag?.let { eventBus?.publishFlagDeleted(it.id.toLong(), it.key) }
+        flag?.let {
+            eventBus?.publishFlagDeleted(it.id.toLong(), it.key)
+            webhookService?.dispatchFlagDeleted(it.id, it.key)
+        }
     }
     
     suspend fun restoreFlag(id: Int): Flag? {
@@ -218,7 +244,12 @@ class FlagService(
         // Save flag snapshot after enabling/disabling
         flagSnapshotService?.saveFlagSnapshot(updated.id, updatedBy)
         eventBus?.publishFlagToggled(updated.id.toLong(), updated.key, enabled)
+        webhookService?.dispatchFlagToggled(updated.id, enabled)
 
         return updated
+    }
+
+    suspend fun batchSetEnabled(ids: List<Int>, enabled: Boolean, updatedBy: String? = null): List<Flag> {
+        return ids.mapNotNull { id -> setFlagEnabled(id, enabled, updatedBy) }
     }
 }

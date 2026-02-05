@@ -13,6 +13,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import flagent.repository.tables.Constraints
 import flagent.repository.tables.Distributions
+import flagent.repository.tables.EvaluationEvents
 import flagent.repository.tables.FlagEntityTypes
 import flagent.repository.tables.FlagSnapshots
 import flagent.repository.tables.Flags
@@ -21,6 +22,7 @@ import flagent.repository.tables.Segments
 import flagent.repository.tables.Tags
 import flagent.repository.tables.Users
 import flagent.repository.tables.Variants
+import flagent.repository.tables.Webhooks
 
 private val logger = KotlinLogging.logger {}
 
@@ -102,7 +104,9 @@ object Database {
                 FlagsTags,
                 FlagSnapshots,
                 FlagEntityTypes,
-                Users
+                Webhooks,
+                Users,
+                EvaluationEvents
             )
             logger.info { "Database migrations completed" }
         }
@@ -181,7 +185,7 @@ object Database {
         withContext(Dispatchers.IO) {
             suspendTransaction(exposedDatabase!!) {
                 exec("SET search_path TO $schemaName, public")
-                SchemaUtils.create(
+                SchemaUtils.createMissingTablesAndColumns(
                     Flags,
                     Segments,
                     Variants,

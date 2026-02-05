@@ -21,6 +21,7 @@ object Flags : IntIdTable("flags") {
     val notes = text("notes").nullable()
     val dataRecordsEnabled = bool("data_records_enabled").default(false)
     val entityType = varchar("entity_type", 255).nullable()
+    val environmentId = long("environment_id").nullable().index("idx_flag_environment")
     val createdAt = datetime("created_at")
     val updatedAt = datetime("updated_at").nullable()
     val deletedAt = datetime("deleted_at").nullable()
@@ -121,6 +122,30 @@ object FlagEntityTypes : IntIdTable("flag_entity_types") {
     val createdAt = datetime("created_at")
     val updatedAt = datetime("updated_at").nullable()
     val deletedAt = datetime("deleted_at").nullable()
+}
+
+/**
+ * Webhooks table - outgoing webhook configurations
+ */
+object Webhooks : IntIdTable("webhooks") {
+    val url = text("url")
+    val events = text("events") // JSON array of event names
+    val secret = text("secret").nullable()
+    val enabled = bool("enabled").default(true)
+    val tenantId = varchar("tenant_id", 255).nullable().index("idx_webhook_tenant")
+    val createdAt = long("created_at")
+    val updatedAt = long("updated_at")
+}
+
+/**
+ * Evaluation events table - lightweight records for API evaluation count (core metrics).
+ */
+object EvaluationEvents : LongIdTable("evaluation_events") {
+    val flagId = integer("flag_id").index("idx_eval_events_flag")
+    val timestampMs = long("timestamp_ms").index("idx_eval_events_timestamp")
+    init {
+        index(false, flagId, timestampMs)
+    }
 }
 
 /**

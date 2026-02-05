@@ -8,6 +8,7 @@ import flagent.domain.value.EntityID
 import flagent.domain.value.EvaluationContext
 import flagent.integration.firebase.FirebaseAnalyticsReporter
 import flagent.recorder.DataRecordingService
+import flagent.recorder.EvaluationEventRecorder
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import mu.KotlinLogging
@@ -24,12 +25,14 @@ class EvaluationService(
     private val evalCache: EvalCache,
     private val evaluateFlagUseCase: EvaluateFlagUseCase,
     private val dataRecordingService: DataRecordingService? = null,
-    private val firebaseAnalyticsReporter: FirebaseAnalyticsReporter? = null
+    private val firebaseAnalyticsReporter: FirebaseAnalyticsReporter? = null,
+    private val evaluationEventRecorder: EvaluationEventRecorder? = null
 ) {
     private val random = Random()
 
     /**
-     * Evaluate flag by ID or Key
+     * Evaluate flag by ID or Key.
+     * @param environmentId when set (enterprise), only flags with matching environmentId or null (global) are returned
      */
     fun evaluateFlag(
         flagID: Int?,
@@ -37,16 +40,18 @@ class EvaluationService(
         entityID: String?,
         entityType: String?,
         entityContext: Map<String, Any>?,
-        enableDebug: Boolean
+        enableDebug: Boolean,
+        environmentId: Long? = null
     ): EvalResult {
         val flag = when {
             flagID != null -> evalCache.getByFlagKeyOrID(flagID)
             flagKey != null -> evalCache.getByFlagKeyOrID(flagKey)
             else -> null
         }
+        val filteredFlag = filterByEnvironment(flag, environmentId)
 
         return evaluateFlagWithContext(
-            flag = flag,
+            flag = filteredFlag,
             flagID = flagID ?: 0,
             flagKey = flagKey ?: "",
             entityID = entityID,
@@ -57,7 +62,8 @@ class EvaluationService(
     }
 
     /**
-     * Evaluate flags by tags
+     * Evaluate flags by tags.
+     * @param environmentId when set (enterprise), only flags with matching environmentId or null (global) are returned
      */
     fun evaluateFlagsByTags(
         tags: List<String>,
@@ -65,12 +71,14 @@ class EvaluationService(
         entityID: String?,
         entityType: String?,
         entityContext: Map<String, Any>?,
-        enableDebug: Boolean
+        enableDebug: Boolean,
+        environmentId: Long? = null
     ): List<EvalResult> {
         val flags = evalCache.getByTags(tags, operator)
         return flags.map { flag ->
+            val filteredFlag = filterByEnvironment(flag, environmentId)
             evaluateFlagWithContext(
-                flag = flag,
+                flag = filteredFlag,
                 flagID = flag.id,
                 flagKey = flag.key,
                 entityID = entityID,
@@ -79,6 +87,13 @@ class EvaluationService(
                 enableDebug = enableDebug
             )
         }
+    }
+
+    private fun filterByEnvironment(flag: Flag?, environmentId: Long?): Flag? {
+        if (flag == null) return null
+        if (environmentId == null) return flag
+        if (flag.environmentId == null) return flag
+        return if (flag.environmentId == environmentId) flag else null
     }
 
     /**
@@ -166,6 +181,7 @@ class EvaluationService(
         if (AppConfig.firebaseAnalyticsEnabled) {
             firebaseAnalyticsReporter?.recordAsync(result)
         }
+        evaluationEventRecorder?.record(flag.id, result.timestamp)
 
         return result
     }

@@ -1,5 +1,6 @@
 package flagent.route
 
+import flagent.api.EvalEnvironmentProvider
 import flagent.api.constants.ApiConstants
 import flagent.api.model.*
 import flagent.service.EvaluationService
@@ -19,16 +20,16 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
     route(ApiConstants.API_BASE_PATH) {
             post("/evaluation") {
                 val request = call.receive<EvaluationRequest>()
-                
+                val environmentId = EvalEnvironmentProvider.getEnvironmentId(call as Any)
                 val result = evaluationService.evaluateFlag(
                     flagID = request.flagID,
                     flagKey = request.flagKey,
                     entityID = request.entityID,
                     entityType = request.entityType,
                     entityContext = request.entityContext?.mapValues { it.value } as? Map<String, Any>,
-                    enableDebug = request.enableDebug
+                    enableDebug = request.enableDebug,
+                    environmentId = environmentId
                 )
-                
                 call.respond(mapEvalResultToResponse(result))
             }
             
@@ -49,6 +50,7 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                 
                 val results = mutableListOf<EvaluationResponse>()
                 
+                val environmentId = EvalEnvironmentProvider.getEnvironmentId(call as Any)
                 // Evaluate by tags
                 if (request.flagTags.isNotEmpty()) {
                     request.entities.forEach { entity ->
@@ -58,7 +60,8 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                             entityID = entity.entityID,
                             entityType = entity.entityType,
                             entityContext = entity.entityContext?.mapValues { it.value } as? Map<String, Any>,
-                            enableDebug = request.enableDebug
+                            enableDebug = request.enableDebug,
+                            environmentId = environmentId
                         )
                         results.addAll(tagResults.map { mapEvalResultToResponse(it) })
                     }
@@ -73,7 +76,8 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                             entityID = entity.entityID,
                             entityType = entity.entityType,
                             entityContext = entity.entityContext?.mapValues { it.value } as? Map<String, Any>,
-                            enableDebug = request.enableDebug
+                            enableDebug = request.enableDebug,
+                            environmentId = environmentId
                         )
                         results.add(mapEvalResultToResponse(result))
                     }
@@ -88,7 +92,8 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                             entityID = entity.entityID,
                             entityType = entity.entityType,
                             entityContext = entity.entityContext?.mapValues { it.value } as? Map<String, Any>,
-                            enableDebug = request.enableDebug
+                            enableDebug = request.enableDebug,
+                            environmentId = environmentId
                         )
                         results.add(mapEvalResultToResponse(result))
                     }

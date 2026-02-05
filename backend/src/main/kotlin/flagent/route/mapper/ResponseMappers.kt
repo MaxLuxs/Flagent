@@ -34,6 +34,7 @@ object ResponseMappers {
             notes = flag.notes,
             dataRecordsEnabled = flag.dataRecordsEnabled,
             entityType = flag.entityType,
+            environmentId = flag.environmentId,
             segments = flag.segments.map { mapSegmentToResponse(it) },
             variants = flag.variants.map { mapVariantToResponse(it) },
             tags = flag.tags.map { mapTagToResponse(it) },

@@ -1,9 +1,13 @@
 package flagent.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import flagent.domain.entity.*
 import flagent.domain.repository.IFlagEntityTypeRepository
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.IFlagSnapshotRepository
+import flagent.service.import.FlagsImportFile
+import flagent.service.import.toFlagImportItem
 import flagent.repository.tables.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -31,7 +35,21 @@ class ExportService(
     private val flagEntityTypeRepository: IFlagEntityTypeRepository
 ) {
     private val json = Json { ignoreUnknownKeys = true }
-    
+    private val jsonMapper = ObjectMapper().registerModule(com.fasterxml.jackson.module.kotlin.kotlinModule())
+    private val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(com.fasterxml.jackson.module.kotlin.kotlinModule())
+
+    /**
+     * Export flags to GitOps format (YAML/JSON) compatible with import API.
+     */
+    suspend fun exportGitOps(format: String): String = withContext(Dispatchers.Default) {
+        val flags = flagRepository.findAll(preload = true)
+        val importFile = FlagsImportFile(version = "1", flags = flags.map { it.toFlagImportItem() })
+        when (format.lowercase()) {
+            "yaml", "yml" -> yamlMapper.writeValueAsString(importFile)
+            else -> jsonMapper.writeValueAsString(importFile)
+        }
+    }
+
     /**
      * Export database to SQLite file
      * Creates temporary SQLite database, exports all data, returns file bytes

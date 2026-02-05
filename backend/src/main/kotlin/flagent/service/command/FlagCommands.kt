@@ -8,7 +8,8 @@ package flagent.service.command
 data class CreateFlagCommand(
     val key: String?,
     val description: String,
-    val template: String? = null
+    val template: String? = null,
+    val environmentId: Long? = null
 )
 
 data class PutFlagCommand(
@@ -16,7 +17,8 @@ data class PutFlagCommand(
     val key: String?,
     val dataRecordsEnabled: Boolean?,
     val entityType: String?,
-    val notes: String?
+    val notes: String?,
+    val environmentId: Long? = null
 )
 
 data class SetFlagEnabledCommand(

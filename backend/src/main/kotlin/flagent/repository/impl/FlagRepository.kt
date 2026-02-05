@@ -182,6 +182,40 @@ class FlagRepository : IFlagRepository {
         )
     }
     
+    override suspend fun countAll(
+        enabled: Boolean?,
+        description: String?,
+        key: String?,
+        descriptionLike: String?,
+        deleted: Boolean,
+        tags: String?
+    ): Long = withContext(Dispatchers.IO) {
+        Database.transaction {
+            var query = Flags.selectAll()
+            enabled?.let { query = query.andWhere { Flags.enabled eq it } }
+            description?.let { query = query.andWhere { Flags.description eq it } }
+            key?.let { query = query.andWhere { Flags.key eq it } }
+            descriptionLike?.let {
+                val pattern = "%${it.lowercase()}%"
+                query = query.andWhere { Flags.description.lowerCase() like pattern }
+            }
+            if (deleted) {
+                query = query.andWhere { Flags.deletedAt.isNotNull() }
+            } else {
+                query = query.andWhere { Flags.deletedAt.isNull() }
+            }
+            val flagIds = if (tags != null) {
+                val tagValues = tags.split(",").map { it.trim() }
+                val tagIds = Tags.selectAll().where { Tags.value inList tagValues }.map { it[Tags.id].value }
+                if (tagIds.isEmpty()) return@transaction 0L
+                FlagsTags.select(FlagsTags.flagId).where { FlagsTags.tagId inList tagIds }
+                    .map { it[FlagsTags.flagId] }.distinct().toSet()
+            } else null
+            val finalQuery = if (flagIds != null) query.andWhere { Flags.id inList flagIds } else query
+            finalQuery.count()
+        }
+    }
+
     override suspend fun findByTags(tags: List<String>): List<Flag> = withContext(Dispatchers.IO) {
         Database.transaction {
             val tagIds = Tags.selectAll().where { Tags.value inList tags }
@@ -210,6 +244,7 @@ class FlagRepository : IFlagRepository {
                 it[notes] = flag.notes
                 it[dataRecordsEnabled] = flag.dataRecordsEnabled
                 it[entityType] = flag.entityType
+                flag.environmentId?.let { eid -> it[environmentId] = eid }
                 it[createdAt] = java.time.LocalDateTime.now()
             }[Flags.id].value
             
@@ -228,6 +263,7 @@ class FlagRepository : IFlagRepository {
                 it[notes] = flag.notes
                 it[dataRecordsEnabled] = flag.dataRecordsEnabled
                 it[entityType] = flag.entityType
+                it[environmentId] = flag.environmentId
                 it[updatedAt] = java.time.LocalDateTime.now()
             }
             
@@ -290,6 +326,7 @@ class FlagRepository : IFlagRepository {
             notes = row[Flags.notes],
             dataRecordsEnabled = row[Flags.dataRecordsEnabled],
             entityType = row[Flags.entityType],
+            environmentId = row[Flags.environmentId],
             segments = segments,
             variants = variants,
             tags = tags,

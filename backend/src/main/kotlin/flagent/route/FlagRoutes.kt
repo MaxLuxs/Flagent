@@ -1,5 +1,6 @@
 package flagent.route
 
+import flagent.api.AuditLoggerRegistry
 import flagent.api.constants.ApiConstants
 import mu.KotlinLogging
 import flagent.api.model.*
@@ -34,6 +35,14 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                     val deleted = call.request.queryParameters["deleted"]?.toBoolean() ?: false
                     val tags = call.request.queryParameters["tags"]
                     
+                    val total = flagService.countFlags(
+                        enabled = enabled,
+                        description = description,
+                        key = key,
+                        descriptionLike = descriptionLike,
+                        deleted = deleted,
+                        tags = tags
+                    )
                     val flags = flagService.findFlags(
                         limit = limit,
                         offset = offset,
@@ -45,9 +54,25 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                         deleted = deleted,
                         tags = tags
                     )
+                    call.response.headers.append("X-Total-Count", total.toString())
                     call.respond(flags.map { mapFlagToResponse(it) })
                 }
                 
+                route("/batch/enabled") {
+                    put {
+                        val request = call.receive<BatchFlagEnabledRequest>()
+                        val updatedBy = call.getSubject()
+                        if (request.ids.isEmpty()) {
+                            return@put call.respond(HttpStatusCode.BadRequest, mapOf("error" to "ids cannot be empty"))
+                        }
+                        val updated = flagService.batchSetEnabled(request.ids, request.enabled, updatedBy)
+                        request.ids.forEach { id ->
+                            AuditLoggerRegistry.logger?.log(call, if (request.enabled) "flag.enabled" else "flag.disabled", "flag:$id", mapOf("id" to id))
+                        }
+                        call.respond(updated.map { mapFlagToResponse(it) })
+                    }
+                }
+
                 post {
                     val request = call.receive<CreateFlagRequest>()
                     val updatedBy = call.getSubject()
@@ -56,10 +81,11 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                         val command = CreateFlagCommand(
                             key = request.key,
                             description = request.description,
-                            template = request.template
+                            template = request.template,
+                            environmentId = request.environmentId
                         )
                         val flag = flagService.createFlag(command, updatedBy)
-                        
+                        AuditLoggerRegistry.logger?.log(call, "flag.created", "flag:${flag.key}", mapOf("id" to flag.id, "key" to flag.key))
                         call.respond(HttpStatusCode.OK, mapFlagToResponse(flag))
                     } catch (e: IllegalArgumentException) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Invalid request")))
@@ -95,10 +121,11 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                             key = request.key,
                             dataRecordsEnabled = request.dataRecordsEnabled,
                             entityType = request.entityType,
-                            notes = request.notes
+                            notes = request.notes,
+                            environmentId = request.environmentId
                         )
                         val updatedFlag = flagService.updateFlag(flagId, command, updatedBy)
-                        
+                        AuditLoggerRegistry.logger?.log(call, "flag.updated", "flag:${updatedFlag.key}", mapOf("id" to flagId))
                         call.respond(mapFlagToResponse(updatedFlag))
                     }
                     
@@ -106,7 +133,9 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                         val flagId = call.parameters["flagId"]?.toIntOrNull()
                             ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid flag ID")
                         
+                        val deleted = flagService.getFlag(flagId)
                         flagService.deleteFlag(flagId)
+                        AuditLoggerRegistry.logger?.log(call, "flag.deleted", "flag:${deleted?.key ?: flagId}", mapOf("id" to flagId))
                         call.respond(HttpStatusCode.OK)
                     }
                 }
@@ -121,7 +150,7 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                         
                         val flag = flagService.setFlagEnabled(flagId, request.enabled, updatedBy)
                             ?: return@put call.respond(HttpStatusCode.NotFound, "Flag not found")
-                        
+                        AuditLoggerRegistry.logger?.log(call, if (request.enabled) "flag.enabled" else "flag.disabled", "flag:${flag.key}", mapOf("id" to flagId))
                         call.respond(mapFlagToResponse(flag))
                     }
                 }

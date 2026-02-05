@@ -17,6 +17,7 @@ data class Flag(
     val notes: String? = null,
     val dataRecordsEnabled: Boolean = false,
     val entityType: String? = null,
+    val environmentId: Long? = null,
     val segments: List<Segment> = emptyList(),
     val variants: List<Variant> = emptyList(),
     val tags: List<Tag> = emptyList(),

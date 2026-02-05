@@ -19,6 +19,22 @@ import kotlinx.serialization.json.Json
 fun Routing.configureExportRoutes(evalCache: EvalCache, exportService: ExportService) {
     route(ApiConstants.API_BASE_PATH) {
             route("/export") {
+                // GET /api/v1/export/gitops - export GitOps format (YAML/JSON) for import round-trip
+                route("/gitops") {
+                    get {
+                        try {
+                            val format = call.request.queryParameters["format"]?.lowercase() ?: "json"
+                            val content = exportService.exportGitOps(format)
+                            val contentType = when (format) {
+                                "yaml", "yml" -> ContentType.parse("text/yaml; charset=utf-8")
+                                else -> ContentType.Application.Json
+                            }
+                            call.respondText(content, contentType, HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, e.message ?: "Internal server error")
+                        }
+                    }
+                }
                 // GET /api/v1/export/eval_cache/json - export eval cache as JSON
                 route("/eval_cache/json") {
                     get {
