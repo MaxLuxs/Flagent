@@ -114,6 +114,24 @@ object AppConfig {
     val isSelfHosted: Boolean get() = deploymentMode == DeploymentMode.SELF_HOSTED
     val requiresAuth: Boolean get() = isSaaS || ((js("window.ENV_FEATURE_AUTH") as? String)?.toBoolean() ?: false)
 
+    /**
+     * Show full marketing landing at / (Product, Pricing, Blog, Footer).
+     * true for SaaS; for self-hosted use ENV_SHOW_LANDING (default false for open-source).
+     */
+    val showMarketingLanding: Boolean by lazy {
+        when (deploymentMode) {
+            DeploymentMode.SAAS -> true
+            DeploymentMode.SELF_HOSTED -> (js("window.ENV_SHOW_LANDING") as? String)?.toBoolean() ?: false
+        }
+    }
+
+    /** Documentation URL (GitHub Pages). */
+    val docsUrl: String get() = "https://maxluxs.github.io/Flagent/"
+    /** GitHub repository URL. */
+    val githubUrl: String get() = "https://github.com/MaxLuxs/Flagent"
+    /** Blog URL (GitHub Discussions or external). */
+    val blogUrl: String get() = "https://github.com/MaxLuxs/Flagent/discussions"
+
     val isEnterprise: Boolean get() = edition == Edition.ENTERPRISE
     val isOpenSource: Boolean get() = edition == Edition.OPEN_SOURCE
 
@@ -147,7 +165,7 @@ object AppConfig {
         
         // Metrics, Smart Rollout, Anomaly: only when enterprise backend (hide when open-source)
         val enableMetrics: Boolean by lazy {
-            isEnterprise && ((js("window.ENV_FEATURE_METRICS") as? String)?.toBoolean() ?: true)
+            (js("window.ENV_FEATURE_METRICS") as? String)?.toBoolean() ?: true
         }
         
         val enableSmartRollout: Boolean by lazy {
@@ -187,6 +205,11 @@ object AppConfig {
         
         val enableRbac: Boolean by lazy {
             isEnterprise && ((js("window.ENV_FEATURE_RBAC") as? String)?.toBoolean() ?: true)
+        }
+
+        /** Crash Analytics dashboard (Enterprise only). */
+        val enableCrashAnalytics: Boolean by lazy {
+            isEnterprise && ((js("window.ENV_FEATURE_CRASH_ANALYTICS") as? String)?.toBoolean() ?: true)
         }
     }
 }

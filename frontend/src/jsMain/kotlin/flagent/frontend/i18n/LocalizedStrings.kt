@@ -121,8 +121,8 @@ object LocalizedStrings {
     }
 
     val searchFlagsDetailedPlaceholder: String get() = when (currentLocale) {
-        "ru" -> "Поиск по ID, ключу, описанию или тегам..."
-        else -> "Search flags by ID, key, description, or tags..."
+        "ru" -> "Поиск по описанию..."
+        else -> "Search by description..."
     }
 
     val allStatus: String get() = when (currentLocale) {
@@ -143,6 +143,81 @@ object LocalizedStrings {
     val disabledFlags: String get() = when (currentLocale) {
         "ru" -> "Выключенные"
         else -> "Disabled"
+    }
+
+    val filterByTags: String get() = when (currentLocale) {
+        "ru" -> "Фильтр по тегам"
+        else -> "Filter by tags"
+    }
+
+    val pageOf: String get() = when (currentLocale) {
+        "ru" -> "из"
+        else -> "of"
+    }
+
+    val previous: String get() = when (currentLocale) {
+        "ru" -> "Назад"
+        else -> "Previous"
+    }
+
+    val next: String get() = when (currentLocale) {
+        "ru" -> "Вперёд"
+        else -> "Next"
+    }
+
+    val enableSelected: String get() = when (currentLocale) {
+        "ru" -> "Включить выбранные"
+        else -> "Enable selected"
+    }
+
+    val disableSelected: String get() = when (currentLocale) {
+        "ru" -> "Выключить выбранные"
+        else -> "Disable selected"
+    }
+
+    val clearSelection: String get() = when (currentLocale) {
+        "ru" -> "Снять выделение"
+        else -> "Clear selection"
+    }
+
+    val bulkEnableConfirm: String get() = when (currentLocale) {
+        "ru" -> "Включить выбранные флаги?"
+        else -> "Enable selected flags?"
+    }
+
+    val bulkDisableConfirm: String get() = when (currentLocale) {
+        "ru" -> "Выключить выбранные флаги?"
+        else -> "Disable selected flags?"
+    }
+
+    val flatList: String get() = when (currentLocale) {
+        "ru" -> "Плоский список"
+        else -> "Flat list"
+    }
+
+    val groupByTags: String get() = when (currentLocale) {
+        "ru" -> "По тегам"
+        else -> "By tags"
+    }
+
+    val noTagsGroup: String get() = when (currentLocale) {
+        "ru" -> "Без тегов"
+        else -> "No tags"
+    }
+
+    val savedViews: String get() = when (currentLocale) {
+        "ru" -> "Сохранённые представления"
+        else -> "Saved views"
+    }
+
+    val saveCurrentView: String get() = when (currentLocale) {
+        "ru" -> "Сохранить текущее"
+        else -> "Save current view"
+    }
+
+    val viewName: String get() = when (currentLocale) {
+        "ru" -> "Название"
+        else -> "View name"
     }
     
     val showDeletedFlags: String get() = when (currentLocale) {
@@ -335,6 +410,11 @@ object LocalizedStrings {
     val backToFlags: String get() = when (currentLocale) {
         "ru" -> "Назад к флагам"
         else -> "Back to Flags"
+    }
+
+    val recentFlags: String get() = when (currentLocale) {
+        "ru" -> "Недавние флаги"
+        else -> "Recent flags"
     }
 
     val config: String get() = when (currentLocale) {
@@ -1233,6 +1313,16 @@ object LocalizedStrings {
     val analyticsSubtitle: String get() = when (currentLocale) {
         "ru" -> "Метрики по флагам. Выберите флаг для просмотра графиков и агрегатов"
         else -> "Per-flag metrics. Select a flag to view charts and aggregations"
+    }
+
+    val backToAnalytics: String get() = when (currentLocale) {
+        "ru" -> "← Назад к аналитике"
+        else -> "← Back to Analytics"
+    }
+
+    val backToCrash: String get() = when (currentLocale) {
+        "ru" -> "← Назад к Crash"
+        else -> "← Back to Crash"
     }
 
     // Deployment mode / Plan (Settings)

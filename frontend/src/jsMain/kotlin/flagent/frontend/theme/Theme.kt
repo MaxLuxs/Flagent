@@ -53,4 +53,16 @@ object FlagentTheme {
     // Shadow
     val Shadow = "rgba(0, 0, 0, 0.08)"
     val ShadowHover = "rgba(0, 0, 0, 0.15)"
+
+    // Workspace dark theme (aligned with landing/login design, no animations)
+    val WorkspaceBackground = Color("#0f172a")
+    val WorkspaceSidebarBg = Color("#1e293b")
+    val WorkspaceContentBg = Color("#0f172a")
+    val WorkspaceText = Color("#FFFFFF")
+    val WorkspaceTextLight = Color("rgba(255,255,255,0.7)")
+    val WorkspaceBorder = Color("rgba(255,255,255,0.08)")
+    val WorkspaceCardBg = Color("rgba(255,255,255,0.04)")
+    val WorkspaceCardBorder = Color("rgba(255,255,255,0.08)")
+    val WorkspaceInputBg = Color("rgba(255,255,255,0.06)")
+    val WorkspaceInputBorder = Color("rgba(255,255,255,0.12)")
 }

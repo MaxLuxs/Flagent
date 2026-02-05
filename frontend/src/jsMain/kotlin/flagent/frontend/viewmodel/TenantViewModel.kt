@@ -11,6 +11,11 @@ import kotlinx.browser.localStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.w3c.dom.get
 import org.w3c.dom.set
 
@@ -23,6 +28,7 @@ class TenantViewModel {
     
     private val TENANT_KEY = "current_tenant"
     private val API_KEY_KEY = "api_key"
+    private val TENANT_API_KEYS_KEY = "tenant_api_keys"
     
     var currentTenant by mutableStateOf<Tenant?>(null)
         private set
@@ -111,7 +117,27 @@ class TenantViewModel {
     fun switchTenant(tenant: Tenant) {
         currentTenant = tenant
         localStorage[TENANT_KEY] = tenant.id
+        getApiKeyForTenant(tenant.id)?.let { apiKey ->
+            localStorage[API_KEY_KEY] = apiKey
+        }
         AppLogger.info(TAG, "Switched to tenant: ${tenant.name}")
+    }
+
+    fun storeApiKeyForTenant(tenantId: String, apiKey: String) {
+        val map = parseTenantApiKeys(localStorage[TENANT_API_KEYS_KEY])
+        val updated = buildJsonObject { map.forEach { put(it.key, it.value) }; put(tenantId, apiKey) }
+        localStorage[TENANT_API_KEYS_KEY] = updated.toString()
+    }
+
+    private fun getApiKeyForTenant(tenantId: String): String? =
+        parseTenantApiKeys(localStorage[TENANT_API_KEYS_KEY])[tenantId]
+
+    private fun parseTenantApiKeys(raw: String?): Map<String, String> {
+        if (raw.isNullOrBlank()) return emptyMap()
+        return runCatching {
+            val obj = Json.parseToJsonElement(raw) as? JsonObject ?: return@runCatching emptyMap()
+            obj.mapValues { (_, v) -> v.jsonPrimitive.content }
+        }.getOrElse { emptyMap() }
     }
     
     fun getApiKey(): String? {

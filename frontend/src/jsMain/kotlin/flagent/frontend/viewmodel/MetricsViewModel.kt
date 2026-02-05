@@ -2,6 +2,7 @@ package flagent.frontend.viewmodel
 
 import androidx.compose.runtime.*
 import flagent.frontend.api.*
+import flagent.frontend.config.AppConfig
 import flagent.frontend.util.AppLogger
 import flagent.frontend.util.ErrorHandler
 import flagent.frontend.util.currentTimeMillis
@@ -24,6 +25,13 @@ class MetricsViewModel(private val flagId: Int) {
     
     var aggregation by mutableStateOf<MetricAggregationResponse?>(null)
         private set
+
+    var experimentInsights by mutableStateOf<flagent.frontend.api.ExperimentInsightsResponse?>(null)
+        private set
+
+    /** OSS only: evaluation stats from Core (API evaluation count). */
+    var coreStats by mutableStateOf<FlagEvaluationStatsResponse?>(null)
+        private set
     
     var isLoading by mutableStateOf(false)
         private set
@@ -38,7 +46,48 @@ class MetricsViewModel(private val flagId: Int) {
     var endTime by mutableStateOf<Long>(currentTimeMillis())
     
     /**
-     * Load metrics
+     * Load experiment insights (A/B stats)
+     */
+    fun loadExperimentInsights() {
+        scope.launch {
+            ErrorHandler.withErrorHandling(
+                block = {
+                    experimentInsights = ApiClient.getExperimentInsights(flagId, startTime, endTime)
+                },
+                onError = { err ->
+                    experimentInsights = null
+                    AppLogger.error(TAG, "Failed to load experiment insights", err.cause)
+                }
+            )
+        }
+    }
+
+    /**
+     * Load Core evaluation stats (OSS only): API evaluation count and time series.
+     */
+    fun loadCoreStats() {
+        scope.launch {
+            isLoading = true
+            error = null
+            coreStats = null
+            ErrorHandler.withErrorHandling(
+                block = {
+                    AppLogger.info(TAG, "Loading core stats for flag: $flagId")
+                    coreStats = ApiClient.getFlagEvaluationStats(flagId, startTime, endTime)
+                    AppLogger.info(TAG, "Loaded core stats: ${coreStats?.evaluationCount} evaluations")
+                },
+                onError = { err ->
+                    error = ErrorHandler.getUserMessage(err)
+                    AppLogger.error(TAG, "Failed to load core stats", err.cause)
+                }
+            )
+            isLoading = false
+        }
+    }
+
+    /**
+     * Load metrics (Enterprise: MetricDataPoints from client SDK).
+     * Uses GET /flags/{flagId}/metrics with start, end, type, variantId (matches Enterprise API).
      */
     fun loadMetrics() {
         scope.launch {
@@ -50,10 +99,10 @@ class MetricsViewModel(private val flagId: Int) {
                     AppLogger.info(TAG, "Loading metrics for flag: $flagId")
                     val client = ApiClient.client
                     val url = buildString {
-                        append(ApiClient.getApiPath("/metrics/$flagId"))
-                        append("?start_time=$startTime&end_time=$endTime")
-                        selectedMetricType?.let { append("&metric_type=${it.name}") }
-                        selectedVariantId?.let { append("&variant_id=$it") }
+                        append(ApiClient.getApiPath("/flags/$flagId/metrics"))
+                        append("?start=$startTime&end=$endTime")
+                        selectedMetricType?.let { append("&type=${it.name}") }
+                        selectedVariantId?.let { append("&variantId=$it") }
                     }
                     metrics = client.get(url).body()
                     AppLogger.info(TAG, "Loaded ${metrics.size} metrics")
@@ -69,7 +118,8 @@ class MetricsViewModel(private val flagId: Int) {
     }
     
     /**
-     * Load aggregation
+     * Load aggregation (Enterprise).
+     * Uses GET /flags/{flagId}/aggregation with metric_type, window_start, window_end (matches Enterprise API).
      */
     fun loadAggregation() {
         if (selectedMetricType == null) return
@@ -79,7 +129,7 @@ class MetricsViewModel(private val flagId: Int) {
                 block = {
                     val client = ApiClient.client
                     val url = buildString {
-                        append(ApiClient.getApiPath("/metrics/$flagId/aggregation"))
+                        append(ApiClient.getApiPath("/flags/$flagId/aggregation"))
                         append("?metric_type=${selectedMetricType!!.name}")
                         append("&window_start=$startTime&window_end=$endTime")
                         selectedVariantId?.let { append("&variant_id=$it") }

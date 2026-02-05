@@ -34,7 +34,10 @@ enum class MetricType {
     SUCCESS_RATE,
     ERROR_RATE,
     LATENCY,
+    LATENCY_MS,
+    RESPONSE_TIME_MS,
     CONVERSION_RATE,
+    CRASH_RATE,
     CUSTOM
 }
 
@@ -51,23 +54,73 @@ data class MetricAggregationResponse(
     val windowEnd: Long
 )
 
-/** Global metrics overview: time series + top flags */
+/** Global metrics overview: time series + top flags (matches backend GET /api/v1/metrics/overview) */
 @Serializable
 data class GlobalMetricsOverviewResponse(
-    val totalCount: Long,
-    val timeSeries: List<TimeBucketCountResponse>,
-    val topFlags: List<FlagMetricCountResponse>
+    val totalEvaluations: Long,
+    val uniqueFlags: Int,
+    val topFlags: List<TopFlagEntryResponse>,
+    val timeSeries: List<TimeSeriesEntryResponse>
 )
 
+@Serializable
+data class TopFlagEntryResponse(
+    val flagId: Int,
+    val flagKey: String,
+    val evaluationCount: Long
+)
+
+@Serializable
+data class TimeSeriesEntryResponse(
+    val timestamp: Long,
+    val count: Long
+)
+
+/** Per-flag evaluation stats from Core (OSS) - API evaluation count only. */
+@Serializable
+data class FlagEvaluationStatsResponse(
+    val flagId: Int,
+    val evaluationCount: Long,
+    val timeSeries: List<TimeSeriesEntryResponse>
+)
+
+/** @deprecated Use TimeSeriesEntryResponse */
 @Serializable
 data class TimeBucketCountResponse(
     val bucketStartMs: Long,
     val count: Int
 )
 
+/** @deprecated Use TopFlagEntryResponse */
 @Serializable
 data class FlagMetricCountResponse(
     val flagId: Int,
     val flagKey: String,
     val count: Int
+)
+
+/** Per-variant conversion stats for A/B experiment insights */
+@Serializable
+data class VariantConversionStatsResponse(
+    val variantId: Int,
+    val variantKey: String? = null,
+    val sampleSize: Int,
+    val conversions: Int,
+    val conversionRate: Double,
+    val confidenceIntervalLow: Double,
+    val confidenceIntervalHigh: Double
+)
+
+/** A/B experiment insights: conversion by variant, significance, recommendation */
+@Serializable
+data class ExperimentInsightsResponse(
+    val flagId: Int,
+    val flagKey: String,
+    val variantStats: List<VariantConversionStatsResponse>,
+    val winnerVariantId: Int? = null,
+    val pValue: Double? = null,
+    val isSignificant: Boolean,
+    val recommendation: String,
+    val windowStartMs: Long,
+    val windowEndMs: Long
 )

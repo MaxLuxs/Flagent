@@ -39,5 +39,26 @@ data class TenantUserResponse(
     val tenantId: Long,
     val email: String,
     val role: String,
+    val customRoleId: Long? = null,
     val createdAt: String
+)
+
+@Serializable
+data class RoleResponse(
+    val key: String,
+    val name: String,
+    val permissions: List<String>,
+    val isBuiltIn: Boolean,
+    val id: Long? = null
+)
+
+@Serializable
+data class RolesResponse(
+    val roles: List<RoleResponse>
+)
+
+@Serializable
+data class AssignRoleRequest(
+    val roleKey: String? = null,
+    val customRoleId: Long? = null
 )

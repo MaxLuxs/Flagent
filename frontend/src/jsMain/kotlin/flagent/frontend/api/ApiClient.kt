@@ -10,6 +10,7 @@ import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.localStorage
@@ -131,10 +132,38 @@ object ApiClient {
     }
     
     /**
-     * Get all flags
+     * Get flags with optional filters and pagination.
+     * Returns pair of (flags, totalCount). totalCount from X-Total-Count header.
      */
-    suspend fun getFlags(): List<FlagResponse> {
-        return client.get(getApiPath("/flags")).body()
+    suspend fun getFlags(
+        limit: Int? = null,
+        offset: Int = 0,
+        enabled: Boolean? = null,
+        descriptionLike: String? = null,
+        key: String? = null,
+        tags: String? = null
+    ): Pair<List<FlagResponse>, Long> {
+        val response = client.get(getApiPath("/flags")) {
+            limit?.let { parameter("limit", it) }
+            if (offset > 0) parameter("offset", offset)
+            enabled?.let { parameter("enabled", it) }
+            descriptionLike?.takeIf { it.isNotBlank() }?.let { parameter("descriptionLike", it) }
+            key?.takeIf { it.isNotBlank() }?.let { parameter("key", it) }
+            tags?.takeIf { it.isNotBlank() }?.let { parameter("tags", it) }
+            parameter("preload", false)
+        }
+        val total = response.headers["X-Total-Count"]?.toLongOrNull() ?: 0L
+        return response.body<List<FlagResponse>>() to total
+    }
+
+    /**
+     * Get all tags (for filter dropdown)
+     */
+    suspend fun getTags(limit: Int? = 500, valueLike: String? = null): List<TagResponse> {
+        return client.get(getApiPath("/tags")) {
+            limit?.let { parameter("limit", it) }
+            valueLike?.takeIf { it.isNotBlank() }?.let { parameter("value_like", it) }
+        }.body()
     }
     
     /**
@@ -327,11 +356,42 @@ object ApiClient {
         }.body()
     }
     
+    /**
+     * Get server version info (no auth required for /info).
+     */
+    suspend fun getInfo(): InfoResponse {
+        return client.get(getApiPath("/info")).body()
+    }
+
+    /**
+     * Download export file with auth headers. Use for eval_cache, gitops, sqlite.
+     */
+    suspend fun downloadExport(path: String): ByteArray {
+        return client.get(getApiPath(path)).bodyAsBytes()
+    }
+
+    /**
+     * Import flags from GitOps format (YAML or JSON).
+     */
+    suspend fun importFlags(format: String, content: String): ImportResult {
+        return client.post(getApiPath("/import")) {
+            contentType(ContentType.Application.Json)
+            setBody(ImportRequest(format = format, content = content))
+        }.body()
+    }
+
     // Set Flag Enabled
     suspend fun setFlagEnabled(flagId: Int, enabled: Boolean): FlagResponse {
         return client.put(getApiPath("/flags/$flagId/enabled")) {
             contentType(ContentType.Application.Json)
             setBody(SetFlagEnabledRequest(enabled))
+        }.body()
+    }
+
+    suspend fun batchSetFlagEnabled(ids: List<Int>, enabled: Boolean): List<FlagResponse> {
+        return client.put(getApiPath("/flags/batch/enabled")) {
+            contentType(ContentType.Application.Json)
+            setBody(BatchFlagEnabledRequest(ids = ids, enabled = enabled))
         }.body()
     }
     
@@ -416,15 +476,18 @@ object ApiClient {
     
     // ========== SSO (Enterprise, requires tenant context) ==========
     
-    /** Path for tenant-scoped SSO providers list (GET /tenants/me/sso/providers). */
-    internal fun getSsoProvidersListPath(): String {
+    /** Path for tenant-scoped routes (GET /tenants/me/users, etc.). */
+    internal fun getTenantMePath(path: String): String {
         val baseUrl = AppConfig.apiBaseUrl.trimEnd('/')
         return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
-            "/tenants/me/sso/providers"
+            "/tenants/me$path"
         } else {
-            "$baseUrl/tenants/me/sso/providers"
+            "$baseUrl/tenants/me$path"
         }
     }
+
+    /** Path for tenant-scoped SSO providers list (GET /tenants/me/sso/providers). */
+    internal fun getSsoProvidersListPath(): String = getTenantMePath("/sso/providers")
 
     internal fun getSsoPath(path: String): String {
         val baseUrl = AppConfig.apiBaseUrl
@@ -469,30 +532,134 @@ object ApiClient {
         return client.post(getApiPath("/slack/test")).body()
     }
 
+    // ========== Webhooks ==========
+
+    suspend fun getWebhooks(): List<WebhookResponse> {
+        return client.get(getApiPath("/webhooks")).body()
+    }
+
+    suspend fun createWebhook(request: CreateWebhookRequest): WebhookResponse {
+        return client.post(getApiPath("/webhooks")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun updateWebhook(id: Int, request: PutWebhookRequest): WebhookResponse {
+        return client.put(getApiPath("/webhooks/$id")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun deleteWebhook(id: Int) {
+        client.delete(getApiPath("/webhooks/$id"))
+    }
+
+    // ========== RBAC (Enterprise) ==========
+
+    suspend fun getRoles(): RolesResponse {
+        return client.get(getApiPath("/roles")).body()
+    }
+
+    suspend fun createRole(key: String, name: String, permissions: List<String>) {
+        client.post(getApiPath("/roles")) {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf("key" to key, "name" to name, "permissions" to permissions))
+        }
+    }
+
+    suspend fun getTenantUsers(): List<TenantUserResponse> {
+        return client.get(getTenantMePath("/users")).body()
+    }
+
+    suspend fun assignUserRole(userId: Long, roleKey: String?, customRoleId: Long?) {
+        client.put(getTenantMePath("/users/$userId/roles")) {
+            contentType(ContentType.Application.Json)
+            setBody(AssignRoleRequest(roleKey = roleKey, customRoleId = customRoleId))
+        }
+    }
+
     // ========== Metrics overview (global aggregates) ==========
+
+    /**
+     * Get A/B experiment insights: conversion by variant, confidence intervals, significance.
+     */
+    suspend fun getExperimentInsights(
+        flagId: Int,
+        startTime: Long,
+        endTime: Long
+    ): ExperimentInsightsResponse {
+        val url = "${getApiPath("/flags/$flagId/experiment-insights")}?start=$startTime&end=$endTime"
+        return client.get(url).body()
+    }
 
     /**
      * Get global metrics overview: time series (evaluations per bucket) and top flags.
      * @param startTime start of range (ms), default last 24h
      * @param endTime end of range (ms), default now
-     * @param bucketMinutes bucket size in minutes (default 60)
-     * @param topFlagsLimit max top flags (default 10)
+     * @param topLimit max top flags (default 10)
+     * @param timeBucketMs bucket size in ms (default 3600000 = 1h)
      */
     suspend fun getMetricsOverview(
         startTime: Long? = null,
         endTime: Long? = null,
-        bucketMinutes: Int = 60,
-        topFlagsLimit: Int = 10
+        topLimit: Int = 10,
+        timeBucketMs: Long = 3600_000
     ): GlobalMetricsOverviewResponse {
+        val end = endTime ?: (kotlin.js.Date().getTime().toLong())
+        val start = startTime ?: (end - 86400_000)
         val url = buildString {
             append(getApiPath("/metrics/overview"))
-            append("?bucket_minutes=$bucketMinutes&top_flags_limit=$topFlagsLimit")
-            startTime?.let { append("&start_time=$it") }
-            endTime?.let { append("&end_time=$it") }
+            append("?start=$start&end=$end&topLimit=$topLimit&timeBucketMs=$timeBucketMs")
+        }
+        return client.get(url).body()
+    }
+
+    /**
+     * Get per-flag evaluation stats (Core OSS only): API evaluation count and time series.
+     */
+    suspend fun getFlagEvaluationStats(
+        flagId: Int,
+        startTime: Long,
+        endTime: Long,
+        timeBucketMs: Long = 3600_000
+    ): FlagEvaluationStatsResponse {
+        val url = buildString {
+            append(getApiPath("/flags/$flagId/evaluation-stats"))
+            append("?start=$startTime&end=$endTime&timeBucketMs=$timeBucketMs")
         }
         return client.get(url).body()
     }
 }
+
+@Serializable
+data class WebhookResponse(
+    val id: Int,
+    val url: String,
+    val events: List<String>,
+    val secret: String? = null,
+    val enabled: Boolean = true,
+    val tenantId: String? = null,
+    val createdAt: Long = 0,
+    val updatedAt: Long = 0
+)
+
+@Serializable
+data class CreateWebhookRequest(
+    val url: String,
+    val events: List<String>,
+    val secret: String? = null,
+    val enabled: Boolean = true
+)
+
+@Serializable
+data class PutWebhookRequest(
+    val url: String,
+    val events: List<String>,
+    val secret: String? = null,
+    val enabled: Boolean = true
+)
 
 @Serializable
 data class LoginRequest(val email: String = "", val password: String = "")
@@ -502,3 +669,13 @@ data class LoginUserResponse(val id: String, val email: String, val name: String
 
 @Serializable
 data class LoginResponse(val token: String, val user: LoginUserResponse)
+
+@Serializable
+data class ImportRequest(val format: String = "json", val content: String = "")
+
+@Serializable
+data class ImportResult(
+    val created: Int = 0,
+    val updated: Int = 0,
+    val errors: List<String> = emptyList()
+)

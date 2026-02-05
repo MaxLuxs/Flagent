@@ -72,7 +72,7 @@ class FlagsViewModel {
             ErrorHandler.withErrorHandling(
                 block = {
                     AppLogger.info(TAG, "Loading flags...")
-                    val result = ApiClient.getFlags()
+                    val (result, _) = ApiClient.getFlags()
                     flags = result.reversed() // Show newest first
                     AppLogger.info(TAG, "Loaded ${result.size} flags")
                 },
