@@ -152,6 +152,21 @@ FLAGENT_EVALCACHE_REFRESHINTERVAL=3s
 - `5m` - 5 minutes
 - `1h` - 1 hour
 
+### Evaluation Events Retention (Core Metrics)
+
+Controls cleanup of old `evaluation_events` records used for OSS analytics:
+
+```bash
+# Retention period in days (default: 90)
+FLAGENT_EVALUATION_EVENTS_RETENTION_DAYS=90
+
+# Enable periodic cleanup (default: true)
+FLAGENT_EVALUATION_EVENTS_CLEANUP_ENABLED=true
+
+# Cleanup interval (default: 24h)
+FLAGENT_EVALUATION_EVENTS_CLEANUP_INTERVAL=24h
+```
+
 ### Evaluation Mode
 
 ```bash
@@ -258,10 +273,10 @@ FLAGENT_DEV_SKIP_TENANT_AUTH=true
 
 ## Admin Auth (Enterprise)
 
-When enabled, `/admin/*` routes (e.g. create/list tenants) require either a JWT from `POST /auth/login` (admin email/password) or the `X-Admin-Key` header. Disabled by default for backward compatibility.
+When enabled, `/admin/*` routes (e.g. create/list tenants) require either a JWT from `POST /auth/login` (admin email/password) or the `X-Admin-Key` header. **Enabled by default** for security.
 
 ```bash
-# Enable admin auth (default: false)
+# Enable admin auth (default: true). Set to false to allow open access (dev only).
 FLAGENT_ADMIN_AUTH_ENABLED=true
 
 # Admin login (for POST /auth/login)

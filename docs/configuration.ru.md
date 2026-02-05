@@ -258,9 +258,10 @@ FLAGENT_DEV_SKIP_TENANT_AUTH=true
 
 ## Admin Auth (Enterprise)
 
-При включении маршруты `/admin/*` (создание/список tenants) требуют JWT от `POST /auth/login` (email/пароль админа) или заголовок `X-Admin-Key`. По умолчанию выключено.
+При включении маршруты `/admin/*` (создание/список tenants) требуют JWT от `POST /auth/login` (email/пароль админа) или заголовок `X-Admin-Key`. **По умолчанию включено** для безопасности.
 
 ```bash
+# По умолчанию true. Установите false для открытого доступа (только dev).
 FLAGENT_ADMIN_AUTH_ENABLED=true
 FLAGENT_ADMIN_EMAIL=admin@example.com
 FLAGENT_ADMIN_PASSWORD=your-secret-password
