@@ -75,7 +75,7 @@ jobs:
           POSTGRES_PASSWORD: test
           POSTGRES_DB: flagent_test
         options: >-
-          --health-cmd pg_isready -U postgres
+          --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -233,7 +233,9 @@ jobs:
         run: cd frontend/e2e && npm install
       - name: Install Playwright browsers
         run: cd frontend/e2e && npx playwright install --with-deps chromium
-      - name: Run E2E tests
+      - name: Run E2E tests (OSS edition)
+        env:
+          FLAGENT_EDITION: oss
         run: cd frontend/e2e && CI=true npm run test -- --project=chromium
       - name: Upload Playwright report
         if: failure()

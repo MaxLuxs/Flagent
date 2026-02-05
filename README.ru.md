@@ -55,9 +55,7 @@ docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 open http://localhost:18000
 ```
 
-**Данные по умолчанию:**
-- Имя пользователя: `admin`
-- Пароль: `admin`
+Настройте admin auth через `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. См. [docs/configuration.md](docs/configuration.md).
 
 ## ✨ Ключевые возможности
 

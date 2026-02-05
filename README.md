@@ -81,9 +81,7 @@ docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 open http://localhost:18000
 ```
 
-**Default credentials:**
-- Username: `admin`
-- Password: `admin`
+Configure admin auth via `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. See [docs/configuration.md](docs/configuration.md).
 
 ## Self-Hosted (Open Source) from GitHub
 
@@ -130,6 +128,8 @@ Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when p
 **"Admin auth is disabled"** when logging in means the backend has admin login turned off. Set `FLAGENT_ADMIN_AUTH_ENABLED=true` and the env vars above on the backend and restart. See [docs/configuration.md](docs/configuration.md) → Admin Auth.
 
 **Login first (always show login screen):** In the frontend set `ENV_FEATURE_AUTH=true` (e.g. in `frontend/src/jsMain/resources/index.html` or via `?ENV_FEATURE_AUTH=true`). Unauthenticated users will be redirected to /login before seeing the dashboard.
+
+**Auth in Open Source:** Auth is enabled by default. Configure `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET` (min 32 chars) on the backend. To disable (open access, dev only): `FLAGENT_ADMIN_AUTH_ENABLED=false` and `ENV_FEATURE_AUTH=false` (frontend). See [frontend/EDITION_GUIDE.md](frontend/EDITION_GUIDE.md) → Authentication in Open Source.
 
 ## ✨ Key Features
 

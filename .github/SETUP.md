@@ -93,9 +93,16 @@ docker run -it -p 18000:18000 ghcr.io/maxluxs/flagent:latest
 
 Без ключа запросы к NVD часто получают 403/rate limit, сканирование долго ретраится и может падать. С ключом обновление базы CVE быстрее и стабильнее.
 
+## 9. Enterprise CI (ci-enterprise.yml)
+
+Workflow `ci-enterprise.yml` собирает проект с submodule `internal/` (приватный репозиторий) и запускает Enterprise E2E тесты. Запускается **вручную** (Actions → ci-enterprise → Run workflow).
+
+**Требуется секрет `CR_PAT`** — Personal Access Token с доступом к приватному репозиторию submodule (уже должен быть настроен).
+
 ## Структура workflows
 
-- **`.github/workflows/ci.yml`** - Основной CI: тесты, сборка, покрытие кода
+- **`.github/workflows/ci.yml`** - Основной CI: тесты, сборка, покрытие кода (OSS)
+- **`.github/workflows/ci-enterprise.yml`** - Enterprise CI: сборка с submodule, E2E @enterprise (ручной запуск)
 - **`.github/workflows/cd_docker.yml`** - CD: публикация Docker образов при релизе
 - **`.github/workflows/ci_codeql.yml`** - Анализ безопасности кода (CodeQL)
 - **`.github/workflows/load-test.yml`** - Load testing (k6: metrics, anomaly detection)
