@@ -21,6 +21,7 @@ val springBootVersion = "3.2.0"
 
 dependencies {
     implementation(project(":java-client"))
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.21")
     implementation("org.springframework.boot:spring-boot-starter:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")

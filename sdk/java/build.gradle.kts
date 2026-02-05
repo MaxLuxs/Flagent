@@ -1,3 +1,5 @@
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
+
 plugins {
     java
     `maven-publish`
@@ -27,6 +29,11 @@ dependencies {
 tasks.withType<JavaCompile>().configureEach {
     sourceCompatibility = "21"
     targetCompatibility = "21"
+}
+
+// OpenAPI-generated code lacks Javadoc on protected fields; suppress doclint to avoid build failure
+tasks.withType<Javadoc>().configureEach {
+    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
 }
 
 tasks.test {
