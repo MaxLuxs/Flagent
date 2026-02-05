@@ -3,6 +3,9 @@ package flagent.frontend.components
 import androidx.compose.runtime.*
 import flagent.frontend.components.auth.LoginForm
 import flagent.frontend.components.common.NotificationToast
+import flagent.frontend.components.landing.BlogPage
+import flagent.frontend.components.landing.MarketingLanding
+import flagent.frontend.components.landing.PricingPage
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
@@ -31,10 +34,9 @@ fun App() {
     val authViewModel = remember { AuthViewModel() }
     val tenantViewModel = if (AppConfig.Features.enableMultiTenancy) remember { TenantViewModel() } else null
 
-    LaunchedEffect(Unit) {
-        Router.initialize()
-        AppLogger.info("App", "Application initialized")
-    }
+    // CRITICAL: Initialize router synchronously before reading route, otherwise auth redirect
+    // runs with default Route.Home and overwrites URL (e.g. /experiments -> /dashboard)
+    remember { Router.initialize(); Unit }
 
     val requiresAuth = AppConfig.requiresAuth
     val route = Router.currentRoute
@@ -42,10 +44,11 @@ fun App() {
     // Redirect enterprise-only routes when edition is open-source; allow /tenants and /login when backend needs tenant (401 tenant message)
     LaunchedEffect(route) {
         when (route) {
-            is Route.FlagMetrics -> if (!AppConfig.Features.enableMetrics) Router.navigateTo(Route.Home)
+            is Route.FlagMetrics -> if (!AppConfig.Features.enableMetrics) Router.navigateTo(Route.Analytics)
             is Route.FlagRollout -> if (!AppConfig.Features.enableSmartRollout) Router.navigateTo(Route.Home)
             is Route.FlagAnomalies -> if (!AppConfig.Features.enableAnomalyDetection) Router.navigateTo(Route.Home)
             is Route.Alerts -> if (!AppConfig.Features.enableAnomalyDetection) Router.navigateTo(Route.Home)
+            is Route.Crash -> if (!AppConfig.Features.enableCrashAnalytics) Router.navigateTo(Route.Home)
             is Route.Tenants -> if (!AppConfig.Features.enableMultiTenancy && !BackendOnboardingState.allowTenantsAndLogin) Router.navigateTo(Route.Home)
             else -> {}
         }
@@ -57,7 +60,7 @@ fun App() {
         val routeNeedsTenant = route is Route.Dashboard || route is Route.FlagsList || route is Route.Experiments ||
             route is Route.Analytics || route is Route.CreateFlag || route is Route.FlagDetail || route is Route.DebugConsole ||
             route is Route.FlagHistory || route is Route.FlagMetrics || route is Route.FlagRollout || route is Route.FlagAnomalies ||
-            route is Route.Alerts
+            route is Route.Alerts || route is Route.Crash
         if (!routeNeedsTenant) return@LaunchedEffect
         val token = localStorage.getItem(AUTH_TOKEN_KEY)?.takeIf { it.isNotBlank() }
         val apiKeyFromStorage = localStorage.getItem(API_KEY_STORAGE_KEY)?.takeIf { it.isNotBlank() }
@@ -67,9 +70,10 @@ fun App() {
         if (shouldRedirect) Router.navigateToTenantsWithCreate()
     }
 
-    // Redirect authenticated users from landing (/) to dashboard
-    LaunchedEffect(requiresAuth, route) {
-        if (route is Route.Home && requiresAuth) {
+    // Redirect authenticated users from landing (/) to dashboard (only when NOT showMarketingLanding)
+    val showMarketingLanding = AppConfig.showMarketingLanding
+    LaunchedEffect(requiresAuth, route, showMarketingLanding) {
+        if (route is Route.Home && requiresAuth && !showMarketingLanding) {
             val token = localStorage.getItem(AUTH_TOKEN_KEY)
             if (token != null) {
                 Router.navigateTo(Route.Dashboard)
@@ -78,10 +82,14 @@ fun App() {
         }
         if (!requiresAuth) return@LaunchedEffect
         if (route is Route.Login) return@LaunchedEffect
+        // When showMarketingLanding: Home, Pricing, Blog are public - no redirect
+        if (showMarketingLanding && (route is Route.Home || route is Route.Pricing || route is Route.Blog)) return@LaunchedEffect
         val token = localStorage.getItem(AUTH_TOKEN_KEY)
         if (token != null) return@LaunchedEffect
         val returnPath = when (val r = route) {
             is Route.Home -> Route.Home.PATH
+            is Route.Pricing -> Route.Pricing.PATH
+            is Route.Blog -> Route.Blog.PATH
             is Route.FlagsList -> Route.FlagsList.PATH
             is Route.Dashboard -> Route.Dashboard.PATH
             is Route.Experiments -> Route.Experiments.PATH
@@ -94,6 +102,7 @@ fun App() {
             is Route.FlagRollout -> r.path()
             is Route.FlagAnomalies -> r.path()
             is Route.Alerts -> Route.Alerts.PATH
+            is Route.Crash -> Route.Crash.PATH
             is Route.Settings -> Route.Settings.PATH
             is Route.Tenants -> Route.Tenants.PATH
             is Route.Login -> Route.Home.PATH
@@ -108,58 +117,75 @@ fun App() {
                 LoginForm(
                     viewModel = authViewModel,
                     onSuccess = {
-                        val returnUrl = sessionStorage.getItem(AUTH_RETURN_URL_KEY) ?: Route.Home.PATH
+                        val returnUrl = sessionStorage.getItem(AUTH_RETURN_URL_KEY) ?: Route.Dashboard.PATH
                         sessionStorage.removeItem(AUTH_RETURN_URL_KEY)
                         Router.navigateToPath(returnUrl)
                     }
                 )
             }
-            else -> {
-                Div({
-                    style {
-                        fontFamily("-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif")
-                        minHeight(100.vh)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
-                    }
-                }) {
-                    Navbar(authViewModel = authViewModel, tenantViewModel = tenantViewModel)
-                    NotificationToast(
-                        notifications = globalState.notifications,
-                        onDismiss = { id -> globalState.removeNotification(id) }
-                    )
-                    Div({
-                        style {
-                            maxWidth(1200.px)
-                            property("margin", "0 auto")
-                            padding(20.px)
-                            property("width", "100%")
-                            property("box-sizing", "border-box")
-                        }
-                    }) {
-                        when (route) {
-                            is Route.FlagDetail, is Route.CreateFlag, is Route.DebugConsole, is Route.FlagHistory -> Breadcrumbs()
-                            else -> {}
-                        }
-                        when (val r = Router.currentRoute) {
-                            is Route.Home -> LandingPage()
-                            is Route.FlagsList -> FlagsList()
-                            is Route.Dashboard -> Dashboard()
-                            is Route.Experiments -> flagent.frontend.components.experiments.ExperimentsPage()
-                            is Route.Analytics -> flagent.frontend.components.analytics.AnalyticsPage()
-                            is Route.FlagDetail -> FlagEditor(r.flagId)
-                            is Route.CreateFlag -> FlagEditor(null)
-                            is Route.DebugConsole -> DebugConsole(r.flagKey)
-                            is Route.FlagHistory -> FlagHistory(r.flagId)
-                            is Route.FlagMetrics -> flagent.frontend.components.metrics.MetricsDashboard(r.flagId)
-                            is Route.FlagRollout -> flagent.frontend.components.rollout.SmartRolloutConfig(r.flagId)
-                            is Route.FlagAnomalies -> flagent.frontend.components.anomaly.AnomalyAlertsList(r.flagId)
-                            is Route.Alerts -> flagent.frontend.components.alerts.AlertsPage()
-                            is Route.Settings -> flagent.frontend.components.settings.SettingsPage()
-                            is Route.Tenants -> flagent.frontend.components.tenants.TenantsList()
-                            is Route.Login -> {}
-                        }
-                    }
-                }
+            is Route.Home -> if (showMarketingLanding) {
+                MarketingLanding()
+            } else {
+                AppShell(globalState, authViewModel, tenantViewModel, route)
+            }
+            is Route.Pricing -> if (showMarketingLanding) {
+                PricingPage()
+            } else {
+                LaunchedEffect(Unit) { Router.navigateTo(Route.Home) }
+                AppShell(globalState, authViewModel, tenantViewModel, Route.Home)
+            }
+            is Route.Blog -> if (showMarketingLanding) {
+                BlogPage()
+            } else {
+                LaunchedEffect(Unit) { Router.navigateTo(Route.Home) }
+                AppShell(globalState, authViewModel, tenantViewModel, Route.Home)
+            }
+            else -> AppShell(globalState, authViewModel, tenantViewModel, route)
+        }
+    }
+}
+
+@Composable
+private fun AppShell(
+    globalState: GlobalState,
+    authViewModel: AuthViewModel,
+    tenantViewModel: TenantViewModel?,
+    route: Route
+) {
+    Div(attrs = {
+        style {
+            property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif")
+            minHeight(100.vh)
+            backgroundColor(FlagentTheme.WorkspaceBackground)
+        }
+    }) {
+        NotificationToast(
+            notifications = globalState.notifications,
+            onDismiss = { id -> globalState.removeNotification(id) }
+        )
+        ShellLayout(authViewModel = authViewModel, tenantViewModel = tenantViewModel) { vm ->
+            when (route) {
+                is Route.FlagDetail, is Route.CreateFlag, is Route.DebugConsole, is Route.FlagHistory, is Route.FlagMetrics -> Breadcrumbs()
+                else -> {}
+            }
+            when (val r = Router.currentRoute) {
+                is Route.Home -> LandingPage()
+                is Route.FlagsList -> FlagsList()
+                is Route.Dashboard -> Dashboard()
+                is Route.Experiments -> flagent.frontend.components.experiments.ExperimentsPage()
+                is Route.Analytics -> flagent.frontend.components.analytics.AnalyticsPage()
+                is Route.FlagDetail -> FlagEditor(r.flagId)
+                is Route.CreateFlag -> FlagEditor(null)
+                is Route.DebugConsole -> DebugConsole(r.flagKey)
+                is Route.FlagHistory -> FlagHistory(r.flagId)
+                is Route.FlagMetrics -> flagent.frontend.components.metrics.MetricsDashboard(r.flagId, r.metricType)
+                is Route.FlagRollout -> flagent.frontend.components.rollout.SmartRolloutConfig(r.flagId)
+                is Route.FlagAnomalies -> flagent.frontend.components.anomaly.AnomalyAlertsList(r.flagId)
+                is Route.Alerts -> flagent.frontend.components.alerts.AlertsPage()
+                is Route.Crash -> flagent.frontend.components.metrics.CrashDashboard()
+                is Route.Settings -> flagent.frontend.components.settings.SettingsPage()
+                is Route.Tenants -> flagent.frontend.components.tenants.TenantsList(tenantViewModel = vm)
+                is Route.Login, is Route.Pricing, is Route.Blog -> {}
             }
         }
     }

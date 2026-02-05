@@ -75,7 +75,7 @@ object AppConfig {
 }
 ```
 
-Additional config: `ENV_DEPLOYMENT_MODE` (`self_hosted` | `saas`) and `ENV_PLAN` (`open_source` | `enterprise` | `saas_enterprise` | `saas_lowprice`) control plan/tier when using SaaS deployment.
+Additional config: `ENV_DEPLOYMENT_MODE` (`self_hosted` | `saas`) and `ENV_PLAN` (`open_source` | `enterprise` | `saas_enterprise` | `saas_lowprice`) control plan/tier when using SaaS deployment. `ENV_SHOW_LANDING` (`true` | `false`) shows the full marketing landing at `/` (Product, Pricing, Blog, Footer); auto `true` for SaaS, optional for self-hosted.
 
 ### Conditional UI
 
@@ -119,6 +119,29 @@ You can also override edition via URL: `?edition=open_source` or `?edition=enter
 - ❌ Advanced Analytics
 - ❌ Audit Logs
 - ❌ RBAC
+
+### Authentication in Open Source (Enabled by Default)
+
+By default, Open Source self-hosted **requires authentication** — unauthenticated users are redirected to /login.
+
+| Component | Variable | Default |
+|-----------|----------|---------|
+| Frontend auth UI (redirect to /login) | `ENV_FEATURE_AUTH` | `true` |
+| Backend admin login (POST /auth/login) | `FLAGENT_ADMIN_AUTH_ENABLED` | `true` |
+| JWT for API protection | `FLAGENT_JWT_AUTH_ENABLED` | `false` |
+
+**Required for auth (backend env):**
+- `FLAGENT_ADMIN_EMAIL=admin@example.com`
+- `FLAGENT_ADMIN_PASSWORD=your-secure-password`
+- `FLAGENT_JWT_AUTH_SECRET=your-secret-min-32-chars` (required for JWT tokens)
+
+**To disable auth** (open access, dev only):
+- Backend: `FLAGENT_ADMIN_AUTH_ENABLED=false`
+- Frontend: `window.ENV_FEATURE_AUTH = "false"` or `?ENV_FEATURE_AUTH=false`
+
+**Optional:** `FLAGENT_JWT_AUTH_ENABLED=true` — protects API routes with JWT; evaluation endpoints can stay whitelisted via `FLAGENT_JWT_AUTH_WHITELIST_PATHS`.
+
+See [docs/configuration.md](../docs/configuration.md) for full Admin Auth and JWT options.
 
 ### Enterprise Edition
 
@@ -336,6 +359,9 @@ Edition can be switched in the browser via `?edition=enterprise` or `?edition=op
 | **Advanced Analytics** | ❌ | ✅ |
 | **Audit Logs** | ❌ | ✅ |
 | **RBAC** | ❌ | ✅ |
+| **Crash Analytics** | ❌ | ✅ |
+| **Webhooks** | ❌ | ✅ |
+| **GitOps (YAML/CLI)** | ❌ | ✅ |
 
 ---
 

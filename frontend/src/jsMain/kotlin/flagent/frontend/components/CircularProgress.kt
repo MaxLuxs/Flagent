@@ -27,10 +27,10 @@ fun CircularProgress(
     size: CSSSizeValue<CSSUnit.px> = 80.px,
     strokeWidth: CSSSizeValue<CSSUnit.px> = 8.px,
     color: CSSColorValue = FlagentTheme.Primary,
-    backgroundColor: CSSColorValue = FlagentTheme.BackgroundDark,
+    backgroundColor: CSSColorValue = FlagentTheme.WorkspaceInputBg,
     showLabel: Boolean = true,
     labelSize: CSSSizeValue<CSSUnit.px> = 16.px,
-    labelColor: CSSColorValue = FlagentTheme.Text
+    labelColor: CSSColorValue = FlagentTheme.WorkspaceText
 ) {
     val clampedPercentage = percentage.coerceIn(0, 100)
     val radius = (size.value.toDouble() / 2 - strokeWidth.value.toDouble() / 2)

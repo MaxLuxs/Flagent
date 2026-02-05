@@ -39,7 +39,7 @@ fun InfoTooltip(
                 height(18.px)
                 borderRadius(50.percent)
                 backgroundColor(FlagentTheme.Info)
-                color(FlagentTheme.Background)
+                color(Color.white)
                 fontSize(12.px)
                 fontWeight("bold")
                 property("transition", "all 0.2s")
@@ -71,11 +71,11 @@ fun InfoTooltip(
                     width(320.px)
                     maxWidth(90.vw)
                     padding(16.px)
-                    backgroundColor(FlagentTheme.Background)
+                    backgroundColor(FlagentTheme.WorkspaceCardBg)
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceCardBorder)
                     }
                     borderRadius(8.px)
                     property("box-shadow", "0 4px 12px ${FlagentTheme.ShadowHover}")
@@ -114,17 +114,17 @@ fun InfoTooltip(
                                 width(0.px)
                                 style(LineStyle.None)
                             }
-                            color(FlagentTheme.TextLight)
+                            color(FlagentTheme.WorkspaceTextLight)
                             cursor("pointer")
                             fontSize(18.px)
                             property("line-height", "1")
                             property("transition", "color 0.2s")
                         }
                         onMouseEnter {
-                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceText.toString()
                         }
                         onMouseLeave {
-                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.TextLight.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
                         }
                     }) {
                         Text("×")
@@ -145,8 +145,8 @@ fun InfoTooltip(
                         style {
                             marginTop(10.px)
                             paddingTop(10.px)
-                            property("border-top", "1px solid ${FlagentTheme.Border}")
-                            color(FlagentTheme.TextLight)
+                            property("border-top", "1px solid ${FlagentTheme.WorkspaceBorder}")
+                            color(FlagentTheme.WorkspaceTextLight)
                             fontSize(12.px)
                         }
                     }) {
@@ -165,7 +165,7 @@ fun InfoTooltip(
                         height(0.px)
                         property("border-left", "6px solid transparent")
                         property("border-right", "6px solid transparent")
-                        property("border-top", "6px solid ${FlagentTheme.Border}")
+                        property("border-top", "6px solid ${FlagentTheme.WorkspaceCardBorder}")
                     }
                 }) {}
             }

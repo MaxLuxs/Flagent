@@ -20,9 +20,10 @@ fun ConnectionStatus(isConnected: Boolean) {
             alignItems(AlignItems.Center)
             gap(8.px)
             padding(8.px, 16.px)
-            backgroundColor(if (isConnected) Color("#DCFCE7") else Color("#FEE2E2"))
+            backgroundColor(if (isConnected) Color("rgba(16, 185, 129, 0.2)") else Color("rgba(239, 68, 68, 0.2)"))
+            property("border", "1px solid " + (if (isConnected) "rgba(16, 185, 129, 0.4)" else "rgba(239, 68, 68, 0.4)"))
             borderRadius(20.px)
-            property("box-shadow", "0 2px 8px rgba(0, 0, 0, 0.1)")
+            property("backdrop-filter", "blur(8px)")
         }
     }) {
         Div({
@@ -39,7 +40,7 @@ fun ConnectionStatus(isConnected: Boolean) {
             style {
                 fontSize(12.px)
                 fontWeight(500)
-                color(if (isConnected) Color("#166534") else Color("#991B1B"))
+                color(if (isConnected) Color("#34D399") else Color("#F87171"))
             }
         }) {
             Text(if (isConnected) "Connected" else "Disconnected")

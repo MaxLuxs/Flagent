@@ -58,10 +58,12 @@ private fun NotificationItem(
     Div({
         classes("scale-in")
         style {
-            backgroundColor(Color.white)
+            backgroundColor(Color("rgba(255,255,255,0.08)"))
             borderRadius(8.px)
             padding(16.px)
-            property("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.15)")
+            property("backdrop-filter", "blur(12px)")
+            property("border", "1px solid rgba(255,255,255,0.12)")
+            property("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.3)")
             display(DisplayStyle.Flex)
             alignItems(AlignItems.FlexStart)
             gap(12.px)
@@ -96,7 +98,7 @@ private fun NotificationItem(
                 backgroundColor(Color.transparent)
                 border(0.px)
                 cursor("pointer")
-                color(Color("#94A3B8"))
+                color(FlagentTheme.WorkspaceTextLight)
                 flexShrink(0)
             }
         }) {

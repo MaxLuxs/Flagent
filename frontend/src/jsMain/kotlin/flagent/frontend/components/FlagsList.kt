@@ -9,7 +9,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.api.model.CreateFlagRequest
 import flagent.api.model.FlagResponse
+import flagent.api.model.TagResponse
 import flagent.frontend.api.ApiClient
+import flagent.frontend.components.common.ConfirmDialog
+import flagent.frontend.components.common.Pagination
 import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
@@ -17,12 +20,21 @@ import flagent.frontend.navigation.Router
 import flagent.frontend.service.RealtimeService
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
+import kotlinx.browser.localStorage
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.AlignItems
 import org.jetbrains.compose.web.css.Color
+import org.jetbrains.compose.web.css.FlexDirection
 import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.FlexWrap
 import org.jetbrains.compose.web.css.JustifyContent
@@ -76,21 +88,43 @@ import org.jetbrains.compose.web.dom.Tr
 /**
  * FlagsList component - displays list of all flags
  */
+private const val PAGE_SIZE = 25
+private const val SAVED_VIEWS_KEY = "flagent_saved_views"
+
+private data class SavedView(
+    val name: String,
+    val searchQuery: String,
+    val keyFilter: String,
+    val statusFilter: Boolean?,
+    val tags: List<String>
+)
+
 @Composable
 fun FlagsList() {
     val flags = remember { mutableStateListOf<FlagResponse>() }
+    val totalCount = remember { mutableStateOf(0L) }
+    val currentPage = remember { mutableStateOf(1) }
     val deletedFlags = remember { mutableStateListOf<FlagResponse>() }
     val loading = remember { mutableStateOf(true) }
     val deletedFlagsLoading = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
     val searchQuery = remember { mutableStateOf("") }
+    val keyFilter = remember { mutableStateOf("") }
     val statusFilter =
         remember { mutableStateOf<Boolean?>(null) } // null = all, true = enabled, false = disabled
+    val selectedTags = remember { mutableStateListOf<String>() }
+    val availableTags = remember { mutableStateListOf<TagResponse>() }
     val sortColumn = remember { mutableStateOf<String?>(null) }
     val sortAscending = remember { mutableStateOf(true) }
     val showDeletedFlags = remember { mutableStateOf(false) }
     val newFlagDescription = remember { mutableStateOf("") }
     val creatingFlag = remember { mutableStateOf(false) }
+    val selectedIds = remember { mutableStateListOf<Int>() }
+    val bulkConfirmOpen = remember { mutableStateOf(false) }
+    val bulkConfirmEnabled = remember { mutableStateOf(true) }
+    val savedViewsList = remember { mutableStateListOf<SavedView>() }
+    val showSaveViewDialog = remember { mutableStateOf(false) }
+    val saveViewName = remember { mutableStateOf("") }
 
     fun loadFlags() {
         CoroutineScope(Dispatchers.Main).launch {
@@ -98,9 +132,18 @@ fun FlagsList() {
             error.value = null
             ErrorHandler.withErrorHandling(
                 block = {
-                    val fetchedFlags = ApiClient.getFlags()
+                    val offset = (currentPage.value - 1) * PAGE_SIZE
+                    val (fetchedFlags, total) = ApiClient.getFlags(
+                        limit = PAGE_SIZE,
+                        offset = offset,
+                        enabled = statusFilter.value,
+                        descriptionLike = searchQuery.value.takeIf { it.isNotBlank() },
+                        key = keyFilter.value.takeIf { it.isNotBlank() },
+                        tags = selectedTags.takeIf { it.isNotEmpty() }?.joinToString(",")
+                    )
                     flags.clear()
-                    flags.addAll(fetchedFlags.reversed()) // Reverse to show newest first
+                    flags.addAll(fetchedFlags)
+                    totalCount.value = total
                 },
                 onError = { err ->
                     error.value = ErrorHandler.getUserMessage(err)
@@ -108,6 +151,72 @@ fun FlagsList() {
             )
             loading.value = false
         }
+    }
+
+    fun loadTags() {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val tags = ApiClient.getTags()
+                availableTags.clear()
+                availableTags.addAll(tags)
+            } catch (_: Exception) { /* silent */ }
+        }
+    }
+
+    fun loadSavedViews() {
+        try {
+            val json = localStorage.getItem(SAVED_VIEWS_KEY) ?: "[]"
+            val arr = kotlinx.serialization.json.Json.parseToJsonElement(json).jsonArray
+            savedViewsList.clear()
+            arr.forEach { el ->
+                val obj = el.jsonObject
+                savedViewsList.add(SavedView(
+                    name = obj["name"]?.jsonPrimitive?.content ?: "",
+                    searchQuery = obj["searchQuery"]?.jsonPrimitive?.content ?: "",
+                    keyFilter = obj["keyFilter"]?.jsonPrimitive?.content ?: "",
+                    statusFilter = obj["statusFilter"]?.jsonPrimitive?.content?.let {
+                        when (it) { "true" -> true; "false" -> false; else -> null }
+                    },
+                    tags = (obj["tags"]?.jsonArray ?: buildJsonArray { }).map {
+                        it.jsonPrimitive.content
+                    }
+                ))
+            }
+        } catch (_: Exception) { /* silent */ }
+    }
+
+    fun saveCurrentView(name: String) {
+        val view = SavedView(
+            name = name,
+            searchQuery = searchQuery.value,
+            keyFilter = keyFilter.value,
+            statusFilter = statusFilter.value,
+            tags = selectedTags.toList()
+        )
+        savedViewsList.removeAll { it.name == name }
+        savedViewsList.add(view)
+        val json = buildJsonArray {
+            savedViewsList.forEach { v ->
+                add(buildJsonObject {
+                    put("name", v.name)
+                    put("searchQuery", v.searchQuery)
+                    put("keyFilter", v.keyFilter)
+                    put("statusFilter", v.statusFilter?.toString() ?: "null")
+                    put("tags", buildJsonArray { v.tags.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } })
+                })
+            }
+        }
+        localStorage.setItem(SAVED_VIEWS_KEY, json.toString())
+        showSaveViewDialog.value = false
+        saveViewName.value = ""
+    }
+
+    fun applySavedView(view: SavedView) {
+        searchQuery.value = view.searchQuery
+        keyFilter.value = view.keyFilter
+        statusFilter.value = view.statusFilter
+        selectedTags.clear()
+        selectedTags.addAll(view.tags)
     }
 
     fun loadDeletedFlags() {
@@ -135,9 +244,9 @@ fun FlagsList() {
     fun restoreFlag(flag: FlagResponse) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                val restoredFlag = ApiClient.restoreFlag(flag.id)
+                ApiClient.restoreFlag(flag.id)
                 deletedFlags.removeAll { it.id == flag.id }
-                flags.add(0, restoredFlag)
+                loadFlags()
             } catch (e: Exception) {
                 error.value = buildString {
                     append(LocalizedStrings.failedToRestoreFlag)
@@ -164,7 +273,8 @@ fun FlagsList() {
                     )
                 )
                 newFlagDescription.value = ""
-                flags.add(0, newFlag)
+                currentPage.value = 1
+                loadFlags()
                 Router.navigateTo(Route.FlagDetail(newFlag.id))
             } catch (e: Exception) {
                 error.value = buildString {
@@ -189,14 +299,45 @@ fun FlagsList() {
         }
     }
 
-    // Real-time refresh trigger: when SSE fires, increment to trigger loadFlags
+    fun performBulkEnable(enabled: Boolean) {
+        CoroutineScope(Dispatchers.Main).launch {
+            bulkConfirmOpen.value = false
+            loading.value = true
+            error.value = null
+            try {
+                ApiClient.batchSetFlagEnabled(selectedIds.toList(), enabled)
+                selectedIds.clear()
+                loadFlags()
+            } catch (e: Exception) {
+                error.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+            } finally {
+                loading.value = false
+            }
+        }
+    }
+
     val realtimeRefreshTrigger = remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
+        loadTags()
+        loadSavedViews()
+    }
+
+    LaunchedEffect(
+        currentPage.value,
+        searchQuery.value,
+        keyFilter.value,
+        statusFilter.value,
+        selectedTags.joinToString(","),
+        realtimeRefreshTrigger.value
+    ) {
         loadFlags()
     }
 
-    // Real-time auto-refresh: connect to SSE and reload flags on any flag event
+    LaunchedEffect(searchQuery.value, keyFilter.value, statusFilter.value, selectedTags.joinToString(",")) {
+        currentPage.value = 1
+    }
+
     DisposableEffect(AppConfig.Features.enableRealtime) {
         if (AppConfig.Features.enableRealtime) {
             val service = RealtimeService(
@@ -210,26 +351,22 @@ fun FlagsList() {
         }
     }
 
-    LaunchedEffect(realtimeRefreshTrigger.value) {
-        if (realtimeRefreshTrigger.value > 0) loadFlags()
-    }
-
     Div({
         style {
-            marginTop(20.px)
-            padding(20.px)
+            marginTop(0.px)
+            padding(0.px)
         }
     }) {
         // Create Flag Section
         Div({
             style {
-                marginBottom(25.px)
-                padding(20.px)
-                backgroundColor(FlagentTheme.Background)
+                marginBottom(16.px)
+                padding(16.px)
+                backgroundColor(FlagentTheme.WorkspaceCardBg)
                 border {
                     width(1.px)
                     style(LineStyle.Solid)
-                    color(FlagentTheme.Border)
+                    color(FlagentTheme.WorkspaceCardBorder)
                 }
                 borderRadius(12.px)
                 property("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.08)")
@@ -292,7 +429,7 @@ fun FlagsList() {
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceCardBorder)
                         }
                         borderRadius(6.px)
                         fontSize(14.px)
@@ -304,7 +441,7 @@ fun FlagsList() {
                     }
                     onBlur {
                         (it.target as org.w3c.dom.HTMLElement).style.borderColor =
-                            FlagentTheme.Border.toString()
+                            FlagentTheme.WorkspaceCardBorder.toString()
                     }
                 }
                 Button({
@@ -316,12 +453,12 @@ fun FlagsList() {
                         padding(12.px, 20.px)
                         backgroundColor(
                             if (creatingFlag.value || newFlagDescription.value.isBlank()) {
-                                FlagentTheme.NeutralLighter
+                                FlagentTheme.WorkspaceInputBg
                             } else {
                                 FlagentTheme.Success
                             }
                         )
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -358,7 +495,7 @@ fun FlagsList() {
                     Icon(
                         name = if (creatingFlag.value) "hourglass_empty" else "auto_awesome",
                         size = 18.px,
-                        color = FlagentTheme.Background
+                        color = FlagentTheme.WorkspaceCardBg
                     )
                     Text(if (creatingFlag.value) LocalizedStrings.creating else LocalizedStrings.createFlag)
                 }
@@ -377,11 +514,11 @@ fun FlagsList() {
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceCardBorder)
                         }
                         borderRadius(6.px)
                         fontSize(14.px)
-                        backgroundColor(FlagentTheme.Background)
+                        backgroundColor(FlagentTheme.WorkspaceCardBg)
                         cursor("pointer")
                     }
                 }) {
@@ -396,14 +533,14 @@ fun FlagsList() {
             style {
                 display(DisplayStyle.Flex)
                 gap(12.px)
-                marginBottom(25.px)
+                marginBottom(16.px)
                 alignItems(AlignItems.Center)
-                padding(15.px)
-                backgroundColor(FlagentTheme.Background)
+                padding(12.px)
+                backgroundColor(FlagentTheme.WorkspaceCardBg)
                 border {
                     width(1.px)
                     style(LineStyle.Solid)
-                    color(FlagentTheme.Border)
+                    color(FlagentTheme.WorkspaceCardBorder)
                 }
                 borderRadius(8.px)
                 property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
@@ -412,7 +549,7 @@ fun FlagsList() {
             Icon(
                 name = "search",
                 size = 20.px,
-                color = FlagentTheme.TextLight
+                color = FlagentTheme.WorkspaceTextLight
             )
             Input(InputType.Text) {
                 attr("placeholder", LocalizedStrings.searchFlagsDetailedPlaceholder)
@@ -424,7 +561,7 @@ fun FlagsList() {
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceCardBorder)
                     }
                     borderRadius(6.px)
                     fontSize(14.px)
@@ -436,7 +573,32 @@ fun FlagsList() {
                 }
                 onBlur {
                     (it.target as org.w3c.dom.HTMLElement).style.borderColor =
-                        FlagentTheme.Border.toString()
+                        FlagentTheme.WorkspaceCardBorder.toString()
+                }
+            }
+            Input(InputType.Text) {
+                attr("placeholder", "Key (exact)")
+                value(keyFilter.value)
+                onInput { event -> keyFilter.value = event.value }
+                style {
+                    minWidth(120.px)
+                    padding(12.px, 16.px)
+                    border {
+                        width(1.px)
+                        style(LineStyle.Solid)
+                        color(FlagentTheme.WorkspaceCardBorder)
+                    }
+                    borderRadius(6.px)
+                    fontSize(14.px)
+                    property("transition", "border-color 0.2s")
+                }
+                onFocus {
+                    (it.target as org.w3c.dom.HTMLElement).style.borderColor =
+                        FlagentTheme.Primary.toString()
+                }
+                onBlur {
+                    (it.target as org.w3c.dom.HTMLElement).style.borderColor =
+                        FlagentTheme.WorkspaceCardBorder.toString()
                 }
             }
             Select({
@@ -453,11 +615,11 @@ fun FlagsList() {
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceCardBorder)
                     }
                     borderRadius(6.px)
                     fontSize(14.px)
-                    backgroundColor(FlagentTheme.Background)
+                    backgroundColor(FlagentTheme.WorkspaceCardBg)
                     cursor("pointer")
                     minWidth(140.px)
                 }
@@ -465,6 +627,90 @@ fun FlagsList() {
                 Option(value = "all") { Text(LocalizedStrings.allStatus) }
                 Option(value = "enabled") { Text(LocalizedStrings.enabledFlags) }
                 Option(value = "disabled") { Text(LocalizedStrings.disabledFlags) }
+            }
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    flexWrap(FlexWrap.Wrap)
+                    gap(6.px)
+                    alignItems(AlignItems.Center)
+                }
+            }) {
+                if (selectedTags.isNotEmpty()) {
+                    selectedTags.forEach { tagValue ->
+                        Span({
+                            style {
+                                display(DisplayStyle.Flex)
+                                alignItems(AlignItems.Center)
+                                gap(4.px)
+                                padding(6.px, 10.px)
+                                backgroundColor(FlagentTheme.PrimaryLight)
+                                color(FlagentTheme.PrimaryDark)
+                                borderRadius(16.px)
+                                fontSize(12.px)
+                                cursor("pointer")
+                            }
+                            onClick { selectedTags.remove(tagValue) }
+                        }) {
+                            Text(tagValue)
+                            Icon("close", size = 14.px, color = FlagentTheme.PrimaryDark)
+                        }
+                    }
+                }
+                Select({
+                    onChange { event ->
+                        val name = event.target.value
+                        if (name.isNotBlank()) {
+                            savedViewsList.find { it.name == name }?.let { applySavedView(it) }
+                        }
+                        event.target.value = ""
+                    }
+                    style {
+                        padding(8.px, 12.px)
+                        border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.WorkspaceCardBorder) }
+                        borderRadius(6.px)
+                        fontSize(13.px)
+                        backgroundColor(FlagentTheme.WorkspaceCardBg)
+                        cursor("pointer")
+                        minWidth(120.px)
+                    }
+                }) {
+                    Option(value = "") { Text(LocalizedStrings.savedViews) }
+                    savedViewsList.forEach { v ->
+                        Option(value = v.name) { Text(v.name) }
+                    }
+                }
+                Button({
+                    onClick { showSaveViewDialog.value = true }
+                    style {
+                        padding(8.px, 12.px)
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                        color(FlagentTheme.Text)
+                        border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.WorkspaceCardBorder) }
+                        borderRadius(6.px)
+                        cursor("pointer")
+                        fontSize(13.px)
+                    }
+                }) {
+                    Text(LocalizedStrings.saveCurrentView)
+                }
+                availableTags.filter { it.value !in selectedTags }.take(8).forEach { tag ->
+                    Span({
+                        style {
+                            display(DisplayStyle.InlineBlock)
+                            padding(6.px, 10.px)
+                            backgroundColor(FlagentTheme.WorkspaceInputBg)
+                            color(FlagentTheme.Text)
+                            border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.WorkspaceCardBorder) }
+                            borderRadius(16.px)
+                            fontSize(12.px)
+                            cursor("pointer")
+                        }
+                        onClick { selectedTags.add(tag.value) }
+                    }) {
+                        Text("+ ${tag.value}")
+                    }
+                }
             }
         }
         P({
@@ -475,12 +721,141 @@ fun FlagsList() {
                 marginTop(8.px)
                 marginBottom(0.px)
                 fontSize(13.px)
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
             }
         }) {
-            Icon("info", size = 16.px, color = FlagentTheme.TextLight)
+            Icon("info", size = 16.px, color = FlagentTheme.WorkspaceTextLight)
             Text(LocalizedStrings.flagsListKeyHint)
         }
+
+        if (selectedIds.isNotEmpty()) {
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    gap(12.px)
+                    padding(12.px, 16.px)
+                    marginBottom(12.px)
+                    backgroundColor(FlagentTheme.PrimaryLight)
+                    borderRadius(8.px)
+                    border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.Primary) }
+                }
+            }) {
+                Span({
+                    style {
+                        fontSize(14.px)
+                        fontWeight("600")
+                        color(FlagentTheme.PrimaryDark)
+                    }
+                }) {
+                    Text("${selectedIds.size} ${LocalizedStrings.featureFlags.lowercase()} selected")
+                }
+                Button({
+                    onClick {
+                        bulkConfirmEnabled.value = true
+                        bulkConfirmOpen.value = true
+                    }
+                    style {
+                        padding(8.px, 16.px)
+                        backgroundColor(FlagentTheme.Success)
+                        color(Color.white)
+                        border(0.px)
+                        borderRadius(6.px)
+                        cursor("pointer")
+                        fontSize(13.px)
+                        fontWeight("600")
+                    }
+                }) {
+                    Text(LocalizedStrings.enableSelected)
+                }
+                Button({
+                    onClick {
+                        bulkConfirmEnabled.value = false
+                        bulkConfirmOpen.value = true
+                    }
+                    style {
+                        padding(8.px, 16.px)
+                        backgroundColor(FlagentTheme.Error)
+                        color(Color.white)
+                        border(0.px)
+                        borderRadius(6.px)
+                        cursor("pointer")
+                        fontSize(13.px)
+                        fontWeight("600")
+                    }
+                }) {
+                    Text(LocalizedStrings.disableSelected)
+                }
+                Button({
+                    onClick { selectedIds.clear() }
+                    style {
+                        padding(8.px, 16.px)
+                        backgroundColor(FlagentTheme.WorkspaceCardBg)
+                        color(FlagentTheme.Text)
+                        border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+                        borderRadius(6.px)
+                        cursor("pointer")
+                        fontSize(13.px)
+                    }
+                }) {
+                    Text(LocalizedStrings.clearSelection)
+                }
+            }
+        }
+
+        if (showSaveViewDialog.value) {
+            Modal(title = LocalizedStrings.saveCurrentView, onClose = {
+                showSaveViewDialog.value = false
+                saveViewName.value = ""
+            }) {
+                Div({
+                    style {
+                        padding(16.px)
+                        display(DisplayStyle.Flex)
+                        property("flex-direction", "column")
+                        gap(12.px)
+                    }
+                }) {
+                    Input(InputType.Text) {
+                        attr("placeholder", LocalizedStrings.viewName)
+                        value(saveViewName.value)
+                        onInput { saveViewName.value = it.value }
+                        style {
+                            padding(10.px, 14.px)
+                            border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.WorkspaceCardBorder) }
+                            borderRadius(6.px)
+                            fontSize(14.px)
+                        }
+                    }
+                    Button({
+                        onClick {
+                            if (saveViewName.value.isNotBlank()) saveCurrentView(saveViewName.value)
+                        }
+                        style {
+                            padding(10.px, 20.px)
+                            backgroundColor(FlagentTheme.Primary)
+                            color(Color.white)
+                            border(0.px)
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontWeight("600")
+                        }
+                    }) {
+                        Text(LocalizedStrings.saveCurrentView)
+                    }
+                }
+            }
+        }
+
+        ConfirmDialog(
+            isOpen = bulkConfirmOpen.value,
+            title = if (bulkConfirmEnabled.value) LocalizedStrings.enableSelected else LocalizedStrings.disableSelected,
+            message = if (bulkConfirmEnabled.value) LocalizedStrings.bulkEnableConfirm else LocalizedStrings.bulkDisableConfirm,
+            confirmLabel = if (bulkConfirmEnabled.value) LocalizedStrings.enableSelected else LocalizedStrings.disableSelected,
+            cancelLabel = LocalizedStrings.cancel,
+            onConfirm = { performBulkEnable(bulkConfirmEnabled.value) },
+            onCancel = { bulkConfirmOpen.value = false }
+        )
 
         if (loading.value) {
             Spinner()
@@ -543,35 +918,8 @@ fun FlagsList() {
                 }
             }
         } else {
-            // Filter and sort flags
-            val filteredAndSortedFlags = remember(
-                flags,
-                searchQuery.value,
-                statusFilter.value,
-                sortColumn.value,
-                sortAscending.value
-            ) {
+            val sortedFlags = remember(flags, sortColumn.value, sortAscending.value) {
                 var result = flags.toList()
-
-                // Filter by search query
-                if (searchQuery.value.isNotBlank()) {
-                    val terms = searchQuery.value.split(",").map { it.trim().lowercase() }
-                    result = result.filter { flag ->
-                        terms.all { term ->
-                            flag.id.toString().contains(term) ||
-                                    flag.key.contains(term, ignoreCase = true) ||
-                                    flag.description.lowercase().contains(term) ||
-                                    flag.tags.any { it.value.lowercase().contains(term) }
-                        }
-                    }
-                }
-
-                // Filter by enabled status
-                statusFilter.value?.let { enabled ->
-                    result = result.filter { it.enabled == enabled }
-                }
-
-                // Sort
                 sortColumn.value?.let { column ->
                     result = when (column) {
                         "id" -> result.sortedBy { it.id }
@@ -580,25 +928,22 @@ fun FlagsList() {
                         "updatedAt" -> result.sortedBy { it.updatedAt ?: "" }
                         else -> result
                     }
-                    if (!sortAscending.value) {
-                        result = result.reversed()
-                    }
+                    if (!sortAscending.value) result = result.reversed()
                 }
-
                 result
             }
 
-            if (filteredAndSortedFlags.isEmpty()) {
+            if (sortedFlags.isEmpty()) {
                 Div({
                     style {
                         padding(40.px, 20.px)
                         textAlign("center")
-                        color(FlagentTheme.TextLight)
-                        backgroundColor(FlagentTheme.Background)
+                        color(FlagentTheme.WorkspaceTextLight)
+                        backgroundColor(FlagentTheme.WorkspaceCardBg)
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceCardBorder)
                         }
                         borderRadius(8.px)
                     }
@@ -606,7 +951,7 @@ fun FlagsList() {
                     Icon(
                         name = "search_off",
                         size = 48.px,
-                        color = FlagentTheme.TextLighter
+                        color = FlagentTheme.WorkspaceTextLight
                     )
                     Div({
                         style {
@@ -627,13 +972,14 @@ fun FlagsList() {
                     }
                 }
             } else {
+                val totalPages = maxOf(1, ((totalCount.value + PAGE_SIZE - 1) / PAGE_SIZE).toInt())
                 Div({
                     style {
-                        backgroundColor(FlagentTheme.Background)
+                        backgroundColor(FlagentTheme.WorkspaceCardBg)
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceCardBorder)
                         }
                         borderRadius(12.px)
                         overflow("hidden")
@@ -652,14 +998,34 @@ fun FlagsList() {
                         Thead {
                             Tr({
                                 style {
-                                    backgroundColor(FlagentTheme.BackgroundAlt)
-                                    property("border-bottom", "2px solid ${FlagentTheme.Border}")
+                                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                                    property("border-bottom", "2px solid ${FlagentTheme.WorkspaceCardBorder}")
                                 }
                             }) {
                                 Th({
+                                    style {
+                                        padding(10.px, 12.px)
+                                        width(40.px)
+                                        textAlign("center")
+                                    }
+                                }) {
+                                    Input(InputType.Checkbox) {
+                                        checked(sortedFlags.isNotEmpty() && sortedFlags.all { it.id in selectedIds })
+                                        onChange { event ->
+                                            if ((event.target as org.w3c.dom.HTMLInputElement).checked) {
+                                                sortedFlags.forEach { selectedIds.add(it.id) }
+                                            } else {
+                                                sortedFlags.forEach { selectedIds.remove(it.id) }
+                                            }
+                                        }
+                                        onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
+                                        style { cursor("pointer") }
+                                    }
+                                }
+                                Th({
                                     onClick { sortFlags("id") }
                                     style {
-                                        padding(16.px, 12.px)
+                                        padding(10.px, 12.px)
                                         cursor("pointer")
                                         property("user-select", "none")
                                         fontWeight("600")
@@ -670,11 +1036,11 @@ fun FlagsList() {
                                     }
                                     onMouseEnter {
                                         (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.BackgroundDark.toString()
+                                            FlagentTheme.WorkspaceInputBg.toString()
                                     }
                                     onMouseLeave {
                                         (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.BackgroundAlt.toString()
+                                            FlagentTheme.WorkspaceInputBg.toString()
                                     }
                                 }) {
                                     Span({
@@ -704,7 +1070,7 @@ fun FlagsList() {
                                 }
                                 Th({
                                     style {
-                                        padding(16.px, 12.px)
+                                        padding(10.px, 12.px)
                                         fontWeight("600")
                                         fontSize(13.px)
                                         color(FlagentTheme.Text)
@@ -728,7 +1094,7 @@ fun FlagsList() {
                                 }
                                 Th({
                                     style {
-                                        padding(16.px, 12.px)
+                                        padding(10.px, 12.px)
                                         fontWeight("600")
                                         fontSize(13.px)
                                         color(FlagentTheme.Text)
@@ -753,7 +1119,7 @@ fun FlagsList() {
                                 Th({
                                     onClick { sortFlags("updatedBy") }
                                     style {
-                                        padding(16.px, 12.px)
+                                        padding(10.px, 12.px)
                                         cursor("pointer")
                                         property("user-select", "none")
                                         fontWeight("600")
@@ -764,11 +1130,11 @@ fun FlagsList() {
                                     }
                                     onMouseEnter {
                                         (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.BackgroundDark.toString()
+                                            FlagentTheme.WorkspaceInputBg.toString()
                                     }
                                     onMouseLeave {
                                         (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.BackgroundAlt.toString()
+                                            FlagentTheme.WorkspaceInputBg.toString()
                                     }
                                 }) {
                                     Span({
@@ -799,7 +1165,7 @@ fun FlagsList() {
                                 Th({
                                     onClick { sortFlags("updatedAt") }
                                     style {
-                                        padding(16.px, 12.px)
+                                        padding(10.px, 12.px)
                                         cursor("pointer")
                                         property("user-select", "none")
                                         fontWeight("600")
@@ -810,11 +1176,11 @@ fun FlagsList() {
                                     }
                                     onMouseEnter {
                                         (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.BackgroundDark.toString()
+                                            FlagentTheme.WorkspaceInputBg.toString()
                                     }
                                     onMouseLeave {
                                         (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.BackgroundAlt.toString()
+                                            FlagentTheme.WorkspaceInputBg.toString()
                                     }
                                 }) {
                                     Span({
@@ -844,7 +1210,7 @@ fun FlagsList() {
                                 }
                                 Th({
                                     style {
-                                        padding(16.px, 12.px)
+                                        padding(10.px, 12.px)
                                         textAlign("center")
                                         fontWeight("600")
                                         fontSize(13.px)
@@ -870,19 +1236,19 @@ fun FlagsList() {
                             }
                         }
                         Tbody {
-                            filteredAndSortedFlags.forEachIndexed { index, flag ->
+                            sortedFlags.forEachIndexed { index, flag ->
                                 Tr({
                                     attr("class", "flag-row-hover")
                                     onClick { Router.navigateTo(Route.FlagDetail(flag.id)) }
                                     style {
                                         cursor("pointer")
-                                        backgroundColor(if (index % 2 == 0) FlagentTheme.Background else FlagentTheme.BackgroundAlt)
+                                        backgroundColor(if (index % 2 == 0) FlagentTheme.WorkspaceCardBg else FlagentTheme.WorkspaceInputBg)
                                         property("transition", "all 0.2s")
                                     }
                                     onMouseEnter {
                                         val element = it.target as org.w3c.dom.HTMLElement
                                         element.style.backgroundColor =
-                                            FlagentTheme.BackgroundDark.toString()
+                                            FlagentTheme.WorkspaceInputBg.toString()
                                         element.style.setProperty(
                                             "box-shadow",
                                             "0 2px 8px ${FlagentTheme.Shadow}"
@@ -892,11 +1258,31 @@ fun FlagsList() {
                                     onMouseLeave {
                                         val element = it.target as org.w3c.dom.HTMLElement
                                         element.style.backgroundColor =
-                                            if (index % 2 == 0) FlagentTheme.Background.toString() else FlagentTheme.BackgroundAlt.toString()
+                                            if (index % 2 == 0) FlagentTheme.WorkspaceCardBg.toString() else FlagentTheme.WorkspaceInputBg.toString()
                                         element.style.setProperty("box-shadow", "none")
                                         element.style.transform = "translateY(0)"
                                     }
                                 }) {
+                                    Td({
+                                        style {
+                                            padding(14.px, 12.px)
+                                            textAlign("center")
+                                            width(40.px)
+                                        }
+                                        onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
+                                    }) {
+                                        Input(InputType.Checkbox) {
+                                            checked(flag.id in selectedIds)
+                                            onChange { event ->
+                                                if ((event.target as org.w3c.dom.HTMLInputElement).checked) {
+                                                    selectedIds.add(flag.id)
+                                                } else {
+                                                    selectedIds.remove(flag.id)
+                                                }
+                                            }
+                                            style { cursor("pointer") }
+                                        }
+                                    }
                                     Td({
                                         style {
                                             padding(14.px, 12.px)
@@ -937,7 +1323,7 @@ fun FlagsList() {
                                             Div({
                                                 style {
                                                     fontSize(12.px)
-                                                    color(FlagentTheme.TextLight)
+                                                    color(FlagentTheme.WorkspaceTextLight)
                                                     fontFamily("monospace")
                                                 }
                                             }) {
@@ -953,7 +1339,7 @@ fun FlagsList() {
                                         if (flag.tags.isEmpty()) {
                                             Span({
                                                 style {
-                                                    color(FlagentTheme.TextLighter)
+                                                    color(FlagentTheme.WorkspaceTextLight)
                                                     fontSize(12.px)
                                                     fontStyle("italic")
                                                 }
@@ -968,15 +1354,17 @@ fun FlagsList() {
                                                         padding(4.px, 10.px)
                                                         margin(2.px, 4.px)
                                                         backgroundColor(FlagentTheme.Accent)
-                                                        color(FlagentTheme.Background)
+                                                        color(Color.white)
                                                         borderRadius(12.px)
                                                         fontSize(11.px)
                                                         fontWeight("500")
+                                                        cursor("pointer")
                                                         property(
                                                             "box-shadow",
                                                             "0 1px 2px ${FlagentTheme.Shadow}"
                                                         )
                                                     }
+                                                    onClick { if (tag.value !in selectedTags) selectedTags.add(tag.value) }
                                                 }) {
                                                     Text(tag.value)
                                                 }
@@ -986,14 +1374,14 @@ fun FlagsList() {
                                     Td({
                                         style {
                                             padding(14.px, 12.px)
-                                            color(FlagentTheme.TextLight)
+                                            color(FlagentTheme.WorkspaceTextLight)
                                             fontSize(13.px)
                                         }
                                     }) { Text(flag.updatedBy ?: "—") }
                                     Td({
                                         style {
                                             padding(14.px, 12.px)
-                                            color(FlagentTheme.TextLight)
+                                            color(FlagentTheme.WorkspaceTextLight)
                                             fontSize(13.px)
                                         }
                                     }) { Text(flag.updatedAt?.split(".")?.get(0) ?: "—") }
@@ -1011,7 +1399,7 @@ fun FlagsList() {
                                                 fontSize(12.px)
                                                 fontWeight("600")
                                                 backgroundColor(if (flag.enabled) FlagentTheme.Success else FlagentTheme.Error)
-                                                color(FlagentTheme.Background)
+                                                color(Color.white)
                                                 property(
                                                     "box-shadow",
                                                     "0 1px 3px ${FlagentTheme.Shadow}"
@@ -1028,7 +1416,7 @@ fun FlagsList() {
                                                 Icon(
                                                     name = if (flag.enabled) "check_circle" else "cancel",
                                                     size = 14.px,
-                                                    color = FlagentTheme.Background
+                                                    color = FlagentTheme.WorkspaceCardBg
                                                 )
                                                 Text(if (flag.enabled) "ON" else "OFF")
                                             }
@@ -1039,6 +1427,35 @@ fun FlagsList() {
                         }
                     }
                 }
+                Div({
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        justifyContent(JustifyContent.SpaceBetween)
+                        padding(12.px, 16.px)
+                        border {
+                            width(1.px)
+                            style(LineStyle.Solid)
+                            color(FlagentTheme.WorkspaceCardBorder)
+                        }
+                        property("border-top", "none")
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    }
+                }) {
+                    Span({
+                        style {
+                            fontSize(13.px)
+                            color(FlagentTheme.WorkspaceTextLight)
+                        }
+                    }) {
+                        Text("${totalCount.value} ${LocalizedStrings.featureFlags.lowercase()}")
+                    }
+                    Pagination(
+                        currentPage = currentPage.value,
+                        totalPages = totalPages,
+                        onPageChange = { currentPage.value = it }
+                    )
+                }
             }
 
             // Deleted Flags section
@@ -1046,11 +1463,11 @@ fun FlagsList() {
                 style {
                     marginTop(40.px)
                     padding(20.px)
-                    backgroundColor(FlagentTheme.Background)
+                    backgroundColor(FlagentTheme.WorkspaceCardBg)
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceCardBorder)
                     }
                     borderRadius(8.px)
                     property("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
@@ -1066,7 +1483,7 @@ fun FlagsList() {
                     style {
                         padding(12.px, 20.px)
                         backgroundColor(FlagentTheme.Neutral)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1095,7 +1512,7 @@ fun FlagsList() {
                     Icon(
                         name = if (showDeletedFlags.value) "expand_more" else "chevron_right",
                         size = 20.px,
-                        color = FlagentTheme.Background
+                        color = FlagentTheme.WorkspaceCardBg
                     )
                     Text(if (showDeletedFlags.value) LocalizedStrings.deletedFlags else LocalizedStrings.showDeletedFlags)
                 }
@@ -1108,15 +1525,15 @@ fun FlagsList() {
                             style {
                                 padding(30.px)
                                 textAlign("center")
-                                color(FlagentTheme.TextLight)
-                                backgroundColor(FlagentTheme.BackgroundAlt)
+                                color(FlagentTheme.WorkspaceTextLight)
+                                backgroundColor(FlagentTheme.WorkspaceInputBg)
                                 borderRadius(6.px)
                             }
                         }) {
                             Icon(
                                 name = "delete_outline",
                                 size = 40.px,
-                                color = FlagentTheme.TextLighter
+                                color = FlagentTheme.WorkspaceTextLight
                             )
                             Div({
                                 style {
@@ -1129,11 +1546,11 @@ fun FlagsList() {
                     } else {
                         Div({
                             style {
-                                backgroundColor(FlagentTheme.BackgroundAlt)
+                                backgroundColor(FlagentTheme.WorkspaceInputBg)
                                 border {
                                     width(1.px)
                                     style(LineStyle.Solid)
-                                    color(FlagentTheme.Border)
+                                    color(FlagentTheme.WorkspaceCardBorder)
                                 }
                                 borderRadius(8.px)
                                 overflow("hidden")
@@ -1150,7 +1567,7 @@ fun FlagsList() {
                                 Thead {
                                     Tr({
                                         style {
-                                            backgroundColor(FlagentTheme.BackgroundAlt)
+                                            backgroundColor(FlagentTheme.WorkspaceInputBg)
                                         }
                                     }) {
                                         Th({
@@ -1159,7 +1576,7 @@ fun FlagsList() {
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
+                                                    color(FlagentTheme.WorkspaceCardBorder)
                                                 }
                                             }
                                         }) { Text(LocalizedStrings.flagId) }
@@ -1169,7 +1586,7 @@ fun FlagsList() {
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
+                                                    color(FlagentTheme.WorkspaceCardBorder)
                                                 }
                                             }
                                         }) { Text(LocalizedStrings.description) }
@@ -1179,7 +1596,7 @@ fun FlagsList() {
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
+                                                    color(FlagentTheme.WorkspaceCardBorder)
                                                 }
                                             }
                                         }) { Text(LocalizedStrings.tags) }
@@ -1189,7 +1606,7 @@ fun FlagsList() {
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
+                                                    color(FlagentTheme.WorkspaceCardBorder)
                                                 }
                                             }
                                         }) { Text(LocalizedStrings.lastUpdatedBy) }
@@ -1199,7 +1616,7 @@ fun FlagsList() {
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
+                                                    color(FlagentTheme.WorkspaceCardBorder)
                                                 }
                                             }
                                         }) { Text(LocalizedStrings.updatedAtUtc) }
@@ -1210,7 +1627,7 @@ fun FlagsList() {
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
+                                                    color(FlagentTheme.WorkspaceCardBorder)
                                                 }
                                             }
                                         }) { Text(LocalizedStrings.action) }
@@ -1223,7 +1640,7 @@ fun FlagsList() {
                                                 border {
                                                     width(1.px)
                                                     style(LineStyle.Solid)
-                                                    color(FlagentTheme.Border)
+                                                    color(FlagentTheme.WorkspaceCardBorder)
                                                 }
                                             }
                                         }) {
@@ -1234,7 +1651,7 @@ fun FlagsList() {
                                                     border {
                                                         width(1.px)
                                                         style(LineStyle.Solid)
-                                                        color(FlagentTheme.Border)
+                                                        color(FlagentTheme.WorkspaceCardBorder)
                                                     }
                                                 }
                                             }) { Text(flag.id.toString()) }
@@ -1244,7 +1661,7 @@ fun FlagsList() {
                                                     border {
                                                         width(1.px)
                                                         style(LineStyle.Solid)
-                                                        color(FlagentTheme.Border)
+                                                        color(FlagentTheme.WorkspaceCardBorder)
                                                     }
                                                 }
                                             }) { Text(flag.description) }
@@ -1254,7 +1671,7 @@ fun FlagsList() {
                                                     border {
                                                         width(1.px)
                                                         style(LineStyle.Solid)
-                                                        color(FlagentTheme.Border)
+                                                        color(FlagentTheme.WorkspaceCardBorder)
                                                     }
                                                 }
                                             }) {
@@ -1268,7 +1685,7 @@ fun FlagsList() {
                                                                 padding(2.px, 8.px)
                                                                 margin(2.px, 5.px)
                                                                 backgroundColor(FlagentTheme.Accent)
-                                                                color(FlagentTheme.Background)
+                                                                color(Color.white)
                                                                 borderRadius(3.px)
                                                                 fontSize(12.px)
                                                             }
@@ -1284,7 +1701,7 @@ fun FlagsList() {
                                                     border {
                                                         width(1.px)
                                                         style(LineStyle.Solid)
-                                                        color(FlagentTheme.Border)
+                                                        color(FlagentTheme.WorkspaceCardBorder)
                                                     }
                                                 }
                                             }) { Text(flag.updatedBy ?: "") }
@@ -1294,7 +1711,7 @@ fun FlagsList() {
                                                     border {
                                                         width(1.px)
                                                         style(LineStyle.Solid)
-                                                        color(FlagentTheme.Border)
+                                                        color(FlagentTheme.WorkspaceCardBorder)
                                                     }
                                                 }
                                             }) { Text(flag.updatedAt?.split(".")?.get(0) ?: "") }
@@ -1309,7 +1726,7 @@ fun FlagsList() {
                                                     style {
                                                         padding(8.px, 16.px)
                                                         backgroundColor(FlagentTheme.Success)
-                                                        color(FlagentTheme.Background)
+                                                        color(Color.white)
                                                         border {
                                                             width(0.px)
                                                             style(LineStyle.None)
@@ -1346,7 +1763,7 @@ fun FlagsList() {
                                                     Icon(
                                                         name = "restore",
                                                         size = 18.px,
-                                                        color = FlagentTheme.Background
+                                                        color = FlagentTheme.WorkspaceCardBg
                                                     )
                                                     Text(LocalizedStrings.restore)
                                                 }

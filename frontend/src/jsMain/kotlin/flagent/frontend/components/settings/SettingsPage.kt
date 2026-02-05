@@ -4,6 +4,8 @@ import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.SlackStatusResponse
 import flagent.frontend.components.Icon
+import flagent.frontend.components.export.ExportPanel
+import flagent.frontend.components.settings.ImportPanel
 import flagent.frontend.components.tenants.TenantsList
 import flagent.frontend.config.AppConfig
 import flagent.frontend.config.Edition
@@ -25,135 +27,93 @@ fun SettingsPage() {
     
     Div({
         style {
-            padding(20.px)
+            padding(0.px)
+            display(DisplayStyle.Flex)
+            gap(24.px)
         }
     }) {
-        // Header
+        // Left sidebar tabs
         Div({
             style {
-                marginBottom(30.px)
+                width(200.px)
+                flexShrink(0)
+                backgroundColor(FlagentTheme.WorkspaceCardBg)
+                borderRadius(8.px)
+                padding(8.px)
+                property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
+                property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
             }
         }) {
-            H1({
-                style {
-                    fontSize(28.px)
-                    fontWeight("bold")
-                    color(FlagentTheme.Text)
-                    margin(0.px)
-                }
-            }) {
-                Text("⚙️ ${LocalizedStrings.settingsTitle}")
-            }
-            P({
-                style {
-                    color(FlagentTheme.TextLight)
-                    fontSize(14.px)
-                    marginTop(5.px)
-                }
-            }) {
-                Text(LocalizedStrings.settingsSubtitle)
-            }
-            
-            // Edition badge
-            Span({
-                style {
-                    display(DisplayStyle.InlineBlock)
-                    padding(4.px, 12.px)
-                    borderRadius(12.px)
-                    fontSize(12.px)
-                    fontWeight("600")
-                    marginTop(10.px)
-                    if (AppConfig.isEnterprise) {
-                        backgroundColor(Color("#F59E0B"))
-                    } else {
-                        backgroundColor(FlagentTheme.Primary)
-                    }
-                    color(FlagentTheme.Background)
-                }
-            }) {
-                Text(if (AppConfig.isEnterprise) "ENTERPRISE EDITION" else "OPEN SOURCE EDITION")
-            }
             Div({
                 style {
-                    marginTop(10.px)
+                    marginBottom(12.px)
+                    padding(8.px, 12.px)
                 }
             }) {
-                Span({
+                H2({
                     style {
-                        fontSize(12.px)
-                        color(FlagentTheme.TextLight)
-                        fontWeight("500")
-                    }
-                }) {
-                    Text("${LocalizedStrings.deploymentModeLabel}: ")
-                }
-                Span({
-                    style {
-                        fontSize(13.px)
-                        color(FlagentTheme.Text)
+                        fontSize(18.px)
                         fontWeight("600")
+                        color(FlagentTheme.Text)
+                        margin(0.px)
                     }
                 }) {
-                    Text(
-                        AppConfig.getDeploymentPlanDisplayLabel(
-                            LocalizedStrings.selfHostedOpenSource,
-                            LocalizedStrings.selfHostedEnterprise,
-                            LocalizedStrings.saasEnterprise,
-                            LocalizedStrings.saasLowPrice
-                        )
-                    )
+                    Text(LocalizedStrings.settingsTitle)
+                }
+                Span({
+                    style {
+                        display(DisplayStyle.InlineBlock)
+                        padding(2.px, 8.px)
+                        borderRadius(8.px)
+                        fontSize(11.px)
+                        fontWeight("600")
+                        marginTop(6.px)
+                        backgroundColor(if (AppConfig.isEnterprise) Color("#F59E0B") else FlagentTheme.Primary)
+                        color(Color.white)
+                    }
+                }) {
+                    Text(if (AppConfig.isEnterprise) "ENTERPRISE" else "OPEN SOURCE")
                 }
             }
-            P({
-                style {
-                    display(DisplayStyle.Flex)
-                    alignItems(AlignItems.Center)
-                    gap(6.px)
-                    marginTop(12.px)
-                    fontSize(13.px)
-                    color(FlagentTheme.TextLight)
-                }
-            }) {
-                Icon("info", size = 16.px, color = FlagentTheme.TextLight)
-                Text(LocalizedStrings.settingsIntroHint)
-            }
-        }
-        
-        // Tabs
-        Div({
-            style {
-                display(DisplayStyle.Flex)
-                gap(10.px)
-                marginBottom(30.px)
-                    property("border-bottom", "2px solid ${FlagentTheme.Border}")
-            }
-        }) {
             SettingsTab(LocalizedStrings.generalTab, "settings", activeTab == "general") { activeTab = "general" }
-            
             if (AppConfig.Features.enableMultiTenancy) {
                 SettingsTab(LocalizedStrings.multiTenancyTab, "business", activeTab == "tenants") { activeTab = "tenants" }
             }
-            
             if (AppConfig.Features.enableSso) {
                 SettingsTab(LocalizedStrings.ssoProvidersTab, "security", activeTab == "sso") { activeTab = "sso" }
             }
-            
             if (AppConfig.Features.enableSlack) {
                 SettingsTab(LocalizedStrings.slackTab, "notifications", activeTab == "slack") { activeTab = "slack" }
             }
-            
             if (AppConfig.Features.enableBilling) {
                 SettingsTab(LocalizedStrings.billingTab, "payment", activeTab == "billing") { activeTab = "billing" }
+            }
+            SettingsTab("Webhooks", "webhook", activeTab == "webhooks") { activeTab = "webhooks" }
+            SettingsTab("Export", "download", activeTab == "export") { activeTab = "export" }
+            SettingsTab("Import", "upload", activeTab == "import") { activeTab = "import" }
+            if (AppConfig.Features.enableRbac) {
+                SettingsTab("Roles", "security", activeTab == "roles") { activeTab = "roles" }
             }
         }
         
         // Tab content
+        Div({
+            style {
+                flex(1)
+                property("min-width", "0")
+            }
+        }) {
         when (activeTab) {
             "general" -> GeneralSettings()
             "tenants" -> if (AppConfig.Features.enableMultiTenancy) TenantsList()
             "sso" -> if (AppConfig.Features.enableSso) SsoSettings()
             "slack" -> if (AppConfig.Features.enableSlack) SlackSettings()
             "billing" -> if (AppConfig.Features.enableBilling) BillingSettings()
+            "webhooks" -> WebhooksSettings()
+            "export" -> ExportPanel()
+            "import" -> ImportPanel()
+            "roles" -> if (AppConfig.Features.enableRbac) RolesSettings()
+        }
         }
     }
 }
@@ -165,19 +125,22 @@ private fun SettingsTab(label: String, icon: String, isActive: Boolean, onClick:
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)
             gap(8.px)
-            padding(12.px, 20.px)
-            backgroundColor(if (isActive) FlagentTheme.Primary else Color.transparent)
-            color(if (isActive) FlagentTheme.Background else FlagentTheme.TextLight)
+            padding(10.px, 12.px)
+            width(100.percent)
+            textAlign("left")
+            backgroundColor(if (isActive) FlagentTheme.WorkspaceInputBg else Color.transparent)
+            color(if (isActive) FlagentTheme.Primary else FlagentTheme.Text)
             border(0.px)
-            borderRadius(8.px, 8.px, 0.px, 0.px)
+            borderRadius(6.px)
             cursor("pointer")
             fontSize(14.px)
             fontWeight(if (isActive) "600" else "500")
-            property("transition", "all 0.2s")
+            property("transition", "all 0.15s")
+            property("border-left", if (isActive) "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
         }
         onClick { onClick() }
     }) {
-        Icon(icon, size = 18.px, color = if (isActive) FlagentTheme.Background else FlagentTheme.TextLight)
+        Icon(icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
         Text(label)
     }
 }
@@ -186,7 +149,7 @@ private fun SettingsTab(label: String, icon: String, isActive: Boolean, onClick:
 private fun GeneralSettings() {
     Div({
         style {
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -225,7 +188,7 @@ private fun GeneralSettings() {
             style {
                 marginTop(30.px)
                 paddingTop(20.px)
-                property("border-top", "1px solid ${FlagentTheme.Border}")
+                property("border-top", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
             }
         }) {
             H3({
@@ -270,7 +233,7 @@ private fun SettingItem(title: String, description: String, value: String) {
         style {
             marginBottom(20.px)
             paddingBottom(20.px)
-                property("border-bottom", "1px solid ${FlagentTheme.BackgroundAlt}")
+                property("border-bottom", "1px solid ${FlagentTheme.WorkspaceInputBg}")
         }
     }) {
         Div({
@@ -284,7 +247,7 @@ private fun SettingItem(title: String, description: String, value: String) {
         Div({
             style {
                 fontSize(14.px)
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
                 marginBottom(8.px)
             }
         }) {
@@ -294,7 +257,7 @@ private fun SettingItem(title: String, description: String, value: String) {
             style {
                 display(DisplayStyle.Block)
                 padding(8.px, 12.px)
-                backgroundColor(FlagentTheme.BackgroundAlt)
+                backgroundColor(FlagentTheme.WorkspaceInputBg)
                 borderRadius(4.px)
                 fontSize(13.px)
                 fontFamily("'Monaco', 'Courier New', monospace")
@@ -313,7 +276,7 @@ private fun FeatureBadge(name: String, enabled: Boolean, isEnterprise: Boolean =
             alignItems(AlignItems.Center)
             gap(6.px)
             padding(8.px, 12.px)
-            backgroundColor(if (enabled) Color("#D1FAE5") else FlagentTheme.BackgroundAlt)
+            backgroundColor(if (enabled) Color("#D1FAE5") else FlagentTheme.WorkspaceInputBg)
             borderRadius(6.px)
             fontSize(13.px)
         }
@@ -324,7 +287,7 @@ private fun FeatureBadge(name: String, enabled: Boolean, isEnterprise: Boolean =
                     fontSize(10.px)
                     padding(2.px, 6.px)
                     backgroundColor(Color("#F59E0B"))
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     borderRadius(4.px)
                     fontWeight("600")
                 }
@@ -351,7 +314,7 @@ private fun SsoSettings() {
     
     Div({
         style {
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -368,7 +331,7 @@ private fun SsoSettings() {
         }
         P({
             style {
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
                 marginBottom(20.px)
             }
         }) {
@@ -391,7 +354,7 @@ private fun SsoSettings() {
                             marginTop(8.px)
                             marginBottom(0.px)
                             fontSize(13.px)
-                            color(FlagentTheme.TextLight)
+                            color(FlagentTheme.WorkspaceTextLight)
                         }
                     }) {
                         Text(hint)
@@ -405,10 +368,10 @@ private fun SsoSettings() {
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(FlagentTheme.BackgroundAlt)
+                    backgroundColor(FlagentTheme.WorkspaceInputBg)
                     borderRadius(6.px)
                     textAlign("center")
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                 }
             }) {
                 Text(LocalizedStrings.noSsoProviders)
@@ -418,7 +381,7 @@ private fun SsoSettings() {
                 Div({
                     style {
                         padding(12.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
                         borderRadius(6.px)
                         marginBottom(10.px)
                         display(DisplayStyle.Flex)
@@ -428,7 +391,7 @@ private fun SsoSettings() {
                 }) {
                     Div {
                         Div({ style { fontWeight("500") } }) { Text(provider.name) }
-                        Div({ style { fontSize(14.px); color(FlagentTheme.TextLight) } }) {
+                        Div({ style { fontSize(14.px); color(FlagentTheme.WorkspaceTextLight) } }) {
                             Text("${provider.type} • ${if (provider.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled}")
                         }
                     }
@@ -461,7 +424,7 @@ private fun SlackSettings() {
     
     Div({
         style {
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -478,7 +441,7 @@ private fun SlackSettings() {
         }
         P({
             style {
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
                 marginBottom(20.px)
             }
         }) {
@@ -504,7 +467,7 @@ private fun SlackSettings() {
                 Div({
                     style {
                         padding(12.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
                         borderRadius(6.px)
                         marginBottom(15.px)
                         display(DisplayStyle.Flex)
@@ -523,7 +486,7 @@ private fun SlackSettings() {
                     Span({
                         style {
                             fontSize(14.px)
-                            color(FlagentTheme.TextLight)
+                            color(FlagentTheme.WorkspaceTextLight)
                         }
                     }) {
                         Text(if (status.enabled) LocalizedStrings.slackConfigured else LocalizedStrings.slackNotConfigured)
@@ -547,8 +510,8 @@ private fun SlackSettings() {
                     }
                     style {
                         padding(10.px, 20.px)
-                        backgroundColor(if (status.enabled && !testSending.value) FlagentTheme.Primary else FlagentTheme.NeutralLighter)
-                        color(FlagentTheme.Background)
+                        backgroundColor(if (status.enabled && !testSending.value) FlagentTheme.Primary else FlagentTheme.WorkspaceInputBg)
+                        color(Color.white)
                         border(0.px)
                         borderRadius(6.px)
                         cursor(if (status.enabled && !testSending.value) "pointer" else "not-allowed")
@@ -565,7 +528,7 @@ private fun SlackSettings() {
                             padding(10.px)
                             borderRadius(6.px)
                             fontSize(14.px)
-                            color(if (msg.contains("sent") || msg.contains("success")) FlagentTheme.Success else FlagentTheme.TextLight)
+                            color(if (msg.contains("sent") || msg.contains("success")) FlagentTheme.Success else FlagentTheme.WorkspaceTextLight)
                         }
                     }) {
                         Text(msg)
@@ -586,7 +549,7 @@ private fun BillingSettings() {
     
     Div({
         style {
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -603,7 +566,7 @@ private fun BillingSettings() {
         }
         P({
             style {
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
                 marginBottom(20.px)
             }
         }) {
@@ -626,7 +589,7 @@ private fun BillingSettings() {
                             marginTop(8.px)
                             marginBottom(0.px)
                             fontSize(13.px)
-                            color(FlagentTheme.TextLight)
+                            color(FlagentTheme.WorkspaceTextLight)
                         }
                     }) {
                         Text(hint)
@@ -641,7 +604,7 @@ private fun BillingSettings() {
             Div({
                 style {
                     padding(16.px)
-                    backgroundColor(FlagentTheme.BackgroundAlt)
+                    backgroundColor(FlagentTheme.WorkspaceInputBg)
                     borderRadius(6.px)
                     marginBottom(15.px)
                 }
@@ -649,7 +612,7 @@ private fun BillingSettings() {
                 Div({ style { fontWeight("600"); marginBottom(8.px) } }) {
                     Text("${LocalizedStrings.plan}: ${sub.plan.name} (${sub.status})")
                 }
-                Div({ style { fontSize(14.px); color(FlagentTheme.TextLight); marginBottom(8.px) } }) {
+                Div({ style { fontSize(14.px); color(FlagentTheme.WorkspaceTextLight); marginBottom(8.px) } }) {
                     Text("${LocalizedStrings.currentPeriod}: ${sub.currentPeriodStart} — ${sub.currentPeriodEnd}")
                 }
                 if (sub.cancelAtPeriodEnd) {
@@ -662,7 +625,7 @@ private fun BillingSettings() {
                 style {
                     padding(10.px, 20.px)
                     backgroundColor(FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border(0.px)
                     borderRadius(6.px)
                     cursor("pointer")
@@ -677,10 +640,10 @@ private fun BillingSettings() {
             Div({
                 style {
                     padding(16.px)
-                    backgroundColor(FlagentTheme.BackgroundAlt)
+                    backgroundColor(FlagentTheme.WorkspaceInputBg)
                     borderRadius(6.px)
                     marginBottom(15.px)
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                 }
             }) {
                 Text(LocalizedStrings.noActiveSubscription)
@@ -689,7 +652,7 @@ private fun BillingSettings() {
                 style {
                     padding(10.px, 20.px)
                     backgroundColor(FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border(0.px)
                     borderRadius(6.px)
                     cursor("pointer")

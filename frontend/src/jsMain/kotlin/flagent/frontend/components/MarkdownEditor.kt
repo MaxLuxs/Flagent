@@ -83,7 +83,7 @@ fun MarkdownEditor(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.WorkspaceInputBorder)
                             }
                             borderRadius(5.px)
                         }
@@ -96,12 +96,12 @@ fun MarkdownEditor(
                     style {
                         flex(1)
                         padding(10.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
                         borderRadius(5.px)
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceInputBorder)
                         }
                         minHeight(200.px)
                     }
@@ -112,7 +112,7 @@ fun MarkdownEditor(
                         style {
                             marginTop(10.px)
                             padding(10.px)
-                            backgroundColor(FlagentTheme.Background)
+                            backgroundColor(FlagentTheme.CodeBackground)
                             borderRadius(3.px)
                             minHeight(150.px)
                         }

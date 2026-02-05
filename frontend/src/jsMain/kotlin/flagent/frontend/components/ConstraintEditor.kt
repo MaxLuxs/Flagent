@@ -83,7 +83,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(5.px)
         }
@@ -214,7 +214,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
                             if (saving.value || property.value.isBlank() || value.value.isBlank()) FlagentTheme.NeutralLighter
                             else FlagentTheme.Primary
                         )
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)

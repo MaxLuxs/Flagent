@@ -1,6 +1,7 @@
 package flagent.frontend.components.common
 
 import androidx.compose.runtime.Composable
+import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.borderBottom
 import flagent.frontend.util.borderCollapse
 import flagent.frontend.util.textTransform
@@ -29,17 +30,18 @@ fun ResponsiveTable(
             style {
                 width(100.percent)
                 borderCollapse("collapse")
-                backgroundColor(Color.white)
+                backgroundColor(FlagentTheme.WorkspaceCardBg)
                 borderRadius(8.px)
                 overflow("hidden")
-                property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+                property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                property("backdrop-filter", "blur(12px)")
             }
         }) {
             Thead {
                 Tr({
                     style {
-                        backgroundColor(Color("#F8FAFC"))
-                        borderBottom(2.px, LineStyle.Solid, Color("#E2E8F0"))
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                        borderBottom(2.px, LineStyle.Solid, FlagentTheme.WorkspaceBorder)
                     }
                 }) {
                     headers.forEach { header ->
@@ -49,7 +51,7 @@ fun ResponsiveTable(
                                 textAlign("left")
                                 fontSize(12.px)
                                 fontWeight(600)
-                                color(Color("#64748B"))
+                                color(FlagentTheme.WorkspaceTextLight)
                                 textTransform("uppercase")
                             }
                         }) {
@@ -69,7 +71,7 @@ fun ResponsiveTable(
                             }
                         }
                         style {
-                            borderBottom(1.px, LineStyle.Solid, Color("#E2E8F0"))
+                            borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceBorder)
                             property("transition", "background-color 0.2s")
                         }
                         // Hover effects handled via CSS
@@ -79,7 +81,7 @@ fun ResponsiveTable(
                                 style {
                                     padding(12.px)
                                     fontSize(14.px)
-                                    color(Color("#1E293B"))
+                                    color(FlagentTheme.WorkspaceText)
                                 }
                             }) {
                                 Text(cell)
@@ -105,11 +107,11 @@ fun ResponsiveTable(
                     onClick { onRowClick(index) }
                 }
                 style {
-                    backgroundColor(Color.white)
+                    backgroundColor(FlagentTheme.WorkspaceCardBg)
                     borderRadius(8.px)
                     padding(16.px)
                     marginBottom(12.px)
-                    property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+                    property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
                     if (onRowClick != null) {
                         cursor("pointer")
                     }
@@ -128,7 +130,7 @@ fun ResponsiveTable(
                                 style {
                                     fontSize(12.px)
                                     fontWeight(600)
-                                    color(Color("#64748B"))
+                                    color(FlagentTheme.WorkspaceTextLight)
                                     textTransform("uppercase")
                                 }
                             }) {
@@ -137,7 +139,7 @@ fun ResponsiveTable(
                             Span({
                                 style {
                                     fontSize(14.px)
-                                    color(Color("#1E293B"))
+                                    color(FlagentTheme.WorkspaceText)
                                 }
                             }) {
                                 Text(cell)

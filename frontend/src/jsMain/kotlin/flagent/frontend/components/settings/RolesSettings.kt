@@ -39,7 +39,7 @@ fun RolesSettings() {
 
     Div({
         style {
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -88,7 +88,7 @@ fun RolesSettings() {
             }) {
                 Text("Available Roles")
             }
-            roles.value.forEach { role ->
+            for (role in roles.value) {
                 Div({
                     style {
                         padding(12.px)
@@ -124,7 +124,7 @@ fun RolesSettings() {
             }) {
                 Text("Users")
             }
-            users.value.forEach { user ->
+            for (user in users.value) {
                 Div({
                     style {
                         padding(12.px)
@@ -173,11 +173,11 @@ fun RolesSettings() {
                             fontSize(13.px)
                         }
                     }) {
-                        roles.value.forEach { role ->
-                            val optValue = if (role.isBuiltIn) role.key else "custom:${role.id}"
-                            val isSelected = (role.isBuiltIn && role.key == currentValue) || (!role.isBuiltIn && role.id != null && "custom:${role.id}" == currentValue)
+                        for (r in roles.value) {
+                            val optValue = if (r.isBuiltIn) r.key else "custom:${r.id}"
+                            val isSelected = (r.isBuiltIn && r.key == currentValue) || (r.isBuiltIn == false && r.id != null && "custom:${r.id}" == currentValue)
                             Option(optValue, { if (isSelected) selected() }) {
-                                Text(role.name)
+                                Text(r.name)
                             }
                         }
                     }

@@ -46,7 +46,7 @@ fun Slider(
                         style {
                             fontSize(14.px)
                             fontWeight("500")
-                            color(if (disabled) FlagentTheme.TextLighter else FlagentTheme.Text)
+                            color(if (disabled) FlagentTheme.WorkspaceTextLight else FlagentTheme.WorkspaceText)
                             margin(0.px)
                             cursor(if (disabled) "not-allowed" else "pointer")
                         }
@@ -102,7 +102,7 @@ fun Slider(
                     width(100.percent)
                     height(8.px)
                     borderRadius(4.px)
-                    backgroundColor(if (disabled) FlagentTheme.BackgroundDark else FlagentTheme.Border)
+                    backgroundColor(if (disabled) FlagentTheme.WorkspaceInputBg else FlagentTheme.WorkspaceInputBorder)
                     property("appearance", "none")
                     cursor(if (disabled) "not-allowed" else "pointer")
                     property("outline", "none")
@@ -122,7 +122,7 @@ fun Slider(
                     kotlinx.browser.document.head?.appendChild(styleElement)
                 }
                 
-                val thumbColor = if (disabled) FlagentTheme.NeutralLighter.toString() else FlagentTheme.Primary.toString()
+                val thumbColor = if (disabled) FlagentTheme.WorkspaceInputBg.toString() else FlagentTheme.Primary.toString()
                 styleElement.textContent = """
                     #$sliderId::-webkit-slider-thumb {
                         -webkit-appearance: none;
@@ -131,7 +131,7 @@ fun Slider(
                         height: 20px;
                         border-radius: 50%;
                         background: $thumbColor;
-                        border: 2px solid ${FlagentTheme.Background};
+                        border: 2px solid rgba(255,255,255,0.3);
                         box-shadow: 0 2px 4px ${FlagentTheme.Shadow};
                         cursor: ${if (disabled) "not-allowed" else "pointer"};
                     }
@@ -140,7 +140,7 @@ fun Slider(
                         height: 20px;
                         border-radius: 50%;
                         background: $thumbColor;
-                        border: 2px solid ${FlagentTheme.Background};
+                        border: 2px solid rgba(255,255,255,0.3);
                         box-shadow: 0 2px 4px ${FlagentTheme.Shadow};
                         cursor: ${if (disabled) "not-allowed" else "pointer"};
                     }
@@ -170,7 +170,7 @@ fun Slider(
                 display(DisplayStyle.Flex)
                 justifyContent(JustifyContent.SpaceBetween)
                 fontSize(11.px)
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
                 marginTop(-4.px)
             }
         }) {

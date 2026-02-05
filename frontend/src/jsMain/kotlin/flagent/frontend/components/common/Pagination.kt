@@ -30,8 +30,8 @@ fun Pagination(
             onClick { onPageChange(currentPage - 1) }
             style {
                 padding(8.px, 16.px)
-                backgroundColor(if (currentPage == 1) Color("#E2E8F0") else FlagentTheme.Primary)
-                color(if (currentPage == 1) Color("#94A3B8") else Color.white)
+                backgroundColor(if (currentPage == 1) FlagentTheme.WorkspaceInputBg else FlagentTheme.Primary)
+                color(if (currentPage == 1) FlagentTheme.WorkspaceTextLight else Color.white)
                 border(0.px)
                 borderRadius(6.px)
                 cursor(if (currentPage == 1) "not-allowed" else "pointer")
@@ -47,7 +47,7 @@ fun Pagination(
                 Span({
                     style {
                         padding(8.px, 12.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.WorkspaceTextLight)
                     }
                 }) {
                     Text("...")
@@ -58,8 +58,8 @@ fun Pagination(
                     style {
                         padding(8.px, 12.px)
                         backgroundColor(if (page == currentPage) FlagentTheme.Primary else Color.transparent)
-                        color(if (page == currentPage) Color.white else Color("#64748B"))
-                        border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+                        color(if (page == currentPage) Color.white else FlagentTheme.WorkspaceTextLight)
+                        border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceInputBorder)
                         borderRadius(6.px)
                         cursor("pointer")
                         fontWeight(if (page == currentPage) 600 else 400)
@@ -79,8 +79,8 @@ fun Pagination(
             onClick { onPageChange(currentPage + 1) }
             style {
                 padding(8.px, 16.px)
-                backgroundColor(if (currentPage == totalPages) Color("#E2E8F0") else FlagentTheme.Primary)
-                color(if (currentPage == totalPages) Color("#94A3B8") else Color.white)
+                backgroundColor(if (currentPage == totalPages) FlagentTheme.WorkspaceInputBg else FlagentTheme.Primary)
+                color(if (currentPage == totalPages) FlagentTheme.WorkspaceTextLight else Color.white)
                 border(0.px)
                 borderRadius(6.px)
                 cursor(if (currentPage == totalPages) "not-allowed" else "pointer")

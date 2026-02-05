@@ -66,14 +66,16 @@ fun Modal(
     }) {
         Div({
             style {
-                backgroundColor(FlagentTheme.Background)
+                backgroundColor(FlagentTheme.WorkspaceCardBg)
                 padding(30.px)
                 borderRadius(10.px)
                 maxWidth(width)
                 width(90.percent)
                 maxHeight(maxHeight)
                 overflow("auto")
-                property("box-shadow", "0 10px 25px rgba(0, 0, 0, 0.2)")
+                property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                property("backdrop-filter", "blur(12px)")
+                property("box-shadow", "0 10px 25px rgba(0, 0, 0, 0.3)")
             }
             onClick { event ->
                 // Prevent closing when clicking inside modal
@@ -92,13 +94,13 @@ fun Modal(
                         width(0.px)
                         style(LineStyle.None)
                     }
-                    property("border-bottom", "1px solid ${FlagentTheme.Border}")
+                    property("border-bottom", "1px solid ${FlagentTheme.WorkspaceBorder}")
                 }
             }) {
                 H3({
                     style {
                         margin(0.px)
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.WorkspaceText)
                     }
                 }) {
                     Text(title)
@@ -108,7 +110,7 @@ fun Modal(
                     style {
                         padding(4.px, 8.px)
                         property("background-color", "transparent")
-                        color(FlagentTheme.TextLight)
+                        color(FlagentTheme.WorkspaceTextLight)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -121,11 +123,11 @@ fun Modal(
                     }
                     onMouseEnter {
                         val element = it.target as org.w3c.dom.HTMLElement
-                        element.style.color = FlagentTheme.Text.toString()
+                        element.style.color = FlagentTheme.WorkspaceText.toString()
                     }
                     onMouseLeave {
                         val element = it.target as org.w3c.dom.HTMLElement
-                        element.style.color = FlagentTheme.TextLight.toString()
+                        element.style.color = FlagentTheme.WorkspaceTextLight.toString()
                     }
                 }) {
                     Text("×")
@@ -152,7 +154,7 @@ fun Modal(
                         width(0.px)
                         style(LineStyle.None)
                     }
-                    property("border-top", "1px solid ${FlagentTheme.Border}")
+                    property("border-top", "1px solid ${FlagentTheme.WorkspaceBorder}")
                 }
             }) {
                 if (showCancel) {
@@ -160,8 +162,8 @@ fun Modal(
                         onClick { onClose() }
                         style {
                             padding(8.px, 16.px)
-                            backgroundColor(FlagentTheme.Neutral)
-                            color(FlagentTheme.Background)
+                            backgroundColor(FlagentTheme.WorkspaceInputBg)
+                            color(FlagentTheme.WorkspaceText)
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -172,11 +174,11 @@ fun Modal(
                         }
                         onMouseEnter {
                             val element = it.target as org.w3c.dom.HTMLElement
-                            element.style.backgroundColor = FlagentTheme.NeutralLight.toString()
+                            element.style.backgroundColor = FlagentTheme.WorkspaceInputBorder.toString()
                         }
                         onMouseLeave {
                             val element = it.target as org.w3c.dom.HTMLElement
-                            element.style.backgroundColor = FlagentTheme.Neutral.toString()
+                            element.style.backgroundColor = FlagentTheme.WorkspaceInputBg.toString()
                         }
                     }) {
                         Text(cancelText)
@@ -191,10 +193,10 @@ fun Modal(
                         style {
                             padding(8.px, 16.px)
                             backgroundColor(
-                                if (confirmDisabled || confirmLoading) FlagentTheme.NeutralLighter
+                                if (confirmDisabled || confirmLoading) FlagentTheme.WorkspaceInputBg
                                 else FlagentTheme.Primary
                             )
-                            color(FlagentTheme.Background)
+                            color(if (confirmDisabled || confirmLoading) FlagentTheme.WorkspaceTextLight else Color.white)
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -232,7 +234,7 @@ fun Modal(
                                         border {
                                             width(2.px)
                                             style(LineStyle.Solid)
-                                            color(FlagentTheme.Background)
+                                            color(Color.white)
                                         }
                                         property("border-top-color", "transparent")
                                         borderRadius(50.percent)

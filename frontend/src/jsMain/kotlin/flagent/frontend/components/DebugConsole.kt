@@ -39,7 +39,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 color(FlagentTheme.Border)
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -61,7 +61,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
             H2({
                 style {
                     margin(0.px)
-                    color(FlagentTheme.Text)
+                    color(FlagentTheme.WorkspaceText)
                     fontSize(24.px)
                     fontWeight("700")
                 }
@@ -267,7 +267,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                     style {
                         padding(10.px, 20.px)
                         backgroundColor(if (loading.value || flagKey.value.isBlank()) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -611,7 +611,7 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(if (loading.value) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)

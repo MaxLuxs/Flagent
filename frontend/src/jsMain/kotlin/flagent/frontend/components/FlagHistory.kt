@@ -128,7 +128,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                 color(FlagentTheme.Border)
             }
             borderRadius(5.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             marginBottom(20.px)
         }
     }) {
@@ -154,7 +154,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(FlagentTheme.Primary)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         borderRadius(3.px)
                         fontSize(12.px)
                     }
@@ -163,7 +163,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                 }
                 Span({
                     style {
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.WorkspaceText)
                         fontSize(16.px)
                     }
                 }) {
@@ -173,7 +173,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(FlagentTheme.Primary)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         borderRadius(3.px)
                         fontSize(12.px)
                     }
@@ -186,7 +186,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                     display(DisplayStyle.Flex)
                     flexDirection(FlexDirection.Column)
                     alignItems(AlignItems.FlexEnd)
-                    color(FlagentTheme.Text)
+                    color(FlagentTheme.WorkspaceText)
                 }
             }) {
                 Span({

@@ -22,12 +22,9 @@ fun ConfirmDialog(
     Modal(title = title, onClose = onCancel) {
         Div({
             style {
-                backgroundColor(Color.white)
-                borderRadius(8.px)
-                padding(24.px)
+                padding(0.px)
                 maxWidth(480.px)
                 width(100.percent)
-                property("box-shadow", "0 20px 25px -5px rgba(0, 0, 0, 0.1)")
             }
         }) {
             // Title
@@ -35,7 +32,7 @@ fun ConfirmDialog(
                 style {
                     fontSize(18.px)
                     fontWeight(600)
-                    color(Color("#1E293B"))
+                    color(FlagentTheme.WorkspaceText)
                     margin(0.px)
                     marginBottom(16.px)
                 }
@@ -47,7 +44,7 @@ fun ConfirmDialog(
             P({
                 style {
                     fontSize(14.px)
-                    color(Color("#64748B"))
+                    color(FlagentTheme.WorkspaceTextLight)
                     margin(0.px)
                     marginBottom(24.px)
                     lineHeight("1.5")
@@ -68,9 +65,9 @@ fun ConfirmDialog(
                     onClick { onCancel() }
                     style {
                         padding(10.px, 20.px)
-                        backgroundColor(Color.transparent)
-                        color(Color("#64748B"))
-                        border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                        color(FlagentTheme.WorkspaceText)
+                        border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceInputBorder)
                         borderRadius(6.px)
                         cursor("pointer")
                         fontSize(14.px)

@@ -2,19 +2,25 @@ package flagent.frontend.components.export
 
 import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
-import flagent.frontend.config.AppConfig
 import flagent.frontend.components.Icon
 import flagent.frontend.theme.FlagentTheme
-import kotlinx.browser.window
+import flagent.frontend.util.ErrorHandler
+import flagent.frontend.util.triggerDownload
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
 /**
- * Export Panel component (Phase 4)
+ * Export Panel component - downloads with auth headers
  */
 @Composable
 fun ExportPanel() {
     val excludeSnapshots = remember { mutableStateOf(false) }
+    val scope = remember { CoroutineScope(Dispatchers.Main) }
+    val loadingExport = remember { mutableStateOf<String?>(null) }
+    val exportError = remember { mutableStateOf<String?>(null) }
     
     Div({
         style {
@@ -36,17 +42,94 @@ fun ExportPanel() {
             Text("Export Data")
         }
         
+        exportError.value?.let { err ->
+            Div({
+                style {
+                    padding(12.px)
+                    backgroundColor(Color("#FEE2E2"))
+                    borderRadius(6.px)
+                    color(Color("#DC2626"))
+                    marginBottom(16.px)
+                }
+            }) {
+                Text(err)
+            }
+        }
+        
         // Export evaluation cache
         ExportCard(
             icon = "data_object",
             title = "Evaluation Cache (JSON)",
             description = "Export current evaluation cache as JSON file",
             buttonLabel = "Export JSON",
+            loading = loadingExport.value == "eval_cache",
             onClick = {
-                val url = "${AppConfig.apiBaseUrl}/api/v1/export/eval_cache/json"
-                window.open(url, "_blank")
+                scope.launch {
+                    loadingExport.value = "eval_cache"
+                    exportError.value = null
+                    try {
+                        val bytes = ApiClient.downloadExport("/export/eval_cache/json")
+                        triggerDownload(bytes, "flagent_eval_cache.json", "application/json")
+                    } catch (e: Exception) {
+                        exportError.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                    } finally {
+                        loadingExport.value = null
+                    }
+                }
             }
         )
+
+        // Export GitOps format (YAML/JSON) - import-compatible
+        Div({
+            style {
+                marginTop(16.px)
+            }
+        }) {
+            ExportCard(
+                icon = "code",
+                title = "GitOps (YAML/JSON)",
+                description = "Export flags in GitOps format for import/version control",
+                buttonLabel = "Export YAML",
+                loading = loadingExport.value == "gitops_yaml",
+                onClick = {
+                    scope.launch {
+                        loadingExport.value = "gitops_yaml"
+                        exportError.value = null
+                        try {
+                            val bytes = ApiClient.downloadExport("/export/gitops?format=yaml")
+                            triggerDownload(bytes, "flagent_gitops.yaml", "text/yaml")
+                        } catch (e: Exception) {
+                            exportError.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                        } finally {
+                            loadingExport.value = null
+                        }
+                    }
+                }
+            )
+            Div({ style { marginTop(16.px) } }) {
+            ExportCard(
+                icon = "code",
+                title = "GitOps JSON",
+                description = "Export flags in GitOps JSON format",
+                buttonLabel = "Export JSON",
+                loading = loadingExport.value == "gitops_json",
+                onClick = {
+                    scope.launch {
+                        loadingExport.value = "gitops_json"
+                        exportError.value = null
+                        try {
+                            val bytes = ApiClient.downloadExport("/export/gitops?format=json")
+                            triggerDownload(bytes, "flagent_gitops.json", "application/json")
+                        } catch (e: Exception) {
+                            exportError.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                        } finally {
+                            loadingExport.value = null
+                        }
+                    }
+                }
+            )
+            }
+        }
         
         // Export database
         Div({
@@ -59,14 +142,21 @@ fun ExportPanel() {
                 title = "Database (SQLite)",
                 description = "Export entire database as SQLite file",
                 buttonLabel = "Export SQLite",
+                loading = loadingExport.value == "sqlite",
                 onClick = {
-                    val url = buildString {
-                        append("${AppConfig.apiBaseUrl}/api/v1/export/sqlite")
-                        if (excludeSnapshots.value) {
-                            append("?exclude_snapshots=true")
+                    scope.launch {
+                        loadingExport.value = "sqlite"
+                        exportError.value = null
+                        try {
+                            val path = if (excludeSnapshots.value) "/export/sqlite?exclude_snapshots=true" else "/export/sqlite"
+                            val bytes = ApiClient.downloadExport(path)
+                            triggerDownload(bytes, "flagent_export.sqlite", "application/octet-stream")
+                        } catch (e: Exception) {
+                            exportError.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                        } finally {
+                            loadingExport.value = null
                         }
                     }
-                    window.open(url, "_blank")
                 }
             )
             
@@ -106,6 +196,7 @@ private fun ExportCard(
     title: String,
     description: String,
     buttonLabel: String,
+    loading: Boolean = false,
     onClick: () -> Unit
 ) {
     Div({
@@ -151,19 +242,20 @@ private fun ExportCard(
         }
         
         Button({
-            onClick { onClick() }
+            onClick { if (!loading) onClick() }
+            if (loading) attr("disabled", "true")
             style {
                 padding(10.px, 20.px)
-                backgroundColor(FlagentTheme.Primary)
+                backgroundColor(if (loading) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
                 color(Color.white)
                 border(0.px)
                 borderRadius(6.px)
-                cursor("pointer")
+                cursor(if (loading) "not-allowed" else "pointer")
                 fontSize(14.px)
                 fontWeight(500)
             }
         }) {
-            Text(buttonLabel)
+            Text(if (loading) "..." else buttonLabel)
         }
     }
 }

@@ -3,7 +3,6 @@ package flagent.frontend.components.metrics
 import androidx.compose.runtime.*
 import flagent.frontend.api.MetricDataPointResponse
 import flagent.frontend.api.MetricType
-import flagent.frontend.api.TimeBucketCountResponse
 import flagent.frontend.util.currentTimeMillis
 import kotlinx.browser.document
 import org.jetbrains.compose.web.css.*
@@ -98,14 +97,13 @@ private fun createChart(
                 title: {
                     display: true,
                     text: title,
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
+                    font: { size: 16, weight: 'bold' },
+                    color: 'rgba(255,255,255,0.9)'
                 },
                 legend: {
                     display: true,
-                    position: 'top'
+                    position: 'top',
+                    labels: { color: 'rgba(255,255,255,0.7)' }
                 },
                 tooltip: {
                     mode: 'index',
@@ -120,15 +118,21 @@ private fun createChart(
             scales: {
                 y: {
                     beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: 'rgba(255,255,255,0.7)' },
                     title: {
                         display: true,
-                        text: 'Value'
+                        text: 'Value',
+                        color: 'rgba(255,255,255,0.7)'
                     }
                 },
                 x: {
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: 'rgba(255,255,255,0.7)' },
                     title: {
                         display: true,
-                        text: 'Time'
+                        text: 'Time',
+                        color: 'rgba(255,255,255,0.7)'
                     }
                 }
             },
@@ -167,7 +171,7 @@ private fun Double.format(decimals: Int): String {
  */
 @Composable
 fun OverviewChart(
-    timeSeries: List<TimeBucketCountResponse>,
+    timeSeries: List<flagent.frontend.api.TimeSeriesEntryResponse>,
     title: String = "Evaluations over time"
 ) {
     val canvasId = remember { "overview-chart-${currentTimeMillis()}" }
@@ -201,12 +205,12 @@ fun OverviewChart(
 
 private fun createOverviewChart(
     canvas: HTMLCanvasElement,
-    timeSeries: List<TimeBucketCountResponse>,
+    timeSeries: List<flagent.frontend.api.TimeSeriesEntryResponse>,
     title: String
 ): dynamic {
-    val sorted = timeSeries.sortedBy { it.bucketStartMs }
-    val labels = sorted.map { formatTimestamp(it.bucketStartMs) }.toTypedArray()
-    val data = sorted.map { it.count }.toTypedArray()
+    val sorted = timeSeries.sortedBy { it.timestamp }
+    val labels = sorted.map { formatTimestamp(it.timestamp) }.toTypedArray()
+    val data = sorted.map { it.count.toInt() }.toTypedArray()
     val Chart = js("window.Chart")
     val config = js("""({
         type: 'bar',
@@ -214,7 +218,10 @@ private fun createOverviewChart(
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { title: { display: true, text: '' }, legend: { display: false } },
+            plugins: {
+            title: { display: true, text: '', color: 'rgba(255,255,255,0.9)' },
+            legend: { display: false }
+        },
             scales: { y: { beginAtZero: true }, x: {} }
         }
     })""")

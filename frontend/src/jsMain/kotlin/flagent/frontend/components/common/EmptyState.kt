@@ -30,7 +30,7 @@ fun EmptyState(
                 marginBottom(16.px)
             }
         }) {
-            Icon(icon, size = 64.px, color = Color("#CBD5E1"))
+            Icon(icon, size = 64.px, color = FlagentTheme.WorkspaceTextLight)
         }
         
         // Title
@@ -51,7 +51,7 @@ fun EmptyState(
             P({
                 style {
                     fontSize(14.px)
-                    color(Color("#64748B"))
+                    color(FlagentTheme.WorkspaceTextLight)
                     margin(0.px)
                     marginBottom(24.px)
                     maxWidth(400.px)

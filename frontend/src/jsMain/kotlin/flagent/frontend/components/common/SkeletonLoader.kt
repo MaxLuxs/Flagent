@@ -17,9 +17,8 @@ fun SkeletonLoader(
             width(width)
             height(height)
             borderRadius(borderRadius)
-            backgroundColor(Color("#E2E8F0"))
             property("animation", "shimmer 2s infinite linear")
-            property("background", "linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%)")
+            property("background", "linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%)")
             property("background-size", "200% 100%")
         }
     })

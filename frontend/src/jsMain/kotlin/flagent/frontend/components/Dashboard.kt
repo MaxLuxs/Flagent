@@ -1,6 +1,7 @@
 package flagent.frontend.components
 
 import androidx.compose.runtime.*
+import flagent.api.model.FlagResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.GlobalMetricsOverviewResponse
 import flagent.frontend.components.metrics.OverviewChart
@@ -25,6 +26,7 @@ import org.jetbrains.compose.web.dom.*
 fun Dashboard() {
     val scope = rememberCoroutineScope()
     var stats by remember { mutableStateOf<DashboardStats?>(null) }
+    var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
     var overview by remember { mutableStateOf<GlobalMetricsOverviewResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -41,13 +43,14 @@ fun Dashboard() {
         ErrorHandler.withErrorHandling(
             block = {
                 // Load dashboard stats
-                val flags = ApiClient.getFlags()
+                val (loadedFlags, _) = ApiClient.getFlags()
+                flags = loadedFlags
                 stats = DashboardStats(
-                    totalFlags = flags.size,
-                    enabledFlags = flags.count { it.enabled },
-                    disabledFlags = flags.count { !it.enabled },
-                    flagsWithSegments = flags.count { it.segments.isNotEmpty() },
-                    flagsWithVariants = flags.count { it.variants.isNotEmpty() }
+                    totalFlags = loadedFlags.size,
+                    enabledFlags = loadedFlags.count { it.enabled },
+                    disabledFlags = loadedFlags.count { !it.enabled },
+                    flagsWithSegments = loadedFlags.count { it.segments.isNotEmpty() },
+                    flagsWithVariants = loadedFlags.count { it.variants.isNotEmpty() }
                 )
                 
                 // Load unresolved alerts
@@ -55,7 +58,7 @@ fun Dashboard() {
                 // Load global metrics overview when metrics feature enabled
                 if (AppConfig.Features.enableMetrics) {
                     try {
-                        overview = ApiClient.getMetricsOverview(bucketMinutes = 60, topFlagsLimit = 10)
+                        overview = ApiClient.getMetricsOverview(topLimit = 10, timeBucketMs = 3600_000)
                     } catch (_: Throwable) {
                         overview = null
                     }
@@ -72,20 +75,19 @@ fun Dashboard() {
     
     Div({
         style {
-            padding(20.px)
+            padding(0.px)
         }
     }) {
-        // Header
         Div({
             style {
-                marginBottom(30.px)
+                marginBottom(16.px)
             }
         }) {
             H1({
                 style {
-                    fontSize(28.px)
+                    fontSize(24.px)
                     fontWeight("bold")
-                    color(FlagentTheme.Text)
+                    color(FlagentTheme.WorkspaceText)
                     margin(0.px)
                 }
             }) {
@@ -93,9 +95,9 @@ fun Dashboard() {
             }
             P({
                 style {
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                     fontSize(14.px)
-                    marginTop(5.px)
+                    marginTop(4.px)
                 }
             }) {
                 Text(flagent.frontend.i18n.LocalizedStrings.dashboardOverview)
@@ -173,9 +175,9 @@ fun Dashboard() {
             Div({
                 style {
                     display(DisplayStyle.Grid)
-                    property("grid-template-columns", "repeat(auto-fit, minmax(250px, 1fr))")
-                    gap(20.px)
-                    marginBottom(30.px)
+                    property("grid-template-columns", "repeat(auto-fit, minmax(160px, 1fr))")
+                    gap(16.px)
+                    marginBottom(16.px)
                 }
             }) {
                 StatCard("Total Flags", stats!!.totalFlags.toString(), "flag", FlagentTheme.Primary)
@@ -190,9 +192,9 @@ fun Dashboard() {
             Div({
                 style {
                     display(DisplayStyle.Grid)
-                    property("grid-template-columns", "repeat(auto-fit, minmax(200px, 1fr))")
-                    gap(20.px)
-                    marginBottom(30.px)
+                    property("grid-template-columns", "repeat(auto-fit, minmax(160px, 1fr))")
+                    gap(16.px)
+                    marginBottom(16.px)
                 }
             }) {
                 QuickLinkCard(
@@ -215,11 +217,11 @@ fun Dashboard() {
             if (AppConfig.Features.enableMetrics && overview != null) {
                 Div({
                     style {
-                        backgroundColor(FlagentTheme.Background)
+                        backgroundColor(FlagentTheme.WorkspaceCardBg)
                         borderRadius(8.px)
-                        padding(20.px)
-                        property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
-                        marginBottom(30.px)
+                        padding(16.px)
+                        property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                        marginBottom(16.px)
                     }
                 }) {
                     H2({
@@ -227,10 +229,25 @@ fun Dashboard() {
                             fontSize(18.px)
                             fontWeight("600")
                             marginBottom(16.px)
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.WorkspaceText)
                         }
                     }) {
                         Text(flagent.frontend.i18n.LocalizedStrings.evaluationsOverTime)
+                    }
+                    Div({
+                        style {
+                            display(DisplayStyle.Flex)
+                            gap(24.px)
+                            marginBottom(16.px)
+                            flexWrap(FlexWrap.Wrap)
+                        }
+                    }) {
+                        Span({ style { color(FlagentTheme.WorkspaceTextLight); fontSize(14.px) } }) {
+                            Text("Total: ${overview!!.totalEvaluations}")
+                        }
+                        Span({ style { color(FlagentTheme.WorkspaceTextLight); fontSize(14.px) } }) {
+                            Text("Unique flags: ${overview!!.uniqueFlags}")
+                        }
                     }
                     if (overview!!.timeSeries.isNotEmpty()) {
                         OverviewChart(
@@ -242,13 +259,13 @@ fun Dashboard() {
                                 style {
                                     marginTop(16.px)
                                     paddingTop(16.px)
-                                    property("border-top", "1px solid ${FlagentTheme.Border}")
+                                    property("border-top", "1px solid ${FlagentTheme.WorkspaceBorder}")
                                 }
                             }) {
                                 Span({
                                     style {
                                         fontSize(13.px)
-                                        color(FlagentTheme.TextLight)
+                                        color(FlagentTheme.WorkspaceTextLight)
                                         fontWeight("600")
                                     }
                                 }) {
@@ -267,7 +284,7 @@ fun Dashboard() {
                                             style {
                                                 fontSize(12.px)
                                                 padding(6.px, 10.px)
-                                                backgroundColor(FlagentTheme.BackgroundAlt)
+                                                backgroundColor(FlagentTheme.WorkspaceInputBg)
                                                 borderRadius(6.px)
                                                 color(FlagentTheme.Primary)
                                                 textDecoration("none")
@@ -277,7 +294,7 @@ fun Dashboard() {
                                                 Router.navigateTo(Route.FlagMetrics(tf.flagId))
                                             }
                                         }) {
-                                            Text("${tf.flagKey}: ${tf.count}")
+                                            Text("${tf.flagKey}: ${tf.evaluationCount}")
                                         }
                                     }
                                 }
@@ -286,7 +303,7 @@ fun Dashboard() {
                     } else {
                         P({
                             style {
-                                color(FlagentTheme.TextLight)
+                                color(FlagentTheme.WorkspaceTextLight)
                                 fontSize(14.px)
                             }
                         }) {
@@ -301,7 +318,7 @@ fun Dashboard() {
                 if (anomalyViewModel.alerts.isNotEmpty()) {
                     Div({
                         style {
-                            backgroundColor(FlagentTheme.Background)
+                            backgroundColor(FlagentTheme.WorkspaceCardBg)
                             borderRadius(8.px)
                             padding(20.px)
                             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -329,7 +346,7 @@ fun Dashboard() {
                                 style {
                                     padding(8.px, 16.px)
                                     backgroundColor(FlagentTheme.Primary)
-                                    color(FlagentTheme.Background)
+                                    color(Color.white)
                                     border(0.px)
                                     borderRadius(6.px)
                                     cursor("pointer")
@@ -347,7 +364,7 @@ fun Dashboard() {
                             Div({
                                 style {
                                     padding(12.px)
-                                    backgroundColor(FlagentTheme.BackgroundAlt)
+                                    backgroundColor(FlagentTheme.WorkspaceInputBg)
                                     borderRadius(6.px)
                                     marginBottom(10.px)
                                 }
@@ -363,7 +380,7 @@ fun Dashboard() {
                                 Div({
                                     style {
                                         fontSize(14.px)
-                                        color(FlagentTheme.TextLight)
+                                        color(FlagentTheme.WorkspaceTextLight)
                                     }
                                 }) {
                                     Text(alert.message)
@@ -374,20 +391,95 @@ fun Dashboard() {
                 }
             }
             
+            // Recent flags
+            if (flags.isNotEmpty()) {
+                val recentFlags = flags.sortedByDescending { it.updatedAt ?: "" }.take(5)
+                Div({
+                    style {
+                        backgroundColor(FlagentTheme.WorkspaceCardBg)
+                        borderRadius(8.px)
+                        padding(16.px)
+                        property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                        marginBottom(16.px)
+                    }
+                }) {
+                    H2({
+                        style {
+                            fontSize(18.px)
+                            fontWeight("600")
+                            marginBottom(12.px)
+                            color(FlagentTheme.WorkspaceText)
+                        }
+                    }) {
+                        Text(flagent.frontend.i18n.LocalizedStrings.recentFlags)
+                    }
+                    Table({
+                        style {
+                            width(100.percent)
+                            property("border-collapse", "collapse")
+                            fontSize(14.px)
+                        }
+                    }) {
+                        Tbody({}) {
+                            recentFlags.forEach { flag ->
+                                Tr({
+                                    style {
+                                        property("border-bottom", "1px solid ${FlagentTheme.WorkspaceBorder}")
+                                        cursor("pointer")
+                                    }
+                                    onClick { Router.navigateTo(Route.FlagDetail(flag.id)) }
+                                }) {
+                                    Td({
+                                        style {
+                                            padding(8.px, 12.px)
+                                            color(FlagentTheme.Primary)
+                                            fontWeight("500")
+                                        }
+                                    }) {
+                                        Text(flag.key)
+                                    }
+                                    Td({
+                                        style {
+                                            padding(8.px, 12.px)
+                                            color(FlagentTheme.WorkspaceTextLight)
+                                            property("max-width", "200px")
+                                            property("overflow", "hidden")
+                                            property("text-overflow", "ellipsis")
+                                            property("white-space", "nowrap")
+                                        }
+                                    }) {
+                                        Text(flag.description?.let { d -> d.take(40) + if (d.length > 40) "…" else "" } ?: "—")
+                                    }
+                                    Td({
+                                        style {
+                                            padding(8.px, 12.px)
+                                            color(FlagentTheme.WorkspaceTextLight)
+                                            fontSize(12.px)
+                                        }
+                                    }) {
+                                        Text(flag.updatedAt?.take(16) ?: "—")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Quick Actions
             Div({
                 style {
-                    backgroundColor(FlagentTheme.Background)
+                    backgroundColor(FlagentTheme.WorkspaceCardBg)
                     borderRadius(8.px)
-                    padding(20.px)
-                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                    padding(16.px)
+                    property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
                 }
             }) {
                 H2({
                     style {
-                        fontSize(20.px)
+                        fontSize(18.px)
                         fontWeight("600")
-                        marginBottom(15.px)
+                        marginBottom(12.px)
                     }
                 }) {
                     Text(flagent.frontend.i18n.LocalizedStrings.quickAccess)
@@ -396,8 +488,8 @@ fun Dashboard() {
                 Div({
                     style {
                         display(DisplayStyle.Grid)
-                        property("grid-template-columns", "repeat(auto-fit, minmax(200px, 1fr))")
-                        gap(15.px)
+                        property("grid-template-columns", "repeat(auto-fit, minmax(140px, 1fr))")
+                        gap(12.px)
                     }
                 }) {
                     QuickActionButton("Create Flag", "add_circle") {
@@ -430,10 +522,10 @@ fun Dashboard() {
 private fun StatCard(title: String, value: String, icon: String, color: CSSColorValue) {
     Div({
         style {
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             borderRadius(8.px)
-            padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            padding(16.px)
+            property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
             property("transition", "transform 0.2s, box-shadow 0.2s")
         }
         onMouseEnter {
@@ -457,7 +549,7 @@ private fun StatCard(title: String, value: String, icon: String, color: CSSColor
             Div({
                 style {
                     fontSize(14.px)
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                     fontWeight("500")
                 }
             }) {
@@ -466,7 +558,7 @@ private fun StatCard(title: String, value: String, icon: String, color: CSSColor
         }
         Div({
             style {
-                fontSize(32.px)
+                fontSize(24.px)
                 fontWeight("bold")
                 color(color)
             }
@@ -488,11 +580,11 @@ private fun QuickLinkCard(
         style {
             display(DisplayStyle.Block)
             textAlign("left")
-            backgroundColor(FlagentTheme.Background)
-            border(1.px, LineStyle.Solid, FlagentTheme.Border)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
             borderRadius(8.px)
-            padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            padding(16.px)
+            property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
             property("transition", "transform 0.2s, box-shadow 0.2s")
             cursor("pointer")
             width(100.percent)
@@ -519,7 +611,7 @@ private fun QuickLinkCard(
             Span({
                 style {
                     fontSize(14.px)
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                     fontWeight("500")
                 }
             }) {
@@ -546,8 +638,8 @@ private fun QuickActionButton(label: String, icon: String, onClick: () -> Unit) 
             alignItems(AlignItems.Center)
             gap(8.px)
             padding(12.px, 16.px)
-            backgroundColor(FlagentTheme.BackgroundAlt)
-            border(1.px, LineStyle.Solid, FlagentTheme.Border)
+            backgroundColor(FlagentTheme.WorkspaceInputBg)
+            border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
             borderRadius(6.px)
             cursor("pointer")
             fontSize(14.px)
@@ -557,11 +649,11 @@ private fun QuickActionButton(label: String, icon: String, onClick: () -> Unit) 
         }
         onMouseEnter {
             (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.Primary.toString()
-            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Background.toString()
+            (it.target as org.w3c.dom.HTMLElement).style.color = Color.white.toString()
         }
         onMouseLeave {
-            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.BackgroundAlt.toString()
-            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.WorkspaceInputBg.toString()
+            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceText.toString()
         }
         onClick { onClick() }
     }) {

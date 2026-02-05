@@ -20,7 +20,7 @@ fun Breadcrumbs() {
     val route = Router.currentRoute
     val flagKey = remember { mutableStateOf<String?>(null) }
     
-    // Load flag key for FlagDetail and FlagHistory routes
+    // Load flag key for FlagDetail, FlagHistory, FlagMetrics routes
     LaunchedEffect(route) {
         when (route) {
             is Route.FlagDetail -> {
@@ -32,6 +32,14 @@ fun Breadcrumbs() {
                 }
             }
             is Route.FlagHistory -> {
+                try {
+                    val flag = ApiClient.getFlag(route.flagId)
+                    flagKey.value = flag.key
+                } catch (e: Exception) {
+                    flagKey.value = null
+                }
+            }
+            is Route.FlagMetrics -> {
                 try {
                     val flag = ApiClient.getFlag(route.flagId)
                     flagKey.value = flag.key
@@ -57,27 +65,56 @@ fun Breadcrumbs() {
                 fontSize(14.px)
             }
         }) {
-            A(href = "#", attrs = {
-                onClick { 
-                    it.preventDefault()
-                    Router.navigateTo(Route.FlagsList) 
+            when (route) {
+                is Route.FlagMetrics -> {
+                    val fromCrash = route.metricType == "CRASH_RATE"
+                    A(href = "#", attrs = {
+                        onClick { 
+                            it.preventDefault()
+                            Router.navigateTo(if (fromCrash) Route.Crash else Route.Analytics)
+                        }
+                        style {
+                            textDecoration("none")
+                            color(FlagentTheme.PrimaryLight)
+                            cursor("pointer")
+                            property("transition", "color 0.2s")
+                        }
+                        onMouseEnter {
+                            val element = it.target as org.w3c.dom.HTMLElement
+                            element.style.color = FlagentTheme.PrimaryLight.toString()
+                        }
+                        onMouseLeave {
+                            val element = it.target as org.w3c.dom.HTMLElement
+                            element.style.color = FlagentTheme.PrimaryLight.toString()
+                        }
+                    }) {
+                        Text(if (fromCrash) LocalizedStrings.backToCrash else LocalizedStrings.backToAnalytics)
+                    }
                 }
-                style {
-                    textDecoration("none")
-                    color(FlagentTheme.Primary)
-                    cursor("pointer")
-                    property("transition", "color 0.2s")
+                else -> {
+                    A(href = "#", attrs = {
+                        onClick { 
+                            it.preventDefault()
+                            Router.navigateTo(Route.FlagsList) 
+                        }
+                        style {
+                            textDecoration("none")
+                            color(FlagentTheme.PrimaryLight)
+                            cursor("pointer")
+                            property("transition", "color 0.2s")
+                        }
+                        onMouseEnter {
+                            val element = it.target as org.w3c.dom.HTMLElement
+                            element.style.color = FlagentTheme.PrimaryLight.toString()
+                        }
+                        onMouseLeave {
+                            val element = it.target as org.w3c.dom.HTMLElement
+                            element.style.color = FlagentTheme.PrimaryLight.toString()
+                        }
+                    }) {
+                        Text(LocalizedStrings.home)
+                    }
                 }
-                onMouseEnter {
-                    val element = it.target as org.w3c.dom.HTMLElement
-                    element.style.color = FlagentTheme.Secondary.toString()
-                }
-                onMouseLeave {
-                    val element = it.target as org.w3c.dom.HTMLElement
-                    element.style.color = FlagentTheme.Primary.toString()
-                }
-            }) {
-                Text(LocalizedStrings.home)
             }
             
             when (route) {
@@ -90,18 +127,18 @@ fun Breadcrumbs() {
                         }
                         style {
                             textDecoration("none")
-                            color(FlagentTheme.Primary)
+                            color(FlagentTheme.PrimaryLight)
                             cursor("pointer")
                             fontWeight("500")
                             property("transition", "color 0.2s")
                         }
                         onMouseEnter {
                             val element = it.target as org.w3c.dom.HTMLElement
-                            element.style.color = FlagentTheme.Secondary.toString()
+                            element.style.color = FlagentTheme.PrimaryLight.toString()
                         }
                         onMouseLeave {
                             val element = it.target as org.w3c.dom.HTMLElement
-                            element.style.color = FlagentTheme.Primary.toString()
+                            element.style.color = FlagentTheme.PrimaryLight.toString()
                         }
                     }) {
                         Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
@@ -111,7 +148,7 @@ fun Breadcrumbs() {
                     BreadcrumbSeparator()
                     Span({
                         style {
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.WorkspaceText)
                             fontWeight("500")
                         }
                     }) {
@@ -122,7 +159,7 @@ fun Breadcrumbs() {
                     BreadcrumbSeparator()
                     Span({
                         style {
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.WorkspaceText)
                             fontWeight("500")
                         }
                     }) {
@@ -139,18 +176,18 @@ fun Breadcrumbs() {
                             }
                             style {
                                 textDecoration("none")
-                                color(FlagentTheme.Primary)
+                                color(FlagentTheme.PrimaryLight)
                                 cursor("pointer")
                                 fontWeight("500")
                                 property("transition", "color 0.2s")
                             }
                             onMouseEnter {
                                 val element = it.target as org.w3c.dom.HTMLElement
-                                element.style.color = FlagentTheme.Secondary.toString()
+                                element.style.color = FlagentTheme.PrimaryLight.toString()
                             }
                             onMouseLeave {
                                 val element = it.target as org.w3c.dom.HTMLElement
-                                element.style.color = FlagentTheme.Primary.toString()
+                                element.style.color = FlagentTheme.PrimaryLight.toString()
                             }
                         }) {
                             Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
@@ -159,11 +196,22 @@ fun Breadcrumbs() {
                     }
                     Span({
                         style {
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.WorkspaceText)
                             fontWeight("500")
                         }
                     }) {
                         Text(LocalizedStrings.history)
+                    }
+                }
+                is Route.FlagMetrics -> {
+                    BreadcrumbSeparator()
+                    Span({
+                        style {
+                            color(FlagentTheme.WorkspaceText)
+                            fontWeight("500")
+                        }
+                    }) {
+                        Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
                     }
                 }
                 else -> {}
@@ -176,7 +224,7 @@ fun Breadcrumbs() {
 private fun BreadcrumbSeparator() {
     Span({
         style {
-            color(FlagentTheme.TextLight)
+            color(FlagentTheme.WorkspaceTextLight)
             margin(0.px, 4.px)
             fontSize(12.px)
         }

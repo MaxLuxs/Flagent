@@ -47,7 +47,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
     Div({
         style {
             property("background", "linear-gradient(135deg, ${FlagentTheme.Primary} 0%, ${FlagentTheme.PrimaryDark} 100%)")
-            color(FlagentTheme.Background)
+            color(Color.white)
             padding(18.px, 20.px)
             property("border-bottom", "2px solid ${FlagentTheme.PrimaryDark.toString()}")
             property("box-shadow", "0 4px 12px rgba(14, 165, 233, 0.3)")
@@ -75,7 +75,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                 A(href = "/", attrs = {
                     style {
                         textDecoration("none")
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         display(DisplayStyle.Flex)
                         alignItems(AlignItems.Center)
                         gap(8.px)
@@ -98,7 +98,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                         style {
                             margin(0.px)
                             fontWeight("bold")
-                            color(FlagentTheme.Background)
+                            color(Color.white)
                             fontSize(22.px)
                         }
                     }) {
@@ -108,7 +108,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                 Span({
                     style {
                         fontSize(11.px)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         opacity(0.85)
                         padding(4.px, 8.px)
                         property("background-color", "rgba(255, 255, 255, 0.2)")
@@ -130,7 +130,9 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                 NavLink("Flags", "flag", Route.FlagsList.PATH)
                 NavLink("Experiments", "science", Route.Experiments.PATH)
                 NavLink("Analytics", "analytics", Route.Analytics.PATH)
-                
+                if (AppConfig.Features.enableCrashAnalytics) {
+                    NavLink("Crash", "bug_report", Route.Crash.PATH)
+                }
                 // Alerts with badge
                 if (AppConfig.Features.enableAnomalyDetection && anomalyViewModel != null) {
                     Div({
@@ -141,7 +143,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                         A(href = Route.Alerts.PATH, attrs = {
                             style {
                                 textDecoration("none")
-                                color(FlagentTheme.Background)
+                                color(Color.white)
                                 fontWeight("600")
                                 fontSize(14.px)
                                 display(DisplayStyle.Flex)
@@ -174,7 +176,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                                     property("top", "-4px")
                                     property("right", "-4px")
                                     backgroundColor(Color("#EF4444"))
-                                    color(FlagentTheme.Background)
+                                    color(Color.white)
                                     fontSize(11.px)
                                     fontWeight("bold")
                                     padding(2.px, 6.px)
@@ -199,7 +201,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                     if (authViewModel.isAuthenticated) {
                         Span({
                             style {
-                                color(FlagentTheme.Background)
+                                color(Color.white)
                                 fontSize(14.px)
                                 padding(0.px, 8.px)
                             }
@@ -217,7 +219,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                             style {
                                 padding(8.px, 12.px)
                                 backgroundColor(Color("transparent"))
-                                color(FlagentTheme.Background)
+                                color(Color.white)
                                 border(1.px, LineStyle.Solid, FlagentTheme.Background)
                                 borderRadius(6.px)
                                 cursor("pointer")
@@ -231,7 +233,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                         A(href = Route.Login.PATH, attrs = {
                             style {
                                 textDecoration("none")
-                                color(FlagentTheme.Background)
+                                color(Color.white)
                                 fontWeight("600")
                                 fontSize(14.px)
                                 display(DisplayStyle.Flex)
@@ -262,7 +264,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                     attr("target", "_blank")
                     style {
                         textDecoration("none")
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         fontWeight("600")
                         fontSize(14.px)
                         display(DisplayStyle.Flex)
@@ -296,7 +298,7 @@ private fun NavLink(label: String, icon: String, path: String) {
     A(href = path, attrs = {
         style {
             textDecoration("none")
-            color(FlagentTheme.Background)
+            color(Color.white)
             fontWeight("600")
             fontSize(14.px)
             display(DisplayStyle.Flex)

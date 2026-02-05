@@ -3,7 +3,10 @@ package flagent.frontend.components.metrics
 import androidx.compose.runtime.*
 import flagent.frontend.api.MetricType
 import flagent.frontend.components.common.EmptyState
+import flagent.frontend.components.experiments.ExperimentInsightsCard
 import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.config.AppConfig
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.currentTimeMillis
 import flagent.frontend.util.format
@@ -14,16 +17,28 @@ import org.jetbrains.compose.web.dom.*
 
 /**
  * Metrics Dashboard component (Phase 3)
+ * @param initialMetricType Optional metric type from URL query (e.g. CRASH_RATE when navigating from Crash page)
  */
 @Composable
-fun MetricsDashboard(flagId: Int) {
+fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
     val viewModel = remember { MetricsViewModel(flagId) }
     
-    LaunchedEffect(flagId) {
-        viewModel.loadMetrics()
-        viewModel.loadAggregation()
+    LaunchedEffect(flagId, initialMetricType) {
+        val metricType = initialMetricType?.let { runCatching { MetricType.valueOf(it) }.getOrNull() }
+        if (metricType != null) {
+            viewModel.selectedMetricType = metricType
+        }
+        if (AppConfig.isOpenSource) {
+            viewModel.loadCoreStats()
+        } else {
+            viewModel.loadMetrics()
+            viewModel.loadAggregation()
+            viewModel.loadExperimentInsights()
+        }
     }
     
+    val isOss = AppConfig.isOpenSource
+
     Div({
         style {
             backgroundColor(Color.white)
@@ -41,7 +56,11 @@ fun MetricsDashboard(flagId: Int) {
                 marginBottom(24.px)
             }
         }) {
-            Text("Metrics & Analytics")
+            Text(if (isOss) "API Evaluation Stats" else "Metrics & Analytics")
+        }
+
+        if (!isOss) {
+            ExperimentInsightsCard(viewModel.experimentInsights)
         }
         
         // Filters
@@ -53,8 +72,8 @@ fun MetricsDashboard(flagId: Int) {
                 flexWrap(FlexWrap.Wrap)
             }
         }) {
-            // Metric type selector
-            Select({
+            // Metric type selector (Enterprise only)
+            if (!isOss) Select({
                 onChange { event ->
                     val value = event.value
                     viewModel.selectedMetricType = if (value.isNullOrBlank()) null else MetricType.valueOf(value)
@@ -87,8 +106,11 @@ fun MetricsDashboard(flagId: Int) {
                 onClick {
                     viewModel.startTime = currentTimeMillis() - 3600000 // 1 hour
                     viewModel.endTime = currentTimeMillis()
-                    viewModel.loadMetrics()
-                    viewModel.loadAggregation()
+                    if (isOss) viewModel.loadCoreStats() else {
+                        viewModel.loadMetrics()
+                        viewModel.loadAggregation()
+                        viewModel.loadExperimentInsights()
+                    }
                 }
                 style {
                     padding(10.px, 16.px)
@@ -107,8 +129,11 @@ fun MetricsDashboard(flagId: Int) {
                 onClick {
                     viewModel.startTime = currentTimeMillis() - 86400000 // 24 hours
                     viewModel.endTime = currentTimeMillis()
-                    viewModel.loadMetrics()
-                    viewModel.loadAggregation()
+                    if (isOss) viewModel.loadCoreStats() else {
+                        viewModel.loadMetrics()
+                        viewModel.loadAggregation()
+                        viewModel.loadExperimentInsights()
+                    }
                 }
                 style {
                     padding(10.px, 16.px)
@@ -124,8 +149,40 @@ fun MetricsDashboard(flagId: Int) {
             }
         }
         
-        // Aggregation stats
-        viewModel.aggregation?.let { agg ->
+        // OSS: Core evaluation stats
+        if (isOss) {
+            viewModel.coreStats?.let { stats ->
+                Div({
+                    style {
+                        display(DisplayStyle.Grid)
+                        property("grid-template-columns", "repeat(auto-fit, minmax(200px, 1fr))")
+                        gap(16.px)
+                        marginBottom(24.px)
+                    }
+                }) {
+                    MetricCard("Total evaluations", stats.evaluationCount.toString())
+                }
+                if (stats.timeSeries.isNotEmpty()) {
+                    Div({
+                        style {
+                            marginBottom(24.px)
+                            padding(20.px)
+                            backgroundColor(FlagentTheme.WorkspaceCardBg)
+                            borderRadius(8.px)
+                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                        }
+                    }) {
+                        OverviewChart(
+                            timeSeries = stats.timeSeries,
+                            title = LocalizedStrings.evaluationsOverTime
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Aggregation stats (Enterprise only)
+        if (!isOss) viewModel.aggregation?.let { agg ->
             Div({
                 style {
                     display(DisplayStyle.Grid)
@@ -144,14 +201,22 @@ fun MetricsDashboard(flagId: Int) {
         // Loading state
         if (viewModel.isLoading) {
             SkeletonLoader(height = 200.px)
-        } else if (viewModel.metrics.isEmpty()) {
+        } else if (isOss && viewModel.coreStats == null && viewModel.error == null) {
+            SkeletonLoader(height = 200.px)
+        } else if (!isOss && viewModel.metrics.isEmpty()) {
             EmptyState(
                 icon = "analytics",
                 title = "No metrics available",
                 description = "Start sending metrics to see analytics here"
             )
-        } else {
-            // Metrics chart
+        } else if (isOss && viewModel.coreStats != null && viewModel.coreStats!!.evaluationCount == 0L) {
+            EmptyState(
+                icon = "analytics",
+                title = "No evaluations yet",
+                description = "API evaluation calls for this flag will appear here"
+            )
+        } else if (!isOss) {
+            // Metrics chart (Enterprise only)
             if (viewModel.selectedMetricType != null) {
                 MetricsChart(
                     metrics = viewModel.metrics,

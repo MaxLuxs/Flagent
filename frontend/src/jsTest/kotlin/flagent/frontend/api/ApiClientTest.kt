@@ -22,6 +22,36 @@ class ApiClientTest {
     }
 
     @Test
+    fun getApiPathForTags() {
+        val path = ApiClient.getApiPath("/tags")
+        assertTrue(path.contains("/api/v1/tags"), "Path should contain /api/v1/tags")
+    }
+
+    @Test
+    fun getApiPathForBatchEnabled() {
+        val path = ApiClient.getApiPath("/flags/batch/enabled")
+        assertTrue(path.contains("/api/v1/flags/batch/enabled"), "Path should contain /api/v1/flags/batch/enabled")
+    }
+
+    @Test
+    fun getApiPathForInfo() {
+        val path = ApiClient.getApiPath("/info")
+        assertTrue(path.contains("/api/v1/info"), "Path should contain /api/v1/info")
+    }
+
+    @Test
+    fun getApiPathForImport() {
+        val path = ApiClient.getApiPath("/import")
+        assertTrue(path.contains("/api/v1/import"), "Path should contain /api/v1/import")
+    }
+
+    @Test
+    fun getApiPathForExport() {
+        val path = ApiClient.getApiPath("/export/eval_cache/json")
+        assertTrue(path.contains("/api/v1/export/eval_cache/json"), "Path should contain /api/v1/export/eval_cache/json")
+    }
+
+    @Test
     fun getAdminPathContainsAdminAndPath() {
         val path = ApiClient.getAdminPath("/tenants")
         assertTrue(path.contains("/admin/tenants"), "Path should contain /admin/tenants")

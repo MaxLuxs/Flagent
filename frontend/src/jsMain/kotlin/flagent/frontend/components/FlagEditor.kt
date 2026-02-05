@@ -77,7 +77,7 @@ fun FlagEditor(flagId: Int?) {
                 style {
                     padding(10.px, 16.px)
                     backgroundColor(FlagentTheme.Neutral)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -150,7 +150,7 @@ fun FlagEditor(flagId: Int?) {
                     style {
                         display(DisplayStyle.Flex)
                         gap(8.px)
-                        property("border-bottom", "2px solid ${FlagentTheme.Border}")
+                        property("border-bottom", "2px solid ${FlagentTheme.WorkspaceInputBorder}")
                         marginBottom(25.px)
                         paddingBottom(0.px)
                     }
@@ -160,7 +160,7 @@ fun FlagEditor(flagId: Int?) {
                         style {
                             padding(12.px, 24.px)
                             property("background-color", "transparent")
-                            color(if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.TextLight)
+                            color(if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -182,14 +182,14 @@ fun FlagEditor(flagId: Int?) {
                         }
                         onMouseLeave {
                             if (activeTab.value != "Config") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.TextLight.toString()
+                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
                             }
                         }
                     }) {
                         Icon(
                             name = "settings",
                             size = 18.px,
-                            color = if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.TextLight
+                            color = if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight
                         )
                         Text(LocalizedStrings.config)
                     }
@@ -198,7 +198,7 @@ fun FlagEditor(flagId: Int?) {
                         style {
                             padding(12.px, 24.px)
                             property("background-color", "transparent")
-                            color(if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.TextLight)
+                            color(if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -220,14 +220,14 @@ fun FlagEditor(flagId: Int?) {
                         }
                         onMouseLeave {
                             if (activeTab.value != "History") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.TextLight.toString()
+                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
                             }
                         }
                     }) {
                         Icon(
                             name = "history",
                             size = 18.px,
-                            color = if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.TextLight
+                            color = if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight
                         )
                         Text(LocalizedStrings.history)
                     }
@@ -267,7 +267,7 @@ private fun FlagEditorTabButton(label: String, icon: String, activeTab: androidx
         style {
             padding(12.px, 24.px)
             property("background-color", "transparent")
-            color(if (isActive) FlagentTheme.Primary else FlagentTheme.TextLight)
+            color(if (isActive) FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
             border { width(0.px); style(LineStyle.None) }
             property("border-bottom", if (isActive) "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
             cursor("pointer")
@@ -283,10 +283,10 @@ private fun FlagEditorTabButton(label: String, icon: String, activeTab: androidx
             if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
         }
         onMouseLeave {
-            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.TextLight.toString()
+            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
         }
     }) {
-        Icon(name = icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.TextLight)
+        Icon(name = icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
         Text(label)
     }
 }
@@ -325,7 +325,7 @@ private fun CreateFlagForm() {
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceInputBorder)
                         }
                         borderRadius(4.px)
                     }
@@ -344,7 +344,7 @@ private fun CreateFlagForm() {
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceInputBorder)
                         }
                         borderRadius(4.px)
                     }
@@ -396,7 +396,7 @@ private fun CreateFlagForm() {
                 style {
                     padding(10.px, 20.px)
                     backgroundColor(if (saving.value || description.value.isBlank()) FlagentTheme.NeutralLighter else FlagentTheme.Success)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -577,10 +577,10 @@ private fun FlagSettingsCard(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -612,7 +612,7 @@ private fun FlagSettingsCard(
                 H2({
                     style {
                         margin(0.px)
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.WorkspaceText)
                         fontSize(24.px)
                         fontWeight("700")
                     }
@@ -642,7 +642,7 @@ private fun FlagSettingsCard(
                         alignItems(AlignItems.Center)
                         gap(8.px)
                         cursor("pointer")
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         fontWeight("600")
                     }
                 }) {
@@ -692,7 +692,7 @@ private fun FlagSettingsCard(
                 alignItems(AlignItems.Center)
                 marginBottom(20.px)
                 padding(12.px, 16.px)
-                backgroundColor(FlagentTheme.BackgroundAlt)
+                backgroundColor(FlagentTheme.WorkspaceInputBg)
                 borderRadius(8.px)
             }
         }) {
@@ -700,7 +700,7 @@ private fun FlagSettingsCard(
                 style {
                     padding(6.px, 12.px)
                     backgroundColor(FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     borderRadius(6.px)
                     fontSize(13.px)
                     fontWeight("600")
@@ -720,7 +720,7 @@ private fun FlagSettingsCard(
                 style {
                     padding(10.px, 20.px)
                     backgroundColor(if (saving.value) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -777,7 +777,7 @@ private fun FlagSettingsCard(
                             marginBottom(6.px)
                             fontWeight("600")
                             fontSize(13.px)
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.WorkspaceText)
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
                             gap(6.px)
@@ -800,7 +800,7 @@ private fun FlagSettingsCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.WorkspaceInputBorder)
                             }
                             borderRadius(6.px)
                             fontSize(14.px)
@@ -810,7 +810,7 @@ private fun FlagSettingsCard(
                             (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                         }
                         onBlur {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Border.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
                         }
                     }
                 }
@@ -870,7 +870,7 @@ private fun FlagSettingsCard(
                             marginBottom(6.px)
                             fontWeight("600")
                             fontSize(13.px)
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.WorkspaceText)
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
                             gap(6.px)
@@ -892,7 +892,7 @@ private fun FlagSettingsCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.WorkspaceInputBorder)
                             }
                             borderRadius(6.px)
                             fontSize(14.px)
@@ -902,7 +902,7 @@ private fun FlagSettingsCard(
                             (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                         }
                         onBlur {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Border.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
                         }
                     }
                 }
@@ -925,7 +925,7 @@ private fun FlagSettingsCard(
                                 marginBottom(6.px)
                                 fontWeight("600")
                                 fontSize(13.px)
-                                color(FlagentTheme.Text)
+                                color(FlagentTheme.WorkspaceText)
                                 display(DisplayStyle.Flex)
                                 alignItems(AlignItems.Center)
                                 gap(6.px)
@@ -959,7 +959,7 @@ private fun FlagSettingsCard(
                                     border {
                                         width(1.px)
                                         style(LineStyle.Solid)
-                                        color(FlagentTheme.Border)
+                                        color(FlagentTheme.WorkspaceInputBorder)
                                     }
                                     borderRadius(6.px)
                                     fontSize(14.px)
@@ -969,7 +969,7 @@ private fun FlagSettingsCard(
                                     (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                                 }
                                 onBlur {
-                                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Border.toString()
+                                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
                                 }
                             }
                             // Autocomplete suggestions
@@ -1013,7 +1013,7 @@ private fun FlagSettingsCard(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(FlagentTheme.Neutral)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1071,7 +1071,7 @@ private fun FlagSettingsCard(
                             display(DisplayStyle.InlineBlock)
                             padding(5.px, 10.px)
                             backgroundColor(FlagentTheme.Accent)
-                            color(FlagentTheme.Background)
+                            color(Color.white)
                             borderRadius(3.px)
                             fontSize(12.px)
                             display(DisplayStyle.Flex)
@@ -1085,7 +1085,7 @@ private fun FlagSettingsCard(
                             style {
                                 padding(0.px)
                                 property("background-color", "transparent")
-                                color(FlagentTheme.Background)
+                                color(Color.white)
                                 border {
                                     width(0.px)
                                     style(LineStyle.None)
@@ -1131,7 +1131,7 @@ private fun FlagSettingsCard(
                                 border {
                                     width(1.px)
                                     style(LineStyle.Solid)
-                                    color(FlagentTheme.Border)
+                                    color(FlagentTheme.WorkspaceInputBorder)
                                 }
                                 borderRadius(3.px)
                             }
@@ -1156,7 +1156,7 @@ private fun FlagSettingsCard(
                             style {
                                 padding(5.px, 10.px)
                                 backgroundColor(FlagentTheme.Success)
-                                color(FlagentTheme.Background)
+                                color(Color.white)
                                 border {
                                     width(0.px)
                                     style(LineStyle.None)
@@ -1175,7 +1175,7 @@ private fun FlagSettingsCard(
                             style {
                                 padding(5.px, 10.px)
                                 backgroundColor(FlagentTheme.Neutral)
-                                color(FlagentTheme.Background)
+                                color(Color.white)
                                 border {
                                     width(0.px)
                                     style(LineStyle.None)
@@ -1194,7 +1194,7 @@ private fun FlagSettingsCard(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(FlagentTheme.Neutral)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1249,10 +1249,10 @@ private fun VariantsSection(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -1274,7 +1274,7 @@ private fun VariantsSection(
             H2({
                 style {
                     margin(0.px)
-                    color(FlagentTheme.Text)
+                    color(FlagentTheme.WorkspaceText)
                     fontSize(22.px)
                     fontWeight("700")
                 }
@@ -1306,10 +1306,10 @@ private fun VariantsSection(
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(FlagentTheme.BackgroundDark)
+                    backgroundColor(FlagentTheme.WorkspaceInputBg)
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                     marginBottom(15.px)
                 }
             }) {
@@ -1326,12 +1326,12 @@ private fun VariantsSection(
             style {
                 marginTop(25.px)
                 padding(20.px)
-                backgroundColor(FlagentTheme.BackgroundAlt)
+                backgroundColor(FlagentTheme.WorkspaceInputBg)
                 borderRadius(8.px)
                 border {
                     width(2.px)
                     style(LineStyle.Dashed)
-                    color(FlagentTheme.Border)
+                    color(FlagentTheme.WorkspaceInputBorder)
                 }
             }
         }) {
@@ -1357,7 +1357,7 @@ private fun VariantsSection(
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceInputBorder)
                         }
                         borderRadius(6.px)
                         fontSize(14.px)
@@ -1367,7 +1367,7 @@ private fun VariantsSection(
                         (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                     }
                     onBlur {
-                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Border.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
                     }
                 }
                 Button({
@@ -1378,7 +1378,7 @@ private fun VariantsSection(
                     style {
                         padding(12.px, 20.px)
                         backgroundColor(if (creating.value || newVariantKey.value.isBlank()) FlagentTheme.NeutralLighter else FlagentTheme.Success)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1525,11 +1525,11 @@ private fun VariantCard(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(8.px)
             marginBottom(20.px)
-            backgroundColor(FlagentTheme.BackgroundAlt)
+            backgroundColor(FlagentTheme.WorkspaceInputBg)
             property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
             property("transition", "all 0.2s")
         }
@@ -1557,7 +1557,7 @@ private fun VariantCard(
                 style {
                     padding(5.px, 10.px)
                     backgroundColor(FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     borderRadius(3.px)
                     fontSize(12.px)
                 }
@@ -1578,7 +1578,7 @@ private fun VariantCard(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(if (saving.value || !attachmentValid.value) FlagentTheme.NeutralLighter else FlagentTheme.Success)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1598,7 +1598,7 @@ private fun VariantCard(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(if (deleting.value) FlagentTheme.NeutralLighter else FlagentTheme.Error)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1639,7 +1639,7 @@ private fun VariantCard(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceInputBorder)
                     }
                     borderRadius(3.px)
                 }
@@ -1657,7 +1657,7 @@ private fun VariantCard(
                 style {
                     padding(5.px, 10.px)
                     backgroundColor(FlagentTheme.Neutral)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -1803,10 +1803,10 @@ private fun SegmentsSection(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -1836,7 +1836,7 @@ private fun SegmentsSection(
                 H2({
                     style {
                         margin(0.px)
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.WorkspaceText)
                         fontSize(22.px)
                         fontWeight("700")
                     }
@@ -1863,7 +1863,7 @@ private fun SegmentsSection(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(if (reordering.value) FlagentTheme.NeutralLighter else FlagentTheme.Neutral)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1885,7 +1885,7 @@ private fun SegmentsSection(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(FlagentTheme.Success)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -1918,10 +1918,10 @@ private fun SegmentsSection(
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(FlagentTheme.BackgroundDark)
+                    backgroundColor(FlagentTheme.WorkspaceInputBg)
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                     marginBottom(15.px)
                 }
             }) {
@@ -2005,7 +2005,7 @@ private fun SegmentsSection(
                                 border {
                                     width(1.px)
                                     style(LineStyle.Solid)
-                                    color(FlagentTheme.Border)
+                                    color(FlagentTheme.WorkspaceInputBorder)
                                 }
                                 borderRadius(5.px)
                             }
@@ -2111,10 +2111,10 @@ private fun SegmentCard(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(5.px)
-            backgroundColor(FlagentTheme.BackgroundAlt)
+            backgroundColor(FlagentTheme.WorkspaceInputBg)
             property("transition", "all 0.2s ease")
         }
     }) {
@@ -2126,7 +2126,7 @@ private fun SegmentCard(
                 alignItems(AlignItems.Center)
                 gap(5.px)
                 marginBottom(10.px)
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
                 fontSize(12.px)
                 cursor("grab")
                 property("user-select", "none")
@@ -2153,7 +2153,7 @@ private fun SegmentCard(
                 style {
                     padding(5.px, 10.px)
                     backgroundColor(FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     borderRadius(3.px)
                     fontSize(12.px)
                 }
@@ -2174,7 +2174,7 @@ private fun SegmentCard(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(if (saving.value) FlagentTheme.NeutralLighter else FlagentTheme.Success)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -2194,7 +2194,7 @@ private fun SegmentCard(
                     style {
                         padding(5.px, 10.px)
                         backgroundColor(if (deleting.value) FlagentTheme.NeutralLighter else FlagentTheme.Error)
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -2247,7 +2247,7 @@ private fun SegmentCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.WorkspaceInputBorder)
                             }
                             borderRadius(3.px)
                         }
@@ -2287,7 +2287,7 @@ private fun SegmentCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.WorkspaceInputBorder)
                             }
                             borderRadius(3.px)
                         }
@@ -2408,10 +2408,10 @@ private fun ConstraintsSection(
             Div({
                 style {
                     padding(10.px)
-                    backgroundColor(FlagentTheme.BackgroundDark)
+                    backgroundColor(FlagentTheme.WorkspaceInputBg)
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                     marginBottom(10.px)
                 }
             }) {
@@ -2446,7 +2446,7 @@ private fun ConstraintsSection(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceInputBorder)
                     }
                     borderRadius(3.px)
                 }
@@ -2462,7 +2462,7 @@ private fun ConstraintsSection(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceInputBorder)
                     }
                     borderRadius(3.px)
                 }
@@ -2481,7 +2481,7 @@ private fun ConstraintsSection(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceInputBorder)
                     }
                     borderRadius(3.px)
                 }
@@ -2494,7 +2494,7 @@ private fun ConstraintsSection(
                 style {
                     padding(5.px, 10.px)
                     backgroundColor(if (creating.value || newConstraintProperty.value.isBlank() || newConstraintValue.value.isBlank()) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -2553,10 +2553,10 @@ private fun ConstraintRow(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(6.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             marginBottom(10.px)
             property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
         }
@@ -2569,7 +2569,7 @@ private fun ConstraintRow(
                 gap(8.px)
                 marginBottom(10.px)
                 padding(8.px)
-                backgroundColor(FlagentTheme.BackgroundAlt)
+                backgroundColor(FlagentTheme.WorkspaceInputBg)
                 borderRadius(4.px)
             }
         }) {
@@ -2577,7 +2577,7 @@ private fun ConstraintRow(
                 style {
                     padding(4.px, 8.px)
                     backgroundColor(FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     borderRadius(4.px)
                     fontSize(12.px)
                     fontWeight("600")
@@ -2591,7 +2591,7 @@ private fun ConstraintRow(
                 style {
                     padding(4.px, 10.px)
                     backgroundColor(FlagentTheme.Secondary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     borderRadius(4.px)
                     fontSize(14.px)
                     fontWeight("bold")
@@ -2606,7 +2606,7 @@ private fun ConstraintRow(
                 style {
                     padding(4.px, 8.px)
                     backgroundColor(FlagentTheme.Neutral)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     borderRadius(4.px)
                     fontSize(12.px)
                     fontWeight("500")
@@ -2636,7 +2636,7 @@ private fun ConstraintRow(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceInputBorder)
                     }
                     borderRadius(4.px)
                     fontSize(12.px)
@@ -2653,7 +2653,7 @@ private fun ConstraintRow(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceInputBorder)
                     }
                     borderRadius(4.px)
                     fontSize(12.px)
@@ -2673,7 +2673,7 @@ private fun ConstraintRow(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.WorkspaceInputBorder)
                     }
                     borderRadius(4.px)
                     fontSize(12.px)
@@ -2691,7 +2691,7 @@ private fun ConstraintRow(
                 style {
                     padding(6.px, 12.px)
                     backgroundColor(if (saving.value) FlagentTheme.NeutralLighter else FlagentTheme.Success)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -2709,7 +2709,7 @@ private fun ConstraintRow(
                 style {
                     padding(6.px, 12.px)
                     backgroundColor(FlagentTheme.Error)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -2763,7 +2763,7 @@ private fun DistributionsSection(
                 style {
                     padding(5.px, 10.px)
                     backgroundColor(FlagentTheme.Neutral)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -2784,7 +2784,7 @@ private fun DistributionsSection(
                     property("background-color", "rgba(239, 68, 68, 0.1)")
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                 }
             }) {
                 Text(LocalizedStrings.noDistributionYet)
@@ -2841,10 +2841,10 @@ private fun DistributionCard(distribution: flagent.api.model.DistributionRespons
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(8.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             textAlign("center")
             minWidth(140.px)
             display(DisplayStyle.Flex)
@@ -2870,7 +2870,7 @@ private fun DistributionCard(distribution: flagent.api.model.DistributionRespons
             style {
                 fontSize(14.px)
                 fontWeight("bold")
-                color(FlagentTheme.Text)
+                color(FlagentTheme.WorkspaceText)
                 marginBottom(5.px)
             }
         }) {
@@ -2883,7 +2883,7 @@ private fun DistributionCard(distribution: flagent.api.model.DistributionRespons
             size = 100.px,
             strokeWidth = 10.px,
             color = variantColor,
-            backgroundColor = FlagentTheme.BackgroundDark,
+            backgroundColor = FlagentTheme.WorkspaceInputBg,
             showLabel = true,
             labelSize = 18.px,
             labelColor = FlagentTheme.Text
@@ -3000,10 +3000,10 @@ private fun DistributionEditDialog(
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.WorkspaceInputBorder)
                         }
                         borderRadius(5.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.WorkspaceInputBg)
                     }
                 }) {
                     Div({
@@ -3085,16 +3085,16 @@ private fun FlagDeleteCard(flagId: Int) {
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(5.px)
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
         }
     }) {
         H2({
             style {
                 margin(0.px, 0.px, 15.px, 0.px)
-                color(FlagentTheme.Text)
+                color(FlagentTheme.WorkspaceText)
             }
         }) {
             Text(LocalizedStrings.flagSettings)
@@ -3142,7 +3142,7 @@ private fun FlagDeleteCard(flagId: Int) {
                         style {
                             padding(8.px, 16.px)
                             backgroundColor(if (deleting.value) FlagentTheme.NeutralLighter else FlagentTheme.Error)
-                            color(FlagentTheme.Background)
+                            color(Color.white)
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -3158,7 +3158,7 @@ private fun FlagDeleteCard(flagId: Int) {
                         style {
                             padding(8.px, 16.px)
                             backgroundColor(FlagentTheme.Neutral)
-                            color(FlagentTheme.Background)
+                            color(Color.white)
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -3187,7 +3187,7 @@ private fun FlagDeleteCard(flagId: Int) {
                 style {
                     padding(8.px, 16.px)
                     backgroundColor(FlagentTheme.Error)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)

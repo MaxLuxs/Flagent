@@ -25,7 +25,7 @@ fun Spinner() {
                 border {
                     width(4.px)
                     style(LineStyle.Solid)
-                    color(FlagentTheme.BackgroundDark)
+                    color(FlagentTheme.WorkspaceInputBg)
                 }
                 property("border-top-color", FlagentTheme.Primary.toString())
                 borderRadius(50.percent)

@@ -52,7 +52,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(5.px)
         }
@@ -174,7 +174,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                 style {
                     padding(10.px)
                     backgroundColor(if (saving.value || total != 100) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
-                    color(FlagentTheme.Background)
+                    color(Color.white)
                     border {
                         width(0.px)
                         style(LineStyle.None)

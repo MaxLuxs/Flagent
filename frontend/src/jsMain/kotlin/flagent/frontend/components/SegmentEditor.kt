@@ -76,7 +76,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.WorkspaceInputBorder)
             }
             borderRadius(5.px)
         }
@@ -186,7 +186,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                             if (saving.value || description.value.isBlank()) FlagentTheme.NeutralLighter
                             else FlagentTheme.Primary
                         )
-                        color(FlagentTheme.Background)
+                        color(Color.white)
                         border {
                             width(0.px)
                             style(LineStyle.None)

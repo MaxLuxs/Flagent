@@ -17,7 +17,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
     if (insights == null) return
     Div({
         style {
-            backgroundColor(FlagentTheme.Background)
+            backgroundColor(FlagentTheme.WorkspaceCardBg)
             borderRadius(8.px)
             padding(20.px)
             marginBottom(20.px)
@@ -28,7 +28,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
             style {
                 fontSize(18.px)
                 fontWeight("600")
-                color(FlagentTheme.Text)
+                color(FlagentTheme.WorkspaceText)
                 margin(0.px)
                 marginBottom(16.px)
             }
@@ -38,7 +38,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
         if (insights.variantStats.isEmpty()) {
             P({
                 style {
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.WorkspaceTextLight)
                     fontSize(14.px)
                     margin(0.px)
                 }
@@ -66,8 +66,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("left")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.Border)
-                                    color(FlagentTheme.TextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+                                    color(FlagentTheme.WorkspaceTextLight)
                                     fontWeight("600")
                                 }
                             }) { Text("Variant") }
@@ -75,8 +75,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("right")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.Border)
-                                    color(FlagentTheme.TextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+                                    color(FlagentTheme.WorkspaceTextLight)
                                     fontWeight("600")
                                 }
                             }) { Text("Sample") }
@@ -84,8 +84,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("right")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.Border)
-                                    color(FlagentTheme.TextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+                                    color(FlagentTheme.WorkspaceTextLight)
                                     fontWeight("600")
                                 }
                             }) { Text("Conversions") }
@@ -93,8 +93,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("right")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.Border)
-                                    color(FlagentTheme.TextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+                                    color(FlagentTheme.WorkspaceTextLight)
                                     fontWeight("600")
                                 }
                             }) { Text("Rate") }
@@ -102,21 +102,25 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("left")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.Border)
-                                    color(FlagentTheme.TextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+                                    color(FlagentTheme.WorkspaceTextLight)
                                     fontWeight("600")
                                 }
                             }) { Text("95% CI") }
                         }
                     }
                     Tbody {
-                        insights.variantStats.forEach { stat ->
-                            Tr {
+                        for (stat in insights.variantStats) {
+                            Tr({
+                                style {
+                                    borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
+                                }
+                            }) {
                                 Td({
                                     style {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.WorkspaceText)
                                     }
                                 }) {
                                     Span({
@@ -144,7 +148,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
                                         textAlign("right")
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.WorkspaceText)
                                     }
                                 }) { Text(stat.sampleSize.toString()) }
                                 Td({
@@ -152,7 +156,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
                                         textAlign("right")
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.WorkspaceText)
                                     }
                                 }) { Text(stat.conversions.toString()) }
                                 Td({
@@ -160,14 +164,14 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
                                         textAlign("right")
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.WorkspaceText)
                                     }
                                 }) { Text("${(stat.conversionRate * 100).format(2)}%") }
                                 Td({
                                     style {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
-                                        color(FlagentTheme.TextLight)
+                                        color(FlagentTheme.WorkspaceTextLight)
                                         fontSize(13.px)
                                     }
                                 }) {
@@ -203,7 +207,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                 }
                 Span({
                     style {
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.WorkspaceText)
                         fontSize(14.px)
                     }
                 }) {

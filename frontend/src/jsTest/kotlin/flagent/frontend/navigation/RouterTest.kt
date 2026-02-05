@@ -10,6 +10,11 @@ import kotlin.test.assertTrue
  */
 class RouterTest {
     @Test
+    fun testHomePathIsRoot() {
+        assertEquals("/", Route.Home.PATH, "Home route must be root path for landing page")
+    }
+
+    @Test
     fun testRoutePathGeneration() {
         assertEquals("/", Route.Home.PATH)
         assertEquals("/flags", Route.FlagsList.PATH)
@@ -37,6 +42,12 @@ class RouterTest {
         val flagDetail = Route.FlagDetail(789)
         val flagPath = flagDetail.path()
         assertEquals("/flags/789", flagPath)
+    }
+
+    @Test
+    fun testRoutePathExtensionForHome() {
+        val path = with(Router) { Route.Home.path() }
+        assertEquals("/", path, "Route.path() for Home must return root for logo href")
     }
     
     @Test

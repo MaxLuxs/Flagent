@@ -18,10 +18,11 @@ import org.jetbrains.compose.web.dom.*
 
 /**
  * Tenants List component (Phase 2)
+ * Uses shared tenantViewModel when provided (from App/ShellLayout) so Switch and TenantSwitcher stay in sync.
  */
 @Composable
-fun TenantsList() {
-    val viewModel = remember { TenantViewModel() }
+fun TenantsList(tenantViewModel: TenantViewModel? = null) {
+    val viewModel = tenantViewModel ?: remember { TenantViewModel() }
     val showCreateForm = remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
@@ -78,14 +79,31 @@ fun TenantsList() {
             CreateTenantModal(
                 onDismiss = { showCreateForm.value = false },
                 onCreate = { key, name, plan, ownerEmail ->
-                    viewModel.createTenant(key, name, plan, ownerEmail) { _, apiKey ->
+                    viewModel.createTenant(key, name, plan, ownerEmail) { tenant, apiKey ->
                         localStorage.setItem("api_key", apiKey)
+                        viewModel.storeApiKeyForTenant(tenant.id, apiKey)
+                        viewModel.switchTenant(tenant)
                         showCreateForm.value = false
                     }
-                }
+                },
+                confirmLoading = viewModel.isLoading
             )
         }
         
+        viewModel.error?.let { err ->
+            Div({
+                style {
+                    padding(12.px)
+                    marginBottom(16.px)
+                    backgroundColor(Color("#FEF2F2"))
+                    color(Color("#991B1B"))
+                    borderRadius(6.px)
+                    fontSize(14.px)
+                }
+            }) {
+                Text(err)
+            }
+        }
         if (viewModel.isLoading) {
             SkeletonLoader(height = 200.px)
         } else if (viewModel.tenants.isEmpty()) {
@@ -207,7 +225,8 @@ fun TenantsList() {
 @Composable
 private fun CreateTenantModal(
     onDismiss: () -> Unit,
-    onCreate: (key: String, name: String, plan: String, ownerEmail: String) -> Unit
+    onCreate: (key: String, name: String, plan: String, ownerEmail: String) -> Unit,
+    confirmLoading: Boolean = false
 ) {
     val key = remember { mutableStateOf("") }
     val name = remember { mutableStateOf("") }
@@ -219,12 +238,13 @@ private fun CreateTenantModal(
         onClose = onDismiss,
         onConfirm = {
             onCreate(key.value.trim(), name.value.trim(), plan.value, ownerEmail.value.trim())
-            onDismiss()
+            // Modal stays open; onSuccess in createTenant callback will close via onDismiss
         },
         confirmText = "Create",
         cancelText = "Cancel",
         showCancel = true,
-        confirmDisabled = key.value.isBlank() || name.value.isBlank() || ownerEmail.value.isBlank()
+        confirmDisabled = key.value.isBlank() || name.value.isBlank() || ownerEmail.value.isBlank(),
+        confirmLoading = confirmLoading
     ) {
         Div({
             style {

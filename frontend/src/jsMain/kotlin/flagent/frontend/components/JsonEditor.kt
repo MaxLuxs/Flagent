@@ -78,12 +78,12 @@ fun JsonEditor(
                     fontFamily("'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace")
                     fontSize(13.px)
                     property("line-height", "1.5")
-                    color(FlagentTheme.Text)
-                    backgroundColor(FlagentTheme.Background)
+                    color(FlagentTheme.CodeText)
+                    backgroundColor(FlagentTheme.CodeBackground)
                     border {
                         width(2.px)
                         style(LineStyle.Solid)
-                        color(if (isValid.value) FlagentTheme.Border else FlagentTheme.Error)
+                        color(if (isValid.value) FlagentTheme.WorkspaceInputBorder else FlagentTheme.Error)
                     }
                     borderRadius(5.px)
                     property("resize", "vertical")
@@ -161,7 +161,7 @@ fun JsonEditor(
         Span({
             style {
                 fontSize(11.px)
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.WorkspaceTextLight)
                 property("line-height", "1.4")
             }
         }) {
