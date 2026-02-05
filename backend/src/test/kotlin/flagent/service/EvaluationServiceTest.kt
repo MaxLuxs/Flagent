@@ -5,6 +5,7 @@ import flagent.config.AppConfig
 import flagent.domain.entity.*
 import flagent.domain.usecase.EvaluateFlagUseCase
 import flagent.recorder.DataRecordingService
+import flagent.recorder.EvaluationEventRecorder
 import flagent.integration.firebase.FirebaseAnalyticsReporter
 import flagent.service.adapter.SharedFlagEvaluatorAdapter
 import io.mockk.*
@@ -76,6 +77,37 @@ class EvaluationServiceTest {
         assertEquals(1, result.variantID)
         assertEquals(1, result.segmentID)
         verify { evalCache.getByFlagKeyOrID(1) }
+    }
+
+    @Test
+    fun testEvaluateFlag_callsEvaluationEventRecorder_WhenProvided() {
+        val evaluationEventRecorder = mockk<EvaluationEventRecorder>(relaxed = true)
+        val serviceWithRecorder = EvaluationService(
+            evalCache, evaluateFlagUseCase, dataRecordingService,
+            firebaseAnalyticsReporter = null,
+            evaluationEventRecorder = evaluationEventRecorder
+        )
+
+        val variant = Variant(id = 1, flagId = 1, key = "variant1")
+        val distribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val segment = Segment(
+            id = 1, flagId = 1, description = "Test", rank = 1, rolloutPercent = 100,
+            constraints = emptyList(), distributions = listOf(distribution)
+        )
+        val flag = Flag(
+            id = 1, key = "test_flag", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant)
+        )
+
+        every { evalCache.getByFlagKeyOrID(1) } returns flag
+
+        val result = serviceWithRecorder.evaluateFlag(
+            flagID = 1, flagKey = null, entityID = "user123",
+            entityType = "user", entityContext = null, enableDebug = false
+        )
+
+        assertEquals(1, result.flagID)
+        verify(exactly = 1) { evaluationEventRecorder.record(1, result.timestamp) }
     }
     
     @Test
@@ -948,6 +980,163 @@ class EvaluationServiceTest {
         assertTrue(results.isEmpty())
     }
     
+    @Test
+    fun testEvaluateFlag_FiltersByEnvironment_WhenEnvironmentIdProvided_FlagMatches() {
+        val variant = Variant(id = 1, flagId = 1, key = "variant1")
+        val distribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val segment = Segment(
+            id = 1, flagId = 1, description = "Test", rank = 1, rolloutPercent = 100,
+            constraints = emptyList(), distributions = listOf(distribution)
+        )
+        val flag = Flag(
+            id = 1, key = "test_flag", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant),
+            environmentId = 5L
+        )
+        every { evalCache.getByFlagKeyOrID(1) } returns flag
+
+        val result = evaluationService.evaluateFlag(
+            flagID = 1,
+            flagKey = null,
+            entityID = "user123",
+            entityType = "user",
+            entityContext = null,
+            enableDebug = false,
+            environmentId = 5L
+        )
+
+        assertEquals(1, result.flagID)
+        assertNotNull(result.variantID)
+        verify { evalCache.getByFlagKeyOrID(1) }
+    }
+
+    @Test
+    fun testEvaluateFlag_FiltersByEnvironment_WhenEnvironmentIdProvided_FlagDoesNotMatch() {
+        val variant = Variant(id = 1, flagId = 1, key = "variant1")
+        val distribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val segment = Segment(
+            id = 1, flagId = 1, description = "Test", rank = 1, rolloutPercent = 100,
+            constraints = emptyList(), distributions = listOf(distribution)
+        )
+        val flag = Flag(
+            id = 1, key = "test_flag", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant),
+            environmentId = 5L
+        )
+        every { evalCache.getByFlagKeyOrID(1) } returns flag
+
+        val result = evaluationService.evaluateFlag(
+            flagID = 1,
+            flagKey = null,
+            entityID = "user123",
+            entityType = "user",
+            entityContext = null,
+            enableDebug = false,
+            environmentId = 10L
+        )
+
+        assertEquals(1, result.flagID)
+        assertNull(result.variantID)
+        assertNotNull(result.evalDebugLog)
+        assertTrue(result.evalDebugLog!!.message.contains("not found"))
+    }
+
+    @Test
+    fun testEvaluateFlag_FiltersByEnvironment_WhenFlagEnvironmentNull_AlwaysReturns() {
+        val variant = Variant(id = 1, flagId = 1, key = "variant1")
+        val distribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val segment = Segment(
+            id = 1, flagId = 1, description = "Test", rank = 1, rolloutPercent = 100,
+            constraints = emptyList(), distributions = listOf(distribution)
+        )
+        val flag = Flag(
+            id = 1, key = "test_flag", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant),
+            environmentId = null
+        )
+        every { evalCache.getByFlagKeyOrID(1) } returns flag
+
+        val result = evaluationService.evaluateFlag(
+            flagID = 1,
+            flagKey = null,
+            entityID = "user123",
+            entityType = "user",
+            entityContext = null,
+            enableDebug = false,
+            environmentId = 5L
+        )
+
+        assertEquals(1, result.flagID)
+        assertNotNull(result.variantID)
+    }
+
+    @Test
+    fun testEvaluateFlag_NoEnvironmentFilter_WhenEnvironmentIdNull() {
+        val variant = Variant(id = 1, flagId = 1, key = "variant1")
+        val distribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val segment = Segment(
+            id = 1, flagId = 1, description = "Test", rank = 1, rolloutPercent = 100,
+            constraints = emptyList(), distributions = listOf(distribution)
+        )
+        val flag = Flag(
+            id = 1, key = "test_flag", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant),
+            environmentId = 5L
+        )
+        every { evalCache.getByFlagKeyOrID(1) } returns flag
+
+        val result = evaluationService.evaluateFlag(
+            flagID = 1,
+            flagKey = null,
+            entityID = "user123",
+            entityType = "user",
+            entityContext = null,
+            enableDebug = false,
+            environmentId = null
+        )
+
+        assertEquals(1, result.flagID)
+        assertNotNull(result.variantID)
+    }
+
+    @Test
+    fun testEvaluateFlagsByTags_FiltersByEnvironment() {
+        val variant = Variant(id = 1, flagId = 1, key = "variant1")
+        val distribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val segment = Segment(
+            id = 1, flagId = 1, description = "Test", rank = 1, rolloutPercent = 100,
+            constraints = emptyList(), distributions = listOf(distribution)
+        )
+        val tag = Tag(id = 1, value = "test_tag")
+        val flagEnv5 = Flag(
+            id = 1, key = "flag1", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant), tags = listOf(tag),
+            environmentId = 5L
+        )
+        val flagEnv10 = Flag(
+            id = 2, key = "flag2", description = "Test", enabled = true,
+            segments = listOf(segment), variants = listOf(variant), tags = listOf(tag),
+            environmentId = 10L
+        )
+        every { evalCache.getByTags(listOf("test_tag"), null) } returns listOf(flagEnv5, flagEnv10)
+
+        val results = evaluationService.evaluateFlagsByTags(
+            tags = listOf("test_tag"),
+            operator = null,
+            entityID = "user123",
+            entityType = "user",
+            entityContext = null,
+            enableDebug = false,
+            environmentId = 5L
+        )
+
+        assertEquals(2, results.size)
+        assertEquals(1, results[0].flagID)
+        assertNotNull(results[0].variantID)
+        assertEquals(2, results[1].flagID)
+        assertNull(results[1].variantID)
+    }
+
     @Test
     fun testEvaluateFlag_IncludesFlagTagsInResult() {
         val variant = Variant(id = 1, flagId = 1, key = "variant1")

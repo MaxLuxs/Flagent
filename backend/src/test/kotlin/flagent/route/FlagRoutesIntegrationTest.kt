@@ -12,6 +12,8 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.test.*
@@ -286,6 +288,123 @@ class FlagRoutesIntegrationTest {
             assertEquals(HttpStatusCode.OK, response.status)
             val flags = response.bodyJsonArray()
             assertTrue(flags.isEmpty())
+        } finally {
+            client.close()
+        }
+    }
+    
+    @Test
+    fun testGetFlags_ReturnsXTotalCountHeader() = testApplication {
+        application {
+            module()
+        }
+        
+        val client = createAuthenticatedClient()
+        
+        try {
+            val response = client.get("/api/v1/flags")
+            assertEquals(HttpStatusCode.OK, response.status)
+            val totalCount = response.headers["X-Total-Count"]
+            assertNotNull(totalCount)
+            assertTrue(totalCount!!.toLongOrNull()!! >= 0)
+        } finally {
+            client.close()
+        }
+    }
+    
+    @Test
+    fun testGetFlags_PaginationAndTotalCount() = testApplication {
+        application {
+            module()
+        }
+        
+        val client = createAuthenticatedClient()
+        
+        try {
+            val ts = System.currentTimeMillis()
+            repeat(3) { i ->
+                client.post("/api/v1/flags") {
+                    contentType(ContentType.Application.Json)
+                    setBody(buildJsonObject {
+                        put("description", "Pagination test $i")
+                        put("key", "pag_test_${ts}_$i")
+                    }.toString())
+                }
+            }
+            
+            val response = client.get("/api/v1/flags?limit=2&offset=0")
+            assertEquals(HttpStatusCode.OK, response.status)
+            val totalCount = response.headers["X-Total-Count"]!!.toLongOrNull()!!
+            assertTrue(totalCount >= 3)
+            val flags = response.bodyJsonArray()
+            assertTrue(flags.size <= 2)
+        } finally {
+            client.close()
+        }
+    }
+    
+    @Test
+    fun testBatchSetEnabled_Integration() = testApplication {
+        application {
+            module()
+        }
+        
+        val client = createAuthenticatedClient()
+        
+        try {
+            val ts = System.currentTimeMillis()
+            val flag1 = client.post("/api/v1/flags") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("description", "Batch enable test 1")
+                    put("key", "batch_en_${ts}_1")
+                }.toString())
+            }.bodyJsonObject()
+            val flag2 = client.post("/api/v1/flags") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("description", "Batch enable test 2")
+                    put("key", "batch_en_${ts}_2")
+                }.toString())
+            }.bodyJsonObject()
+            
+            val id1 = flag1.intOrNull("id") ?: error("Missing id")
+            val id2 = flag2.intOrNull("id") ?: error("Missing id")
+            
+            val batchResponse = client.put("/api/v1/flags/batch/enabled") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("ids", buildJsonArray { add(JsonPrimitive(id1)); add(JsonPrimitive(id2)) })
+                    put("enabled", true)
+                }.toString())
+            }
+            
+            assertEquals(HttpStatusCode.OK, batchResponse.status)
+            val updated = batchResponse.bodyJsonArray()
+            assertEquals(2, updated.size)
+            assertTrue(updated.all { (it as? JsonObject)?.booleanOrNull("enabled") == true })
+        } finally {
+            client.close()
+        }
+    }
+    
+    @Test
+    fun testBatchSetEnabled_EmptyIds_Returns400() = testApplication {
+        application {
+            module()
+        }
+        
+        val client = createAuthenticatedClient()
+        
+        try {
+            val response = client.put("/api/v1/flags/batch/enabled") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("ids", buildJsonArray { })
+                    put("enabled", true)
+                }.toString())
+            }
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         } finally {
             client.close()
         }

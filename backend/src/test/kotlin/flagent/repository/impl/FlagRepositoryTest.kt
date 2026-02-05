@@ -187,6 +187,38 @@ class FlagRepositoryTest {
         assertNotNull(found)
         assertEquals("Updated description", found.description)
     }
+
+    @Test
+    fun testCreateFlagWithEnvironmentId() = runBlocking {
+        val flag = Flag(
+            key = "env_flag_${System.currentTimeMillis()}",
+            description = "Flag with environment",
+            enabled = true,
+            environmentId = 5L
+        )
+        val created = repository.create(flag)
+        assertTrue(created.id > 0)
+        assertEquals(5L, created.environmentId)
+        val found = repository.findById(created.id)
+        assertNotNull(found)
+        assertEquals(5L, found?.environmentId)
+    }
+
+    @Test
+    fun testUpdateFlagPreservesEnvironmentId() = runBlocking {
+        val flag = Flag(
+            key = "env_update_${System.currentTimeMillis()}",
+            description = "Original",
+            enabled = true,
+            environmentId = 10L
+        )
+        val created = repository.create(flag)
+        val updated = repository.update(created.copy(description = "Updated", environmentId = 20L))
+        assertEquals(20L, updated.environmentId)
+        val found = repository.findById(created.id)
+        assertNotNull(found)
+        assertEquals(20L, found?.environmentId)
+    }
     
     @Test
     fun testDeleteFlag() = runBlocking {
@@ -413,5 +445,43 @@ class FlagRepositoryTest {
         // Offset beyond available records
         val result = repository.findAll(limit = 10, offset = 100)
         assertTrue(result.isEmpty())
+    }
+    
+    @Test
+    fun testCountAll() = runBlocking {
+        repository.create(Flag(key = "count1", description = "Count flag 1", enabled = true))
+        repository.create(Flag(key = "count2", description = "Count flag 2", enabled = false))
+        repository.create(Flag(key = "count3", description = "Count flag 3", enabled = true))
+        
+        val total = repository.countAll()
+        assertTrue(total >= 3)
+    }
+    
+    @Test
+    fun testCountAll_WithEnabledFilter() = runBlocking {
+        repository.create(Flag(key = "count_en1", description = "Enabled", enabled = true))
+        repository.create(Flag(key = "count_dis1", description = "Disabled", enabled = false))
+        
+        val enabledCount = repository.countAll(enabled = true)
+        val disabledCount = repository.countAll(enabled = false)
+        
+        assertTrue(enabledCount >= 1)
+        assertTrue(disabledCount >= 1)
+    }
+    
+    @Test
+    fun testCountAll_WithDescriptionLike() = runBlocking {
+        repository.create(Flag(key = "count_desc1", description = "UniqueCountDesc", enabled = true))
+        repository.create(Flag(key = "count_desc2", description = "UniqueCountDescTwo", enabled = true))
+        repository.create(Flag(key = "count_other", description = "Other description", enabled = true))
+        
+        val count = repository.countAll(descriptionLike = "UniqueCountDesc")
+        assertTrue(count >= 2)
+    }
+    
+    @Test
+    fun testCountAll_WithTagsFilter() = runBlocking {
+        val count = repository.countAll(tags = "non_existent_tag_xyz")
+        assertEquals(0L, count)
     }
 }

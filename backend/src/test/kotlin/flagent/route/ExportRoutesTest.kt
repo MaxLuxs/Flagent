@@ -61,4 +61,50 @@ class ExportRoutesTest {
         
         Database.close()
     }
+
+    @Test
+    fun testExportGitOpsJson() = testApplication {
+        Database.init()
+        val flagRepository = FlagRepository()
+        val flagSnapshotRepository = FlagSnapshotRepository()
+        val flagEntityTypeRepository = FlagEntityTypeRepository()
+        val evalCache = EvalCache(flagRepository)
+        val exportService = ExportService(flagRepository, flagSnapshotRepository, flagEntityTypeRepository)
+
+        application {
+            routing {
+                configureExportRoutes(evalCache, exportService)
+            }
+        }
+
+        val response = client.get("/api/v1/export/gitops?format=json")
+        assertEquals(HttpStatusCode.OK, response.status)
+        val json = Json.parseToJsonElement(response.bodyAsText())
+        assertTrue(json.jsonObject.containsKey("version"))
+        assertTrue(json.jsonObject.containsKey("flags"))
+
+        Database.close()
+    }
+
+    @Test
+    fun testExportGitOpsYaml() = testApplication {
+        Database.init()
+        val flagRepository = FlagRepository()
+        val flagSnapshotRepository = FlagSnapshotRepository()
+        val flagEntityTypeRepository = FlagEntityTypeRepository()
+        val evalCache = EvalCache(flagRepository)
+        val exportService = ExportService(flagRepository, flagSnapshotRepository, flagEntityTypeRepository)
+
+        application {
+            routing {
+                configureExportRoutes(evalCache, exportService)
+            }
+        }
+
+        val response = client.get("/api/v1/export/gitops?format=yaml")
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertTrue(response.bodyAsText().contains("version") || response.bodyAsText().contains("flags"))
+
+        Database.close()
+    }
 }
