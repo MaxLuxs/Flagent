@@ -188,7 +188,12 @@ coverage/
 .jest/
 test-results/
 playwright-report/
-playwright/.cache/
+**/playwright/.cache/
+**/playwright/.auth/
+# E2E debug artifacts (screenshots, traces)
+debug-*.png
+*-failure*.png
+**/blob-report/
 
 # Temporary files
 *.tmp
