@@ -17,7 +17,6 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * Prometheus metrics middleware
- * Maps to pkg/config/middleware.go prometheusMiddleware
  */
 fun Application.configurePrometheusMetrics() {
     if (!AppConfig.prometheusEnabled) return
@@ -39,7 +38,6 @@ fun Application.configurePrometheusMetrics() {
 
 /**
  * StatsD metrics middleware
- * Maps to pkg/config/middleware.go statsdMiddleware
  */
 class StatsDMetricsMiddleware(
     private val statsdClient: NonBlockingStatsDClient

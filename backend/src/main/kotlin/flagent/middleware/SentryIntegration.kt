@@ -10,7 +10,6 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * Sentry integration middleware
- * Maps to pkg/config/config.go setupSentry
  */
 fun Application.configureSentry() {
     if (!AppConfig.sentryEnabled || AppConfig.sentryDSN.isEmpty()) {

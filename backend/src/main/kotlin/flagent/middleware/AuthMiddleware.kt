@@ -13,7 +13,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException
 
 /**
  * Authentication middleware interface
- * Maps to pkg/config/middleware.go authentication setup
  */
 interface AuthMiddleware {
     fun isWhitelisted(path: String): Boolean
@@ -21,7 +20,6 @@ interface AuthMiddleware {
 
 /**
  * JWT Authentication middleware
- * Maps to pkg/config/middleware.go setupJWTAuthMiddleware
  */
 fun Application.configureJWTAuth() {
     if (!AppConfig.jwtAuthEnabled) return
@@ -114,7 +112,6 @@ fun Application.configureJWTAuth() {
 
 /**
  * Basic Authentication middleware
- * Maps to pkg/config/middleware.go setupBasicAuthMiddleware
  */
 fun Application.configureBasicAuth() {
     if (!AppConfig.basicAuthEnabled) return
@@ -152,7 +149,6 @@ fun Application.configureBasicAuth() {
 
 /**
  * Header Authentication middleware
- * Maps to header auth from pkg/config/middleware.go
  */
 fun Application.configureHeaderAuth() {
     if (!AppConfig.headerAuthEnabled) return
@@ -171,7 +167,6 @@ fun Application.configureHeaderAuth() {
 
 /**
  * Cookie Authentication middleware
- * Maps to cookie auth from pkg/config/middleware.go
  * Supports both JWT tokens in cookies and plain cookie values
  */
 fun Application.configureCookieAuth() {
@@ -179,7 +174,7 @@ fun Application.configureCookieAuth() {
     
     // Cookie auth is handled in Subject utility (flagent.util.Subject.kt)
     // Cookie authentication is extracted directly from cookies without requiring
-    // authentication middleware, matching the original Go implementation behavior
+    // authentication middleware
 }
 
 /**

@@ -7,8 +7,7 @@ import io.ktor.server.request.*
 import org.slf4j.event.Level
 
 /**
- * Logging middleware - structured logging for requests/responses
- * Maps to pkg/config/middleware.go SetupGlobalMiddleware verbose logger
+ * Request logging middleware
  */
 fun Application.configureLogging() {
     if (AppConfig.middlewareVerboseLoggerEnabled) {

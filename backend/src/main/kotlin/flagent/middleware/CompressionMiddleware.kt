@@ -6,7 +6,6 @@ import io.ktor.server.plugins.compression.*
 
 /**
  * Compression middleware - Gzip compression for responses
- * Maps to pkg/config/middleware.go SetupGlobalMiddleware gzip
  */
 fun Application.configureCompression() {
     if (AppConfig.middlewareGzipEnabled) {

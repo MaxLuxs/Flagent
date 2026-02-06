@@ -232,8 +232,7 @@ class AuthMiddlewareTest {
         every { AppConfig.jwtAuthEnabled } returns false
         every { AppConfig.headerAuthEnabled } returns false
         
-        // JWT token without verification (as per original implementation)
-        // This matches the behavior in subject.go where JWT parsing skips error check
+        // JWT token without verification - cookie auth extracts subject from JWT claim
         val token = "eyJhbGciOiJIUzI1NiIsImtpZCI6IjEyMzQ1In0.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJhYmNAZXhhbXBsZS5jb20iLCJpYXQiOjE1MTYyMzkwMjJ9.tzRXenFic8Eqg2awzO0eiX6Rozy_mmsJVzLJfUUfREI"
         
         application {
@@ -261,7 +260,7 @@ class AuthMiddlewareTest {
             cookie("CF_Authorization", token)
         }
         
-        // Should decode without verification (as per original)
+        // Should decode without verification
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("abc@example.com"))
         
@@ -311,8 +310,6 @@ class AuthMiddlewareTest {
         }
         
         // JWT.decode() doesn't verify expiration, so it will decode successfully
-        // The email claim will be extracted, so subject will not be empty
-        // This matches the original behavior where JWT.decode() doesn't check expiration
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("user@example.com"))
         

@@ -12,7 +12,6 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * Error handling and recovery middleware
- * Maps to error handling from pkg/handler/error.go and recovery middleware
  */
 fun Application.configureErrorHandling() {
     install(StatusPages) {
