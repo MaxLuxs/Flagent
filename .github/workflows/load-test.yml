@@ -7,6 +7,7 @@ on:
     paths:
       - 'backend/**'
       - 'infrastructure/load-tests/**'
+      - '.github/workflows/load-test.yml'
 
   # Manual trigger
   workflow_dispatch:
@@ -18,6 +19,7 @@ on:
         type: choice
         options:
           - all
+          - evaluation
           - metrics
           - anomaly
       duration:
@@ -107,6 +109,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install k6
 
+      - name: Run Evaluation Load Test
+        if: ${{ github.event.inputs.scenario == 'evaluation' || github.event.inputs.scenario == 'all' || github.event.inputs.scenario == '' }}
+        run: |
+          k6 run infrastructure/load-tests/evaluation-load-test.js \
+            -e EVAL_VUS=200 -e EVAL_DURATION=30s \
+            -e BASE_URL=http://localhost:8000 \
+            --out json=evaluation-results.json \
+            --summary-export=evaluation-summary.json \
+            || echo "Evaluation load test completed with warnings"
+
       - name: Run Metrics Load Test
         if: ${{ github.event.inputs.scenario == 'metrics' || github.event.inputs.scenario == 'all' || github.event.inputs.scenario == '' }}
         run: |
@@ -126,6 +138,20 @@ jobs:
       - name: Parse Results
         id: parse_results
         run: |
+          # Parse evaluation summary
+          if [ -f evaluation-summary.json ]; then
+            EVAL_P95=$(jq -r '.metrics.http_req_duration.values["p(95)"] // empty' evaluation-summary.json)
+            EVAL_P99=$(jq -r '.metrics.http_req_duration.values["p(99)"] // empty' evaluation-summary.json)
+            EVAL_RATE=$(jq -r '.metrics.http_reqs.values.rate // empty' evaluation-summary.json)
+            EVAL_ERROR=$(jq -r '.metrics.http_req_failed.values.rate // empty' evaluation-summary.json)
+            {
+              echo "eval_p95=${EVAL_P95:-}"
+              echo "eval_p99=${EVAL_P99:-}"
+              echo "eval_rate=${EVAL_RATE:-}"
+              echo "eval_error_rate=${EVAL_ERROR:-}"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
           # Parse metrics summary
           if [ -f metrics-summary.json ]; then
             METRICS_P95=$(jq -r '.metrics.http_req_duration.values.["p(95)"]' metrics-summary.json)
@@ -155,6 +181,22 @@ jobs:
       - name: Check Performance Thresholds
         run: |
           FAILED=0
+
+          # Evaluation API thresholds
+          if [ -n "${{ steps.parse_results.outputs.eval_p95 }}" ] && [ "${{ steps.parse_results.outputs.eval_p95 }}" != "null" ]; then
+            if (( $(echo "${{ steps.parse_results.outputs.eval_p95 }} > 50" | bc -l 2>/dev/null || echo 0) )); then
+              echo "❌ Evaluation API p95 (${{ steps.parse_results.outputs.eval_p95 }}ms) exceeds threshold (50ms)"
+              FAILED=1
+            else
+              echo "✅ Evaluation API p95 (${{ steps.parse_results.outputs.eval_p95 }}ms) within threshold"
+            fi
+            if (( $(echo "${{ steps.parse_results.outputs.eval_error_rate }} > 0.01" | bc -l 2>/dev/null || echo 0) )); then
+              echo "❌ Evaluation API error rate (${{ steps.parse_results.outputs.eval_error_rate }}) exceeds threshold (1%)"
+              FAILED=1
+            else
+              echo "✅ Evaluation API error rate (${{ steps.parse_results.outputs.eval_error_rate }}) within threshold"
+            fi
+          fi
 
           # Metrics API thresholds
           if [ -n "${{ steps.parse_results.outputs.metrics_p95 }}" ]; then
@@ -193,6 +235,12 @@ jobs:
         run: |
           cat << EOF > performance-report.md
           # Load Test Results
+
+          ## Evaluation API
+          - **Throughput:** ${{ steps.parse_results.outputs.eval_rate }} req/s (threshold: target ~2000)
+          - **p95 latency:** ${{ steps.parse_results.outputs.eval_p95 }}ms (threshold: < 50ms)
+          - **p99 latency:** ${{ steps.parse_results.outputs.eval_p99 }}ms (threshold: < 100ms)
+          - **Error rate:** ${{ steps.parse_results.outputs.eval_error_rate }} (threshold: < 1%)
 
           ## Metrics API
           - **p95 latency:** ${{ steps.parse_results.outputs.metrics_p95 }}ms (threshold: < 500ms)
@@ -234,6 +282,8 @@ jobs:
         with:
           name: load-test-results
           path: |
+            evaluation-results.json
+            evaluation-summary.json
             metrics-results.json
             metrics-summary.json
             anomaly-results.json

@@ -37,7 +37,31 @@ docker-compose up
 
 ## Тесты
 
-### 1. Metrics Load Test
+### 1. Evaluation Load Test
+
+Тестирует производительность Evaluation API (POST /api/v1/evaluation).
+
+**Запуск:**
+```bash
+k6 run evaluation-load-test.js
+```
+
+**С custom параметрами:**
+```bash
+k6 run -e EVAL_VUS=2000 -e EVAL_DURATION=60s -e BASE_URL=http://localhost:18000 evaluation-load-test.js
+```
+
+**Сценарий:**
+- Constant load: 200 VUs (по умолчанию), 30s
+- Цель: ~2000 req/s, p99 < 100ms, error rate < 1%
+
+**Thresholds:**
+- p50 < 5ms, p95 < 50ms, p99 < 100ms
+- Error rate < 1%
+
+См. [docs/performance/benchmarks.md](../docs/performance/benchmarks.md) для деталей.
+
+### 2. Metrics Load Test
 
 Тестирует производительность Metrics API под нагрузкой.
 
@@ -73,7 +97,7 @@ k6 run -e BASE_URL=http://your-server:8000 load-tests/metrics-load-test.js
 - Get metrics: ~50-150ms
 - Get aggregation: ~100-250ms
 
-### 2. Anomaly Detection Load Test
+### 3. Anomaly Detection Load Test
 
 Тестирует производительность anomaly detection системы.
 
