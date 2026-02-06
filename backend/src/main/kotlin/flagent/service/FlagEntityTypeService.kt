@@ -4,8 +4,7 @@ import flagent.domain.entity.FlagEntityType
 import flagent.domain.repository.IFlagEntityTypeRepository
 
 /**
- * FlagEntityType service - handles flag entity type business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Flag entity type CRUD operations
  */
 class FlagEntityTypeService(
     private val flagEntityTypeRepository: IFlagEntityTypeRepository

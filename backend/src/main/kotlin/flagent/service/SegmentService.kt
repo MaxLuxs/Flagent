@@ -8,8 +8,7 @@ import flagent.service.command.CreateSegmentCommand
 import flagent.service.command.PutSegmentCommand
 
 /**
- * Segment service - handles segment business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Segment CRUD operations
  */
 class SegmentService(
     private val segmentRepository: ISegmentRepository,

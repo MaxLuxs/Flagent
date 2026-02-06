@@ -3,7 +3,8 @@ package flagent.route
 import flagent.repository.Database
 import flagent.repository.impl.FlagRepository
 import flagent.service.FlagService
-import io.ktor.client.call.*
+import flagent.test.bodyJsonObject
+import flagent.test.intOrNull
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -63,9 +64,9 @@ class FlagRoutesTest {
             }
             
             assertEquals(HttpStatusCode.OK, response.status)
-            val json = Json.parseToJsonElement(response.bodyAsText())
-            assertTrue(json.jsonObject.containsKey("id"))
-            assertTrue(json.jsonObject.containsKey("key"))
+            val json = response.bodyJsonObject()
+            assertTrue(json.containsKey("id"))
+            assertTrue(json.containsKey("key"))
         } finally {
             Database.close()
         }
@@ -92,14 +93,15 @@ class FlagRoutesTest {
                 contentType(ContentType.Application.Json)
                 setBody("""{"description":"Test flag"}""")
             }
-            val createdFlag = Json.parseToJsonElement(createResponse.bodyAsText())
-            val flagId = createdFlag.jsonObject["id"]!!.jsonPrimitive.int
+            assertEquals(HttpStatusCode.OK, createResponse.status)
+            val createdFlag = createResponse.bodyJsonObject()
+            val flagId = createdFlag.intOrNull("id") ?: error("Missing id in create response: ${createResponse.bodyAsText()}")
             
             // Then get it
             val response = client.get("/api/v1/flags/$flagId")
             assertEquals(HttpStatusCode.OK, response.status)
-            val json = Json.parseToJsonElement(response.bodyAsText())
-            assertEquals(flagId, json.jsonObject["id"]!!.jsonPrimitive.int)
+            val json = response.bodyJsonObject()
+            assertEquals(flagId, json.intOrNull("id"))
         } finally {
             Database.close()
         }
@@ -125,7 +127,7 @@ class FlagRoutesTest {
             assertEquals(HttpStatusCode.OK, response.status)
             val totalCount = response.headers["X-Total-Count"]
             assertNotNull(totalCount)
-            assertTrue(totalCount!!.toLongOrNull()!! >= 0)
+            assertTrue((totalCount?.toLongOrNull() ?: -1) >= 0)
         } finally {
             Database.close()
         }
@@ -240,8 +242,9 @@ class FlagRoutesTest {
                 contentType(ContentType.Application.Json)
                 setBody("""{"description":"Batch test flag","key":"batch_test_flag"}""")
             }
-            val created = Json.parseToJsonElement(createResponse.bodyAsText()).jsonObject
-            val flagId = created["id"]!!.jsonPrimitive.int
+            assertEquals(HttpStatusCode.OK, createResponse.status)
+            val created = createResponse.bodyJsonObject()
+            val flagId = created.intOrNull("id") ?: error("Missing id in create response: ${createResponse.bodyAsText()}")
             
             val batchResponse = client.put("/api/v1/flags/batch/enabled") {
                 contentType(ContentType.Application.Json)

@@ -18,8 +18,7 @@ import io.ktor.server.routing.*
 private val log = KotlinLogging.logger {}
 
 /**
- * Flag routes - CRUD operations for flags
- * Maps to pkg/handler/crud.go from original project
+ * Flag CRUD API endpoints
  */
 fun Routing.configureFlagRoutes(flagService: FlagService) {
     route(ApiConstants.API_BASE_PATH) {

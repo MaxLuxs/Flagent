@@ -13,8 +13,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * Export routes - export operations
- * Maps to pkg/handler/export.go from original project
+ * Export API endpoints
  */
 fun Routing.configureExportRoutes(evalCache: EvalCache, exportService: ExportService) {
     route(ApiConstants.API_BASE_PATH) {

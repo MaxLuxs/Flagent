@@ -16,8 +16,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Segment routes - CRUD operations for segments
- * Maps to pkg/handler/crud.go from original project
+ * Segment CRUD API endpoints
  */
 fun Routing.configureSegmentRoutes(segmentService: SegmentService) {
     route(ApiConstants.API_BASE_PATH) {

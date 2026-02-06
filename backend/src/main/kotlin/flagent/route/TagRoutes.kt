@@ -13,8 +13,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Tag routes - CRUD operations for tags
- * Maps to pkg/handler/crud.go from original project
+ * Tag CRUD API endpoints
  */
 fun Routing.configureTagRoutes(tagService: TagService) {
     route(ApiConstants.API_BASE_PATH) {

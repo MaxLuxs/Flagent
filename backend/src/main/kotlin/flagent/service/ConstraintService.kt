@@ -7,8 +7,7 @@ import flagent.service.command.CreateConstraintCommand
 import flagent.service.command.PutConstraintCommand
 
 /**
- * Constraint service - handles constraint business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Constraint CRUD operations
  */
 class ConstraintService(
     private val constraintRepository: IConstraintRepository,

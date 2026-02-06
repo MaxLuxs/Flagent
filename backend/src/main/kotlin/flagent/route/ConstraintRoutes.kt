@@ -14,8 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Constraint routes - CRUD operations for constraints
- * Maps to pkg/handler/crud.go from original project
+ * Constraint CRUD API endpoints
  */
 fun Routing.configureConstraintRoutes(constraintService: ConstraintService) {
     route(ApiConstants.API_BASE_PATH) {

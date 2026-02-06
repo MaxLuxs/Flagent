@@ -12,8 +12,7 @@ import flagent.service.command.PutFlagCommand
 import java.security.SecureRandom
 
 /**
- * Flag service - handles flag business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Flag CRUD operations
  */
 class FlagService(
     private val flagRepository: IFlagRepository,

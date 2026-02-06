@@ -13,8 +13,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
 /**
- * Evaluation routes
- * Maps to pkg/handler/eval.go from original project
+ * Evaluation API endpoints
  */
 fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
     route(ApiConstants.API_BASE_PATH) {

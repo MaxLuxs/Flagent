@@ -9,8 +9,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * FlagEntityType routes - operations for flag entity types
- * Maps to pkg/handler/crud.go from original project
+ * Flag entity type CRUD API endpoints
  */
 fun Routing.configureFlagEntityTypeRoutes(flagEntityTypeService: FlagEntityTypeService) {
     route(ApiConstants.API_BASE_PATH) {

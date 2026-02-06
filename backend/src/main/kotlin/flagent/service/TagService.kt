@@ -6,8 +6,7 @@ import flagent.domain.repository.ITagRepository
 import flagent.service.command.CreateTagCommand
 
 /**
- * Tag service - handles tag business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Tag CRUD operations
  */
 class TagService(
     private val tagRepository: ITagRepository,

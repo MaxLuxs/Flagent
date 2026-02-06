@@ -14,8 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Distribution routes - operations for distributions
- * Maps to pkg/handler/crud.go from original project
+ * Distribution CRUD API endpoints
  */
 fun Routing.configureDistributionRoutes(distributionService: DistributionService) {
     route(ApiConstants.API_BASE_PATH) {

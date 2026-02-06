@@ -9,8 +9,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Info route - returns version and build information
- * Maps to pkg/handler/handler.go setupInfo
+ * Info endpoints - version and build information
  */
 
 fun Routing.configureInfoRoutes() {

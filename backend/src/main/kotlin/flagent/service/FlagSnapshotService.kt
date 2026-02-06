@@ -9,8 +9,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * FlagSnapshot service - handles flag snapshot business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Flag snapshot CRUD operations
  */
 class FlagSnapshotService(
     private val flagSnapshotRepository: IFlagSnapshotRepository,

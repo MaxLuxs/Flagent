@@ -14,8 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Variant routes - CRUD operations for variants
- * Maps to pkg/handler/crud.go from original project
+ * Variant CRUD API endpoints
  */
 fun Routing.configureVariantRoutes(variantService: VariantService) {
     route(ApiConstants.API_BASE_PATH) {

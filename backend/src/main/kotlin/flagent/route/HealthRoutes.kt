@@ -7,8 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Health check routes
- * Maps to pkg/handler/handler.go setupHealth
+ * Health check endpoints
  */
 fun Routing.configureHealthRoutes() {
     route(ApiConstants.API_BASE_PATH) {

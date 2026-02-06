@@ -15,10 +15,7 @@ import com.sun.management.HotSpotDiagnosticMXBean
 private val logger = KotlinLogging.logger {}
 
 /**
- * Profiling routes - endpoints for heap/thread dumps and CPU profiling
- * Maps to pprof.New() middleware from pkg/config/middleware.go
- * 
- * Provides JVM profiling endpoints (analogous to Go's pprof):
+ * Profiling routes - JVM profiling endpoints (heap/thread dumps, CPU profiling):
  * - /debug/pprof/heap - heap dump
  * - /debug/pprof/thread - thread dump
  * - /debug/pprof/profile - CPU profile (via JFR or JMX)

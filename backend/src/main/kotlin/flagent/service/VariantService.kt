@@ -9,8 +9,7 @@ import flagent.service.command.CreateVariantCommand
 import flagent.service.command.PutVariantCommand
 
 /**
- * Variant service - handles variant business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Variant CRUD operations
  */
 class VariantService(
     private val variantRepository: IVariantRepository,
@@ -145,7 +144,7 @@ class VariantService(
 
     private suspend fun updateDistributionsVariantKey(variantId: Int, variantKey: String) {
         // Update all distributions that reference this variantId to have the new variantKey
-        // Maps to validatePutVariantForDistributions from pkg/handler/validate.go
+        // Update distributions to reference new variantKey
         distributionRepository.updateVariantKeyByVariantId(variantId, variantKey)
     }
 }

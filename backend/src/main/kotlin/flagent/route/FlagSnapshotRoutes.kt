@@ -10,8 +10,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 
 /**
- * FlagSnapshot routes - operations for flag snapshots
- * Maps to pkg/handler/crud.go from original project
+ * Flag snapshot CRUD API endpoints
  */
 fun Routing.configureFlagSnapshotRoutes(flagSnapshotService: FlagSnapshotService) {
     route(ApiConstants.API_BASE_PATH) {

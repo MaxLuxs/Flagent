@@ -6,8 +6,7 @@ import flagent.domain.repository.IFlagRepository
 import flagent.service.command.PutDistributionsCommand
 
 /**
- * Distribution service - handles distribution business logic
- * Maps to CRUD operations from pkg/handler/crud.go
+ * Distribution CRUD operations
  */
 class DistributionService(
     private val distributionRepository: IDistributionRepository,

@@ -26,8 +26,7 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 /**
- * ExportService - handles SQLite export functionality
- * Maps to pkg/handler/export.go from original project
+ * Export service - GitOps export and eval cache export
  */
 class ExportService(
     private val flagRepository: IFlagRepository,
