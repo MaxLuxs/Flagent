@@ -5,6 +5,8 @@ import com.flagent.enhanced.config.FlagentConfig
 import com.flagent.enhanced.manager.FlagentManager
 import com.flagent.client.models.EvaluationEntity
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 fun main() = runBlocking {
     val baseUrl = System.getenv("FLAGENT_BASE_URL") ?: "http://localhost:18000/api/v1"
@@ -38,8 +40,22 @@ fun main() = runBlocking {
         val batchResults = manager.evaluateBatch(
             flagKeys = listOf("my_feature_flag", "sample_flag_2"),
             entities = listOf(
-                EvaluationEntity(entityID = "user1", entityType = "user"),
-                EvaluationEntity(entityID = "user2", entityType = "user")
+                EvaluationEntity(
+                    entityID = "user1",
+                    entityType = "user",
+                    entityContext = buildJsonObject {
+                        put("country", "US")
+                        put("tier", "premium")
+                    }
+                ),
+                EvaluationEntity(
+                    entityID = "user2",
+                    entityType = "user",
+                    entityContext = buildJsonObject {
+                        put("country", "EU")
+                        put("tier", "basic")
+                    }
+                )
             ),
             enableDebug = false
         )

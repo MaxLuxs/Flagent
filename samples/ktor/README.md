@@ -21,11 +21,10 @@ Sample Ktor application demonstrating the usage of the Flagent Ktor plugin for f
 
 ### 1. Start Flagent Backend
 
-Before running the sample, ensure the Flagent backend server is running:
+Before running the sample, ensure the Flagent backend server is running (from repo root):
 
 ```bash
-cd backend
-./gradlew run
+./gradlew :backend:run
 ```
 
 The server will start on `http://localhost:18000` by default.
@@ -40,10 +39,17 @@ export FLAGENT_BASE_URL=http://localhost:18000
 
 ### 3. Build and Run
 
+From repo root:
+
 ```bash
-cd samples/ktor
-./gradlew build
-./gradlew run
+./gradlew :sample-ktor:build
+./gradlew :sample-ktor:runSample
+```
+
+Or from `samples/ktor`:
+
+```bash
+./gradlew build runSample
 ```
 
 The sample server will start on `http://localhost:8080`.
@@ -73,8 +79,12 @@ The plugin automatically creates these endpoints:
 #### Single Flag Evaluation
 
 ```bash
-# Using custom endpoint
-curl http://localhost:8080/feature/my_feature_flag?entityID=user123
+# Basic evaluation
+curl "http://localhost:8080/feature/my_feature_flag?entityID=user123"
+
+# With entityContext for constraint-based targeting (country, tier, etc.)
+curl "http://localhost:8080/feature/my_feature_flag?entityID=user123&entityContext=%7B%22country%22%3A%22US%22%2C%22tier%22%3A%22premium%22%7D"
+# Decoded: entityContext={"country":"US","tier":"premium"}
 
 # Using plugin endpoint
 curl -X POST http://localhost:8080/flagent/evaluate \
@@ -82,7 +92,8 @@ curl -X POST http://localhost:8080/flagent/evaluate \
   -d '{
     "flagKey": "my_feature_flag",
     "entityID": "user123",
-    "entityType": "user"
+    "entityType": "user",
+    "entityContext": {"country": "US", "tier": "premium"}
   }'
 ```
 
@@ -91,9 +102,11 @@ Response:
 {
   "enabled": true,
   "variant": "enabled",
-  "message": "Feature is enabled"
+  "message": "Feature my_feature_flag = enabled"
 }
 ```
+
+**Constraint-based evaluation:** When your flag has segments with constraints (e.g., `country` EQ `US`), pass `entityContext` with matching attributes. The evaluator will match the segment and return the assigned variant.
 
 #### Batch Evaluation
 

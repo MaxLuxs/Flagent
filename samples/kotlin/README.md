@@ -54,11 +54,12 @@ cd samples/kotlin
 
 ## Usage
 
-The sample demonstrates three examples:
+The sample demonstrates:
 
-1. **Single Flag Evaluation** - Evaluate a flag using flag key, entity ID, and context
+1. **Single Flag Evaluation with entityContext** - Evaluate a flag with context (region, tier) for constraint-based targeting
 2. **Batch Evaluation** - Evaluate multiple flags for multiple entities
-3. **Evaluation with Flag ID** - Evaluate a flag using flag ID instead of key
+
+**Constraint-based evaluation:** When your flag has segments with constraints (e.g., `region` EQ `US`), pass `entityContext` with matching attributes. See `Main.kt` for the example with `entityContext = mapOf("region" to "US", "tier" to "premium")`.
 
 ### Example Output
 

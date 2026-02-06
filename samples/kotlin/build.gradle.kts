@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     application
 }
 
@@ -15,8 +16,9 @@ dependencies {
     implementation(project(":kotlin-client"))
     implementation(project(":kotlin-enhanced"))
     
-    // Kotlinx Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    // Kotlinx
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
     
     // Logging
     implementation("org.slf4j:slf4j-api:2.0.13")

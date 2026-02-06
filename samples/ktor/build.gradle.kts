@@ -23,6 +23,9 @@ dependencies {
 
     // Logging
     implementation(libs.logback.classic)
+
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotlin.test.junit5)
 }
 
 application {
@@ -48,4 +51,8 @@ tasks.withType<KotlinCompile> {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

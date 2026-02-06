@@ -3,12 +3,19 @@ package flagent.sample
 import flagent.api.model.EntityRequest
 import flagent.api.model.EvaluationBatchRequest
 import flagent.api.model.EvaluationRequest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import io.ktor.flagent.getFlagentCache
 import io.ktor.flagent.getFlagentClient
 import io.ktor.flagent.installFlagent
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.statuspages.StatusPages
@@ -27,6 +34,9 @@ fun main() {
 fun Application.configureApplication() {
     val flagentBaseUrl = System.getenv("FLAGENT_BASE_URL") ?: "http://localhost:18000"
 
+    install(ContentNegotiation) {
+        json(Json { ignoreUnknownKeys = true })
+    }
     install(StatusPages) {
         status(HttpStatusCode.NotFound) { call, status ->
             call.respond(status, mapOf("error" to "Not found", "path" to (call.request.path())))
@@ -49,25 +59,30 @@ fun Application.configureApplication() {
     routing {
         get("/") {
             call.respond(
-                mapOf(
-                    "name" to "Flagent Ktor Sample",
-                    "version" to "1.0",
-                    "endpoints" to listOf(
-                        "GET / - this info",
-                        "GET /health - health check",
-                        "GET /feature/{flagKey}?entityID=...&entityType=... - evaluate single flag",
-                        "POST /feature-batch - batch evaluation",
-                        "GET /cache/info - cache info",
-                        "GET /flagent/health - Flagent plugin health",
-                        "POST /flagent/evaluate - Flagent single evaluation",
-                        "POST /flagent/evaluate/batch - Flagent batch evaluation"
-                    )
-                )
+                buildJsonObject {
+                    put("name", "Flagent Ktor Sample")
+                    put("version", "1.0")
+                    put("endpoints", buildJsonArray {
+                        add("GET / - this info")
+                        add("GET /health - health check")
+                        add("GET /feature/{flagKey}?entityID=...&entityType=...&entityContext={\"country\":\"US\"} - evaluate single flag")
+                        add("POST /feature-batch - batch evaluation")
+                        add("GET /cache/info - cache info")
+                        add("GET /flagent/health - Flagent plugin health")
+                        add("POST /flagent/evaluate - Flagent single evaluation")
+                        add("POST /flagent/evaluate/batch - Flagent batch evaluation")
+                    })
+                }
             )
         }
 
         get("/health") {
-            call.respond(mapOf("status" to "UP", "service" to "sample-ktor"))
+            call.respond(
+                buildJsonObject {
+                    put("status", "UP")
+                    put("service", "sample-ktor")
+                }
+            )
         }
 
         get("/feature/{flagKey}") {
@@ -119,8 +134,16 @@ fun Application.configureApplication() {
             try {
                 val request = EvaluationBatchRequest(
                     entities = listOf(
-                        EntityRequest(entityID = "user123", entityType = "user"),
-                        EntityRequest(entityID = "user456", entityType = "user")
+                        EntityRequest(
+                            entityID = "user123",
+                            entityType = "user",
+                            entityContext = mapOf("country" to "US", "tier" to "premium")
+                        ),
+                        EntityRequest(
+                            entityID = "user456",
+                            entityType = "user",
+                            entityContext = mapOf("country" to "EU", "tier" to "basic")
+                        )
                     ),
                     flagKeys = listOf("sample_flag_1", "sample_flag_2")
                 )
