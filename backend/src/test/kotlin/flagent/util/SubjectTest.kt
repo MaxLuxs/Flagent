@@ -115,7 +115,6 @@ class SubjectTest {
         every { AppConfig.cookieAuthUserFieldJWTClaim } returns "email"
         
         // Create a JWT token with email claim
-        // This is the same token from the original Go test
         val cookieValue = "eyJhbGciOiJIUzI1NiIsImtpZCI6IjEyMzQ1In0.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJhYmNAZXhhbXBsZS5jb20iLCJpYXQiOjE1MTYyMzkwMjJ9.tzRXenFic8Eqg2awzO0eiX6Rozy_mmsJVzLJfUUfREI"
         
         application {
@@ -195,7 +194,7 @@ class SubjectTest {
         val response = client.get("/test")
         
         assertEquals(HttpStatusCode.OK, response.status)
-        // Should return empty string if not found (matches original)
+        // Should return empty string if not found
         assertTrue(response.bodyAsText().contains("\"subject\":\"\""))
         
         unmockkObject(AppConfig)
