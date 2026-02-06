@@ -156,5 +156,7 @@ class TenantViewModel {
 private fun TenantResponse.toTenant() = Tenant(
     id = id.toString(),
     key = key,
-    name = name
+    name = name,
+    plan = plan,
+    status = status
 )

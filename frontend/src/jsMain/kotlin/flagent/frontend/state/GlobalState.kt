@@ -67,7 +67,9 @@ data class User(
 data class Tenant(
     val id: String,
     val key: String,
-    val name: String
+    val name: String,
+    val plan: String = "STARTER",
+    val status: String = "ACTIVE"
 )
 
 /**
