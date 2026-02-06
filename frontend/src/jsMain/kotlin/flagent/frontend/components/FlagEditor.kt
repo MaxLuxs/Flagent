@@ -10,6 +10,7 @@ import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
 import flagent.frontend.components.Slider
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.api.constants.ConstraintOperators
 import flagent.api.model.FlagResponse
@@ -37,6 +38,7 @@ import org.jetbrains.compose.web.dom.H5
  */
 @Composable
 fun FlagEditor(flagId: Int?) {
+    val themeMode = LocalThemeMode.current
     val activeTab = remember { mutableStateOf("Config") }
     val flag = remember { mutableStateOf<FlagResponse?>(null) }
     val loading = remember { mutableStateOf(flagId != null) }
@@ -150,7 +152,7 @@ fun FlagEditor(flagId: Int?) {
                     style {
                         display(DisplayStyle.Flex)
                         gap(8.px)
-                        property("border-bottom", "2px solid ${FlagentTheme.WorkspaceInputBorder}")
+                        property("border-bottom", "2px solid ${FlagentTheme.inputBorder(themeMode)}")
                         marginBottom(25.px)
                         paddingBottom(0.px)
                     }
@@ -160,7 +162,7 @@ fun FlagEditor(flagId: Int?) {
                         style {
                             padding(12.px, 24.px)
                             property("background-color", "transparent")
-                            color(if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
+                            color(if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -182,14 +184,14 @@ fun FlagEditor(flagId: Int?) {
                         }
                         onMouseLeave {
                             if (activeTab.value != "Config") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
+                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                             }
                         }
                     }) {
                         Icon(
                             name = "settings",
                             size = 18.px,
-                            color = if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight
+                            color = if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
                         )
                         Text(LocalizedStrings.config)
                     }
@@ -198,7 +200,7 @@ fun FlagEditor(flagId: Int?) {
                         style {
                             padding(12.px, 24.px)
                             property("background-color", "transparent")
-                            color(if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
+                            color(if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -220,25 +222,25 @@ fun FlagEditor(flagId: Int?) {
                         }
                         onMouseLeave {
                             if (activeTab.value != "History") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
+                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                             }
                         }
                     }) {
                         Icon(
                             name = "history",
                             size = 18.px,
-                            color = if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight
+                            color = if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
                         )
                         Text(LocalizedStrings.history)
                     }
                     if (flagent.frontend.config.AppConfig.Features.enableMetrics) {
-                        FlagEditorTabButton("Metrics", "analytics", activeTab)
+                        FlagEditorTabButton(themeMode, "Metrics", "analytics", activeTab)
                     }
                     if (flagent.frontend.config.AppConfig.Features.enableSmartRollout) {
-                        FlagEditorTabButton("Rollout", "trending_up", activeTab)
+                        FlagEditorTabButton(themeMode, "Rollout", "trending_up", activeTab)
                     }
                     if (flagent.frontend.config.AppConfig.Features.enableAnomalyDetection) {
-                        FlagEditorTabButton("Anomalies", "warning", activeTab)
+                        FlagEditorTabButton(themeMode, "Anomalies", "warning", activeTab)
                     }
                 }
                 
@@ -260,14 +262,14 @@ fun FlagEditor(flagId: Int?) {
  * Reusable tab button for flag detail tabs
  */
 @Composable
-private fun FlagEditorTabButton(label: String, icon: String, activeTab: androidx.compose.runtime.MutableState<String>) {
+private fun FlagEditorTabButton(themeMode: flagent.frontend.state.ThemeMode, label: String, icon: String, activeTab: androidx.compose.runtime.MutableState<String>) {
     val isActive = activeTab.value == label
     Button({
         onClick { activeTab.value = label }
         style {
             padding(12.px, 24.px)
             property("background-color", "transparent")
-            color(if (isActive) FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
+            color(if (isActive) FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
             border { width(0.px); style(LineStyle.None) }
             property("border-bottom", if (isActive) "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
             cursor("pointer")
@@ -283,10 +285,10 @@ private fun FlagEditorTabButton(label: String, icon: String, activeTab: androidx
             if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
         }
         onMouseLeave {
-            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
+            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
         }
     }) {
-        Icon(name = icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
+        Icon(name = icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
         Text(label)
     }
 }
@@ -296,6 +298,7 @@ private fun FlagEditorTabButton(label: String, icon: String, activeTab: androidx
  */
 @Composable
 private fun CreateFlagForm() {
+    val themeMode = LocalThemeMode.current
     val description = remember { mutableStateOf("") }
     val key = remember { mutableStateOf("") }
     val saving = remember { mutableStateOf(false) }
@@ -325,7 +328,7 @@ private fun CreateFlagForm() {
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.WorkspaceInputBorder)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(4.px)
                     }
@@ -344,7 +347,7 @@ private fun CreateFlagForm() {
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.WorkspaceInputBorder)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(4.px)
                     }
@@ -417,6 +420,7 @@ private fun CreateFlagForm() {
  */
 @Composable
 private fun FlagConfigTab(flag: FlagResponse, flagId: Int) {
+    val themeMode = LocalThemeMode.current
     val flagState = remember { mutableStateOf(flag) }
     val showMdEditor = remember { mutableStateOf(false) }
     val allTags = remember { mutableStateOf<List<flagent.api.model.TagResponse>>(emptyList()) }
@@ -492,6 +496,7 @@ private fun FlagSettingsCard(
     entityTypes: List<String>,
     onFlagUpdated: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val key = remember { mutableStateOf(flag.key) }
     val description = remember { mutableStateOf(flag.description) }
     val dataRecordsEnabled = remember { mutableStateOf(flag.dataRecordsEnabled) }
@@ -577,10 +582,10 @@ private fun FlagSettingsCard(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -612,7 +617,7 @@ private fun FlagSettingsCard(
                 H2({
                     style {
                         margin(0.px)
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                         fontSize(24.px)
                         fontWeight("700")
                     }
@@ -692,7 +697,7 @@ private fun FlagSettingsCard(
                 alignItems(AlignItems.Center)
                 marginBottom(20.px)
                 padding(12.px, 16.px)
-                backgroundColor(FlagentTheme.WorkspaceInputBg)
+                backgroundColor(FlagentTheme.inputBg(themeMode))
                 borderRadius(8.px)
             }
         }) {
@@ -777,7 +782,7 @@ private fun FlagSettingsCard(
                             marginBottom(6.px)
                             fontWeight("600")
                             fontSize(13.px)
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
                             gap(6.px)
@@ -800,7 +805,7 @@ private fun FlagSettingsCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.WorkspaceInputBorder)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(6.px)
                             fontSize(14.px)
@@ -810,7 +815,7 @@ private fun FlagSettingsCard(
                             (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                         }
                         onBlur {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                         }
                     }
                 }
@@ -870,7 +875,7 @@ private fun FlagSettingsCard(
                             marginBottom(6.px)
                             fontWeight("600")
                             fontSize(13.px)
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
                             gap(6.px)
@@ -892,7 +897,7 @@ private fun FlagSettingsCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.WorkspaceInputBorder)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(6.px)
                             fontSize(14.px)
@@ -902,7 +907,7 @@ private fun FlagSettingsCard(
                             (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                         }
                         onBlur {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                         }
                     }
                 }
@@ -925,7 +930,7 @@ private fun FlagSettingsCard(
                                 marginBottom(6.px)
                                 fontWeight("600")
                                 fontSize(13.px)
-                                color(FlagentTheme.WorkspaceText)
+                                color(FlagentTheme.text(themeMode))
                                 display(DisplayStyle.Flex)
                                 alignItems(AlignItems.Center)
                                 gap(6.px)
@@ -959,7 +964,7 @@ private fun FlagSettingsCard(
                                     border {
                                         width(1.px)
                                         style(LineStyle.Solid)
-                                        color(FlagentTheme.WorkspaceInputBorder)
+                                        color(FlagentTheme.inputBorder(themeMode))
                                     }
                                     borderRadius(6.px)
                                     fontSize(14.px)
@@ -969,7 +974,7 @@ private fun FlagSettingsCard(
                                     (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                                 }
                                 onBlur {
-                                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
+                                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                                 }
                             }
                             // Autocomplete suggestions
@@ -1131,7 +1136,7 @@ private fun FlagSettingsCard(
                                 border {
                                     width(1.px)
                                     style(LineStyle.Solid)
-                                    color(FlagentTheme.WorkspaceInputBorder)
+                                    color(FlagentTheme.inputBorder(themeMode))
                                 }
                                 borderRadius(3.px)
                             }
@@ -1220,6 +1225,7 @@ private fun VariantsSection(
     variants: List<flagent.api.model.VariantResponse>,
     onUpdate: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val newVariantKey = remember { mutableStateOf("") }
     val creating = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -1249,10 +1255,10 @@ private fun VariantsSection(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -1274,7 +1280,7 @@ private fun VariantsSection(
             H2({
                 style {
                     margin(0.px)
-                    color(FlagentTheme.WorkspaceText)
+                    color(FlagentTheme.text(themeMode))
                     fontSize(22.px)
                     fontWeight("700")
                 }
@@ -1306,10 +1312,10 @@ private fun VariantsSection(
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     marginBottom(15.px)
                 }
             }) {
@@ -1326,12 +1332,12 @@ private fun VariantsSection(
             style {
                 marginTop(25.px)
                 padding(20.px)
-                backgroundColor(FlagentTheme.WorkspaceInputBg)
+                backgroundColor(FlagentTheme.inputBg(themeMode))
                 borderRadius(8.px)
                 border {
                     width(2.px)
                     style(LineStyle.Dashed)
-                    color(FlagentTheme.WorkspaceInputBorder)
+                    color(FlagentTheme.inputBorder(themeMode))
                 }
             }
         }) {
@@ -1357,7 +1363,7 @@ private fun VariantsSection(
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.WorkspaceInputBorder)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(6.px)
                         fontSize(14.px)
@@ -1367,7 +1373,7 @@ private fun VariantsSection(
                         (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                     }
                     onBlur {
-                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.WorkspaceInputBorder.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                     }
                 }
                 Button({
@@ -1429,6 +1435,7 @@ private fun VariantCard(
     variant: flagent.api.model.VariantResponse,
     onUpdate: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val key = remember { mutableStateOf(variant.key) }
     val attachmentJson = remember { mutableStateOf(
         variant.attachment?.entries?.joinToString(",\n") { "\"${it.key}\": \"${it.value}\"" } ?: ""
@@ -1525,11 +1532,11 @@ private fun VariantCard(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(8.px)
             marginBottom(20.px)
-            backgroundColor(FlagentTheme.WorkspaceInputBg)
+            backgroundColor(FlagentTheme.inputBg(themeMode))
             property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
             property("transition", "all 0.2s")
         }
@@ -1639,7 +1646,7 @@ private fun VariantCard(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceInputBorder)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(3.px)
                 }
@@ -1704,6 +1711,7 @@ private fun SegmentsSection(
     variants: List<flagent.api.model.VariantResponse>,
     onUpdate: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val newSegmentDescription = remember { mutableStateOf("") }
     val newSegmentRollout = remember { mutableStateOf(50) }
     val creating = remember { mutableStateOf(false) }
@@ -1803,10 +1811,10 @@ private fun SegmentsSection(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -1836,7 +1844,7 @@ private fun SegmentsSection(
                 H2({
                     style {
                         margin(0.px)
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                         fontSize(22.px)
                         fontWeight("700")
                     }
@@ -1918,10 +1926,10 @@ private fun SegmentsSection(
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     marginBottom(15.px)
                 }
             }) {
@@ -2005,7 +2013,7 @@ private fun SegmentsSection(
                                 border {
                                     width(1.px)
                                     style(LineStyle.Solid)
-                                    color(FlagentTheme.WorkspaceInputBorder)
+                                    color(FlagentTheme.inputBorder(themeMode))
                                 }
                                 borderRadius(5.px)
                             }
@@ -2050,6 +2058,7 @@ private fun SegmentCard(
     variants: List<flagent.api.model.VariantResponse>,
     onUpdate: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val description = remember { mutableStateOf(segment.description ?: "") }
     val rolloutPercent = remember { mutableStateOf(segment.rolloutPercent) }
     val saving = remember { mutableStateOf(false) }
@@ -2111,10 +2120,10 @@ private fun SegmentCard(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(5.px)
-            backgroundColor(FlagentTheme.WorkspaceInputBg)
+            backgroundColor(FlagentTheme.inputBg(themeMode))
             property("transition", "all 0.2s ease")
         }
     }) {
@@ -2126,7 +2135,7 @@ private fun SegmentCard(
                 alignItems(AlignItems.Center)
                 gap(5.px)
                 marginBottom(10.px)
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 fontSize(12.px)
                 cursor("grab")
                 property("user-select", "none")
@@ -2247,7 +2256,7 @@ private fun SegmentCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.WorkspaceInputBorder)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -2287,7 +2296,7 @@ private fun SegmentCard(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.WorkspaceInputBorder)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -2313,6 +2322,7 @@ private fun ConstraintsSection(
     segment: flagent.api.model.SegmentResponse,
     onUpdate: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val newConstraintProperty = remember { mutableStateOf("") }
     val newConstraintOperator = remember { mutableStateOf("EQ") }
     val newConstraintValue = remember { mutableStateOf("") }
@@ -2408,10 +2418,10 @@ private fun ConstraintsSection(
             Div({
                 style {
                     padding(10.px)
-                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     marginBottom(10.px)
                 }
             }) {
@@ -2446,7 +2456,7 @@ private fun ConstraintsSection(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceInputBorder)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(3.px)
                 }
@@ -2462,7 +2472,7 @@ private fun ConstraintsSection(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceInputBorder)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(3.px)
                 }
@@ -2481,7 +2491,7 @@ private fun ConstraintsSection(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceInputBorder)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(3.px)
                 }
@@ -2520,6 +2530,7 @@ private fun ConstraintRow(
     onUpdate: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val property = remember { mutableStateOf(constraint.property) }
     val operator = remember { mutableStateOf(constraint.operator) }
     val value = remember { mutableStateOf(constraint.value) }
@@ -2553,10 +2564,10 @@ private fun ConstraintRow(
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(6.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             marginBottom(10.px)
             property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
         }
@@ -2569,7 +2580,7 @@ private fun ConstraintRow(
                 gap(8.px)
                 marginBottom(10.px)
                 padding(8.px)
-                backgroundColor(FlagentTheme.WorkspaceInputBg)
+                backgroundColor(FlagentTheme.inputBg(themeMode))
                 borderRadius(4.px)
             }
         }) {
@@ -2636,7 +2647,7 @@ private fun ConstraintRow(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceInputBorder)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(4.px)
                     fontSize(12.px)
@@ -2653,7 +2664,7 @@ private fun ConstraintRow(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceInputBorder)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(4.px)
                     fontSize(12.px)
@@ -2673,7 +2684,7 @@ private fun ConstraintRow(
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceInputBorder)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(4.px)
                     fontSize(12.px)
@@ -2736,6 +2747,7 @@ private fun DistributionsSection(
     variants: List<flagent.api.model.VariantResponse>,
     onUpdate: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val showEditDialog = remember { mutableStateOf(false) }
     
     Div({
@@ -2784,7 +2796,7 @@ private fun DistributionsSection(
                     property("background-color", "rgba(239, 68, 68, 0.1)")
                     borderRadius(5.px)
                     textAlign("center")
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                 }
             }) {
                 Text(LocalizedStrings.noDistributionYet)
@@ -2824,6 +2836,7 @@ private fun DistributionsSection(
  */
 @Composable
 private fun DistributionCard(distribution: flagent.api.model.DistributionResponse) {
+    val themeMode = LocalThemeMode.current
     // Color mapping for variants (cycling through theme colors)
     val variantColors = listOf(
         FlagentTheme.Primary,
@@ -2841,10 +2854,10 @@ private fun DistributionCard(distribution: flagent.api.model.DistributionRespons
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(8.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             textAlign("center")
             minWidth(140.px)
             display(DisplayStyle.Flex)
@@ -2870,7 +2883,7 @@ private fun DistributionCard(distribution: flagent.api.model.DistributionRespons
             style {
                 fontSize(14.px)
                 fontWeight("bold")
-                color(FlagentTheme.WorkspaceText)
+                color(FlagentTheme.text(themeMode))
                 marginBottom(5.px)
             }
         }) {
@@ -2883,7 +2896,7 @@ private fun DistributionCard(distribution: flagent.api.model.DistributionRespons
             size = 100.px,
             strokeWidth = 10.px,
             color = variantColor,
-            backgroundColor = FlagentTheme.WorkspaceInputBg,
+            backgroundColor = FlagentTheme.inputBg(themeMode),
             showLabel = true,
             labelSize = 18.px,
             labelColor = FlagentTheme.Text
@@ -2903,6 +2916,7 @@ private fun DistributionEditDialog(
     onClose: () -> Unit,
     onUpdate: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val distributions = remember {
         mutableStateMapOf<Int, Int>().apply {
             currentDistributions.forEach { dist ->
@@ -3000,10 +3014,10 @@ private fun DistributionEditDialog(
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.WorkspaceInputBorder)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(5.px)
-                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                     }
                 }) {
                     Div({
@@ -3075,6 +3089,7 @@ private fun DistributionEditDialog(
  */
 @Composable
 private fun FlagDeleteCard(flagId: Int) {
+    val themeMode = LocalThemeMode.current
     val showConfirm = remember { mutableStateOf(false) }
     val deleting = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -3085,16 +3100,16 @@ private fun FlagDeleteCard(flagId: Int) {
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(5.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
         }
     }) {
         H2({
             style {
                 margin(0.px, 0.px, 15.px, 0.px)
-                color(FlagentTheme.WorkspaceText)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text(LocalizedStrings.flagSettings)

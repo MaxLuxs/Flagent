@@ -2,6 +2,7 @@ package flagent.frontend.components.experiments
 
 import androidx.compose.runtime.*
 import flagent.frontend.api.ExperimentInsightsResponse
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.borderBottom
 import flagent.frontend.util.borderCollapse
@@ -15,9 +16,10 @@ import org.jetbrains.compose.web.dom.*
 @Composable
 fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
     if (insights == null) return
+    val themeMode = LocalThemeMode.current
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             marginBottom(20.px)
@@ -28,7 +30,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
             style {
                 fontSize(18.px)
                 fontWeight("600")
-                color(FlagentTheme.WorkspaceText)
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
                 marginBottom(16.px)
             }
@@ -38,7 +40,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
         if (insights.variantStats.isEmpty()) {
             P({
                 style {
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     fontSize(14.px)
                     margin(0.px)
                 }
@@ -66,8 +68,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("left")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
-                                    color(FlagentTheme.WorkspaceTextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    color(FlagentTheme.textLight(themeMode))
                                     fontWeight("600")
                                 }
                             }) { Text("Variant") }
@@ -75,8 +77,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("right")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
-                                    color(FlagentTheme.WorkspaceTextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    color(FlagentTheme.textLight(themeMode))
                                     fontWeight("600")
                                 }
                             }) { Text("Sample") }
@@ -84,8 +86,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("right")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
-                                    color(FlagentTheme.WorkspaceTextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    color(FlagentTheme.textLight(themeMode))
                                     fontWeight("600")
                                 }
                             }) { Text("Conversions") }
@@ -93,8 +95,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("right")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
-                                    color(FlagentTheme.WorkspaceTextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    color(FlagentTheme.textLight(themeMode))
                                     fontWeight("600")
                                 }
                             }) { Text("Rate") }
@@ -102,8 +104,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 style {
                                     textAlign("left")
                                     padding(8.px)
-                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
-                                    color(FlagentTheme.WorkspaceTextLight)
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    color(FlagentTheme.textLight(themeMode))
                                     fontWeight("600")
                                 }
                             }) { Text("95% CI") }
@@ -120,7 +122,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                     style {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
-                                        color(FlagentTheme.WorkspaceText)
+                                        color(FlagentTheme.text(themeMode))
                                     }
                                 }) {
                                     Span({
@@ -148,7 +150,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
                                         textAlign("right")
-                                        color(FlagentTheme.WorkspaceText)
+                                        color(FlagentTheme.text(themeMode))
                                     }
                                 }) { Text(stat.sampleSize.toString()) }
                                 Td({
@@ -156,7 +158,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
                                         textAlign("right")
-                                        color(FlagentTheme.WorkspaceText)
+                                        color(FlagentTheme.text(themeMode))
                                     }
                                 }) { Text(stat.conversions.toString()) }
                                 Td({
@@ -164,14 +166,14 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
                                         textAlign("right")
-                                        color(FlagentTheme.WorkspaceText)
+                                        color(FlagentTheme.text(themeMode))
                                     }
                                 }) { Text("${(stat.conversionRate * 100).format(2)}%") }
                                 Td({
                                     style {
                                         padding(8.px)
                                         borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                         fontSize(13.px)
                                     }
                                 }) {
@@ -207,7 +209,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                 }
                 Span({
                     style {
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                         fontSize(14.px)
                     }
                 }) {

@@ -56,9 +56,35 @@
         window.ENV_FEATURE_AUDIT_LOGS = window.ENV_FEATURE_AUDIT_LOGS || "true";
         window.ENV_FEATURE_RBAC = window.ENV_FEATURE_RBAC || "true";
     </script>
+    <script>
+        (function() {
+            var stored = localStorage.getItem('flagent_theme');
+            var theme = (stored === 'light') ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <style>
         * {
             box-sizing: border-box;
+        }
+        
+        :root, [data-theme="light"] {
+            --body-bg: #f8fafc;
+            --body-text: #0f172a;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --input-text: #0f172a;
+            --scrollbar-track: #e2e8f0;
+            --scrollbar-thumb: #94a3b8;
+        }
+        [data-theme="dark"] {
+            --body-bg: #0f172a;
+            --body-text: #ffffff;
+            --input-bg: rgba(255,255,255,0.06);
+            --input-border: rgba(255,255,255,0.12);
+            --input-text: #ffffff;
+            --scrollbar-track: #1e293b;
+            --scrollbar-thumb: rgba(255,255,255,0.2);
         }
         
         body {
@@ -67,7 +93,8 @@
             font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background-color: #0f172a;
+            background-color: var(--body-bg);
+            color: var(--body-text);
         }
         
         #root {
@@ -82,6 +109,15 @@
         /* Better button and input defaults */
         button, input, select, textarea {
             font-family: inherit;
+        }
+        input, select, textarea {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
+            border-radius: 6px;
+        }
+        [data-theme="dark"] code, [data-theme="dark"] pre {
+            color: var(--input-text);
         }
         
         /* Remove default button styles */
@@ -145,23 +181,26 @@
             }
         }
         
-        /* Better scrollbar (dark theme) */
+        /* Theme-aware scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         
         ::-webkit-scrollbar-track {
-            background: #1e293b;
+            background: var(--scrollbar-track);
         }
         
         ::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
+            background: var(--scrollbar-thumb);
             border-radius: 4px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255,255,255,0.35);
+        }
+        [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
         
         /* Table improvements */

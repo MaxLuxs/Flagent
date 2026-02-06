@@ -10,6 +10,7 @@ import flagent.frontend.components.tenants.TenantsList
 import flagent.frontend.config.AppConfig
 import flagent.frontend.config.Edition
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +24,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun SettingsPage() {
+    val themeMode = LocalThemeMode.current
     var activeTab by remember { mutableStateOf("general") }
     
     Div({
@@ -37,11 +39,11 @@ fun SettingsPage() {
             style {
                 width(200.px)
                 flexShrink(0)
-                backgroundColor(FlagentTheme.WorkspaceCardBg)
+                backgroundColor(FlagentTheme.cardBg(themeMode))
                 borderRadius(8.px)
                 padding(8.px)
                 property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
-                property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             }
         }) {
             Div({
@@ -54,7 +56,7 @@ fun SettingsPage() {
                     style {
                         fontSize(18.px)
                         fontWeight("600")
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.text(themeMode))
                         margin(0.px)
                     }
                 }) {
@@ -75,24 +77,24 @@ fun SettingsPage() {
                     Text(if (AppConfig.isEnterprise) "ENTERPRISE" else "OPEN SOURCE")
                 }
             }
-            SettingsTab(LocalizedStrings.generalTab, "settings", activeTab == "general") { activeTab = "general" }
+            SettingsTab(themeMode, LocalizedStrings.generalTab, "settings", activeTab == "general") { activeTab = "general" }
             if (AppConfig.Features.enableMultiTenancy) {
-                SettingsTab(LocalizedStrings.multiTenancyTab, "business", activeTab == "tenants") { activeTab = "tenants" }
+                SettingsTab(themeMode, LocalizedStrings.multiTenancyTab, "business", activeTab == "tenants") { activeTab = "tenants" }
             }
             if (AppConfig.Features.enableSso) {
-                SettingsTab(LocalizedStrings.ssoProvidersTab, "security", activeTab == "sso") { activeTab = "sso" }
+                SettingsTab(themeMode, LocalizedStrings.ssoProvidersTab, "security", activeTab == "sso") { activeTab = "sso" }
             }
             if (AppConfig.Features.enableSlack) {
-                SettingsTab(LocalizedStrings.slackTab, "notifications", activeTab == "slack") { activeTab = "slack" }
+                SettingsTab(themeMode, LocalizedStrings.slackTab, "notifications", activeTab == "slack") { activeTab = "slack" }
             }
             if (AppConfig.Features.enableBilling) {
-                SettingsTab(LocalizedStrings.billingTab, "payment", activeTab == "billing") { activeTab = "billing" }
+                SettingsTab(themeMode, LocalizedStrings.billingTab, "payment", activeTab == "billing") { activeTab = "billing" }
             }
-            SettingsTab("Webhooks", "webhook", activeTab == "webhooks") { activeTab = "webhooks" }
-            SettingsTab("Export", "download", activeTab == "export") { activeTab = "export" }
-            SettingsTab("Import", "upload", activeTab == "import") { activeTab = "import" }
+            SettingsTab(themeMode, "Webhooks", "webhook", activeTab == "webhooks") { activeTab = "webhooks" }
+            SettingsTab(themeMode, "Export", "download", activeTab == "export") { activeTab = "export" }
+            SettingsTab(themeMode, "Import", "upload", activeTab == "import") { activeTab = "import" }
             if (AppConfig.Features.enableRbac) {
-                SettingsTab("Roles", "security", activeTab == "roles") { activeTab = "roles" }
+                SettingsTab(themeMode, "Roles", "security", activeTab == "roles") { activeTab = "roles" }
             }
         }
         
@@ -104,22 +106,22 @@ fun SettingsPage() {
             }
         }) {
         when (activeTab) {
-            "general" -> GeneralSettings()
+            "general" -> GeneralSettings(themeMode)
             "tenants" -> if (AppConfig.Features.enableMultiTenancy) TenantsList()
-            "sso" -> if (AppConfig.Features.enableSso) SsoSettings()
-            "slack" -> if (AppConfig.Features.enableSlack) SlackSettings()
-            "billing" -> if (AppConfig.Features.enableBilling) BillingSettings()
+            "sso" -> if (AppConfig.Features.enableSso) SsoSettings(themeMode)
+            "slack" -> if (AppConfig.Features.enableSlack) SlackSettings(themeMode)
+            "billing" -> if (AppConfig.Features.enableBilling) BillingSettings(themeMode)
             "webhooks" -> WebhooksSettings()
             "export" -> ExportPanel()
             "import" -> ImportPanel()
-            "roles" -> if (AppConfig.Features.enableRbac) RolesSettings()
+            "roles" -> if (AppConfig.Features.enableRbac) RolesSettings(themeMode)
         }
         }
     }
 }
 
 @Composable
-private fun SettingsTab(label: String, icon: String, isActive: Boolean, onClick: () -> Unit) {
+private fun SettingsTab(themeMode: flagent.frontend.state.ThemeMode, label: String, icon: String, isActive: Boolean, onClick: () -> Unit) {
     Button({
         style {
             display(DisplayStyle.Flex)
@@ -128,8 +130,8 @@ private fun SettingsTab(label: String, icon: String, isActive: Boolean, onClick:
             padding(10.px, 12.px)
             width(100.percent)
             textAlign("left")
-            backgroundColor(if (isActive) FlagentTheme.WorkspaceInputBg else Color.transparent)
-            color(if (isActive) FlagentTheme.Primary else FlagentTheme.Text)
+            backgroundColor(if (isActive) FlagentTheme.inputBg(themeMode) else Color.transparent)
+            color(if (isActive) FlagentTheme.Primary else FlagentTheme.text(themeMode))
             border(0.px)
             borderRadius(6.px)
             cursor("pointer")
@@ -140,16 +142,16 @@ private fun SettingsTab(label: String, icon: String, isActive: Boolean, onClick:
         }
         onClick { onClick() }
     }) {
-        Icon(icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
+        Icon(icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
         Text(label)
     }
 }
 
 @Composable
-private fun GeneralSettings() {
+private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -160,24 +162,25 @@ private fun GeneralSettings() {
                 fontSize(20.px)
                 fontWeight("600")
                 marginBottom(20.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text(LocalizedStrings.generalSettings)
         }
         
-        SettingItem(
+        SettingItem(themeMode,
             title = LocalizedStrings.apiBaseUrl,
             description = LocalizedStrings.apiBaseUrlDesc,
             value = AppConfig.apiBaseUrl
         )
         
-        SettingItem(
+        SettingItem(themeMode,
             title = LocalizedStrings.debugMode,
             description = LocalizedStrings.debugModeDesc,
             value = if (AppConfig.debugMode) LocalizedStrings.enabled else LocalizedStrings.disabled
         )
         
-        SettingItem(
+        SettingItem(themeMode,
             title = LocalizedStrings.apiTimeout,
             description = LocalizedStrings.apiTimeoutDesc,
             value = "${AppConfig.apiTimeout}ms"
@@ -188,7 +191,7 @@ private fun GeneralSettings() {
             style {
                 marginTop(30.px)
                 paddingTop(20.px)
-                property("border-top", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                property("border-top", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             }
         }) {
             H3({
@@ -208,19 +211,19 @@ private fun GeneralSettings() {
                     gap(10.px)
                 }
             }) {
-                FeatureBadge("Metrics", AppConfig.Features.enableMetrics)
-                FeatureBadge("Smart Rollout", AppConfig.Features.enableSmartRollout)
-                FeatureBadge("Anomaly Detection", AppConfig.Features.enableAnomalyDetection)
-                FeatureBadge("Real-time Updates", AppConfig.Features.enableRealtime)
+                FeatureBadge(themeMode, "Metrics", AppConfig.Features.enableMetrics)
+                FeatureBadge(themeMode, "Smart Rollout", AppConfig.Features.enableSmartRollout)
+                FeatureBadge(themeMode, "Anomaly Detection", AppConfig.Features.enableAnomalyDetection)
+                FeatureBadge(themeMode, "Real-time Updates", AppConfig.Features.enableRealtime)
                 
                 if (AppConfig.isEnterprise) {
-                    FeatureBadge("Multi-Tenancy", AppConfig.Features.enableMultiTenancy, isEnterprise = true)
-                    FeatureBadge("SSO", AppConfig.Features.enableSso, isEnterprise = true)
-                    FeatureBadge("Billing", AppConfig.Features.enableBilling, isEnterprise = true)
-                    FeatureBadge("Slack", AppConfig.Features.enableSlack, isEnterprise = true)
-                    FeatureBadge("Advanced Analytics", AppConfig.Features.enableAdvancedAnalytics, isEnterprise = true)
-                    FeatureBadge("Audit Logs", AppConfig.Features.enableAuditLogs, isEnterprise = true)
-                    FeatureBadge("RBAC", AppConfig.Features.enableRbac, isEnterprise = true)
+                    FeatureBadge(themeMode, "Multi-Tenancy", AppConfig.Features.enableMultiTenancy, isEnterprise = true)
+                    FeatureBadge(themeMode, "SSO", AppConfig.Features.enableSso, isEnterprise = true)
+                    FeatureBadge(themeMode, "Billing", AppConfig.Features.enableBilling, isEnterprise = true)
+                    FeatureBadge(themeMode, "Slack", AppConfig.Features.enableSlack, isEnterprise = true)
+                    FeatureBadge(themeMode, "Advanced Analytics", AppConfig.Features.enableAdvancedAnalytics, isEnterprise = true)
+                    FeatureBadge(themeMode, "Audit Logs", AppConfig.Features.enableAuditLogs, isEnterprise = true)
+                    FeatureBadge(themeMode, "RBAC", AppConfig.Features.enableRbac, isEnterprise = true)
                 }
             }
         }
@@ -228,18 +231,19 @@ private fun GeneralSettings() {
 }
 
 @Composable
-private fun SettingItem(title: String, description: String, value: String) {
+private fun SettingItem(themeMode: flagent.frontend.state.ThemeMode, title: String, description: String, value: String) {
     Div({
         style {
             marginBottom(20.px)
             paddingBottom(20.px)
-                property("border-bottom", "1px solid ${FlagentTheme.WorkspaceInputBg}")
+                property("border-bottom", "1px solid ${FlagentTheme.inputBorder(themeMode)}")
         }
     }) {
         Div({
             style {
                 fontWeight("500")
                 marginBottom(4.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text(title)
@@ -247,7 +251,7 @@ private fun SettingItem(title: String, description: String, value: String) {
         Div({
             style {
                 fontSize(14.px)
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 marginBottom(8.px)
             }
         }) {
@@ -257,7 +261,8 @@ private fun SettingItem(title: String, description: String, value: String) {
             style {
                 display(DisplayStyle.Block)
                 padding(8.px, 12.px)
-                backgroundColor(FlagentTheme.WorkspaceInputBg)
+                backgroundColor(FlagentTheme.inputBg(themeMode))
+                color(FlagentTheme.text(themeMode))
                 borderRadius(4.px)
                 fontSize(13.px)
                 fontFamily("'Monaco', 'Courier New', monospace")
@@ -269,14 +274,14 @@ private fun SettingItem(title: String, description: String, value: String) {
 }
 
 @Composable
-private fun FeatureBadge(name: String, enabled: Boolean, isEnterprise: Boolean = false) {
+private fun FeatureBadge(themeMode: flagent.frontend.state.ThemeMode, name: String, enabled: Boolean, isEnterprise: Boolean = false) {
     Div({
         style {
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)
             gap(6.px)
             padding(8.px, 12.px)
-            backgroundColor(if (enabled) Color("#D1FAE5") else FlagentTheme.WorkspaceInputBg)
+            backgroundColor(if (enabled) Color("#D1FAE5") else FlagentTheme.inputBg(themeMode))
             borderRadius(6.px)
             fontSize(13.px)
         }
@@ -300,12 +305,12 @@ private fun FeatureBadge(name: String, enabled: Boolean, isEnterprise: Boolean =
             size = 14.px,
             color = if (enabled) Color("#10B981") else Color("#EF4444")
         )
-        Text(name)
+        Span({ style { color(FlagentTheme.text(themeMode)) } }) { Text(name) }
     }
 }
 
 @Composable
-private fun SsoSettings() {
+private fun SsoSettings(themeMode: flagent.frontend.state.ThemeMode) {
     val viewModel = remember { flagent.frontend.viewmodel.SsoViewModel() }
     
     LaunchedEffect(Unit) {
@@ -314,7 +319,7 @@ private fun SsoSettings() {
     
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -325,13 +330,14 @@ private fun SsoSettings() {
                 fontSize(20.px)
                 fontWeight("600")
                 marginBottom(20.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text(LocalizedStrings.ssoTitle)
         }
         P({
             style {
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 marginBottom(20.px)
             }
         }) {
@@ -354,7 +360,7 @@ private fun SsoSettings() {
                             marginTop(8.px)
                             marginBottom(0.px)
                             fontSize(13.px)
-                            color(FlagentTheme.WorkspaceTextLight)
+                            color(FlagentTheme.textLight(themeMode))
                         }
                     }) {
                         Text(hint)
@@ -368,10 +374,10 @@ private fun SsoSettings() {
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(6.px)
                     textAlign("center")
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                 }
             }) {
                 Text(LocalizedStrings.noSsoProviders)
@@ -381,7 +387,7 @@ private fun SsoSettings() {
                 Div({
                     style {
                         padding(12.px)
-                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         borderRadius(6.px)
                         marginBottom(10.px)
                         display(DisplayStyle.Flex)
@@ -390,8 +396,8 @@ private fun SsoSettings() {
                     }
                 }) {
                     Div {
-                        Div({ style { fontWeight("500") } }) { Text(provider.name) }
-                        Div({ style { fontSize(14.px); color(FlagentTheme.WorkspaceTextLight) } }) {
+                        Div({ style { fontWeight("500"); color(FlagentTheme.text(themeMode)) } }) { Text(provider.name) }
+                        Div({ style { fontSize(14.px); color(FlagentTheme.textLight(themeMode)) } }) {
                             Text("${provider.type} • ${if (provider.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled}")
                         }
                     }
@@ -402,7 +408,7 @@ private fun SsoSettings() {
 }
 
 @Composable
-private fun SlackSettings() {
+private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
     val slackStatus = remember { mutableStateOf<SlackStatusResponse?>(null) }
     val slackLoading = remember { mutableStateOf(true) }
     val slackError = remember { mutableStateOf<String?>(null) }
@@ -424,7 +430,7 @@ private fun SlackSettings() {
     
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -435,13 +441,14 @@ private fun SlackSettings() {
                 fontSize(20.px)
                 fontWeight("600")
                 marginBottom(20.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text(LocalizedStrings.slackTitle)
         }
         P({
             style {
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 marginBottom(20.px)
             }
         }) {
@@ -449,13 +456,13 @@ private fun SlackSettings() {
         }
         if (slackLoading.value) {
             Div({ style { padding(20.px); textAlign("center") } }) { Text(LocalizedStrings.loading) }
-        } else if (slackError.value != null) {
+        } else         if (slackError.value != null) {
             Div({
                 style {
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                     marginBottom(15.px)
                 }
             }) {
@@ -467,7 +474,7 @@ private fun SlackSettings() {
                 Div({
                     style {
                         padding(12.px)
-                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         borderRadius(6.px)
                         marginBottom(15.px)
                         display(DisplayStyle.Flex)
@@ -478,7 +485,7 @@ private fun SlackSettings() {
                     Span({
                         style {
                             fontWeight("500")
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.text(themeMode))
                         }
                     }) {
                         Text(if (status.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled)
@@ -486,7 +493,7 @@ private fun SlackSettings() {
                     Span({
                         style {
                             fontSize(14.px)
-                            color(FlagentTheme.WorkspaceTextLight)
+                            color(FlagentTheme.textLight(themeMode))
                         }
                     }) {
                         Text(if (status.enabled) LocalizedStrings.slackConfigured else LocalizedStrings.slackNotConfigured)
@@ -510,7 +517,7 @@ private fun SlackSettings() {
                     }
                     style {
                         padding(10.px, 20.px)
-                        backgroundColor(if (status.enabled && !testSending.value) FlagentTheme.Primary else FlagentTheme.WorkspaceInputBg)
+                        backgroundColor(if (status.enabled && !testSending.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
                         color(Color.white)
                         border(0.px)
                         borderRadius(6.px)
@@ -528,7 +535,7 @@ private fun SlackSettings() {
                             padding(10.px)
                             borderRadius(6.px)
                             fontSize(14.px)
-                            color(if (msg.contains("sent") || msg.contains("success")) FlagentTheme.Success else FlagentTheme.WorkspaceTextLight)
+                            color(if (msg.contains("sent") || msg.contains("success")) FlagentTheme.Success else FlagentTheme.textLight(themeMode))
                         }
                     }) {
                         Text(msg)
@@ -540,7 +547,7 @@ private fun SlackSettings() {
 }
 
 @Composable
-private fun BillingSettings() {
+private fun BillingSettings(themeMode: flagent.frontend.state.ThemeMode) {
     val viewModel = remember { flagent.frontend.viewmodel.BillingViewModel() }
     
     LaunchedEffect(Unit) {
@@ -549,7 +556,7 @@ private fun BillingSettings() {
     
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -560,13 +567,14 @@ private fun BillingSettings() {
                 fontSize(20.px)
                 fontWeight("600")
                 marginBottom(20.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text(LocalizedStrings.billingTitle)
         }
         P({
             style {
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 marginBottom(20.px)
             }
         }) {
@@ -589,7 +597,7 @@ private fun BillingSettings() {
                             marginTop(8.px)
                             marginBottom(0.px)
                             fontSize(13.px)
-                            color(FlagentTheme.WorkspaceTextLight)
+                            color(FlagentTheme.textLight(themeMode))
                         }
                     }) {
                         Text(hint)
@@ -604,15 +612,15 @@ private fun BillingSettings() {
             Div({
                 style {
                     padding(16.px)
-                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(6.px)
                     marginBottom(15.px)
                 }
             }) {
-                Div({ style { fontWeight("600"); marginBottom(8.px) } }) {
+                Div({ style { fontWeight("600"); marginBottom(8.px); color(FlagentTheme.text(themeMode)) } }) {
                     Text("${LocalizedStrings.plan}: ${sub.plan.name} (${sub.status})")
                 }
-                Div({ style { fontSize(14.px); color(FlagentTheme.WorkspaceTextLight); marginBottom(8.px) } }) {
+                Div({ style { fontSize(14.px); color(FlagentTheme.textLight(themeMode)); marginBottom(8.px) } }) {
                     Text("${LocalizedStrings.currentPeriod}: ${sub.currentPeriodStart} — ${sub.currentPeriodEnd}")
                 }
                 if (sub.cancelAtPeriodEnd) {
@@ -640,10 +648,10 @@ private fun BillingSettings() {
             Div({
                 style {
                     padding(16.px)
-                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(6.px)
                     marginBottom(15.px)
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                 }
             }) {
                 Text(LocalizedStrings.noActiveSubscription)

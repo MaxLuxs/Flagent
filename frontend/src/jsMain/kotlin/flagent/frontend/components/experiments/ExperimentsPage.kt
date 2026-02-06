@@ -9,6 +9,7 @@ import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import org.jetbrains.compose.web.css.*
@@ -19,6 +20,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun ExperimentsPage() {
+    val themeMode = LocalThemeMode.current
     var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -114,18 +116,18 @@ fun ExperimentsPage() {
         } else if (flags.isEmpty()) {
             Div({
                 style {
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     padding(40.px)
                     property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
                     textAlign("center")
                 }
             }) {
-                Icon("science", size = 48.px, color = FlagentTheme.WorkspaceTextLight)
+                Icon("science", size = 48.px, color = FlagentTheme.textLight(themeMode))
                 P({
                     style {
                         marginTop(16.px)
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                         fontSize(16.px)
                     }
                 }) {
@@ -133,7 +135,7 @@ fun ExperimentsPage() {
                 }
                 P({
                     style {
-                        color(FlagentTheme.WorkspaceTextLight)
+                        color(FlagentTheme.textLight(themeMode))
                         fontSize(14.px)
                         marginTop(8.px)
                     }
@@ -159,7 +161,7 @@ fun ExperimentsPage() {
         } else {
             Div({
                 style {
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     overflow("hidden")
                     property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.08)")
@@ -174,8 +176,8 @@ fun ExperimentsPage() {
                     Thead {
                         Tr({
                             style {
-                                backgroundColor(FlagentTheme.WorkspaceInputBg)
-                                property("border-bottom", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                             }
                         }) {
                             listOf(LocalizedStrings.flagKey, LocalizedStrings.description, LocalizedStrings.variants, LocalizedStrings.status, LocalizedStrings.action).forEach { h ->
@@ -185,7 +187,7 @@ fun ExperimentsPage() {
                                         textAlign("left")
                                         fontSize(12.px)
                                         fontWeight(600)
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                         property("text-transform", "uppercase")
                                     }
                                 }) { Text(h) }
@@ -196,10 +198,10 @@ fun ExperimentsPage() {
                         flags.forEach { flag ->
                             Tr({
                                 style {
-                                    property("border-bottom", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                                    property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                                     property("transition", "background-color 0.15s")
                                 }
-                                onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.WorkspaceInputBg.toString() }
+                                onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.inputBg(themeMode).toString() }
                                 onMouseLeave { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent"
                                 }
                             }) {
@@ -225,8 +227,8 @@ fun ExperimentsPage() {
                                         style {
                                             padding(4.px, 8.px)
                                             borderRadius(6.px)
-                                            backgroundColor(if (flag.enabled) Color("#D1FAE5") else FlagentTheme.WorkspaceInputBg)
-                                            color(if (flag.enabled) Color("#065F46") else FlagentTheme.WorkspaceTextLight)
+                                            backgroundColor(if (flag.enabled) Color("#D1FAE5") else FlagentTheme.inputBg(themeMode))
+                                            color(if (flag.enabled) Color("#065F46") else FlagentTheme.textLight(themeMode))
                                         }
                                     }) { Text(if (flag.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled) }
                                 }
@@ -260,9 +262,9 @@ fun ExperimentsPage() {
                                         Button({
                                             style {
                                                 padding(6.px, 10.px)
-                                                backgroundColor(FlagentTheme.WorkspaceInputBg)
-                                                color(FlagentTheme.WorkspaceText)
-                                                border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+                                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                                color(FlagentTheme.text(themeMode))
+                                                border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                                                 borderRadius(6.px)
                                                 cursor("pointer")
                                                 fontSize(12.px)

@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import flagent.frontend.components.Icon
 import flagent.frontend.state.Notification
 import flagent.frontend.state.NotificationType
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.borderLeft
 import flagent.frontend.util.flexShrink
@@ -48,6 +49,7 @@ private fun NotificationItem(
     notification: Notification,
     onDismiss: (String) -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     // Auto-dismiss after duration
     LaunchedEffect(notification.id) {
         window.setTimeout({
@@ -98,7 +100,7 @@ private fun NotificationItem(
                 backgroundColor(Color.transparent)
                 border(0.px)
                 cursor("pointer")
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 flexShrink(0)
             }
         }) {

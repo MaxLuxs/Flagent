@@ -5,6 +5,7 @@ import flagent.frontend.api.AlertSeverity
 import flagent.frontend.components.Icon
 import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.format
 import flagent.frontend.viewmodel.AnomalyViewModel
@@ -16,6 +17,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun AnomalyAlertsList(flagId: Int? = null) {
+    val themeMode = LocalThemeMode.current
     val viewModel = remember { AnomalyViewModel(flagId) }
     
     LaunchedEffect(flagId) {
@@ -24,7 +26,7 @@ fun AnomalyAlertsList(flagId: Int? = null) {
     
     Div({
         style {
-            backgroundColor(Color.white)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
             property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
@@ -34,7 +36,7 @@ fun AnomalyAlertsList(flagId: Int? = null) {
             style {
                 fontSize(20.px)
                 fontWeight(600)
-                color(Color("#1E293B"))
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
                 marginBottom(24.px)
             }
@@ -64,9 +66,9 @@ fun AnomalyAlertsList(flagId: Int? = null) {
                 style {
                     marginTop(16.px)
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#991B1B"))
+                    color(FlagentTheme.errorText(themeMode))
                     fontSize(14.px)
                 }
             }) {
@@ -78,6 +80,7 @@ fun AnomalyAlertsList(flagId: Int? = null) {
 
 @Composable
 private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewModel: AnomalyViewModel) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             padding(16.px)
@@ -138,7 +141,7 @@ private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewMode
                     style {
                         fontSize(14.px)
                         fontWeight(600)
-                        color(Color("#1E293B"))
+                        color(FlagentTheme.text(themeMode))
                         margin(0.px)
                         marginBottom(4.px)
                     }
@@ -149,7 +152,7 @@ private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewMode
                 P({
                     style {
                         fontSize(12.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.textLight(themeMode))
                         margin(0.px)
                     }
                 }) {

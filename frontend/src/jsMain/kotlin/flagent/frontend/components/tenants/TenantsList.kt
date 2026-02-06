@@ -6,6 +6,7 @@ import flagent.frontend.components.Modal
 import org.jetbrains.compose.web.attributes.InputType
 import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.borderBottom
 import flagent.frontend.util.borderCollapse
@@ -24,6 +25,7 @@ import org.jetbrains.compose.web.dom.*
 fun TenantsList(tenantViewModel: TenantViewModel? = null) {
     val viewModel = tenantViewModel ?: remember { TenantViewModel() }
     val showCreateForm = remember { mutableStateOf(false) }
+    val themeMode = LocalThemeMode.current
     
     LaunchedEffect(Unit) {
         viewModel.loadTenants()
@@ -34,10 +36,10 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
     
     Div({
         style {
-            backgroundColor(Color.white)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+            property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
         }
     }) {
         Div({
@@ -52,7 +54,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                 style {
                     fontSize(20.px)
                     fontWeight(600)
-                    color(Color("#1E293B"))
+                    color(FlagentTheme.text(themeMode))
                     margin(0.px)
                 }
             }) {
@@ -125,7 +127,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                 Thead {
                     Tr({
                         style {
-                            borderBottom(2.px, LineStyle.Solid, Color("#E2E8F0"))
+                            borderBottom(2.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                         }
                     }) {
                         Th({
@@ -134,7 +136,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 padding(12.px)
                                 fontSize(12.px)
                                 fontWeight(600)
-                                color(Color("#64748B"))
+                                color(FlagentTheme.textLight(themeMode))
                                 textTransform("uppercase")
                             }
                         }) {
@@ -171,7 +173,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                     viewModel.tenants.forEach { tenant ->
                         Tr({
                             style {
-                                borderBottom(1.px, LineStyle.Solid, Color("#E2E8F0"))
+                                borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                             }
                         }) {
                             Td({
@@ -179,7 +181,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                     padding(12.px)
                                     fontSize(14.px)
                                     fontWeight(600)
-                                    color(Color("#1E293B"))
+                                    color(FlagentTheme.text(themeMode))
                                 }
                             }) {
                                 Text(tenant.name)
@@ -188,7 +190,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 style {
                                     padding(12.px)
                                     fontSize(14.px)
-                                    color(Color("#64748B"))
+                                    color(FlagentTheme.textLight(themeMode))
                                 }
                             }) {
                                 Text(tenant.key)
@@ -228,6 +230,7 @@ private fun CreateTenantModal(
     onCreate: (key: String, name: String, plan: String, ownerEmail: String) -> Unit,
     confirmLoading: Boolean = false
 ) {
+    val themeMode = LocalThemeMode.current
     val key = remember { mutableStateOf("") }
     val name = remember { mutableStateOf("") }
     val plan = remember { mutableStateOf("STARTER") }
@@ -253,39 +256,48 @@ private fun CreateTenantModal(
                 gap(12.px)
             }
         }) {
-            Label {
-                Text("Key (unique identifier)")
+            Div({ style { marginBottom(8.px) } }) {
+                Span({ style { fontSize(14.px); fontWeight("500"); color(FlagentTheme.text(themeMode)); marginBottom(4.px); property("display", "block") } }) { Text("Key (unique identifier)") }
                 Input(InputType.Text) {
                     value(key.value)
                     onInput { key.value = it.value }
                     style {
                         width(100.percent)
-                        padding(8.px)
-                        property("margin-top", "4px")
+                        padding(10.px, 12.px)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                        borderRadius(6.px)
                     }
                 }
             }
-            Label {
-                Text("Name")
+            Div({ style { marginBottom(8.px) } }) {
+                Span({ style { fontSize(14.px); fontWeight("500"); color(FlagentTheme.text(themeMode)); marginBottom(4.px); property("display", "block") } }) { Text("Name") }
                 Input(InputType.Text) {
                     value(name.value)
                     onInput { name.value = it.value }
                     style {
                         width(100.percent)
-                        padding(8.px)
-                        property("margin-top", "4px")
+                        padding(10.px, 12.px)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                        borderRadius(6.px)
                     }
                 }
             }
-            Label {
-                Text("Plan")
+            Div({ style { marginBottom(8.px) } }) {
+                Span({ style { fontSize(14.px); fontWeight("500"); color(FlagentTheme.text(themeMode)); marginBottom(4.px); property("display", "block") } }) { Text("Plan") }
                 Select(attrs = {
                     attr("value", plan.value)
                     onChange { plan.value = (it.target as org.w3c.dom.HTMLSelectElement).value }
                     style {
                         width(100.percent)
-                        padding(8.px)
-                        property("margin-top", "4px")
+                        padding(10.px, 12.px)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                        borderRadius(6.px)
                     }
                 }) {
                     Option(value = "STARTER") { Text("STARTER") }
@@ -294,15 +306,18 @@ private fun CreateTenantModal(
                     Option(value = "ENTERPRISE") { Text("ENTERPRISE") }
                 }
             }
-            Label {
-                Text("Owner Email")
+            Div({ style { marginBottom(8.px) } }) {
+                Span({ style { fontSize(14.px); fontWeight("500"); color(FlagentTheme.text(themeMode)); marginBottom(4.px); property("display", "block") } }) { Text("Owner Email") }
                 Input(InputType.Email) {
                     value(ownerEmail.value)
                     onInput { ownerEmail.value = it.value }
                     style {
                         width(100.percent)
-                        padding(8.px)
-                        property("margin-top", "4px")
+                        padding(10.px, 12.px)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                        borderRadius(6.px)
                     }
                 }
             }

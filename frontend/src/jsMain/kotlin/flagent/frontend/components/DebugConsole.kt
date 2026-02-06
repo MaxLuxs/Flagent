@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.api.model.EvaluationRequest
 import flagent.api.model.EvaluationResponse
@@ -28,6 +29,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun DebugConsole(initialFlagKey: String? = null) {
+    val themeMode = LocalThemeMode.current
     val activeSection = remember { mutableStateOf("single") } // "single" or "batch"
     
     Div({
@@ -39,7 +41,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 color(FlagentTheme.Border)
             }
             borderRadius(10.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
         }
     }) {
@@ -61,7 +63,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
             H2({
                 style {
                     margin(0.px)
-                    color(FlagentTheme.WorkspaceText)
+                    color(FlagentTheme.text(themeMode))
                     fontSize(24.px)
                     fontWeight("700")
                 }

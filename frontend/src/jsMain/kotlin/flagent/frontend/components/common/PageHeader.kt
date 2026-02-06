@@ -1,6 +1,7 @@
 package flagent.frontend.components.common
 
 import androidx.compose.runtime.Composable
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -15,6 +16,7 @@ fun PageHeader(
     subtitle: String? = null,
     actions: @Composable () -> Unit = {}
 ) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             display(DisplayStyle.Flex)
@@ -35,7 +37,7 @@ fun PageHeader(
                 style {
                     fontSize(24.px)
                     fontWeight("bold")
-                    color(FlagentTheme.WorkspaceText)
+                    color(FlagentTheme.text(themeMode))
                     margin(0.px)
                 }
             }) {
@@ -44,7 +46,7 @@ fun PageHeader(
             if (subtitle != null) {
                 P({
                     style {
-                        color(FlagentTheme.WorkspaceTextLight)
+                        color(FlagentTheme.textLight(themeMode))
                         fontSize(14.px)
                         marginTop(4.px)
                         margin(0.px)

@@ -1,6 +1,7 @@
 package flagent.frontend.components.common
 
 import androidx.compose.runtime.Composable
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.borderBottom
 import flagent.frontend.util.borderCollapse
@@ -18,6 +19,7 @@ fun ResponsiveTable(
     rows: List<List<String>>,
     onRowClick: ((Int) -> Unit)? = null
 ) {
+    val themeMode = LocalThemeMode.current
     // Desktop table
     Div({
         classes("responsive-table-desktop")
@@ -30,18 +32,18 @@ fun ResponsiveTable(
             style {
                 width(100.percent)
                 borderCollapse("collapse")
-                backgroundColor(FlagentTheme.WorkspaceCardBg)
+                backgroundColor(FlagentTheme.cardBg(themeMode))
                 borderRadius(8.px)
                 overflow("hidden")
-                property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                 property("backdrop-filter", "blur(12px)")
             }
         }) {
             Thead {
                 Tr({
                     style {
-                        backgroundColor(FlagentTheme.WorkspaceInputBg)
-                        borderBottom(2.px, LineStyle.Solid, FlagentTheme.WorkspaceBorder)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        borderBottom(2.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                     }
                 }) {
                     headers.forEach { header ->
@@ -51,7 +53,7 @@ fun ResponsiveTable(
                                 textAlign("left")
                                 fontSize(12.px)
                                 fontWeight(600)
-                                color(FlagentTheme.WorkspaceTextLight)
+                                color(FlagentTheme.textLight(themeMode))
                                 textTransform("uppercase")
                             }
                         }) {
@@ -71,7 +73,7 @@ fun ResponsiveTable(
                             }
                         }
                         style {
-                            borderBottom(1.px, LineStyle.Solid, FlagentTheme.WorkspaceBorder)
+                            borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                             property("transition", "background-color 0.2s")
                         }
                         // Hover effects handled via CSS
@@ -81,7 +83,7 @@ fun ResponsiveTable(
                                 style {
                                     padding(12.px)
                                     fontSize(14.px)
-                                    color(FlagentTheme.WorkspaceText)
+                                    color(FlagentTheme.text(themeMode))
                                 }
                             }) {
                                 Text(cell)
@@ -107,11 +109,11 @@ fun ResponsiveTable(
                     onClick { onRowClick(index) }
                 }
                 style {
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     padding(16.px)
                     marginBottom(12.px)
-                    property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                    property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                     if (onRowClick != null) {
                         cursor("pointer")
                     }
@@ -130,7 +132,7 @@ fun ResponsiveTable(
                                 style {
                                     fontSize(12.px)
                                     fontWeight(600)
-                                    color(FlagentTheme.WorkspaceTextLight)
+                                    color(FlagentTheme.textLight(themeMode))
                                     textTransform("uppercase")
                                 }
                             }) {
@@ -139,7 +141,7 @@ fun ResponsiveTable(
                             Span({
                                 style {
                                     fontSize(14.px)
-                                    color(FlagentTheme.WorkspaceText)
+                                    color(FlagentTheme.text(themeMode))
                                 }
                             }) {
                                 Text(cell)

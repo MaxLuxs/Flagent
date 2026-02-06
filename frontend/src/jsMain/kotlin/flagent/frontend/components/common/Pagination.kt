@@ -1,6 +1,7 @@
 package flagent.frontend.components.common
 
 import androidx.compose.runtime.Composable
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -11,6 +12,7 @@ fun Pagination(
     totalPages: Int,
     onPageChange: (Int) -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     if (totalPages <= 1) return
     
     Div({
@@ -30,8 +32,8 @@ fun Pagination(
             onClick { onPageChange(currentPage - 1) }
             style {
                 padding(8.px, 16.px)
-                backgroundColor(if (currentPage == 1) FlagentTheme.WorkspaceInputBg else FlagentTheme.Primary)
-                color(if (currentPage == 1) FlagentTheme.WorkspaceTextLight else Color.white)
+                backgroundColor(if (currentPage == 1) FlagentTheme.inputBg(themeMode) else FlagentTheme.Primary)
+                color(if (currentPage == 1) FlagentTheme.textLight(themeMode) else Color.white)
                 border(0.px)
                 borderRadius(6.px)
                 cursor(if (currentPage == 1) "not-allowed" else "pointer")
@@ -47,7 +49,7 @@ fun Pagination(
                 Span({
                     style {
                         padding(8.px, 12.px)
-                        color(FlagentTheme.WorkspaceTextLight)
+                        color(FlagentTheme.textLight(themeMode))
                     }
                 }) {
                     Text("...")
@@ -58,8 +60,8 @@ fun Pagination(
                     style {
                         padding(8.px, 12.px)
                         backgroundColor(if (page == currentPage) FlagentTheme.Primary else Color.transparent)
-                        color(if (page == currentPage) Color.white else FlagentTheme.WorkspaceTextLight)
-                        border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceInputBorder)
+                        color(if (page == currentPage) Color.white else FlagentTheme.textLight(themeMode))
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
                         borderRadius(6.px)
                         cursor("pointer")
                         fontWeight(if (page == currentPage) 600 else 400)
@@ -79,8 +81,8 @@ fun Pagination(
             onClick { onPageChange(currentPage + 1) }
             style {
                 padding(8.px, 16.px)
-                backgroundColor(if (currentPage == totalPages) FlagentTheme.WorkspaceInputBg else FlagentTheme.Primary)
-                color(if (currentPage == totalPages) FlagentTheme.WorkspaceTextLight else Color.white)
+                backgroundColor(if (currentPage == totalPages) FlagentTheme.inputBg(themeMode) else FlagentTheme.Primary)
+                color(if (currentPage == totalPages) FlagentTheme.textLight(themeMode) else Color.white)
                 border(0.px)
                 borderRadius(6.px)
                 cursor(if (currentPage == totalPages) "not-allowed" else "pointer")

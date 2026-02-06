@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.frontend.api.ApiClient
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.api.model.DistributionRequest
 import flagent.api.model.PutDistributionsRequest
@@ -23,6 +24,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantResponse>) {
+    val themeMode = LocalThemeMode.current
     val distributions = remember { mutableStateMapOf<Int, Int>() }
     val loading = remember { mutableStateOf(true) }
     val saving = remember { mutableStateOf(false) }
@@ -52,7 +54,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(5.px)
         }

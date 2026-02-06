@@ -1,5 +1,6 @@
 package flagent.frontend.theme
 
+import flagent.frontend.state.ThemeMode
 import org.jetbrains.compose.web.css.*
 
 /**
@@ -65,4 +66,46 @@ object FlagentTheme {
     val WorkspaceCardBorder = Color("rgba(255,255,255,0.08)")
     val WorkspaceInputBg = Color("rgba(255,255,255,0.06)")
     val WorkspaceInputBorder = Color("rgba(255,255,255,0.12)")
+
+    /** Theme-aware colors based on current ThemeMode */
+    fun cardBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceCardBg
+        ThemeMode.Light -> Background
+    }
+    fun cardBorder(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceCardBorder
+        ThemeMode.Light -> Border
+    }
+    fun inputBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceInputBg
+        ThemeMode.Light -> Background
+    }
+    fun inputBorder(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceInputBorder
+        ThemeMode.Light -> Border
+    }
+    fun text(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceText
+        ThemeMode.Light -> Text
+    }
+    fun textLight(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceTextLight
+        ThemeMode.Light -> TextLight
+    }
+    fun contentBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceContentBg
+        ThemeMode.Light -> BackgroundAlt
+    }
+    fun sidebarBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceSidebarBg
+        ThemeMode.Light -> BackgroundDark
+    }
+    fun errorBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> Color("rgba(239,68,68,0.2)")
+        ThemeMode.Light -> Color("#FEF2F2")
+    }
+    fun errorText(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> Color("#FCA5A5")
+        ThemeMode.Light -> Color("#991B1B")
+    }
 }

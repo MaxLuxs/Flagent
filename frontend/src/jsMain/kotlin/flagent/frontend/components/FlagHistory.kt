@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import flagent.api.model.FlagSnapshotResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.browser.document
 import kotlinx.serialization.json.Json
@@ -119,6 +120,7 @@ private data class DiffItem(
  */
 @Composable
 private fun SnapshotDiffCard(diff: DiffItem) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             padding(20.px)
@@ -128,7 +130,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                 color(FlagentTheme.Border)
             }
             borderRadius(5.px)
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             marginBottom(20.px)
         }
     }) {
@@ -163,7 +165,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                 }
                 Span({
                     style {
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                         fontSize(16.px)
                     }
                 }) {
@@ -186,7 +188,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                     display(DisplayStyle.Flex)
                     flexDirection(FlexDirection.Column)
                     alignItems(AlignItems.FlexEnd)
-                    color(FlagentTheme.WorkspaceText)
+                    color(FlagentTheme.text(themeMode))
                 }
             }) {
                 Span({

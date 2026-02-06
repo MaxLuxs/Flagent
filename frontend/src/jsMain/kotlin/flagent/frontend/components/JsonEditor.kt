@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.browser.document
 import kotlinx.serialization.json.Json
@@ -24,6 +25,7 @@ fun JsonEditor(
     minHeight: CSSSizeValue<CSSUnit.px> = 150.px,
     showValidation: Boolean = true
 ) {
+    val themeMode = LocalThemeMode.current
     val isValid = remember { mutableStateOf(true) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
     val editorId = remember { "json-editor-${kotlin.random.Random.nextInt()}" }
@@ -83,7 +85,7 @@ fun JsonEditor(
                     border {
                         width(2.px)
                         style(LineStyle.Solid)
-                        color(if (isValid.value) FlagentTheme.WorkspaceInputBorder else FlagentTheme.Error)
+                        color(if (isValid.value) FlagentTheme.inputBorder(themeMode) else FlagentTheme.Error)
                     }
                     borderRadius(5.px)
                     property("resize", "vertical")
@@ -161,7 +163,7 @@ fun JsonEditor(
         Span({
             style {
                 fontSize(11.px)
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 property("line-height", "1.4")
             }
         }) {

@@ -3,6 +3,7 @@ package flagent.frontend.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import kotlin.math.PI
 import org.jetbrains.compose.web.css.*
@@ -27,10 +28,10 @@ fun CircularProgress(
     size: CSSSizeValue<CSSUnit.px> = 80.px,
     strokeWidth: CSSSizeValue<CSSUnit.px> = 8.px,
     color: CSSColorValue = FlagentTheme.Primary,
-    backgroundColor: CSSColorValue = FlagentTheme.WorkspaceInputBg,
+    backgroundColor: CSSColorValue = FlagentTheme.inputBg(LocalThemeMode.current),
     showLabel: Boolean = true,
     labelSize: CSSSizeValue<CSSUnit.px> = 16.px,
-    labelColor: CSSColorValue = FlagentTheme.WorkspaceText
+    labelColor: CSSColorValue = FlagentTheme.text(LocalThemeMode.current)
 ) {
     val clampedPercentage = percentage.coerceIn(0, 100)
     val radius = (size.value.toDouble() / 2 - strokeWidth.value.toDouble() / 2)

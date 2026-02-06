@@ -595,6 +595,21 @@ object ApiClient {
     }
 
     /**
+     * Get analytics events overview (Firebase-level: totalEvents, uniqueUsers, topEvents, timeSeries, dauByDay).
+     */
+    suspend fun getAnalyticsOverview(
+        startTime: Long? = null,
+        endTime: Long? = null,
+        topLimit: Int = 20,
+        timeBucketMs: Long = 3600_000
+    ): AnalyticsOverviewResponse {
+        val end = endTime ?: (kotlin.js.Date().getTime().toLong())
+        val start = startTime ?: (end - 86400_000)
+        val url = "${getApiPath("/analytics/overview")}?start=$start&end=$end&topLimit=$topLimit&timeBucketMs=$timeBucketMs"
+        return client.get(url).body()
+    }
+
+    /**
      * Get global metrics overview: time series (evaluations per bucket) and top flags.
      * @param startTime start of range (ms), default last 24h
      * @param endTime end of range (ms), default now
@@ -612,6 +627,24 @@ object ApiClient {
         val url = buildString {
             append(getApiPath("/metrics/overview"))
             append("?start=$start&end=$end&topLimit=$topLimit&timeBucketMs=$timeBucketMs")
+        }
+        return client.get(url).body()
+    }
+
+    /**
+     * Get crash reports (Enterprise). Requires X-API-Key or Bearer token.
+     */
+    suspend fun getCrashes(
+        startTime: Long? = null,
+        endTime: Long? = null,
+        limit: Int = 50,
+        offset: Int = 0
+    ): CrashListResponse {
+        val url = buildString {
+            append(getApiPath("/crashes"))
+            append("?limit=$limit&offset=$offset")
+            startTime?.let { append("&start=$it") }
+            endTime?.let { append("&end=$it") }
         }
         return client.get(url).body()
     }

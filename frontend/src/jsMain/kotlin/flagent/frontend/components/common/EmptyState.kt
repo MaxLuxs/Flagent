@@ -2,6 +2,7 @@ package flagent.frontend.components.common
 
 import androidx.compose.runtime.Composable
 import flagent.frontend.components.Icon
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -14,6 +15,7 @@ fun EmptyState(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null
 ) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             display(DisplayStyle.Flex)
@@ -30,7 +32,7 @@ fun EmptyState(
                 marginBottom(16.px)
             }
         }) {
-            Icon(icon, size = 64.px, color = FlagentTheme.WorkspaceTextLight)
+            Icon(icon, size = 64.px, color = FlagentTheme.textLight(themeMode))
         }
         
         // Title
@@ -38,7 +40,7 @@ fun EmptyState(
             style {
                 fontSize(20.px)
                 fontWeight(600)
-                color(Color("#1E293B"))
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
                 marginBottom(8.px)
             }
@@ -51,7 +53,7 @@ fun EmptyState(
             P({
                 style {
                     fontSize(14.px)
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     margin(0.px)
                     marginBottom(24.px)
                     maxWidth(400.px)

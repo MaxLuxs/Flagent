@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import flagent.frontend.api.SmartRolloutConfigRequest
 import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.SmartRolloutViewModel
 import org.jetbrains.compose.web.attributes.InputType
@@ -15,6 +16,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun SmartRolloutConfig(flagId: Int) {
+    val themeMode = LocalThemeMode.current
     val viewModel = remember { SmartRolloutViewModel(flagId) }
     val showCreateForm = remember { mutableStateOf(false) }
     
@@ -24,7 +26,7 @@ fun SmartRolloutConfig(flagId: Int) {
     
     Div({
         style {
-            backgroundColor(Color.white)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
             property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
@@ -43,7 +45,7 @@ fun SmartRolloutConfig(flagId: Int) {
                 style {
                     fontSize(20.px)
                     fontWeight(600)
-                    color(Color("#1E293B"))
+                    color(FlagentTheme.text(themeMode))
                     margin(0.px)
                 }
             }) {
@@ -90,9 +92,9 @@ fun SmartRolloutConfig(flagId: Int) {
                 style {
                     marginTop(16.px)
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#991B1B"))
+                    color(FlagentTheme.errorText(themeMode))
                     fontSize(14.px)
                 }
             }) {
@@ -104,10 +106,11 @@ fun SmartRolloutConfig(flagId: Int) {
 
 @Composable
 private fun RolloutConfigCard(config: flagent.frontend.api.SmartRolloutConfigResponse, viewModel: SmartRolloutViewModel) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             padding(16.px)
-            border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
             borderRadius(6.px)
             marginBottom(12.px)
         }
@@ -125,7 +128,7 @@ private fun RolloutConfigCard(config: flagent.frontend.api.SmartRolloutConfigRes
                     style {
                         fontSize(14.px)
                         fontWeight(600)
-                        color(Color("#1E293B"))
+                        color(FlagentTheme.text(themeMode))
                         margin(0.px)
                         marginBottom(4.px)
                     }
@@ -135,7 +138,7 @@ private fun RolloutConfigCard(config: flagent.frontend.api.SmartRolloutConfigRes
                 P({
                     style {
                         fontSize(12.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.textLight(themeMode))
                         margin(0.px)
                     }
                 }) {
@@ -146,8 +149,8 @@ private fun RolloutConfigCard(config: flagent.frontend.api.SmartRolloutConfigRes
             Span({
                 style {
                     padding(4.px, 8.px)
-                    backgroundColor(if (config.enabled) Color("#DCFCE7") else Color("#FEE2E2"))
-                    color(if (config.enabled) Color("#166534") else Color("#991B1B"))
+                    backgroundColor(if (config.enabled) Color("#DCFCE7") else FlagentTheme.errorBg(themeMode))
+                    color(if (config.enabled) Color("#166534") else FlagentTheme.errorText(themeMode))
                     borderRadius(4.px)
                     fontSize(12.px)
                     fontWeight(500)
@@ -162,7 +165,7 @@ private fun RolloutConfigCard(config: flagent.frontend.api.SmartRolloutConfigRes
             style {
                 width(100.percent)
                 height(8.px)
-                backgroundColor(Color("#E2E8F0"))
+                backgroundColor(FlagentTheme.cardBorder(themeMode))
                 borderRadius(4.px)
                 overflow("hidden")
                 marginBottom(12.px)

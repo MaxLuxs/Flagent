@@ -4,6 +4,8 @@ import androidx.compose.runtime.*
 import flagent.frontend.components.Icon
 import flagent.frontend.state.LocalGlobalState
 import flagent.frontend.state.Tenant
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.TenantViewModel
 import org.jetbrains.compose.web.css.*
@@ -14,6 +16,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun TenantSwitcher(viewModel: TenantViewModel) {
+    val themeMode = LocalThemeMode.current
     val globalState = LocalGlobalState.current
     val isOpen = remember { mutableStateOf(false) }
     
@@ -56,8 +59,8 @@ fun TenantSwitcher(viewModel: TenantViewModel) {
                     position(Position.Absolute)
                     property("top", "calc(100% + 8px)")
                     property("right", "0")
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
-                    property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
+                    property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                     borderRadius(6.px)
                     property("backdrop-filter", "blur(12px)")
                     property("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.3)")
@@ -66,7 +69,7 @@ fun TenantSwitcher(viewModel: TenantViewModel) {
                 }
             }) {
                 viewModel.tenants.forEach { tenant ->
-                    TenantMenuItem(
+                    TenantMenuItem(themeMode = themeMode,
                         tenant = tenant,
                         isCurrent = tenant.id == globalState.currentTenant?.id,
                         onClick = {
@@ -83,6 +86,7 @@ fun TenantSwitcher(viewModel: TenantViewModel) {
 
 @Composable
 private fun TenantMenuItem(
+    themeMode: ThemeMode,
     tenant: Tenant,
     isCurrent: Boolean,
     onClick: () -> Unit
@@ -95,10 +99,10 @@ private fun TenantMenuItem(
             alignItems(AlignItems.Center)
             justifyContent(JustifyContent.SpaceBetween)
             padding(12.px, 16.px)
-            backgroundColor(if (isCurrent) FlagentTheme.WorkspaceInputBg else Color.transparent)
-            color(FlagentTheme.WorkspaceText)
+            backgroundColor(if (isCurrent) FlagentTheme.inputBg(themeMode) else Color.transparent)
+            color(FlagentTheme.text(themeMode))
             border(0.px)
-            property("border-bottom", "1px solid ${FlagentTheme.WorkspaceBorder}")
+            property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             cursor("pointer")
             fontSize(14.px)
             textAlign("left")

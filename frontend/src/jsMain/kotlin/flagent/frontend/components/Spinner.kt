@@ -1,6 +1,7 @@
 package flagent.frontend.components
 
 import androidx.compose.runtime.Composable
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -10,6 +11,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun Spinner() {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             display(DisplayStyle.Flex)
@@ -25,7 +27,7 @@ fun Spinner() {
                 border {
                     width(4.px)
                     style(LineStyle.Solid)
-                    color(FlagentTheme.WorkspaceInputBg)
+                    color(FlagentTheme.inputBg(themeMode))
                 }
                 property("border-top-color", FlagentTheme.Primary.toString())
                 borderRadius(50.percent)

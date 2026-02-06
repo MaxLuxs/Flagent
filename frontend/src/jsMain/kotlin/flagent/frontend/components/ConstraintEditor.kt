@@ -10,6 +10,7 @@ import flagent.api.model.PutConstraintRequest
 import flagent.frontend.api.ApiClient
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,7 @@ import org.jetbrains.compose.web.dom.Text
  */
 @Composable
 fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
+    val themeMode = LocalThemeMode.current
     val property = remember { mutableStateOf("") }
     val operator = remember { mutableStateOf("EQ") }
     val value = remember { mutableStateOf("") }
@@ -83,7 +85,7 @@ fun ConstraintEditor(flagId: Int, segmentId: Int, constraintId: Int? = null) {
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.WorkspaceInputBorder)
+                color(FlagentTheme.inputBorder(themeMode))
             }
             borderRadius(5.px)
         }

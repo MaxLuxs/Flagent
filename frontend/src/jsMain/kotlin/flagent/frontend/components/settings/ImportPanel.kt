@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.ImportResult
 import flagent.frontend.components.Icon
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +15,7 @@ import org.jetbrains.compose.web.dom.*
 
 @Composable
 fun ImportPanel() {
+    val themeMode = LocalThemeMode.current
     val content = remember { mutableStateOf("") }
     val format = remember { mutableStateOf("yaml") }
     val loading = remember { mutableStateOf(false) }
@@ -42,7 +44,7 @@ fun ImportPanel() {
 
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -59,7 +61,7 @@ fun ImportPanel() {
         }
         P({
             style {
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.textLight(themeMode))
                 marginBottom(20.px)
                 fontSize(14.px)
             }
@@ -71,9 +73,9 @@ fun ImportPanel() {
             Div({
                 style {
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                     marginBottom(16.px)
                 }
             }) {
@@ -97,10 +99,11 @@ fun ImportPanel() {
                 }
                 style {
                     padding(8.px, 12.px)
-                    border(1.px, LineStyle.Solid, FlagentTheme.Border)
+                    border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
                     borderRadius(6.px)
                     fontSize(14.px)
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
+                    color(FlagentTheme.text(themeMode))
                     cursor("pointer")
                 }
             }) {
@@ -117,10 +120,12 @@ fun ImportPanel() {
                 width(100.percent)
                 minHeight(200.px)
                 padding(12.px)
-                border(1.px, LineStyle.Solid, FlagentTheme.Border)
+                border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
                 borderRadius(6.px)
                 fontSize(14.px)
                 fontFamily("'Monaco', 'Courier New', monospace")
+                backgroundColor(FlagentTheme.inputBg(themeMode))
+                color(FlagentTheme.text(themeMode))
             }
         }
 
@@ -147,9 +152,9 @@ fun ImportPanel() {
                 style {
                     marginTop(20.px)
                     padding(16.px)
-                    backgroundColor(FlagentTheme.BackgroundAlt)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(6.px)
-                    property("border", "1px solid ${FlagentTheme.Border}")
+                    border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                 }
             }) {
                 Div({
@@ -165,7 +170,7 @@ fun ImportPanel() {
                     Icon("check_circle", size = 20.px, color = FlagentTheme.Success)
                     Text("Import complete")
                 }
-                P({ style { margin(0.px); fontSize(14.px); color(FlagentTheme.WorkspaceText) } }) {
+                P({ style { margin(0.px); fontSize(14.px); color(FlagentTheme.text(themeMode)) } }) {
                     Text("Created: ${r.created}, Updated: ${r.updated}")
                 }
                 if (r.errors.isNotEmpty()) {
@@ -173,10 +178,10 @@ fun ImportPanel() {
                         style {
                             marginTop(8.px)
                             padding(8.px)
-                            backgroundColor(Color("#FEF2F2"))
+                            backgroundColor(FlagentTheme.errorBg(themeMode))
                             borderRadius(4.px)
                             fontSize(13.px)
-                            color(Color("#B91C1C"))
+                            color(FlagentTheme.errorText(themeMode))
                         }
                     }) {
                         Text("Errors:")

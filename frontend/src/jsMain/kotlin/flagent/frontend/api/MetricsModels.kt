@@ -76,6 +76,49 @@ data class TimeSeriesEntryResponse(
     val count: Long
 )
 
+/** Analytics events overview (Firebase-level: first_open, session_start, screen_view, custom). */
+@Serializable
+data class AnalyticsOverviewResponse(
+    val totalEvents: Long,
+    val uniqueUsers: Int,
+    val topEvents: List<AnalyticsTopEventEntry>,
+    val timeSeries: List<TimeSeriesEntryResponse>,
+    val dauByDay: List<DauEntryResponse>
+)
+
+@Serializable
+data class AnalyticsTopEventEntry(
+    val eventName: String,
+    val count: Long
+)
+
+@Serializable
+data class DauEntryResponse(
+    val timestamp: Long,
+    val dau: Long
+)
+
+/** Crash report from Enterprise POST/GET /crashes. */
+@Serializable
+data class CrashReportResponse(
+    val id: Long,
+    val stackTrace: String,
+    val message: String,
+    val platform: String,
+    val appVersion: String? = null,
+    val deviceInfo: String? = null,
+    val breadcrumbs: String? = null,
+    val customKeys: String? = null,
+    val timestamp: Long,
+    val tenantId: String? = null
+)
+
+@Serializable
+data class CrashListResponse(
+    val items: List<CrashReportResponse>,
+    val total: Long
+)
+
 /** Per-flag evaluation stats from Core (OSS) - API evaluation count only. */
 @Serializable
 data class FlagEvaluationStatsResponse(

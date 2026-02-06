@@ -2,8 +2,10 @@ package flagent.frontend.components.analytics
 
 import androidx.compose.runtime.*
 import flagent.api.model.FlagResponse
+import flagent.frontend.api.AnalyticsOverviewResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.GlobalMetricsOverviewResponse
+import flagent.frontend.api.TimeSeriesEntryResponse
 import flagent.frontend.components.Icon
 import flagent.frontend.components.common.PageHeader
 import flagent.frontend.components.metrics.OverviewChart
@@ -11,6 +13,8 @@ import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import org.jetbrains.compose.web.css.*
@@ -21,11 +25,15 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun AnalyticsPage() {
+    val themeMode = LocalThemeMode.current
     var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
     var overview by remember { mutableStateOf<GlobalMetricsOverviewResponse?>(null) }
+    var analyticsOverview by remember { mutableStateOf<AnalyticsOverviewResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var activeTab by remember { mutableStateOf("overview") }
+
+    var isLoadingEvents by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -48,6 +56,18 @@ fun AnalyticsPage() {
         isLoading = false
     }
 
+    LaunchedEffect(activeTab) {
+        if (activeTab == "events") {
+            isLoadingEvents = true
+            try {
+                analyticsOverview = ApiClient.getAnalyticsOverview(topLimit = 20, timeBucketMs = 3600_000)
+            } catch (_: Throwable) {
+                analyticsOverview = null
+            }
+            isLoadingEvents = false
+        }
+    }
+
     val hasOverview = AppConfig.Features.enableMetrics && overview != null
 
     Div({
@@ -60,17 +80,18 @@ fun AnalyticsPage() {
             subtitle = LocalizedStrings.analyticsSubtitle
         )
 
-        if (hasOverview) {
-            Div({
-                style {
-                    display(DisplayStyle.Flex)
-                    gap(4.px)
-                    marginBottom(16.px)
-                    property("border-bottom", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
-                }
-            }) {
-                TabButton("Overview", activeTab == "overview") { activeTab = "overview" }
-                TabButton("By flags", activeTab == "flags") { activeTab = "flags" }
+        Div({
+            style {
+                display(DisplayStyle.Flex)
+                gap(4.px)
+                marginBottom(16.px)
+                property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+            }
+        }) {
+            TabButton(themeMode, "Overview", activeTab == "overview") { activeTab = "overview" }
+            TabButton(themeMode, "Events", activeTab == "events") { activeTab = "events" }
+            if (hasOverview) {
+                TabButton(themeMode, "By flags", activeTab == "flags") { activeTab = "flags" }
             }
         }
 
@@ -109,13 +130,13 @@ fun AnalyticsPage() {
                         gap(16.px)
                     }
                 }) {
-                    AnalyticsOverviewCard("Total evaluations", overview!!.totalEvaluations.toString())
-                    AnalyticsOverviewCard("Unique flags", overview!!.uniqueFlags.toString())
+                    AnalyticsOverviewCard(themeMode, "Total evaluations", overview!!.totalEvaluations.toString())
+                    AnalyticsOverviewCard(themeMode, "Unique flags", overview!!.uniqueFlags.toString())
                 }
                 if (overview!!.timeSeries.isNotEmpty()) {
                     Div({
                         style {
-                            backgroundColor(FlagentTheme.WorkspaceCardBg)
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
                             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -127,7 +148,7 @@ fun AnalyticsPage() {
                 if (overview!!.topFlags.isNotEmpty()) {
                     Div({
                         style {
-                            backgroundColor(FlagentTheme.WorkspaceCardBg)
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
                             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -138,7 +159,7 @@ fun AnalyticsPage() {
                                 fontSize(16.px)
                                 fontWeight("600")
                                 marginBottom(12.px)
-                                color(FlagentTheme.WorkspaceText)
+                                color(FlagentTheme.text(themeMode))
                             }
                         }) {
                             Text(LocalizedStrings.topFlagsByEvaluations)
@@ -153,7 +174,7 @@ fun AnalyticsPage() {
                             overview!!.topFlags.forEach { tf ->
                                 Div({
                                     style {
-                                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                                        backgroundColor(FlagentTheme.inputBg(themeMode))
                                         borderRadius(8.px)
                                         padding(16.px)
                                         property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -170,7 +191,7 @@ fun AnalyticsPage() {
                                             style {
                                                 fontSize(15.px)
                                                 fontWeight("600")
-                                                color(FlagentTheme.WorkspaceText)
+                                                color(FlagentTheme.text(themeMode))
                                             }
                                         }) {
                                             Text(tf.flagKey.ifBlank { "Flag #${tf.flagId}" })
@@ -201,7 +222,7 @@ fun AnalyticsPage() {
                                     P({
                                         style {
                                             fontSize(13.px)
-                                            color(FlagentTheme.WorkspaceTextLight)
+                                            color(FlagentTheme.textLight(themeMode))
                                             margin(0.px)
                                             marginTop(8.px)
                                         }
@@ -214,21 +235,171 @@ fun AnalyticsPage() {
                     }
                 }
             }
+        } else if (activeTab == "events") {
+            if (isLoadingEvents) {
+                Div({
+                    style {
+                        textAlign("center")
+                        padding(40.px)
+                    }
+                }) {
+                    Text(LocalizedStrings.loading)
+                }
+            } else {
+                val data = analyticsOverview
+                if (data != null) {
+                    Div({
+                        style {
+                            display(DisplayStyle.Flex)
+                            flexDirection(FlexDirection.Column)
+                            gap(24.px)
+                        }
+                    }) {
+                        Div({
+                            style {
+                                display(DisplayStyle.Grid)
+                                property("grid-template-columns", "repeat(auto-fit, minmax(200px, 1fr))")
+                                gap(16.px)
+                            }
+                        }) {
+                            AnalyticsOverviewCard(themeMode, "Total events", data.totalEvents.toString())
+                            AnalyticsOverviewCard(themeMode, "Unique users", data.uniqueUsers.toString())
+                        }
+                        if (data.timeSeries.isNotEmpty()) {
+                            Div({
+                                style {
+                                    backgroundColor(FlagentTheme.cardBg(themeMode))
+                                    borderRadius(8.px)
+                                    padding(20.px)
+                                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                }
+                            }) {
+                                OverviewChart(data.timeSeries, "Events over time")
+                            }
+                        }
+                        if (data.dauByDay.isNotEmpty()) {
+                            Div({
+                                style {
+                                    backgroundColor(FlagentTheme.cardBg(themeMode))
+                                    borderRadius(8.px)
+                                    padding(20.px)
+                                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                }
+                            }) {
+                                H3({
+                                    style {
+                                        fontSize(16.px)
+                                        fontWeight("600")
+                                        marginBottom(12.px)
+                                        color(FlagentTheme.text(themeMode))
+                                    }
+                                }) {
+                                    Text("DAU by day")
+                                }
+                                OverviewChart(
+                                    data.dauByDay.map { TimeSeriesEntryResponse(it.timestamp, it.dau) },
+                                    "Daily active users"
+                                )
+                            }
+                        }
+                        if (data.topEvents.isNotEmpty()) {
+                            Div({
+                                style {
+                                    backgroundColor(FlagentTheme.cardBg(themeMode))
+                                    borderRadius(8.px)
+                                    padding(20.px)
+                                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                }
+                            }) {
+                                H3({
+                                    style {
+                                        fontSize(16.px)
+                                        fontWeight("600")
+                                        marginBottom(12.px)
+                                        color(FlagentTheme.text(themeMode))
+                                    }
+                                }) {
+                                    Text("Top events")
+                                }
+                                Div({
+                                    style {
+                                        display(DisplayStyle.Grid)
+                                        property("grid-template-columns", "repeat(auto-fill, minmax(280px, 1fr))")
+                                        gap(16.px)
+                                    }
+                                }) {
+                                    data.topEvents.forEach { te ->
+                                        Div({
+                                            style {
+                                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                                borderRadius(8.px)
+                                                padding(16.px)
+                                                property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                            }
+                                        }) {
+                                            Span({
+                                                style {
+                                                    fontSize(15.px)
+                                                    fontWeight("600")
+                                                    color(FlagentTheme.text(themeMode))
+                                                }
+                                            }) {
+                                                Text(te.eventName)
+                                            }
+                                            P({
+                                                style {
+                                                    fontSize(13.px)
+                                                    color(FlagentTheme.textLight(themeMode))
+                                                    margin(0.px)
+                                                    marginTop(8.px)
+                                                }
+                                            }) {
+                                                Text("${te.count} events")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Div({
+                        style {
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
+                            borderRadius(8.px)
+                            padding(40.px)
+                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            textAlign("center")
+                        }
+                    }) {
+                        Icon("analytics", size = 48.px, color = FlagentTheme.textLight(themeMode))
+                        P({
+                            style {
+                                marginTop(16.px)
+                                color(FlagentTheme.text(themeMode))
+                                fontSize(16.px)
+                            }
+                        }) {
+                            Text("No analytics events yet. Use SDK logEvent() to send events.")
+                        }
+                    }
+                }
+            }
         } else if (flags.isEmpty() && (activeTab == "flags" || !hasOverview)) {
             Div({
                 style {
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     padding(40.px)
                     property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
                     textAlign("center")
                 }
             }) {
-                Icon("analytics", size = 48.px, color = FlagentTheme.WorkspaceTextLight)
+                Icon("analytics", size = 48.px, color = FlagentTheme.textLight(themeMode))
                 P({
                     style {
                         marginTop(16.px)
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                         fontSize(16.px)
                     }
                 }) {
@@ -257,7 +428,7 @@ fun AnalyticsPage() {
             val showEvaluations = AppConfig.Features.enableMetrics && overview != null
             Div({
                 style {
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     overflow("hidden")
                     overflowX("auto")
@@ -274,8 +445,8 @@ fun AnalyticsPage() {
                     Thead {
                         Tr({
                             style {
-                                backgroundColor(FlagentTheme.WorkspaceInputBg)
-                                property("border-bottom", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                             }
                         }) {
                             listOf(
@@ -294,7 +465,7 @@ fun AnalyticsPage() {
                                         textAlign("left")
                                         fontSize(12.px)
                                         fontWeight(600)
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                         property("text-transform", "uppercase")
                                     }
                                 }) { Text(h) }
@@ -313,12 +484,12 @@ fun AnalyticsPage() {
                             }
                             Tr({
                                 style {
-                                    property("border-bottom", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                                    property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                                     property("transition", "background-color 0.15s")
                                     cursor("pointer")
                                 }
                                 onClick { onRowClick() }
-                                onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.WorkspaceInputBg.toString() }
+                                onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.inputBg(themeMode).toString() }
                                 onMouseLeave { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent" }
                             }) {
                                 Td({
@@ -348,8 +519,8 @@ fun AnalyticsPage() {
                                         style {
                                             padding(4.px, 8.px)
                                             borderRadius(6.px)
-                                            backgroundColor(if (flag.enabled) Color("#D1FAE5") else FlagentTheme.WorkspaceInputBg)
-                                            color(if (flag.enabled) Color("#065F46") else FlagentTheme.WorkspaceTextLight)
+                                            backgroundColor(if (flag.enabled) Color("#D1FAE5") else FlagentTheme.inputBg(themeMode))
+                                            color(if (flag.enabled) Color("#065F46") else FlagentTheme.textLight(themeMode))
                                         }
                                     }) {
                                         Text(if (flag.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled)
@@ -382,7 +553,7 @@ fun AnalyticsPage() {
                                     style {
                                         padding(10.px, 12.px)
                                         fontSize(12.px)
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                     }
                                 }) {
                                     Text(flag.updatedAt?.take(16) ?: "—")
@@ -423,13 +594,13 @@ fun AnalyticsPage() {
 }
 
 @Composable
-private fun TabButton(label: String, isActive: Boolean, onClick: () -> Unit) {
+private fun TabButton(themeMode: ThemeMode, label: String, isActive: Boolean, onClick: () -> Unit) {
     Button({
         this.onClick { onClick() }
         style {
             padding(10.px, 16.px)
-            backgroundColor(if (isActive) FlagentTheme.Background else Color.transparent)
-            color(if (isActive) FlagentTheme.Primary else FlagentTheme.WorkspaceTextLight)
+            backgroundColor(if (isActive) FlagentTheme.cardBg(themeMode) else Color.transparent)
+            color(if (isActive) FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
             border(0.px)
             property("border-bottom", if (isActive) "2px solid ${FlagentTheme.Primary}" else "2px solid transparent")
             borderRadius(0.px)
@@ -444,10 +615,10 @@ private fun TabButton(label: String, isActive: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun AnalyticsOverviewCard(label: String, value: String) {
+private fun AnalyticsOverviewCard(themeMode: ThemeMode, label: String, value: String) {
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(16.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -456,7 +627,7 @@ private fun AnalyticsOverviewCard(label: String, value: String) {
         P({
             style {
                 fontSize(12.px)
-                color(FlagentTheme.WorkspaceTextLight)
+                color(FlagentTheme.textLight(themeMode))
                 margin(0.px)
                 marginBottom(4.px)
             }
@@ -467,7 +638,7 @@ private fun AnalyticsOverviewCard(label: String, value: String) {
             style {
                 fontSize(24.px)
                 fontWeight("600")
-                color(FlagentTheme.WorkspaceText)
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
             }
         }) {

@@ -8,6 +8,7 @@ import flagent.frontend.api.ApiClient
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -17,6 +18,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun Breadcrumbs() {
+    val themeMode = LocalThemeMode.current
     val route = Router.currentRoute
     val flagKey = remember { mutableStateOf<String?>(null) }
     
@@ -148,7 +150,7 @@ fun Breadcrumbs() {
                     BreadcrumbSeparator()
                     Span({
                         style {
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                             fontWeight("500")
                         }
                     }) {
@@ -159,7 +161,7 @@ fun Breadcrumbs() {
                     BreadcrumbSeparator()
                     Span({
                         style {
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                             fontWeight("500")
                         }
                     }) {
@@ -196,7 +198,7 @@ fun Breadcrumbs() {
                     }
                     Span({
                         style {
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                             fontWeight("500")
                         }
                     }) {
@@ -207,7 +209,7 @@ fun Breadcrumbs() {
                     BreadcrumbSeparator()
                     Span({
                         style {
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                             fontWeight("500")
                         }
                     }) {
@@ -222,9 +224,10 @@ fun Breadcrumbs() {
 
 @Composable
 private fun BreadcrumbSeparator() {
+    val themeMode = LocalThemeMode.current
     Span({
         style {
-            color(FlagentTheme.WorkspaceTextLight)
+            color(FlagentTheme.textLight(themeMode))
             margin(0.px, 4.px)
             fontSize(12.px)
         }

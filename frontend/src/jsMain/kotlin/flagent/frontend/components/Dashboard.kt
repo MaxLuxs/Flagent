@@ -9,6 +9,8 @@ import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.state.BackendOnboardingState
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.AppLogger
 import flagent.frontend.util.ErrorHandler
@@ -24,6 +26,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun Dashboard() {
+    val themeMode = LocalThemeMode.current
     val scope = rememberCoroutineScope()
     var stats by remember { mutableStateOf<DashboardStats?>(null) }
     var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
@@ -87,7 +90,7 @@ fun Dashboard() {
                 style {
                     fontSize(24.px)
                     fontWeight("bold")
-                    color(FlagentTheme.WorkspaceText)
+                    color(FlagentTheme.text(themeMode))
                     margin(0.px)
                 }
             }) {
@@ -95,7 +98,7 @@ fun Dashboard() {
             }
             P({
                 style {
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     fontSize(14.px)
                     marginTop(4.px)
                 }
@@ -180,11 +183,11 @@ fun Dashboard() {
                     marginBottom(16.px)
                 }
             }) {
-                StatCard("Total Flags", stats!!.totalFlags.toString(), "flag", FlagentTheme.Primary)
-                StatCard("Enabled", stats!!.enabledFlags.toString(), "check_circle", Color("#10B981"))
-                StatCard("Disabled", stats!!.disabledFlags.toString(), "cancel", Color("#EF4444"))
-                StatCard("With Segments", stats!!.flagsWithSegments.toString(), "dashboard", FlagentTheme.Secondary)
-                StatCard("Experiments (A/B)", stats!!.flagsWithVariants.toString(), "science", FlagentTheme.Secondary)
+                StatCard(themeMode, "Total Flags", stats!!.totalFlags.toString(), "flag", FlagentTheme.Primary)
+                StatCard(themeMode, "Enabled", stats!!.enabledFlags.toString(), "check_circle", Color("#10B981"))
+                StatCard(themeMode, "Disabled", stats!!.disabledFlags.toString(), "cancel", Color("#EF4444"))
+                StatCard(themeMode, "With Segments", stats!!.flagsWithSegments.toString(), "dashboard", FlagentTheme.Secondary)
+                StatCard(themeMode, "Experiments (A/B)", stats!!.flagsWithVariants.toString(), "science", FlagentTheme.Secondary)
             }
 
             // Quick links: Experiments, Analytics
@@ -198,6 +201,7 @@ fun Dashboard() {
                 }
             }) {
                 QuickLinkCard(
+                    themeMode,
                     title = flagent.frontend.i18n.LocalizedStrings.experimentsTitle,
                     value = experimentsCount.toString(),
                     icon = "science",
@@ -205,6 +209,7 @@ fun Dashboard() {
                     onClick = { Router.navigateTo(Route.Experiments) }
                 )
                 QuickLinkCard(
+                    themeMode,
                     title = flagent.frontend.i18n.LocalizedStrings.analyticsTitle,
                     value = flagent.frontend.i18n.LocalizedStrings.viewMetrics,
                     icon = "analytics",
@@ -217,10 +222,10 @@ fun Dashboard() {
             if (AppConfig.Features.enableMetrics && overview != null) {
                 Div({
                     style {
-                        backgroundColor(FlagentTheme.WorkspaceCardBg)
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
                         borderRadius(8.px)
                         padding(16.px)
-                        property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                        property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                         marginBottom(16.px)
                     }
                 }) {
@@ -229,7 +234,7 @@ fun Dashboard() {
                             fontSize(18.px)
                             fontWeight("600")
                             marginBottom(16.px)
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                         }
                     }) {
                         Text(flagent.frontend.i18n.LocalizedStrings.evaluationsOverTime)
@@ -242,10 +247,10 @@ fun Dashboard() {
                             flexWrap(FlexWrap.Wrap)
                         }
                     }) {
-                        Span({ style { color(FlagentTheme.WorkspaceTextLight); fontSize(14.px) } }) {
+                        Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px) } }) {
                             Text("Total: ${overview!!.totalEvaluations}")
                         }
-                        Span({ style { color(FlagentTheme.WorkspaceTextLight); fontSize(14.px) } }) {
+                        Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px) } }) {
                             Text("Unique flags: ${overview!!.uniqueFlags}")
                         }
                     }
@@ -259,13 +264,13 @@ fun Dashboard() {
                                 style {
                                     marginTop(16.px)
                                     paddingTop(16.px)
-                                    property("border-top", "1px solid ${FlagentTheme.WorkspaceBorder}")
+                                    property("border-top", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                                 }
                             }) {
                                 Span({
                                     style {
                                         fontSize(13.px)
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                         fontWeight("600")
                                     }
                                 }) {
@@ -284,7 +289,7 @@ fun Dashboard() {
                                             style {
                                                 fontSize(12.px)
                                                 padding(6.px, 10.px)
-                                                backgroundColor(FlagentTheme.WorkspaceInputBg)
+                                                backgroundColor(FlagentTheme.inputBg(themeMode))
                                                 borderRadius(6.px)
                                                 color(FlagentTheme.Primary)
                                                 textDecoration("none")
@@ -303,7 +308,7 @@ fun Dashboard() {
                     } else {
                         P({
                             style {
-                                color(FlagentTheme.WorkspaceTextLight)
+                                color(FlagentTheme.textLight(themeMode))
                                 fontSize(14.px)
                             }
                         }) {
@@ -318,7 +323,7 @@ fun Dashboard() {
                 if (anomalyViewModel.alerts.isNotEmpty()) {
                     Div({
                         style {
-                            backgroundColor(FlagentTheme.WorkspaceCardBg)
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
                             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -364,7 +369,7 @@ fun Dashboard() {
                             Div({
                                 style {
                                     padding(12.px)
-                                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                                    backgroundColor(FlagentTheme.inputBg(themeMode))
                                     borderRadius(6.px)
                                     marginBottom(10.px)
                                 }
@@ -380,7 +385,7 @@ fun Dashboard() {
                                 Div({
                                     style {
                                         fontSize(14.px)
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                     }
                                 }) {
                                     Text(alert.message)
@@ -396,10 +401,10 @@ fun Dashboard() {
                 val recentFlags = flags.sortedByDescending { it.updatedAt ?: "" }.take(5)
                 Div({
                     style {
-                        backgroundColor(FlagentTheme.WorkspaceCardBg)
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
                         borderRadius(8.px)
                         padding(16.px)
-                        property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                        property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                         marginBottom(16.px)
                     }
                 }) {
@@ -408,7 +413,7 @@ fun Dashboard() {
                             fontSize(18.px)
                             fontWeight("600")
                             marginBottom(12.px)
-                            color(FlagentTheme.WorkspaceText)
+                            color(FlagentTheme.text(themeMode))
                         }
                     }) {
                         Text(flagent.frontend.i18n.LocalizedStrings.recentFlags)
@@ -424,7 +429,7 @@ fun Dashboard() {
                             recentFlags.forEach { flag ->
                                 Tr({
                                     style {
-                                        property("border-bottom", "1px solid ${FlagentTheme.WorkspaceBorder}")
+                                        property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                                         cursor("pointer")
                                     }
                                     onClick { Router.navigateTo(Route.FlagDetail(flag.id)) }
@@ -441,7 +446,7 @@ fun Dashboard() {
                                     Td({
                                         style {
                                             padding(8.px, 12.px)
-                                            color(FlagentTheme.WorkspaceTextLight)
+                                            color(FlagentTheme.textLight(themeMode))
                                             property("max-width", "200px")
                                             property("overflow", "hidden")
                                             property("text-overflow", "ellipsis")
@@ -453,7 +458,7 @@ fun Dashboard() {
                                     Td({
                                         style {
                                             padding(8.px, 12.px)
-                                            color(FlagentTheme.WorkspaceTextLight)
+                                            color(FlagentTheme.textLight(themeMode))
                                             fontSize(12.px)
                                         }
                                     }) {
@@ -469,7 +474,7 @@ fun Dashboard() {
             // Quick Actions
             Div({
                 style {
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     padding(16.px)
                     property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
@@ -492,23 +497,23 @@ fun Dashboard() {
                         gap(12.px)
                     }
                 }) {
-                    QuickActionButton("Create Flag", "add_circle") {
+                    QuickActionButton(themeMode, "Create Flag", "add_circle") {
                         Router.navigateTo(Route.CreateFlag)
                     }
-                    QuickActionButton("View Flags", "flag") {
+                    QuickActionButton(themeMode, "View Flags", "flag") {
                         Router.navigateTo(Route.FlagsList)
                     }
-                    QuickActionButton(flagent.frontend.i18n.LocalizedStrings.experimentsTitle, "science") {
+                    QuickActionButton(themeMode, flagent.frontend.i18n.LocalizedStrings.experimentsTitle, "science") {
                         Router.navigateTo(Route.Experiments)
                     }
-                    QuickActionButton(flagent.frontend.i18n.LocalizedStrings.analyticsTitle, "analytics") {
+                    QuickActionButton(themeMode, flagent.frontend.i18n.LocalizedStrings.analyticsTitle, "analytics") {
                         Router.navigateTo(Route.Analytics)
                     }
-                    QuickActionButton("Debug Console", "bug_report") {
+                    QuickActionButton(themeMode, "Debug Console", "bug_report") {
                         Router.navigateTo(Route.DebugConsole())
                     }
                     if (AppConfig.Features.enableMultiTenancy) {
-                        QuickActionButton("Manage Tenants", "business") {
+                        QuickActionButton(themeMode, "Manage Tenants", "business") {
                             Router.navigateTo(Route.Tenants)
                         }
                     }
@@ -519,10 +524,10 @@ fun Dashboard() {
 }
 
 @Composable
-private fun StatCard(title: String, value: String, icon: String, color: CSSColorValue) {
+private fun StatCard(themeMode: ThemeMode, title: String, value: String, icon: String, color: CSSColorValue) {
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(16.px)
             property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
@@ -549,7 +554,7 @@ private fun StatCard(title: String, value: String, icon: String, color: CSSColor
             Div({
                 style {
                     fontSize(14.px)
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     fontWeight("500")
                 }
             }) {
@@ -570,6 +575,7 @@ private fun StatCard(title: String, value: String, icon: String, color: CSSColor
 
 @Composable
 private fun QuickLinkCard(
+    themeMode: ThemeMode,
     title: String,
     value: String,
     icon: String,
@@ -580,8 +586,8 @@ private fun QuickLinkCard(
         style {
             display(DisplayStyle.Block)
             textAlign("left")
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
-            border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
+            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
             borderRadius(8.px)
             padding(16.px)
             property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
@@ -611,7 +617,7 @@ private fun QuickLinkCard(
             Span({
                 style {
                     fontSize(14.px)
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     fontWeight("500")
                 }
             }) {
@@ -631,15 +637,15 @@ private fun QuickLinkCard(
 }
 
 @Composable
-private fun QuickActionButton(label: String, icon: String, onClick: () -> Unit) {
+private fun QuickActionButton(themeMode: ThemeMode, label: String, icon: String, onClick: () -> Unit) {
     Button({
         style {
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)
             gap(8.px)
             padding(12.px, 16.px)
-            backgroundColor(FlagentTheme.WorkspaceInputBg)
-            border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceCardBorder)
+            backgroundColor(FlagentTheme.inputBg(themeMode))
+            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
             borderRadius(6.px)
             cursor("pointer")
             fontSize(14.px)
@@ -652,8 +658,8 @@ private fun QuickActionButton(label: String, icon: String, onClick: () -> Unit) 
             (it.target as org.w3c.dom.HTMLElement).style.color = Color.white.toString()
         }
         onMouseLeave {
-            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.WorkspaceInputBg.toString()
-            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceText.toString()
+            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.inputBg(themeMode).toString()
+            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.text(themeMode).toString()
         }
         onClick { onClick() }
     }) {

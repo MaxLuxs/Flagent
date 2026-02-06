@@ -3,6 +3,7 @@ package flagent.frontend.components.export
 import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import flagent.frontend.util.triggerDownload
@@ -17,6 +18,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun ExportPanel() {
+    val themeMode = LocalThemeMode.current
     val excludeSnapshots = remember { mutableStateOf(false) }
     val scope = remember { CoroutineScope(Dispatchers.Main) }
     val loadingExport = remember { mutableStateOf<String?>(null) }
@@ -24,7 +26,7 @@ fun ExportPanel() {
     
     Div({
         style {
-            backgroundColor(Color.white)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
             property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
@@ -34,7 +36,7 @@ fun ExportPanel() {
             style {
                 fontSize(20.px)
                 fontWeight(600)
-                color(Color("#1E293B"))
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
                 marginBottom(24.px)
             }
@@ -46,9 +48,9 @@ fun ExportPanel() {
             Div({
                 style {
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                     marginBottom(16.px)
                 }
             }) {
@@ -180,7 +182,7 @@ fun ExportPanel() {
                 Span({
                     style {
                         fontSize(14.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.textLight(themeMode))
                     }
                 }) {
                     Text("Exclude snapshots (reduce file size)")
@@ -199,10 +201,11 @@ private fun ExportCard(
     loading: Boolean = false,
     onClick: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             padding(16.px)
-            border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
             borderRadius(6.px)
             display(DisplayStyle.Flex)
             justifyContent(JustifyContent.SpaceBetween)
@@ -222,7 +225,7 @@ private fun ExportCard(
                     style {
                         fontSize(16.px)
                         fontWeight(600)
-                        color(Color("#1E293B"))
+                        color(FlagentTheme.text(themeMode))
                         margin(0.px)
                         marginBottom(4.px)
                     }
@@ -232,7 +235,7 @@ private fun ExportCard(
                 P({
                     style {
                         fontSize(14.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.textLight(themeMode))
                         margin(0.px)
                     }
                 }) {
@@ -247,7 +250,7 @@ private fun ExportCard(
             style {
                 padding(10.px, 20.px)
                 backgroundColor(if (loading) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
-                color(Color.white)
+                color(if (loading) FlagentTheme.Neutral else Color.white)
                 border(0.px)
                 borderRadius(6.px)
                 cursor(if (loading) "not-allowed" else "pointer")

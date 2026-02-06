@@ -12,6 +12,8 @@ import flagent.frontend.navigation.Router
 import flagent.frontend.state.BackendOnboardingState
 import flagent.frontend.state.GlobalState
 import flagent.frontend.state.LocalGlobalState
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeState
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.AppLogger
 import flagent.frontend.viewmodel.AuthViewModel
@@ -111,7 +113,13 @@ fun App() {
         Router.navigateTo(Route.Login)
     }
 
-    CompositionLocalProvider(LocalGlobalState provides globalState) {
+    LaunchedEffect(Unit) {
+        ThemeState.applyToDocument(ThemeState.current.value)
+    }
+    CompositionLocalProvider(
+        LocalThemeMode provides ThemeState.current.value,
+        LocalGlobalState provides globalState
+    ) {
         when (route) {
             is Route.Login -> {
                 LoginForm(
@@ -152,11 +160,12 @@ private fun AppShell(
     tenantViewModel: TenantViewModel?,
     route: Route
 ) {
+    val themeMode = LocalThemeMode.current
     Div(attrs = {
         style {
             property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif")
             minHeight(100.vh)
-            backgroundColor(FlagentTheme.WorkspaceBackground)
+            backgroundColor(FlagentTheme.contentBg(themeMode))
         }
     }) {
         NotificationToast(

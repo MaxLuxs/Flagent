@@ -6,6 +6,7 @@ import flagent.frontend.api.CreateWebhookRequest
 import flagent.frontend.api.PutWebhookRequest
 import flagent.frontend.api.WebhookResponse
 import flagent.frontend.components.common.ConfirmDialog
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +27,7 @@ private val WEBHOOK_EVENTS = listOf(
 
 @Composable
 fun WebhooksSettings() {
+    val themeMode = LocalThemeMode.current
     val webhooks = remember { mutableStateOf<List<WebhookResponse>>(emptyList()) }
     val loading = remember { mutableStateOf(true) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -52,7 +54,7 @@ fun WebhooksSettings() {
 
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -69,7 +71,7 @@ fun WebhooksSettings() {
         }
         P({
             style {
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.textLight(themeMode))
                 marginBottom(20.px)
                 fontSize(14.px)
             }
@@ -80,9 +82,9 @@ fun WebhooksSettings() {
             Div({
                 style {
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                     marginBottom(15.px)
                 }
             }) {
@@ -112,10 +114,10 @@ fun WebhooksSettings() {
                 Div({
                     style {
                         padding(20.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         borderRadius(6.px)
                         textAlign("center")
-                        color(FlagentTheme.TextLight)
+                        color(FlagentTheme.textLight(themeMode))
                     }
                 }) {
                     Text("No webhooks configured. Add one to receive flag change notifications.")
@@ -138,8 +140,8 @@ fun WebhooksSettings() {
                             }
                         }) {
                             Div {
-                                Div({ style { fontWeight("500") } }) { Text(wh.url) }
-                                Div({ style { fontSize(13.px); color(FlagentTheme.TextLight); marginTop(4.px) } }) {
+                                Div({ style { fontWeight("500"); color(FlagentTheme.text(themeMode)) } }) { Text(wh.url) }
+                                Div({ style { fontSize(13.px); color(FlagentTheme.textLight(themeMode)); marginTop(4.px) } }) {
                                     Text(wh.events.joinToString(", "))
                                 }
                             }
@@ -153,8 +155,8 @@ fun WebhooksSettings() {
                                     onClick { editingWebhook = wh }
                                     style {
                                         padding(6.px, 12.px)
-                                        backgroundColor(FlagentTheme.NeutralLighter)
-                                        color(FlagentTheme.WorkspaceText)
+                                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                                        color(FlagentTheme.text(themeMode))
                                         border(0.px)
                                         borderRadius(4.px)
                                         cursor("pointer")
@@ -165,8 +167,8 @@ fun WebhooksSettings() {
                                     onClick { deleteConfirm = wh }
                                     style {
                                         padding(6.px, 12.px)
-                                        backgroundColor(Color("#FEE2E2"))
-                                        color(Color("#DC2626"))
+                                        backgroundColor(FlagentTheme.errorBg(themeMode))
+                                        color(FlagentTheme.errorText(themeMode))
                                         border(0.px)
                                         borderRadius(4.px)
                                         cursor("pointer")
@@ -249,6 +251,7 @@ private fun WebhookEditDialog(
     onSave: (url: String, events: List<String>, secret: String, enabled: Boolean) -> Unit,
     onCancel: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     var url by remember { mutableStateOf(initialUrl) }
     var selectedEvents by remember { mutableStateOf(initialEvents.toSet()) }
     var secret by remember { mutableStateOf(initialSecret) }
@@ -271,7 +274,7 @@ private fun WebhookEditDialog(
     }) {
         Div({
             style {
-                backgroundColor(FlagentTheme.WorkspaceCardBg)
+                backgroundColor(FlagentTheme.cardBg(themeMode))
                 borderRadius(8.px)
                 padding(24.px)
                 property("box-shadow", "0 4px 20px rgba(0,0,0,0.2)")
@@ -311,8 +314,8 @@ private fun WebhookEditDialog(
                             }
                             style {
                                 padding(6.px, 12.px)
-                                backgroundColor(if (ev in selectedEvents) FlagentTheme.Primary else FlagentTheme.BackgroundAlt)
-                                color(if (ev in selectedEvents) FlagentTheme.Background else FlagentTheme.Text)
+                                backgroundColor(if (ev in selectedEvents) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                                color(if (ev in selectedEvents) Color.white else FlagentTheme.text(themeMode))
                                 border(0.px)
                                 borderRadius(4.px)
                                 cursor("pointer")
@@ -353,8 +356,8 @@ private fun WebhookEditDialog(
                     onClick { onCancel() }
                     style {
                         padding(10.px, 20.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
-                        color(FlagentTheme.WorkspaceText)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
                         border(0.px)
                         borderRadius(6.px)
                         cursor("pointer")

@@ -6,6 +6,8 @@ import flagent.frontend.api.SsoProviderResponse
 import flagent.frontend.components.Icon
 import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import org.jetbrains.compose.web.css.*
@@ -36,9 +38,10 @@ fun SsoProvidersList() {
         isLoading.value = false
     }
 
+    val themeMode = LocalThemeMode.current
     Div({
         style {
-            backgroundColor(Color.white)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
             property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
@@ -56,7 +59,7 @@ fun SsoProvidersList() {
                 style {
                     fontSize(20.px)
                     fontWeight(600)
-                    color(Color("#1E293B"))
+                    color(FlagentTheme.text(themeMode))
                     margin(0.px)
                 }
             }) {
@@ -73,8 +76,8 @@ fun SsoProvidersList() {
             Div({
                 style {
                     padding(16.px)
-                    color(FlagentTheme.Error)
-                    property("background-color", "rgba(239, 68, 68, 0.1)")
+                    color(FlagentTheme.errorText(themeMode))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(8.px)
                 }
             }) {
@@ -90,18 +93,18 @@ fun SsoProvidersList() {
             )
         } else {
             providers.value.forEach { provider ->
-                SsoProviderCard(provider)
+                SsoProviderCard(themeMode = themeMode, provider = provider)
             }
         }
     }
 }
 
 @Composable
-private fun SsoProviderCard(provider: SsoProvider) {
+private fun SsoProviderCard(themeMode: ThemeMode, provider: SsoProvider) {
     Div({
         style {
             padding(16.px)
-            border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
             borderRadius(6.px)
             marginBottom(12.px)
         }
@@ -118,7 +121,7 @@ private fun SsoProviderCard(provider: SsoProvider) {
                     style {
                         fontSize(16.px)
                         fontWeight(600)
-                        color(Color("#1E293B"))
+                        color(FlagentTheme.text(themeMode))
                         margin(0.px)
                         marginBottom(4.px)
                     }
@@ -128,7 +131,7 @@ private fun SsoProviderCard(provider: SsoProvider) {
                 P({
                     style {
                         fontSize(14.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.textLight(themeMode))
                         margin(0.px)
                     }
                 }) {
@@ -139,8 +142,8 @@ private fun SsoProviderCard(provider: SsoProvider) {
             Span({
                 style {
                     padding(4.px, 8.px)
-                    backgroundColor(if (provider.enabled) Color("#DCFCE7") else Color("#FEE2E2"))
-                    color(if (provider.enabled) Color("#166534") else Color("#991B1B"))
+                    backgroundColor(if (provider.enabled) Color("#DCFCE7") else FlagentTheme.errorBg(themeMode))
+                    color(if (provider.enabled) Color("#166534") else FlagentTheme.errorText(themeMode))
                     borderRadius(4.px)
                     fontSize(12.px)
                     fontWeight(500)

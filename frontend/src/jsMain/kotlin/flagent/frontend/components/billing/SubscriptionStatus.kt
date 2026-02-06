@@ -2,6 +2,8 @@ package flagent.frontend.components.billing
 
 import androidx.compose.runtime.*
 import flagent.frontend.components.Icon
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.BillingViewModel
 import org.jetbrains.compose.web.css.*
@@ -12,9 +14,10 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun SubscriptionStatus(viewModel: BillingViewModel) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
-            backgroundColor(Color.white)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
             property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
@@ -24,7 +27,7 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
             style {
                 fontSize(20.px)
                 fontWeight(600)
-                color(Color("#1E293B"))
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
                 marginBottom(24.px)
             }
@@ -41,6 +44,7 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
             }
         }) {
             PlanCard(
+                themeMode = themeMode,
                 name = "Free",
                 price = "$0/month",
                 features = listOf(
@@ -53,6 +57,7 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
             )
             
             PlanCard(
+                themeMode = themeMode,
                 name = "Pro",
                 price = "$49/month",
                 features = listOf(
@@ -70,6 +75,7 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
             )
             
             PlanCard(
+                themeMode = themeMode,
                 name = "Enterprise",
                 price = "Custom",
                 features = listOf(
@@ -87,6 +93,7 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
 
 @Composable
 private fun PlanCard(
+    themeMode: ThemeMode,
     name: String,
     price: String,
     features: List<String>,
@@ -96,16 +103,16 @@ private fun PlanCard(
     Div({
         style {
             padding(24.px)
-            border(2.px, LineStyle.Solid, if (isCurrent) FlagentTheme.Primary else Color("#E2E8F0"))
+            border(2.px, LineStyle.Solid, if (isCurrent) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode))
             borderRadius(8.px)
-            backgroundColor(if (isCurrent) Color("#F0F9FF") else Color.white)
+            backgroundColor(if (isCurrent) Color("#F0F9FF") else FlagentTheme.cardBg(themeMode))
         }
     }) {
         H3({
             style {
                 fontSize(18.px)
                 fontWeight(600)
-                color(Color("#1E293B"))
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
                 marginBottom(8.px)
             }
@@ -141,7 +148,7 @@ private fun PlanCard(
                         gap(8.px)
                         marginBottom(8.px)
                         fontSize(14.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.textLight(themeMode))
                     }
                 }) {
                     Icon("check", size = 16.px, color = FlagentTheme.Primary)
@@ -158,8 +165,8 @@ private fun PlanCard(
             style {
                 width(100.percent)
                 padding(10.px)
-                backgroundColor(if (isCurrent) Color("#E2E8F0") else FlagentTheme.Primary)
-                color(if (isCurrent) Color("#94A3B8") else Color.white)
+                backgroundColor(if (isCurrent) FlagentTheme.cardBorder(themeMode) else FlagentTheme.Primary)
+                color(if (isCurrent) FlagentTheme.textLight(themeMode) else Color.white)
                 border(0.px)
                 borderRadius(6.px)
                 cursor(if (isCurrent) "not-allowed" else "pointer")

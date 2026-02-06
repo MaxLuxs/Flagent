@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.DisplayStyle
@@ -43,6 +44,7 @@ fun MarkdownEditor(
     placeholder: String = LocalizedStrings.markdownPlaceholder,
     showPreview: Boolean = true
 ) {
+    val themeMode = LocalThemeMode.current
     LaunchedEffect(value) {
         // Simple markdown rendering (basic implementation)
         val html = renderMarkdown(value)
@@ -83,7 +85,7 @@ fun MarkdownEditor(
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.WorkspaceInputBorder)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(5.px)
                         }
@@ -96,12 +98,12 @@ fun MarkdownEditor(
                     style {
                         flex(1)
                         padding(10.px)
-                        backgroundColor(FlagentTheme.WorkspaceInputBg)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         borderRadius(5.px)
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.WorkspaceInputBorder)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         minHeight(200.px)
                     }

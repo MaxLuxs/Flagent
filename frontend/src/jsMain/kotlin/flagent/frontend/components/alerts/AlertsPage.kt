@@ -6,6 +6,7 @@ import flagent.frontend.components.Icon
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.AnomalyViewModel
 import org.jetbrains.compose.web.css.*
@@ -28,6 +29,7 @@ fun AlertsPage() {
         return
     }
     
+    val themeMode = LocalThemeMode.current
     val viewModel = remember { AnomalyViewModel() }
     
     LaunchedEffect(Unit) {
@@ -53,7 +55,7 @@ fun AlertsPage() {
                     style {
                         fontSize(28.px)
                         fontWeight("bold")
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                         margin(0.px)
                     }
                 }) {
@@ -61,7 +63,7 @@ fun AlertsPage() {
                 }
                 P({
                     style {
-                        color(FlagentTheme.WorkspaceTextLight)
+                        color(FlagentTheme.textLight(themeMode))
                         fontSize(14.px)
                         marginTop(5.px)
                     }
@@ -103,9 +105,9 @@ fun AlertsPage() {
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(8.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                 }
             }) {
                 Text(viewModel.error!!)
@@ -115,7 +117,7 @@ fun AlertsPage() {
                 style {
                     padding(40.px)
                     textAlign("center")
-                    backgroundColor(FlagentTheme.WorkspaceInputBg)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(8.px)
                 }
             }) {
@@ -125,7 +127,7 @@ fun AlertsPage() {
                         fontSize(18.px)
                         fontWeight("500")
                         marginTop(15.px)
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                     }
                 }) {
                     Text("No unresolved alerts")
@@ -133,7 +135,7 @@ fun AlertsPage() {
                 P({
                     style {
                         fontSize(14.px)
-                        color(FlagentTheme.WorkspaceTextLight)
+                        color(FlagentTheme.textLight(themeMode))
                     }
                 }) {
                     Text("All anomalies have been resolved")
@@ -150,7 +152,7 @@ fun AlertsPage() {
                 viewModel.alerts.forEach { alert ->
                     Div({
                         style {
-                            backgroundColor(FlagentTheme.WorkspaceCardBg)
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
                             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -211,7 +213,7 @@ fun AlertsPage() {
                                 P({
                                     style {
                                         fontSize(14.px)
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                         margin(0.px)
                                         marginBottom(8.px)
                                     }
@@ -223,7 +225,7 @@ fun AlertsPage() {
                                 Div({
                                     style {
                                         fontSize(12.px)
-                                        color(FlagentTheme.WorkspaceTextLight)
+                                        color(FlagentTheme.textLight(themeMode))
                                     }
                                 }) {
                                     Text("Metric: ${alert.metricType} • Detected: ${formatTimestamp(alert.createdAt)}")

@@ -2,6 +2,7 @@ package flagent.frontend.components.common
 
 import androidx.compose.runtime.Composable
 import flagent.frontend.components.Modal
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -19,6 +20,7 @@ fun ConfirmDialog(
 ) {
     if (!isOpen) return
     
+    val themeMode = LocalThemeMode.current
     Modal(title = title, onClose = onCancel) {
         Div({
             style {
@@ -32,7 +34,7 @@ fun ConfirmDialog(
                 style {
                     fontSize(18.px)
                     fontWeight(600)
-                    color(FlagentTheme.WorkspaceText)
+                    color(FlagentTheme.text(themeMode))
                     margin(0.px)
                     marginBottom(16.px)
                 }
@@ -44,7 +46,7 @@ fun ConfirmDialog(
             P({
                 style {
                     fontSize(14.px)
-                    color(FlagentTheme.WorkspaceTextLight)
+                    color(FlagentTheme.textLight(themeMode))
                     margin(0.px)
                     marginBottom(24.px)
                     lineHeight("1.5")
@@ -65,9 +67,9 @@ fun ConfirmDialog(
                     onClick { onCancel() }
                     style {
                         padding(10.px, 20.px)
-                        backgroundColor(FlagentTheme.WorkspaceInputBg)
-                        color(FlagentTheme.WorkspaceText)
-                        border(1.px, LineStyle.Solid, FlagentTheme.WorkspaceInputBorder)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
                         borderRadius(6.px)
                         cursor("pointer")
                         fontSize(14.px)

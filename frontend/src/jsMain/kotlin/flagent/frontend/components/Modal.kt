@@ -2,6 +2,7 @@ package flagent.frontend.components
 
 import androidx.compose.runtime.Composable
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -44,6 +45,7 @@ fun Modal(
     maxHeight: CSSSizeValue<CSSUnit.percent> = 80.percent,
     content: @Composable () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     Div({
         style {
             position(Position.Fixed)
@@ -66,14 +68,14 @@ fun Modal(
     }) {
         Div({
             style {
-                backgroundColor(FlagentTheme.WorkspaceCardBg)
+                backgroundColor(FlagentTheme.cardBg(themeMode))
                 padding(30.px)
                 borderRadius(10.px)
                 maxWidth(width)
                 width(90.percent)
                 maxHeight(maxHeight)
                 overflow("auto")
-                property("border", "1px solid ${FlagentTheme.WorkspaceCardBorder}")
+                border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                 property("backdrop-filter", "blur(12px)")
                 property("box-shadow", "0 10px 25px rgba(0, 0, 0, 0.3)")
             }
@@ -94,13 +96,13 @@ fun Modal(
                         width(0.px)
                         style(LineStyle.None)
                     }
-                    property("border-bottom", "1px solid ${FlagentTheme.WorkspaceBorder}")
+                    property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                 }
             }) {
                 H3({
                     style {
                         margin(0.px)
-                        color(FlagentTheme.WorkspaceText)
+                        color(FlagentTheme.text(themeMode))
                     }
                 }) {
                     Text(title)
@@ -110,7 +112,7 @@ fun Modal(
                     style {
                         padding(4.px, 8.px)
                         property("background-color", "transparent")
-                        color(FlagentTheme.WorkspaceTextLight)
+                        color(FlagentTheme.textLight(themeMode))
                         border {
                             width(0.px)
                             style(LineStyle.None)
@@ -123,11 +125,11 @@ fun Modal(
                     }
                     onMouseEnter {
                         val element = it.target as org.w3c.dom.HTMLElement
-                        element.style.color = FlagentTheme.WorkspaceText.toString()
+                        element.style.color = FlagentTheme.text(themeMode).toString()
                     }
                     onMouseLeave {
                         val element = it.target as org.w3c.dom.HTMLElement
-                        element.style.color = FlagentTheme.WorkspaceTextLight.toString()
+                        element.style.color = FlagentTheme.textLight(themeMode).toString()
                     }
                 }) {
                     Text("×")
@@ -154,7 +156,7 @@ fun Modal(
                         width(0.px)
                         style(LineStyle.None)
                     }
-                    property("border-top", "1px solid ${FlagentTheme.WorkspaceBorder}")
+                    property("border-top", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                 }
             }) {
                 if (showCancel) {
@@ -162,8 +164,8 @@ fun Modal(
                         onClick { onClose() }
                         style {
                             padding(8.px, 16.px)
-                            backgroundColor(FlagentTheme.WorkspaceInputBg)
-                            color(FlagentTheme.WorkspaceText)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
@@ -174,11 +176,11 @@ fun Modal(
                         }
                         onMouseEnter {
                             val element = it.target as org.w3c.dom.HTMLElement
-                            element.style.backgroundColor = FlagentTheme.WorkspaceInputBorder.toString()
+                            element.style.backgroundColor = FlagentTheme.inputBorder(themeMode).toString()
                         }
                         onMouseLeave {
                             val element = it.target as org.w3c.dom.HTMLElement
-                            element.style.backgroundColor = FlagentTheme.WorkspaceInputBg.toString()
+                            element.style.backgroundColor = FlagentTheme.inputBg(themeMode).toString()
                         }
                     }) {
                         Text(cancelText)
@@ -193,10 +195,10 @@ fun Modal(
                         style {
                             padding(8.px, 16.px)
                             backgroundColor(
-                                if (confirmDisabled || confirmLoading) FlagentTheme.WorkspaceInputBg
+                                if (confirmDisabled || confirmLoading) FlagentTheme.inputBg(themeMode)
                                 else FlagentTheme.Primary
                             )
-                            color(if (confirmDisabled || confirmLoading) FlagentTheme.WorkspaceTextLight else Color.white)
+                            color(if (confirmDisabled || confirmLoading) FlagentTheme.textLight(themeMode) else Color.white)
                             border {
                                 width(0.px)
                                 style(LineStyle.None)

@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.RoleResponse
 import flagent.frontend.api.TenantUserResponse
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +18,7 @@ import org.jetbrains.compose.web.dom.*
  * Roles & Permissions settings (Enterprise RBAC).
  */
 @Composable
-fun RolesSettings() {
+fun RolesSettings(themeMode: flagent.frontend.state.ThemeMode) {
     val roles = remember { mutableStateOf<List<RoleResponse>>(emptyList()) }
     val users = remember { mutableStateOf<List<TenantUserResponse>>(emptyList()) }
     val loading = remember { mutableStateOf(true) }
@@ -39,7 +40,7 @@ fun RolesSettings() {
 
     Div({
         style {
-            backgroundColor(FlagentTheme.WorkspaceCardBg)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -50,13 +51,14 @@ fun RolesSettings() {
                 fontSize(20.px)
                 fontWeight("600")
                 marginBottom(20.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text("Roles & Permissions")
         }
         P({
             style {
-                color(FlagentTheme.TextLight)
+                color(FlagentTheme.textLight(themeMode))
                 marginBottom(20.px)
             }
         }) {
@@ -66,9 +68,9 @@ fun RolesSettings() {
             Div({
                 style {
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                     marginBottom(15.px)
                 }
             }) {
@@ -84,6 +86,7 @@ fun RolesSettings() {
                     fontWeight("600")
                     marginBottom(12.px)
                     marginTop(24.px)
+                    color(FlagentTheme.text(themeMode))
                 }
             }) {
                 Text("Available Roles")
@@ -109,7 +112,7 @@ fun RolesSettings() {
                             }
                         }) { Text("Built-in") }
                     }
-                    Div({ style { fontSize(13.px); color(FlagentTheme.TextLight); marginTop(4.px) } }) {
+                    Div({ style { fontSize(13.px); color(FlagentTheme.textLight(themeMode)); marginTop(4.px) } }) {
                         Text(role.permissions.joinToString(", "))
                     }
                 }
@@ -120,6 +123,7 @@ fun RolesSettings() {
                     fontWeight("600")
                     marginBottom(12.px)
                     marginTop(24.px)
+                    color(FlagentTheme.text(themeMode))
                 }
             }) {
                 Text("Users")
@@ -128,7 +132,7 @@ fun RolesSettings() {
                 Div({
                     style {
                         padding(12.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         borderRadius(6.px)
                         marginBottom(8.px)
                         display(DisplayStyle.Flex)
@@ -137,8 +141,8 @@ fun RolesSettings() {
                     }
                 }) {
                     Div {
-                        Span({ style { fontWeight("500") } }) { Text(user.email) }
-                        Span({ style { fontSize(13.px); color(FlagentTheme.TextLight); marginLeft(8.px) } }) {
+                        Span({ style { fontWeight("500"); color(FlagentTheme.text(themeMode)) } }) { Text(user.email) }
+                        Span({ style { fontSize(13.px); color(FlagentTheme.textLight(themeMode)); marginLeft(8.px) } }) {
                             Text("Role: ${user.role}")
                         }
                     }
@@ -169,7 +173,9 @@ fun RolesSettings() {
                         style {
                             padding(6.px, 12.px)
                             borderRadius(4.px)
-                            border(1.px, LineStyle.Solid, FlagentTheme.Border)
+                            border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             fontSize(13.px)
                         }
                     }) {

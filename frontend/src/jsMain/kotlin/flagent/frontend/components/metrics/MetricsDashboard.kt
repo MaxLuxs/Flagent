@@ -7,6 +7,7 @@ import flagent.frontend.components.experiments.ExperimentInsightsCard
 import flagent.frontend.components.common.SkeletonLoader
 import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.currentTimeMillis
 import flagent.frontend.util.format
@@ -21,6 +22,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
+    val themeMode = LocalThemeMode.current
     val viewModel = remember { MetricsViewModel(flagId) }
     
     LaunchedEffect(flagId, initialMetricType) {
@@ -41,17 +43,17 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
 
     Div({
         style {
-            backgroundColor(Color.white)
+            backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+            property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
         }
     }) {
         H2({
             style {
                 fontSize(20.px)
                 fontWeight(600)
-                color(Color("#1E293B"))
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
                 marginBottom(24.px)
             }
@@ -167,7 +169,7 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                         style {
                             marginBottom(24.px)
                             padding(20.px)
-                            backgroundColor(FlagentTheme.WorkspaceCardBg)
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
                         }

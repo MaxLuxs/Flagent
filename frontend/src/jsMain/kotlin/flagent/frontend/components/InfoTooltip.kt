@@ -3,6 +3,7 @@ package flagent.frontend.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -17,6 +18,7 @@ fun InfoTooltip(
     description: String,
     details: String? = null
 ) {
+    val themeMode = LocalThemeMode.current
     val showTooltip = remember { mutableStateOf(false) }
     
     Span({
@@ -71,11 +73,11 @@ fun InfoTooltip(
                     width(320.px)
                     maxWidth(90.vw)
                     padding(16.px)
-                    backgroundColor(FlagentTheme.WorkspaceCardBg)
+                    backgroundColor(FlagentTheme.cardBg(themeMode))
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.WorkspaceCardBorder)
+                        color(FlagentTheme.cardBorder(themeMode))
                     }
                     borderRadius(8.px)
                     property("box-shadow", "0 4px 12px ${FlagentTheme.ShadowHover}")
@@ -114,17 +116,17 @@ fun InfoTooltip(
                                 width(0.px)
                                 style(LineStyle.None)
                             }
-                            color(FlagentTheme.WorkspaceTextLight)
+                            color(FlagentTheme.textLight(themeMode))
                             cursor("pointer")
                             fontSize(18.px)
                             property("line-height", "1")
                             property("transition", "color 0.2s")
                         }
                         onMouseEnter {
-                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceText.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.text(themeMode).toString()
                         }
                         onMouseLeave {
-                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.WorkspaceTextLight.toString()
+                            (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                         }
                     }) {
                         Text("×")
@@ -145,8 +147,8 @@ fun InfoTooltip(
                         style {
                             marginTop(10.px)
                             paddingTop(10.px)
-                            property("border-top", "1px solid ${FlagentTheme.WorkspaceBorder}")
-                            color(FlagentTheme.WorkspaceTextLight)
+                            property("border-top", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                            color(FlagentTheme.textLight(themeMode))
                             fontSize(12.px)
                         }
                     }) {
@@ -165,7 +167,7 @@ fun InfoTooltip(
                         height(0.px)
                         property("border-left", "6px solid transparent")
                         property("border-right", "6px solid transparent")
-                        property("border-top", "6px solid ${FlagentTheme.WorkspaceCardBorder}")
+                        property("border-top", "6px solid ${FlagentTheme.cardBorder(themeMode)}")
                     }
                 }) {}
             }
