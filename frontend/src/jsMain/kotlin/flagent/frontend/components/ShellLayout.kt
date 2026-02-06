@@ -57,11 +57,19 @@ fun ShellLayout(
         style {
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
-            minHeight(100.vh)
+            height(100.vh)
+            property("max-height", "100vh")
+            overflow("hidden")
             backgroundColor(FlagentTheme.contentBg(themeMode))
         }
     }) {
-        TopNavbar(authViewModel = authViewModel, tenantViewModel = tenantViewModel, anomalyViewModel = anomalyViewModel)
+        Div(attrs = {
+            style {
+                flexShrink(0)
+            }
+        }) {
+            TopNavbar(authViewModel = authViewModel, tenantViewModel = tenantViewModel, anomalyViewModel = anomalyViewModel)
+        }
         Div({
             style {
                 display(DisplayStyle.Flex)
@@ -403,6 +411,8 @@ private fun Sidebar(anomalyViewModel: AnomalyViewModel?) {
         style {
             width(220.px)
             flexShrink(0)
+            property("overflow-y", "auto")
+            property("overflow-x", "hidden")
             backgroundColor(FlagentTheme.sidebarBg(themeMode))
             property("border-right", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             padding(12.px, 0.px)
