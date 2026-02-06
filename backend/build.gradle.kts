@@ -148,7 +148,11 @@ tasks.jar {
 
 tasks.test {
     useJUnitPlatform {
-        excludeTags("performance")
+        if (project.hasProperty("includeCompatibilityTests")) {
+            excludeTags("performance")
+        } else {
+            excludeTags("performance", "compatibility")
+        }
     }
     // Exclude integration tests by default (they need Postgres). CI runs them with -PincludeIntegrationTests.
     if (!project.hasProperty("includeIntegrationTests")) {

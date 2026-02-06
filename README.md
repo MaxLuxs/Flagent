@@ -51,6 +51,7 @@
 ## 🎯 Why Flagent?
 
 ### Kotlin-Native Excellence
+- **Industry-Standard Evaluation API** - Easy migration from existing feature flag solutions
 - **Type-Safe SDKs** - Compile-time validation and IDE autocomplete
 - **Coroutine-First** - Non-blocking I/O and structured concurrency
 - **Ktor Ecosystem** - Seamless integration with Ktor applications
@@ -64,7 +65,7 @@
 
 ### Enterprise-Ready
 - **Extensive test coverage** - 200+ test files
-- **High Performance** - Low latency, high throughput (see backend PerformanceTest: >100 req/s)
+- **High Performance** - Low latency evaluation, load-tested (see [docs/performance/benchmarks.md](docs/performance/benchmarks.md))
 - **Multi-Tenancy** - Isolated environments for teams (Roadmap)
 - **Real-Time Updates** - SSE in Kotlin Enhanced, Go Enhanced
 
@@ -159,6 +160,7 @@ Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when p
 ## 📖 Documentation
 
 - 📖 **[Getting Started](https://maxluxs.github.io/Flagent/getting-started.md)** - Quick start and setup
+- 📖 **[API Compatibility](https://maxluxs.github.io/Flagent/compatibility.md)** - Evaluation API, migration guide
 - 📖 **[API Reference](https://maxluxs.github.io/Flagent)** - API docs and OpenAPI
 - 📖 **[OpenAPI spec](https://maxluxs.github.io/Flagent/api/openapi.yaml)** - OpenAPI specification
 - 📖 **[Architecture](https://maxluxs.github.io/Flagent/architecture/backend.md)** - System design
@@ -422,8 +424,8 @@ Contact: **max.developer.luxs@gmail.com**
 
 ## 📊 Performance & Scalability
 
-- **Low latency** - Typical evaluation under 10ms (see backend PerformanceTest)
-- **High throughput** - 100+ req/s per instance (see backend PerformanceTest)
+- **Low latency** - Evaluation API targets sub-10ms p99 (see [benchmarks](docs/performance/benchmarks.md))
+- **High throughput** - Load-tested with k6; run evaluation benchmarks locally (see [benchmarks](docs/performance/benchmarks.md))
 - **Horizontal scaling** - Stateless architecture supports multiple instances
 - **Modest memory** - Approximately 200MB typical base usage
 - **EvalCache with TTL** - Caching significantly reduces database load
