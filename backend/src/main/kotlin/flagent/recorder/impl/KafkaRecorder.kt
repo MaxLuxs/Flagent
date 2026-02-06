@@ -23,8 +23,7 @@ import java.security.cert.X509Certificate
 private val logger = KotlinLogging.logger {}
 
 /**
- * KafkaRecorder - records evaluation results to Kafka
- * Maps to pkg/handler/data_recorder_kafka.go from original project
+ * Kafka data recorder
  */
 class KafkaRecorder(
     private val topic: String = AppConfig.recorderKafkaTopic,

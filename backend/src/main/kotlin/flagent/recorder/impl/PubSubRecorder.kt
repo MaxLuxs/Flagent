@@ -21,8 +21,7 @@ import java.util.concurrent.TimeUnit
 private val logger = KotlinLogging.logger {}
 
 /**
- * PubSubRecorder - records evaluation results to Google Cloud Pub/Sub
- * Maps to pkg/handler/data_recorder_pubsub.go from original project
+ * PubSub data recorder
  */
 class PubSubRecorder(
     private val projectId: String = AppConfig.recorderPubsubProjectID,
@@ -97,7 +96,7 @@ class PubSubRecorder(
         return DataRecordFrame(
             evalResult = result,
             options = DataRecordFrameOptions(
-                encrypted = false, // Not implemented yet in original
+                encrypted = false,
                 encryptionKey = null,
                 frameOutputMode = AppConfig.recorderFrameOutputMode
             )

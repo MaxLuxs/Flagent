@@ -15,7 +15,6 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * DataRecordingService - orchestrates data recorders with retry and batch processing
- * Maps to data recording logic from pkg/handler/eval.go
  */
 class DataRecordingService {
     private val recorder: DataRecorder

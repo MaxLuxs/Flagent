@@ -5,16 +5,22 @@ import flagent.domain.entity.Flag
 import flagent.domain.repository.IFlagRepository
 import kotlinx.coroutines.*
 import mu.KotlinLogging
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
 
 /**
- * EvalCache - in-memory cache for evaluation
- * Maps to pkg/handler/eval_cache.go from original project
- * 
- * Thread-safe cache with periodic refresh
+ * Immutable snapshot for lock-free read path.
+ * Readers get the current snapshot via volatile read; writers swap atomically.
+ */
+private data class CacheSnapshot(
+    val idCache: Map<String, Flag>,
+    val keyCache: Map<String, Flag>,
+    val tagCache: Map<String, Map<Int, Flag>>
+)
+
+/**
+ * In-memory evaluation cache with periodic refresh.
+ * Uses lock-free read path: volatile snapshot swap on refresh, no lock on getByFlagKeyOrID/getByTags.
  */
 class EvalCache(
     private val flagRepository: IFlagRepository? = null,
@@ -30,12 +36,8 @@ class EvalCache(
     private val actualFetcher: EvalCacheFetcher = fetcher ?: createEvalCacheFetcher(flagRepository!!)
     private val cacheScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     
-    // Cache containers
-    private val idCache = ConcurrentHashMap<String, Flag>()
-    private val keyCache = ConcurrentHashMap<String, Flag>()
-    private val tagCache = ConcurrentHashMap<String, MutableMap<Int, Flag>>()
-    
-    private val cacheMutex = java.util.concurrent.locks.ReentrantReadWriteLock()
+    @Volatile
+    private var snapshot: CacheSnapshot = CacheSnapshot(emptyMap(), emptyMap(), emptyMap())
     
     /**
      * Start periodic cache refresh
@@ -68,65 +70,47 @@ class EvalCache(
     }
     
     /**
-     * Get flag by ID or Key
+     * Get flag by ID or Key. Lock-free read from volatile snapshot.
      */
     fun getByFlagKeyOrID(keyOrID: Any): Flag? {
         val key = keyOrID.toString()
-        
-        cacheMutex.readLock().lock()
-        try {
-            return idCache[key] ?: keyCache[key]
-        } finally {
-            cacheMutex.readLock().unlock()
-        }
+        val s = snapshot
+        return s.idCache[key] ?: s.keyCache[key]
     }
     
     /**
-     * Get flags by tags
+     * Get flags by tags. Lock-free read from volatile snapshot.
      */
     fun getByTags(tags: List<String>, operator: String?): List<Flag> {
-        cacheMutex.readLock().lock()
-        try {
-            val results = when (operator) {
-                "ALL" -> getByTagsALL(tags)
-                else -> getByTagsANY(tags)
-            }
-            return results.values.toList()
-        } finally {
-            cacheMutex.readLock().unlock()
+        val s = snapshot
+        val results = when (operator) {
+            "ALL" -> getByTagsALL(s.tagCache, tags)
+            else -> getByTagsANY(s.tagCache, tags)
         }
+        return results.values.toList()
     }
     
-    private fun getByTagsANY(tags: List<String>): Map<Int, Flag> {
+    private fun getByTagsANY(tagCache: Map<String, Map<Int, Flag>>, tags: List<String>): Map<Int, Flag> {
         val results = mutableMapOf<Int, Flag>()
-        
         tags.forEach { tag ->
             tagCache[tag]?.forEach { (flagId, flag) ->
                 results[flagId] = flag
             }
         }
-        
         return results
     }
     
-    private fun getByTagsALL(tags: List<String>): Map<Int, Flag> {
+    private fun getByTagsALL(tagCache: Map<String, Map<Int, Flag>>, tags: List<String>): Map<Int, Flag> {
         val results = mutableMapOf<Int, Flag>()
-        
         tags.forEachIndexed { index, tag ->
             val flagSet = tagCache[tag] ?: return emptyMap()
-            
             if (index == 0) {
-                // Store all flags from first tag
                 results.putAll(flagSet)
             } else {
-                // Keep only flags that exist in all tags
                 results.keys.removeAll { flagId -> flagId !in flagSet.keys }
-                if (results.isEmpty()) {
-                    return emptyMap()
-                }
+                if (results.isEmpty()) return emptyMap()
             }
         }
-        
         return results
     }
     
@@ -138,46 +122,32 @@ class EvalCache(
     }
     
     /**
-     * Reload cache from database
+     * Reload cache from database. Builds new snapshot and swaps atomically (volatile write).
      */
     private suspend fun reloadCache() {
-        val idCacheNew = ConcurrentHashMap<String, Flag>()
-        val keyCacheNew = ConcurrentHashMap<String, Flag>()
-        val tagCacheNew = ConcurrentHashMap<String, MutableMap<Int, Flag>>()
-        
         try {
             val flags = actualFetcher.fetch()
+            val idCacheNew = mutableMapOf<String, Flag>()
+            val keyCacheNew = mutableMapOf<String, Flag>()
+            val tagCacheNew = mutableMapOf<String, MutableMap<Int, Flag>>()
             
             flags.forEach { flag ->
                 if (!flag.enabled) return@forEach
-                
-                // Index by ID
                 idCacheNew[flag.id.toString()] = flag
-                
-                // Index by Key
                 if (flag.key.isNotEmpty()) {
                     keyCacheNew[flag.key] = flag
                 }
-                
-                // Index by Tags
                 flag.tags.forEach { tag ->
                     tagCacheNew.getOrPut(tag.value) { mutableMapOf() }[flag.id] = flag
                 }
             }
             
-            // Swap caches atomically
-            cacheMutex.writeLock().lock()
-            try {
-                idCache.clear()
-                keyCache.clear()
-                tagCache.clear()
-                
-                idCache.putAll(idCacheNew)
-                keyCache.putAll(keyCacheNew)
-                tagCache.putAll(tagCacheNew)
-            } finally {
-                cacheMutex.writeLock().unlock()
-            }
+            // Atomic swap: readers see either old or new snapshot, never partial state
+            snapshot = CacheSnapshot(
+                idCache = idCacheNew,
+                keyCache = keyCacheNew,
+                tagCache = tagCacheNew.mapValues { (_, m) -> m.toMap() }
+            )
             
             logger.debug { "EvalCache reloaded: ${flags.size} flags" }
         } catch (e: Exception) {
@@ -197,17 +167,12 @@ class EvalCache(
     }
     
     /**
-     * Export cache to JSON format
-     * Maps to EvalCache.export() from pkg/handler/eval_cache_fetcher.go
+     * Export cache to JSON format. Lock-free read from current snapshot.
      */
     fun export(): EvalCacheJSON {
-        cacheMutex.readLock().lock()
-        try {
-            val flags = idCache.values.toList()
-            return EvalCacheJSON(flags = flags.map { it.toEvalCacheExport() })
-        } finally {
-            cacheMutex.readLock().unlock()
-        }
+        val s = snapshot
+        val flags = s.idCache.values.toList()
+        return EvalCacheJSON(flags = flags.map { it.toEvalCacheExport() })
     }
 }
 

@@ -17,8 +17,7 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordRequest
 private val logger = KotlinLogging.logger {}
 
 /**
- * KinesisRecorder - records evaluation results to AWS Kinesis
- * Maps to pkg/handler/data_recorder_kinesis.go from original project
+ * Kinesis data recorder
  */
 class KinesisRecorder(
     private val streamName: String = AppConfig.recorderKinesisStreamName,
@@ -72,7 +71,7 @@ class KinesisRecorder(
         return DataRecordFrame(
             evalResult = result,
             options = DataRecordFrameOptions(
-                encrypted = false, // Not implemented yet in original
+                encrypted = false,
                 encryptionKey = null,
                 frameOutputMode = AppConfig.recorderFrameOutputMode
             )

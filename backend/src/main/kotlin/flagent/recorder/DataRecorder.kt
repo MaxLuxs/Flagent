@@ -4,7 +4,6 @@ import flagent.service.EvalResult
 
 /**
  * DataRecorder interface for recording evaluation results
- * Maps to pkg/handler/data_recorder.go from original project
  */
 interface DataRecorder {
     /**

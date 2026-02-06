@@ -90,8 +90,7 @@ object Tags : IntIdTable("tags") {
 }
 
 /**
- * FlagsTags junction table for many-to-many relationship
- * Maps to flags_tags table from GORM many2many
+ * Many-to-many flags_tags association
  */
 object FlagsTags : IntIdTable("flags_tags") {
     val flagId = integer("flag_id").references(Flags.id, onDelete = ReferenceOption.CASCADE)
@@ -145,6 +144,23 @@ object EvaluationEvents : LongIdTable("evaluation_events") {
     val timestampMs = long("timestamp_ms").index("idx_eval_events_timestamp")
     init {
         index(false, flagId, timestampMs)
+    }
+}
+
+/**
+ * Analytics events table - Firebase-level event tracking (first_open, session_start, screen_view, custom).
+ */
+object AnalyticsEvents : LongIdTable("analytics_events") {
+    val eventName = varchar("event_name", 128).index("idx_analytics_event_name")
+    val eventParams = text("event_params").nullable() // JSON
+    val userId = varchar("user_id", 255).nullable().index("idx_analytics_user")
+    val sessionId = varchar("session_id", 255).nullable().index("idx_analytics_session")
+    val platform = varchar("platform", 32).nullable() // android, ios, web
+    val appVersion = varchar("app_version", 64).nullable()
+    val timestampMs = long("timestamp_ms").index("idx_analytics_timestamp")
+    val tenantId = varchar("tenant_id", 255).nullable().index("idx_analytics_tenant")
+    init {
+        index(false, eventName, timestampMs)
     }
 }
 

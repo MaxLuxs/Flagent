@@ -14,7 +14,6 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * DataRecordFrameOptions - options for creating DataRecordFrame
- * Maps to DataRecordFrameOptions from pkg/handler/data_record_frame.go
  */
 data class DataRecordFrameOptions(
     val encrypted: Boolean = false,
@@ -24,7 +23,6 @@ data class DataRecordFrameOptions(
 
 /**
  * DataRecordFrame - structure for JSON marshaling into data recorders
- * Maps to DataRecordFrame from pkg/handler/data_record_frame.go
  */
 class DataRecordFrame(
     private val evalResult: EvalResult,

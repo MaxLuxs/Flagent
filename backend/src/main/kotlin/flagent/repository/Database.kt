@@ -11,6 +11,7 @@ import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import flagent.repository.tables.AnalyticsEvents
 import flagent.repository.tables.Constraints
 import flagent.repository.tables.Distributions
 import flagent.repository.tables.EvaluationEvents
@@ -27,8 +28,7 @@ import flagent.repository.tables.Webhooks
 private val logger = KotlinLogging.logger {}
 
 /**
- * Database connection and setup
- * Maps to pkg/entity/db.go from original project
+ * Database connection and initialization
  */
 object Database {
     private var dataSource: HikariDataSource? = null
@@ -106,7 +106,8 @@ object Database {
                 FlagEntityTypes,
                 Webhooks,
                 Users,
-                EvaluationEvents
+                EvaluationEvents,
+                AnalyticsEvents
             )
             logger.info { "Database migrations completed" }
         }

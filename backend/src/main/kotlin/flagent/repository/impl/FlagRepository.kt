@@ -135,7 +135,7 @@ class FlagRepository : IFlagRepository {
                     // Preload segments, variants, and tags
                     mapRowToFlagWithPreload(row)
                 } else {
-                    // Only preload tags (for searchability as per original)
+                    // Only preload tags for searchability
                     mapRowToFlagWithTagsOnly(row)
                 }
             }
@@ -292,7 +292,7 @@ class FlagRepository : IFlagRepository {
     private fun mapRowToFlag(row: ResultRow): Flag {
         val flagId = row[Flags.id].value
         
-        // Load related entities (ordered by rank, then id as in original)
+        // Load related entities (ordered by rank, then id)
         // Filter out deleted segments, variants, and tags
         val segments = Segments.selectAll().where { 
             (Segments.flagId eq flagId) and (Segments.deletedAt.isNull())
