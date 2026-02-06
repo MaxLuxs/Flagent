@@ -233,9 +233,13 @@ jobs:
         run: cd frontend/e2e && npm install
       - name: Install Playwright browsers
         run: cd frontend/e2e && npx playwright install --with-deps chromium
+      - name: Build frontend for E2E
+        run: ./gradlew :frontend:jsBrowserDevelopmentWebpack -q
       - name: Run E2E tests (OSS edition)
         env:
           FLAGENT_EDITION: oss
+          FRONTEND_URL: http://localhost:18000
+          BACKEND_URL: http://localhost:18000
         run: cd frontend/e2e && CI=true npm run test -- --project=chromium
       - name: Upload Playwright report
         if: failure()

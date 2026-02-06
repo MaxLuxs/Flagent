@@ -68,7 +68,7 @@ export default defineConfig({
   ],
   webServer: process.env.CI
     ? {
-        command: './gradlew run',
+        command: './gradlew :backend:runDev',
         cwd: '../..',
         url: `${BACKEND_URL}/api/v1/health`,
         timeout: 180_000,
