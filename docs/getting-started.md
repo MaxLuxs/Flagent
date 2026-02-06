@@ -481,6 +481,11 @@ See [Real-Time Updates Guide](https://github.com/MaxLuxs/Flagent/blob/main/sdk/k
 2. Ensure port 18000 is not in use
 3. Check database connection if using external DB
 
+## See Also
+
+- [API Compatibility](compatibility.md) - Evaluation API format and migration guide
+- [Examples](examples.md) - Code snippets for Ktor, Spring Boot, Kotlin, and more
+
 ## Support
 
 - **Documentation**: https://maxluxs.github.io/Flagent/getting-started.md

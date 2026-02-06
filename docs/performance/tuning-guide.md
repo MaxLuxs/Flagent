@@ -95,6 +95,72 @@ autovacuum_analyze_threshold = 50
 
 ---
 
+## Evaluation Throughput
+
+### Target Metrics
+
+- **Throughput:** 1000+ req/s per instance (goal: 2000+ req/s)
+- **Latency:** p99 < 10ms, mean < 1ms for evaluation-only path
+- **Error rate:** < 1%
+
+### Key Configuration
+
+**EvalCache refresh:**
+```bash
+# Shorter interval = fresher data, more DB load. Default: 3s
+export FLAGENT_EVALCACHE_REFRESHINTERVAL=3s
+
+# For high-throughput evaluation, consider 5-10s if data changes infrequently
+export FLAGENT_EVALCACHE_REFRESHINTERVAL=5s
+```
+
+**Worker pool (Netty):**
+```bash
+# Default = CPU cores. For I/O-bound evaluation, increase if CPU is underutilized
+export FLAGENT_WORKER_POOL_SIZE=8
+```
+
+**Database pool (for cache fetcher):**
+```bash
+export DB_POOL_SIZE=50
+export DB_MIN_IDLE=10
+```
+
+### Profiling
+
+Enable pprof endpoints for heap/thread analysis:
+```bash
+export FLAGENT_PPROF_ENABLED=true
+```
+
+Then access:
+- `GET /debug/pprof/heap` — heap dump
+- `GET /debug/pprof/thread` — thread dump
+- `GET /debug/pprof/profile` — CPU profile (see response for JFR instructions)
+
+**JFR (Java Flight Recorder) for CPU profiling:**
+```bash
+java -XX:StartFlightRecording=filename=recording.jfr,duration=60s -jar flagent.jar
+```
+
+**Async-profiler (Linux):**
+```bash
+# Attach to running JVM
+./profiler.sh -e cpu -d 30 -f flamegraph.svg <pid>
+```
+
+### Optimization Checklist
+
+1. **EvalCache:** Ensure cache is warmed before traffic; avoid cold start
+2. **enableDebug:** Set `enableDebug=false` in production — debug path is significantly heavier
+3. **Logging:** Evaluation endpoints are excluded from verbose logging by default. To add more paths:
+   ```bash
+   export FLAGENT_MIDDLEWARE_VERBOSE_LOGGER_EXCLUDE_URLS=/api/v1/evaluation,/api/v1/evaluation/batch,/health
+   ```
+4. **Serialization:** Evaluation response uses kotlinx.serialization; ensure no custom serializers add overhead in hot path
+
+---
+
 ## Connection Pool Tuning
 
 ### Recommended Settings
@@ -292,6 +358,24 @@ fun getCachedAggregation(flagId: Int, metricType: String): MetricAggregation? {
     return cached?.let { Json.decodeFromString(it) }
 }
 ```
+
+---
+
+## Evaluation Throughput
+
+Evaluation API (`POST /api/v1/evaluation`) is the hot path. Optimize for low latency and high throughput (target: ~2000 req/s).
+
+**Environment variables:**
+- `FLAGENT_EVALCACHE_REFRESHINTERVAL` — cache refresh interval (default 3s). Shorter = fresher data, more DB load.
+- `FLAGENT_WORKER_POOL_SIZE` — Netty worker threads (default: CPU cores). Increase for high concurrency (e.g., 8–16 on multi-core).
+- `FLAGENT_PPROF_ENABLED` — enable pprof for profiling (default: false). Use with async-profiler or JFR to find bottlenecks.
+- `FLAGENT_DB_DBCONNECTIONSTR` — ensure HikariCP pool size is adequate (see Connection Pool Tuning).
+
+**Tips:**
+- EvalCache serves evaluation from memory; DB is hit only on refresh.
+- `enableDebug=false` avoids extra debug logging overhead (evaluation endpoints are excluded from verbose middleware).
+- Profile first: run `evaluation-load-test.js`, then enable pprof to identify hot paths.
+- See [benchmarks.md](benchmarks.md) for load test instructions.
 
 ---
 

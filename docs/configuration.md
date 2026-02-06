@@ -19,6 +19,9 @@ HOST=0.0.0.0
 # Server port (default: 18000)
 PORT=18000
 
+# Netty worker pool size (default: CPU cores). Increase for high evaluation throughput.
+FLAGENT_WORKER_POOL_SIZE=8
+
 # Environment (development, staging, production)
 ENVIRONMENT=production
 ```
@@ -114,7 +117,7 @@ FLAGENT_MIDDLEWARE_GZIP_ENABLED=true
 # Enable verbose request logging (default: true)
 FLAGENT_MIDDLEWARE_VERBOSE_LOGGER_ENABLED=true
 
-# Exclude URLs from verbose logging (comma-separated)
+# Exclude URLs from verbose logging (comma-separated). Default: /api/v1/evaluation, /api/v1/evaluation/batch
 FLAGENT_MIDDLEWARE_VERBOSE_LOGGER_EXCLUDE_URLS=/health,/metrics
 ```
 
