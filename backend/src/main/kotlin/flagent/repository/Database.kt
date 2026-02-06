@@ -37,8 +37,10 @@ object Database {
     /**
      * Initialize database connection
      * Supports PostgreSQL, MySQL, and SQLite
+     * Safe to call multiple times (e.g. in tests): closes existing connection first
      */
     fun init() {
+        close()
         val dbDriver = when (AppConfig.dbDriver) {
             "postgres", "postgresql" -> "postgres"
             else -> AppConfig.dbDriver
@@ -220,6 +222,8 @@ object Database {
      */
     fun close() {
         dataSource?.close()
+        dataSource = null
+        exposedDatabase = null
         logger.info { "Database connection closed" }
     }
 }
