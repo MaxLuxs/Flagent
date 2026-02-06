@@ -6,6 +6,7 @@ import flagent.cache.impl.EvalCache
 import flagent.cache.impl.createEvalCacheFetcher
 import flagent.config.AppConfig
 import flagent.repository.Database
+import flagent.repository.impl.AnalyticsEventRepository
 import flagent.repository.impl.ConstraintRepository
 import flagent.repository.impl.DistributionRepository
 import flagent.repository.impl.EvaluationEventRepository
@@ -29,6 +30,7 @@ import flagent.middleware.configureSentry
 import flagent.middleware.configureNewRelic
 import flagent.route.configureAuthRoutes
 import flagent.route.configureConstraintRoutes
+import flagent.route.configureAnalyticsEventsRoutes
 import flagent.route.configureCoreMetricsRoutes
 import flagent.route.configureDistributionRoutes
 import flagent.route.configureEvaluationRoutes
@@ -54,6 +56,7 @@ import flagent.recorder.EvaluationEventRecorder
 import flagent.recorder.EvaluationEventsCleanupJob
 import flagent.route.realtimeRoutes
 import flagent.service.ConstraintService
+import flagent.service.AnalyticsEventsService
 import flagent.service.CoreMetricsService
 import flagent.service.DistributionService
 import flagent.service.EvaluationService
@@ -95,6 +98,8 @@ fun main() {
                     host = AppConfig.host
                     port = AppConfig.port
                 }
+                workerGroupSize = AppConfig.workerPoolSize
+                callGroupSize = AppConfig.workerPoolSize
             }
         ) {
             module()
@@ -300,6 +305,10 @@ fun Application.module() {
     val tagService = TagService(tagRepository, flagRepository, flagSnapshotService)
     val exportService = ExportService(flagRepository, flagSnapshotRepository, flagEntityTypeRepository)
     val importService = ImportService(flagService, segmentService, variantService, distributionService, constraintService, flagRepository)
+
+    // Analytics events (Firebase-level: first_open, session_start, screen_view, custom)
+    val analyticsEventRepository = AnalyticsEventRepository()
+    val analyticsEventsService = AnalyticsEventsService(analyticsEventRepository)
     
     val enterpriseConfigurator = ServiceLoader.load(EnterpriseConfigurator::class.java).toList().firstOrNull() ?: DefaultEnterpriseConfigurator()
     EnterprisePresence.enterpriseEnabled = enterpriseConfigurator !is DefaultEnterpriseConfigurator
@@ -341,6 +350,9 @@ fun Application.module() {
                 if (!EnterprisePresence.enterpriseEnabled && coreMetricsService != null) {
                     configureCoreMetricsRoutes(coreMetricsService, flagService)
                 }
+
+                // Analytics events (Firebase-level: first_open, session_start, screen_view, custom)
+                configureAnalyticsEventsRoutes(analyticsEventsService)
 
                 // Tenant, billing, SSO, AI rollouts: registered by enterprise when present
                 enterpriseConfigurator.configureRoutes(this, backendContext)
@@ -385,8 +397,7 @@ fun Application.module() {
 }
 
 /**
- * Configure static file serving for frontend
- * Maps to negroni.Static with Prefix: Config.WebPrefix, IndexFile: "index.html"
+ * Static file serving for frontend
  */
 private fun Routing.configureStaticFiles() {
     // Try multiple possible locations for frontend static files

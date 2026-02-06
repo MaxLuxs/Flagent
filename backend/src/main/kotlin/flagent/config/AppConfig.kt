@@ -13,6 +13,8 @@ object AppConfig {
     // Server
     val host: String = System.getenv("HOST") ?: "localhost"
     val port: Int = System.getenv("PORT")?.toIntOrNull() ?: 18000
+    val workerPoolSize: Int = System.getenv("FLAGENT_WORKER_POOL_SIZE")?.toIntOrNull()
+        ?: Runtime.getRuntime().availableProcessors()
 
     // Logging
     val logrusLevel: String = System.getenv("FLAGENT_LOGRUS_LEVEL") ?: "info"
@@ -24,7 +26,12 @@ object AppConfig {
         System.getenv("FLAGENT_MIDDLEWARE_VERBOSE_LOGGER_ENABLED")?.toBoolean() ?: true
     val middlewareVerboseLoggerExcludeURLs: List<String> =
         System.getenv("FLAGENT_MIDDLEWARE_VERBOSE_LOGGER_EXCLUDE_URLS")?.split(",")
-            ?.filter { it.isNotBlank() } ?: emptyList()
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?: listOf(
+                "/api/v1/evaluation",
+                "/api/v1/evaluation/batch"
+            )
     val middlewareGzipEnabled: Boolean =
         System.getenv("FLAGENT_MIDDLEWARE_GZIP_ENABLED")?.toBoolean() ?: true
 
