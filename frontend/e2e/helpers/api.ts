@@ -328,6 +328,9 @@ export async function seedAnalyticsData(
       }
     }
 
+    // EvaluationEventRecorder batches events and flushes after 1s; wait for DB persistence
+    await new Promise((r) => setTimeout(r, 2500));
+
     return { flags, apiKey, totalEvaluations: total };
   } catch {
     return null;
