@@ -47,19 +47,21 @@ test.describe('Experiments Page @oss', () => {
     await page.goto('/experiments');
     await page.waitForLoadState('domcontentloaded');
     // Wait for API to finish: table with rows or empty state
-    await expect(
-      page.locator('table tbody tr').or(page.getByText(/No experiments|Нет экспериментов/i))
-    ).toBeVisible({ timeout: 15000 });
+    await Promise.race([
+      page.locator('table tbody tr').first().waitFor({ state: 'visible', timeout: 15000 }),
+      page.getByText(/No experiments|Нет экспериментов/i).waitFor({ state: 'visible', timeout: 15000 }),
+    ]);
 
-    const viewMetricsBtn = page.getByRole('button', {
+    const row = page.locator('table tbody tr').filter({ hasText: experiment.key }).first();
+    const viewMetricsBtn = row.getByRole('button', {
       name: /View metrics|Метрики|view metrics/i,
     });
     if ((await viewMetricsBtn.count()) === 0) {
       test.skip(true, 'No experiments with View Metrics (experiments list empty or enableMetrics disabled)');
       return;
     }
-    await expect(viewMetricsBtn.first()).toBeVisible({ timeout: 5000 });
-    await viewMetricsBtn.first().click();
+    await expect(viewMetricsBtn).toBeVisible({ timeout: 5000 });
+    await viewMetricsBtn.click();
 
     await expect(page).toHaveURL(new RegExp(`/flags/${experiment.id}/metrics`));
     await expect(
