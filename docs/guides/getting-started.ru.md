@@ -349,7 +349,7 @@ println(result.debugLogs) // Посмотреть, почему флаг сов�
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-client:0.1.4")
+    implementation("com.flagent:kotlin-client:0.1.5")
 }
 ```
 
@@ -389,7 +389,7 @@ const client = new FlagentClient({
 
 ```swift
 // Package.swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.4")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.5")
 ```
 
 ```swift

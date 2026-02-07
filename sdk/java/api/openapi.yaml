@@ -20,7 +20,7 @@ info:
   license:
     name: MIT
   title: Flagent API
-  version: 0.1.4
+  version: 0.1.5
 servers:
 - description: Local development server
   url: http://localhost:18000/api/v1
