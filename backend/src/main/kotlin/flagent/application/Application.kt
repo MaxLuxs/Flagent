@@ -81,6 +81,7 @@ import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.openapi.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
+import io.ktor.server.response.*
 import io.ktor.server.http.content.*
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
@@ -358,6 +359,27 @@ fun Application.module() {
                 enterpriseConfigurator.configureRoutes(this, backendContext)
             } else {
                 logger.info { "Running in EvalOnlyMode - CRUD and Export routes are disabled" }
+            }
+
+            // Catch-all for unmatched /api paths: return 404 JSON instead of falling through to staticFiles (index.html)
+            route("/api") {
+                route("{...}") {
+                    get {
+                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                    }
+                    post {
+                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                    }
+                    put {
+                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                    }
+                    delete {
+                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                    }
+                    patch {
+                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                    }
+                }
             }
         }
         

@@ -10,6 +10,7 @@ import flagent.frontend.components.common.SkeletonLoader
 import flagent.frontend.api.MetricType
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
+import flagent.frontend.state.BackendOnboardingState
 import flagent.frontend.navigation.Router
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
@@ -33,7 +34,9 @@ fun CrashDashboard() {
     var isLoading by remember { mutableStateOf(true) }
     var isLoadingCrashes by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var crashReportsError by remember { mutableStateOf<String?>(null) }
     var activeTab by remember { mutableStateOf("reports") }
+    var reportsRefreshTrigger by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -49,17 +52,22 @@ fun CrashDashboard() {
         isLoading = false
     }
 
-    LaunchedEffect(activeTab) {
+    LaunchedEffect(activeTab, reportsRefreshTrigger) {
         if (activeTab == "reports") {
             isLoadingCrashes = true
-            try {
-                val resp = ApiClient.getCrashes(limit = 50)
-                crashReports = resp.items
-                crashTotal = resp.total
-            } catch (_: Throwable) {
-                crashReports = emptyList()
-                crashTotal = 0
-            }
+            crashReportsError = null
+            ErrorHandler.withErrorHandling(
+                block = {
+                    val resp = ApiClient.getCrashes(limit = 50)
+                    crashReports = resp.items
+                    crashTotal = resp.total
+                },
+                onError = { err ->
+                    crashReportsError = ErrorHandler.getUserMessage(err)
+                    crashReports = emptyList()
+                    crashTotal = 0
+                }
+            )
             isLoadingCrashes = false
         }
     }
@@ -121,7 +129,13 @@ fun CrashDashboard() {
                     backgroundColor(if (activeTab == "reports") FlagentTheme.Primary else Color.transparent)
                     color(if (activeTab == "reports") Color.white else FlagentTheme.text(themeMode))
                 }
-                onClick { activeTab = "reports" }
+                onClick {
+                    if (activeTab == "reports") {
+                        reportsRefreshTrigger++
+                    } else {
+                        activeTab = "reports"
+                    }
+                }
             }) { Text("Crash reports") }
             Button({
                 style {
@@ -138,7 +152,52 @@ fun CrashDashboard() {
         }
 
         if (activeTab == "reports") {
-            if (isLoadingCrashes) {
+            if (crashReportsError != null) {
+                Div({
+                    style {
+                        padding(16.px)
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
+                        borderRadius(6.px)
+                        color(FlagentTheme.errorText(themeMode))
+                        fontSize(14.px)
+                        marginBottom(16.px)
+                    }
+                }) {
+                    val isTenantError = crashReportsError!!.contains("tenant", ignoreCase = true) ||
+                        crashReportsError!!.contains("X-API-Key", ignoreCase = true) ||
+                        crashReportsError!!.contains("Create tenant", ignoreCase = true)
+                    if (isTenantError) {
+                        SideEffect { BackendOnboardingState.setBackendNeedsTenantOrAuth() }
+                    }
+                    Text(crashReportsError!!)
+                    if (isTenantError) {
+                        P({
+                            style {
+                                marginTop(8.px)
+                                fontSize(13.px)
+                                opacity(0.9)
+                            }
+                        }) {
+                            Text("Ensure X-API-Key is set (Settings or after creating a tenant).")
+                        }
+                    }
+                    Button({
+                        style {
+                            marginTop(12.px)
+                            padding(8.px, 16.px)
+                            backgroundColor(FlagentTheme.Primary)
+                            color(Color.white)
+                            border(0.px)
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontSize(14.px)
+                        }
+                        onClick { reportsRefreshTrigger++ }
+                    }) {
+                        Text("Retry")
+                    }
+                }
+            } else if (isLoadingCrashes) {
                 SkeletonLoader(height = 200.px)
             } else if (crashReports.isEmpty()) {
                 EmptyState(
