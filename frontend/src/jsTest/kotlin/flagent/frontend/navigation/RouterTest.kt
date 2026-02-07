@@ -72,6 +72,13 @@ class RouterTest {
         
         val debugConsole3 = Route.DebugConsole("my_flag")
         assertEquals("/debug?flagKey=my_flag", debugConsole3.path())
+
+        // Flag sub-routes
+        val flagRollout = Route.FlagRollout(42)
+        assertEquals("/flags/42/rollout", flagRollout.path())
+
+        val flagAnomalies = Route.FlagAnomalies(99)
+        assertEquals("/flags/99/anomalies", flagAnomalies.path())
     }
     
     @Test

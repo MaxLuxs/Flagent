@@ -174,7 +174,8 @@ private fun AppShell(
         )
         ShellLayout(authViewModel = authViewModel, tenantViewModel = tenantViewModel) { vm ->
             when (route) {
-                is Route.FlagDetail, is Route.CreateFlag, is Route.DebugConsole, is Route.FlagHistory, is Route.FlagMetrics -> Breadcrumbs()
+                is Route.FlagDetail, is Route.CreateFlag, is Route.DebugConsole, is Route.FlagHistory, is Route.FlagMetrics,
+                is Route.FlagRollout, is Route.FlagAnomalies -> Breadcrumbs()
                 else -> {}
             }
             when (val r = Router.currentRoute) {
@@ -186,10 +187,10 @@ private fun AppShell(
                 is Route.FlagDetail -> FlagEditor(r.flagId)
                 is Route.CreateFlag -> FlagEditor(null)
                 is Route.DebugConsole -> DebugConsole(r.flagKey)
-                is Route.FlagHistory -> FlagHistory(r.flagId)
-                is Route.FlagMetrics -> flagent.frontend.components.metrics.MetricsDashboard(r.flagId, r.metricType)
-                is Route.FlagRollout -> flagent.frontend.components.rollout.SmartRolloutConfig(r.flagId)
-                is Route.FlagAnomalies -> flagent.frontend.components.anomaly.AnomalyAlertsList(r.flagId)
+                is Route.FlagHistory -> FlagEditor(r.flagId)
+                is Route.FlagMetrics -> FlagEditor(r.flagId)
+                is Route.FlagRollout -> FlagEditor(r.flagId)
+                is Route.FlagAnomalies -> FlagEditor(r.flagId)
                 is Route.Alerts -> flagent.frontend.components.alerts.AlertsPage()
                 is Route.Crash -> flagent.frontend.components.metrics.CrashDashboard()
                 is Route.Settings -> flagent.frontend.components.settings.SettingsPage()

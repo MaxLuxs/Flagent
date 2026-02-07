@@ -3,6 +3,9 @@ package flagent.frontend.components
 import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.tenants.TenantSwitcher
+import kotlinx.browser.document
+import org.w3c.dom.events.Event
+import org.w3c.dom.events.KeyboardEvent
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
@@ -53,6 +56,21 @@ fun ShellLayout(
         }
     }
 
+    val commandBarOpen = remember { mutableStateOf(false) }
+    DisposableEffect(Unit) {
+        val handler: (KeyboardEvent) -> Unit = { event ->
+            if ((event.key == "k" || event.key == "K") && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault()
+                commandBarOpen.value = true
+            }
+        }
+        val wrappedHandler: (Event) -> Unit = { handler(it.unsafeCast<KeyboardEvent>()) }
+        document.addEventListener("keydown", wrappedHandler)
+        onDispose { document.removeEventListener("keydown", wrappedHandler) }
+    }
+
+    CommandBar(isOpen = commandBarOpen.value, onClose = { commandBarOpen.value = false })
+
     Div(attrs = {
         style {
             display(DisplayStyle.Flex)
@@ -68,7 +86,12 @@ fun ShellLayout(
                 flexShrink(0)
             }
         }) {
-            TopNavbar(authViewModel = authViewModel, tenantViewModel = tenantViewModel, anomalyViewModel = anomalyViewModel)
+            TopNavbar(
+                authViewModel = authViewModel,
+                tenantViewModel = tenantViewModel,
+                anomalyViewModel = anomalyViewModel,
+                onOpenCommandBar = { commandBarOpen.value = true }
+            )
         }
         Div({
             style {
@@ -116,7 +139,8 @@ fun ShellLayout(
 private fun TopNavbar(
     authViewModel: AuthViewModel?,
     tenantViewModel: TenantViewModel?,
-    anomalyViewModel: AnomalyViewModel?
+    anomalyViewModel: AnomalyViewModel?,
+    onOpenCommandBar: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val themeMode = LocalThemeMode.current
@@ -197,6 +221,35 @@ private fun TopNavbar(
             }) {
                 if (AppConfig.Features.enableMultiTenancy && tenantViewModel != null) {
                     TenantSwitcher(viewModel = tenantViewModel)
+                }
+                Button({
+                    onClick { onOpenCommandBar() }
+                    style {
+                        padding(8.px, 12.px)
+                        backgroundColor(Color.transparent)
+                        color(Color("rgba(255,255,255,0.85)"))
+                        border(0.px)
+                        borderRadius(8.px)
+                        cursor("pointer")
+                        fontSize(13.px)
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(6.px)
+                        property("transition", "all 0.2s ease")
+                    }
+                    onMouseEnter {
+                        val el = it.target as org.w3c.dom.HTMLElement
+                        el.style.backgroundColor = "rgba(255,255,255,0.1)"
+                        el.style.color = "white"
+                    }
+                    onMouseLeave {
+                        val el = it.target as org.w3c.dom.HTMLElement
+                        el.style.backgroundColor = "transparent"
+                        el.style.color = "rgba(255,255,255,0.85)"
+                    }
+                }) {
+                    Icon("search", size = 18.px, color = FlagentTheme.Background)
+                    Span(attrs = { style { opacity(0.9) } }) { Text("⌘K") }
                 }
                 NavbarLink(AppConfig.docsUrl, "menu_book", flagent.frontend.i18n.LocalizedStrings.docs, external = true)
                 A(href = AppConfig.blogUrl, attrs = {
@@ -455,6 +508,7 @@ private fun Sidebar(anomalyViewModel: AnomalyViewModel?) {
                 paddingTop(8.px)
             }
         }) {
+            SidebarLink(themeMode, flagent.frontend.i18n.LocalizedStrings.debugConsole, "bug_report", "/debug", route is Route.DebugConsole)
             if (AppConfig.Features.enableMultiTenancy) {
                 SidebarLink(themeMode, "Tenants", "business", Route.Tenants.PATH, route is Route.Tenants)
             }

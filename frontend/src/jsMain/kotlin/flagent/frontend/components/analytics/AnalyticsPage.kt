@@ -17,6 +17,7 @@ import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
+import flagent.frontend.util.flexShrink
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
@@ -192,6 +193,10 @@ fun AnalyticsPage() {
                                                 fontSize(15.px)
                                                 fontWeight("600")
                                                 color(FlagentTheme.text(themeMode))
+                                                minWidth(0.px)
+                                                overflow("hidden")
+                                                property("text-overflow", "ellipsis")
+                                                property("white-space", "nowrap")
                                             }
                                         }) {
                                             Text(tf.flagKey.ifBlank { "Flag #${tf.flagId}" })
@@ -200,6 +205,7 @@ fun AnalyticsPage() {
                                             A(href = Route.FlagMetrics(tf.flagId).path(), attrs = {
                                                 style {
                                                     display(DisplayStyle.Flex)
+                                                    flexShrink(0)
                                                     alignItems(AlignItems.Center)
                                                     gap(4.px)
                                                     padding(6.px, 10.px)

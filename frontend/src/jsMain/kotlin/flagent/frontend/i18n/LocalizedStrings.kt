@@ -219,6 +219,31 @@ object LocalizedStrings {
         "ru" -> "Название"
         else -> "View name"
     }
+
+    val quickFilterExperiments: String get() = when (currentLocale) {
+        "ru" -> "Эксперименты"
+        else -> "Experiments"
+    }
+
+    val quickFilterWithSegments: String get() = when (currentLocale) {
+        "ru" -> "С сегментами"
+        else -> "With segments"
+    }
+
+    val exportFilters: String get() = when (currentLocale) {
+        "ru" -> "Экспорт фильтров"
+        else -> "Export filters"
+    }
+
+    val copyShareLink: String get() = when (currentLocale) {
+        "ru" -> "Копировать ссылку"
+        else -> "Copy share link"
+    }
+
+    val filtersCopied: String get() = when (currentLocale) {
+        "ru" -> "Фильтры скопированы"
+        else -> "Filters copied"
+    }
     
     val showDeletedFlags: String get() = when (currentLocale) {
         "ru" -> "Показать удаленные флаги"
@@ -339,7 +364,12 @@ object LocalizedStrings {
         "ru" -> "История"
         else -> "History"
     }
-    
+
+    val anomalies: String get() = when (currentLocale) {
+        "ru" -> "Аномалии"
+        else -> "Anomalies"
+    }
+
     val debug: String get() = when (currentLocale) {
         "ru" -> "Отладка"
         else -> "Debug"
@@ -1138,6 +1168,10 @@ object LocalizedStrings {
         "ru" -> "Мультитенантность"
         else -> "Multi-Tenancy"
     }
+    val manageTenantsLink: String get() = when (currentLocale) {
+        "ru" -> "Управление тенантами"
+        else -> "Manage Tenants"
+    }
     val ssoProvidersTab: String get() = when (currentLocale) {
         "ru" -> "SSO провайдеры"
         else -> "SSO Providers"
@@ -1349,6 +1383,16 @@ object LocalizedStrings {
     val quickAccess: String get() = when (currentLocale) {
         "ru" -> "Быстрый доступ"
         else -> "Quick Access"
+    }
+
+    val commandBarPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Поиск флагов, навигация..."
+        else -> "Search flags, navigate..."
+    }
+
+    val commandBarNoResults: String get() = when (currentLocale) {
+        "ru" -> "Ничего не найдено"
+        else -> "No results found"
     }
     val dashboardOverview: String get() = when (currentLocale) {
         "ru" -> "Обзор флагов и статуса системы"

@@ -26,7 +26,7 @@
             if (match) {
                 window.ENV_EDITION = match[1].toLowerCase();
             } else if (typeof window.ENV_EDITION === "undefined") {
-                window.ENV_EDITION = "open_source";
+                window.ENV_EDITION = "enterprise";
             }
         })();
         // Deployment mode: "self_hosted" (default) or "saas"

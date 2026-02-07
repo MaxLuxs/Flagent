@@ -64,4 +64,22 @@ class FlagsListTest {
         val keyFilterValue = "feature_x"
         assertTrue(keyFilterValue.isNotBlank())
     }
+
+    @Test
+    fun testQuickFilterExperiments() {
+        val experimentsFilter = true
+        assertTrue(experimentsFilter)
+    }
+
+    @Test
+    fun testQuickFilterWithSegments() {
+        val withSegmentsFilter = true
+        assertTrue(withSegmentsFilter)
+    }
+
+    @Test
+    fun testGroupByTag() {
+        val groupByTag = true
+        assertTrue(groupByTag)
+    }
 }

@@ -18,10 +18,15 @@ import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.service.RealtimeService
+import flagent.frontend.state.LocalGlobalState
 import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
+import flagent.frontend.state.Notification
+import flagent.frontend.state.NotificationType
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import kotlinx.browser.localStorage
+import kotlinx.browser.window
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -92,17 +97,189 @@ import org.jetbrains.compose.web.dom.Tr
 private const val PAGE_SIZE = 25
 private const val SAVED_VIEWS_KEY = "flagent_saved_views"
 
+private fun encodeUriComponent(str: String): String = js("encodeURIComponent")(str).toString()
+private fun decodeUriComponent(str: String): String = js("decodeURIComponent")(str).toString()
+
 private data class SavedView(
     val name: String,
     val searchQuery: String,
     val keyFilter: String,
     val statusFilter: Boolean?,
-    val tags: List<String>
+    val tags: List<String>,
+    val quickFilterExperiments: Boolean = false,
+    val quickFilterWithSegments: Boolean = false,
+    val groupByTag: Boolean = false
 )
+
+@Composable
+private fun FlagTableRow(
+    flag: FlagResponse,
+    rowIndex: Int,
+    themeMode: ThemeMode,
+    selectedIds: MutableList<Int>,
+    selectedTags: MutableList<String>
+) {
+    Tr({
+        attr("class", "flag-row-hover")
+        onClick { Router.navigateTo(Route.FlagDetail(flag.id)) }
+        style {
+            cursor("pointer")
+            backgroundColor(if (rowIndex % 2 == 0) FlagentTheme.cardBg(themeMode) else FlagentTheme.inputBg(themeMode))
+            property("transition", "all 0.2s")
+        }
+        onMouseEnter {
+            val element = it.target as org.w3c.dom.HTMLElement
+            element.style.backgroundColor = FlagentTheme.inputBg(themeMode).toString()
+            element.style.setProperty("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+            element.style.transform = "translateY(-1px)"
+        }
+        onMouseLeave {
+            val element = it.target as org.w3c.dom.HTMLElement
+            element.style.backgroundColor =
+                if (rowIndex % 2 == 0) FlagentTheme.cardBg(themeMode).toString() else FlagentTheme.inputBg(themeMode).toString()
+            element.style.setProperty("box-shadow", "none")
+            element.style.transform = "translateY(0)"
+        }
+    }) {
+        Td({
+            style { padding(14.px, 12.px); textAlign("center"); width(40.px) }
+            onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
+        }) {
+            Input(InputType.Checkbox) {
+                checked(flag.id in selectedIds)
+                onChange { event ->
+                    if ((event.target as org.w3c.dom.HTMLInputElement).checked) selectedIds.add(flag.id)
+                    else selectedIds.remove(flag.id)
+                }
+                style { cursor("pointer") }
+            }
+        }
+        Td({ style { padding(14.px, 12.px); textAlign("left"); fontWeight("600"); color(FlagentTheme.Primary) } }) {
+            Span({ style { display(DisplayStyle.InlineBlock); padding(4.px, 8.px); backgroundColor(FlagentTheme.PrimaryLight); color(FlagentTheme.PrimaryDark); borderRadius(4.px); fontSize(12.px) } }) {
+                Text("#${flag.id}")
+            }
+        }
+        Td({ style { padding(14.px, 12.px); maxWidth(300.px) } }) {
+            Div({ style { fontWeight("500"); color(FlagentTheme.Text); marginBottom(4.px) } }) { Text(flag.description) }
+            if (flag.key.isNotEmpty()) {
+                Div({ style { fontSize(12.px); color(FlagentTheme.textLight(themeMode)); fontFamily("monospace") } }) {
+                    Text(flag.key)
+                }
+            }
+        }
+        Td({ style { padding(14.px, 12.px) } }) {
+            if (flag.tags.isEmpty()) {
+                Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(12.px); fontStyle("italic") } }) {
+                    Text(LocalizedStrings.noTags)
+                }
+            } else {
+                flag.tags.forEach { tag ->
+                    Span({
+                        style {
+                            display(DisplayStyle.InlineBlock)
+                            padding(4.px, 10.px)
+                            margin(2.px, 4.px)
+                            backgroundColor(FlagentTheme.Accent)
+                            color(Color.white)
+                            borderRadius(12.px)
+                            fontSize(11.px)
+                            fontWeight("500")
+                            cursor("pointer")
+                            property("box-shadow", "0 1px 2px ${FlagentTheme.Shadow}")
+                        }
+                        onClick { if (tag.value !in selectedTags) selectedTags.add(tag.value) }
+                    }) {
+                        Text(tag.value)
+                    }
+                }
+            }
+        }
+        Td({ style { padding(14.px, 12.px); color(FlagentTheme.textLight(themeMode)); fontSize(13.px) } }) {
+            Text(flag.updatedBy ?: "—")
+        }
+        Td({ style { padding(14.px, 12.px); color(FlagentTheme.textLight(themeMode)); fontSize(13.px) } }) {
+            Text(flag.updatedAt?.split(".")?.get(0) ?: "—")
+        }
+        Td({ style { padding(14.px, 12.px); textAlign("center") } }) {
+            Span({
+                style {
+                    display(DisplayStyle.InlineBlock)
+                    padding(6.px, 12.px)
+                    borderRadius(16.px)
+                    fontSize(12.px)
+                    fontWeight("600")
+                    backgroundColor(if (flag.enabled) FlagentTheme.Success else FlagentTheme.Error)
+                    color(Color.white)
+                    property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
+                }
+            }) {
+                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                    Icon(
+                        name = if (flag.enabled) "check_circle" else "cancel",
+                        size = 14.px,
+                        color = FlagentTheme.cardBg(themeMode)
+                    )
+                    Text(if (flag.enabled) "ON" else "OFF")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroupedFlagsTableBody(
+    groupedByTag: Map<String, List<FlagResponse>>,
+    themeMode: ThemeMode,
+    selectedIds: MutableList<Int>,
+    selectedTags: MutableList<String>
+) {
+    val noTagsKey = "\u0000"
+    groupedByTag.entries.forEach { entry ->
+        val tagKey = entry.key
+        val flagsInGroup = entry.value
+        Tr({
+            style {
+                backgroundColor(FlagentTheme.inputBg(themeMode))
+                property("border-bottom", "2px solid ${FlagentTheme.cardBorder(themeMode)}")
+            }
+        }) {
+            Td({
+                attr("colspan", "7")
+                style {
+                    padding(12.px, 16.px)
+                    fontWeight("600")
+                    fontSize(13.px)
+                    color(FlagentTheme.Text)
+                }
+            }) {
+                Span({
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(8.px)
+                    }
+                }) {
+                    Icon("local_offer", size = 18.px, color = FlagentTheme.Primary)
+                    Text(if (tagKey == noTagsKey) LocalizedStrings.noTagsGroup else tagKey)
+                }
+            }
+        }
+        flagsInGroup.forEachIndexed { idx: Int, f: FlagResponse ->
+            FlagTableRow(
+                flag = f,
+                rowIndex = idx,
+                themeMode = themeMode,
+                selectedIds = selectedIds,
+                selectedTags = selectedTags
+            )
+        }
+    }
+}
 
 @Composable
 fun FlagsList() {
     val themeMode = LocalThemeMode.current
+    val globalState = LocalGlobalState.current
     val flags = remember { mutableStateListOf<FlagResponse>() }
     val totalCount = remember { mutableStateOf(0L) }
     val currentPage = remember { mutableStateOf(1) }
@@ -127,25 +304,67 @@ fun FlagsList() {
     val savedViewsList = remember { mutableStateListOf<SavedView>() }
     val showSaveViewDialog = remember { mutableStateOf(false) }
     val saveViewName = remember { mutableStateOf("") }
+    val quickFilterExperiments = remember { mutableStateOf(false) }
+    val quickFilterWithSegments = remember { mutableStateOf(false) }
+    val groupByTag = remember { mutableStateOf(false) }
+    val allFlagsForClientFilter = remember { mutableStateListOf<FlagResponse>() }
+    val lastFetchFilterKey = remember { mutableStateOf("") }
 
     fun loadFlags() {
         CoroutineScope(Dispatchers.Main).launch {
             loading.value = true
             error.value = null
+            val needsPreload = quickFilterExperiments.value || quickFilterWithSegments.value
+            val filterKey = "${statusFilter.value}|${searchQuery.value}|${keyFilter.value}|${selectedTags.joinToString(",")}|${quickFilterExperiments.value}|${quickFilterWithSegments.value}"
             ErrorHandler.withErrorHandling(
                 block = {
-                    val offset = (currentPage.value - 1) * PAGE_SIZE
-                    val (fetchedFlags, total) = ApiClient.getFlags(
-                        limit = PAGE_SIZE,
-                        offset = offset,
-                        enabled = statusFilter.value,
-                        descriptionLike = searchQuery.value.takeIf { it.isNotBlank() },
-                        key = keyFilter.value.takeIf { it.isNotBlank() },
-                        tags = selectedTags.takeIf { it.isNotEmpty() }?.joinToString(",")
-                    )
-                    flags.clear()
-                    flags.addAll(fetchedFlags)
-                    totalCount.value = total
+                    if (needsPreload) {
+                        if (allFlagsForClientFilter.isNotEmpty() && lastFetchFilterKey.value == filterKey) {
+                            val offset = (currentPage.value - 1) * PAGE_SIZE
+                            flags.clear()
+                            flags.addAll(allFlagsForClientFilter.drop(offset).take(PAGE_SIZE))
+                            totalCount.value = allFlagsForClientFilter.size.toLong()
+                        } else {
+                            val (fetchedFlags, _) = ApiClient.getFlags(
+                                limit = 500,
+                                offset = 0,
+                                enabled = statusFilter.value,
+                                descriptionLike = searchQuery.value.takeIf { it.isNotBlank() },
+                                key = keyFilter.value.takeIf { it.isNotBlank() },
+                                tags = selectedTags.takeIf { it.isNotEmpty() }?.joinToString(","),
+                                preload = true
+                            )
+                            var filtered = fetchedFlags
+                            if (quickFilterExperiments.value) {
+                                filtered = filtered.filter { it.variants.size >= 2 }
+                            }
+                            if (quickFilterWithSegments.value) {
+                                filtered = filtered.filter { it.segments.isNotEmpty() }
+                            }
+                            allFlagsForClientFilter.clear()
+                            allFlagsForClientFilter.addAll(filtered)
+                            lastFetchFilterKey.value = filterKey
+                            totalCount.value = filtered.size.toLong()
+                            val offset = (currentPage.value - 1) * PAGE_SIZE
+                            flags.clear()
+                            flags.addAll(filtered.drop(offset).take(PAGE_SIZE))
+                        }
+                    } else {
+                        allFlagsForClientFilter.clear()
+                        lastFetchFilterKey.value = ""
+                        val offset = (currentPage.value - 1) * PAGE_SIZE
+                        val (fetchedFlags, total) = ApiClient.getFlags(
+                            limit = PAGE_SIZE,
+                            offset = offset,
+                            enabled = statusFilter.value,
+                            descriptionLike = searchQuery.value.takeIf { it.isNotBlank() },
+                            key = keyFilter.value.takeIf { it.isNotBlank() },
+                            tags = selectedTags.takeIf { it.isNotEmpty() }?.joinToString(",")
+                        )
+                        flags.clear()
+                        flags.addAll(fetchedFlags)
+                        totalCount.value = total
+                    }
                 },
                 onError = { err ->
                     error.value = ErrorHandler.getUserMessage(err)
@@ -181,7 +400,10 @@ fun FlagsList() {
                     },
                     tags = (obj["tags"]?.jsonArray ?: buildJsonArray { }).map {
                         it.jsonPrimitive.content
-                    }
+                    },
+                    quickFilterExperiments = obj["quickFilterExperiments"]?.jsonPrimitive?.content?.toBoolean() ?: false,
+                    quickFilterWithSegments = obj["quickFilterWithSegments"]?.jsonPrimitive?.content?.toBoolean() ?: false,
+                    groupByTag = obj["groupByTag"]?.jsonPrimitive?.content?.toBoolean() ?: false
                 ))
             }
         } catch (_: Exception) { /* silent */ }
@@ -193,7 +415,10 @@ fun FlagsList() {
             searchQuery = searchQuery.value,
             keyFilter = keyFilter.value,
             statusFilter = statusFilter.value,
-            tags = selectedTags.toList()
+            tags = selectedTags.toList(),
+            quickFilterExperiments = quickFilterExperiments.value,
+            quickFilterWithSegments = quickFilterWithSegments.value,
+            groupByTag = groupByTag.value
         )
         savedViewsList.removeAll { it.name == name }
         savedViewsList.add(view)
@@ -205,6 +430,9 @@ fun FlagsList() {
                     put("keyFilter", v.keyFilter)
                     put("statusFilter", v.statusFilter?.toString() ?: "null")
                     put("tags", buildJsonArray { v.tags.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } })
+                    put("quickFilterExperiments", v.quickFilterExperiments)
+                    put("quickFilterWithSegments", v.quickFilterWithSegments)
+                    put("groupByTag", v.groupByTag)
                 })
             }
         }
@@ -219,6 +447,47 @@ fun FlagsList() {
         statusFilter.value = view.statusFilter
         selectedTags.clear()
         selectedTags.addAll(view.tags)
+        quickFilterExperiments.value = view.quickFilterExperiments
+        quickFilterWithSegments.value = view.quickFilterWithSegments
+        groupByTag.value = view.groupByTag
+    }
+
+    fun buildFiltersJson(): String {
+        val obj = buildJsonObject {
+            put("searchQuery", searchQuery.value)
+            put("keyFilter", keyFilter.value)
+            put("statusFilter", statusFilter.value?.toString() ?: "null")
+            put("tags", buildJsonArray { selectedTags.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } })
+            put("quickFilterExperiments", quickFilterExperiments.value)
+            put("quickFilterWithSegments", quickFilterWithSegments.value)
+            put("groupByTag", groupByTag.value)
+        }
+        return kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.json.JsonElement.serializer(), obj)
+    }
+
+    fun buildShareUrl(): String {
+        val base = "${window.location.origin}${Route.FlagsList.PATH}"
+        val params = mutableListOf<String>()
+        if (searchQuery.value.isNotBlank()) params.add("q=${encodeUriComponent(searchQuery.value)}")
+        if (keyFilter.value.isNotBlank()) params.add("key=${encodeUriComponent(keyFilter.value)}")
+        statusFilter.value?.let { params.add("status=$it") }
+        if (selectedTags.isNotEmpty()) params.add("tags=${encodeUriComponent(selectedTags.joinToString(","))}")
+        if (quickFilterExperiments.value) params.add("experiments=1")
+        if (quickFilterWithSegments.value) params.add("segments=1")
+        if (groupByTag.value) params.add("groupByTag=1")
+        return if (params.isEmpty()) base else "$base?${params.joinToString("&")}"
+    }
+
+    fun copyToClipboard(text: String, onSuccess: () -> Unit) {
+        try {
+            val clip = js("navigator.clipboard")
+            if (clip != null && clip != js("undefined")) {
+                clip.writeText(text)
+            }
+            onSuccess()
+        } catch (_: Throwable) {
+            onSuccess()
+        }
     }
 
     fun loadDeletedFlags() {
@@ -323,6 +592,25 @@ fun FlagsList() {
     LaunchedEffect(Unit) {
         loadTags()
         loadSavedViews()
+        val search = window.location.search
+        if (Router.currentRoute == Route.FlagsList && search.isNotBlank()) {
+            val params: Map<String, String?> = search.removePrefix("?").split("&").associate { part ->
+                val parts = part.split("=", limit = 2)
+                val k = parts[0]
+                val v = parts.getOrNull(1)?.let { decodeUriComponent(it) }
+                k to v
+            }
+            (params["q"] ?: "").takeIf { it.isNotBlank() }?.let { searchQuery.value = it }
+            (params["key"] ?: "").takeIf { it.isNotBlank() }?.let { keyFilter.value = it }
+            params["status"]?.let { statusFilter.value = it.toBooleanStrictOrNull() }
+            (params["tags"] ?: "").takeIf { it.isNotBlank() }?.let { t ->
+                selectedTags.clear()
+                selectedTags.addAll(t.split(",").map { it.trim() }.filter { it.isNotBlank() })
+            }
+            if (params["experiments"] == "1") quickFilterExperiments.value = true
+            if (params["segments"] == "1") quickFilterWithSegments.value = true
+            if (params["groupByTag"] == "1") groupByTag.value = true
+        }
     }
 
     LaunchedEffect(
@@ -331,12 +619,21 @@ fun FlagsList() {
         keyFilter.value,
         statusFilter.value,
         selectedTags.joinToString(","),
+        quickFilterExperiments.value,
+        quickFilterWithSegments.value,
         realtimeRefreshTrigger.value
     ) {
         loadFlags()
     }
 
-    LaunchedEffect(searchQuery.value, keyFilter.value, statusFilter.value, selectedTags.joinToString(",")) {
+    LaunchedEffect(
+        searchQuery.value,
+        keyFilter.value,
+        statusFilter.value,
+        selectedTags.joinToString(","),
+        quickFilterExperiments.value,
+        quickFilterWithSegments.value
+    ) {
         currentPage.value = 1
     }
 
@@ -630,6 +927,56 @@ fun FlagsList() {
                 Option(value = "enabled") { Text(LocalizedStrings.enabledFlags) }
                 Option(value = "disabled") { Text(LocalizedStrings.disabledFlags) }
             }
+            Span({
+                style {
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    gap(6.px)
+                }
+            }) {
+                Span({
+                    style {
+                        padding(6.px, 12.px)
+                        backgroundColor(if (quickFilterExperiments.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                        color(if (quickFilterExperiments.value) Color.white else FlagentTheme.Text)
+                        border { width(1.px); style(LineStyle.Solid); color(if (quickFilterExperiments.value) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode)) }
+                        borderRadius(16.px)
+                        fontSize(12.px)
+                        cursor("pointer")
+                    }
+                    onClick { quickFilterExperiments.value = !quickFilterExperiments.value }
+                }) {
+                    Text(LocalizedStrings.quickFilterExperiments)
+                }
+                Span({
+                    style {
+                        padding(6.px, 12.px)
+                        backgroundColor(if (quickFilterWithSegments.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                        color(if (quickFilterWithSegments.value) Color.white else FlagentTheme.Text)
+                        border { width(1.px); style(LineStyle.Solid); color(if (quickFilterWithSegments.value) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode)) }
+                        borderRadius(16.px)
+                        fontSize(12.px)
+                        cursor("pointer")
+                    }
+                    onClick { quickFilterWithSegments.value = !quickFilterWithSegments.value }
+                }) {
+                    Text(LocalizedStrings.quickFilterWithSegments)
+                }
+                Span({
+                    style {
+                        padding(6.px, 12.px)
+                        backgroundColor(if (groupByTag.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                        color(if (groupByTag.value) Color.white else FlagentTheme.Text)
+                        border { width(1.px); style(LineStyle.Solid); color(if (groupByTag.value) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode)) }
+                        borderRadius(16.px)
+                        fontSize(12.px)
+                        cursor("pointer")
+                    }
+                    onClick { groupByTag.value = !groupByTag.value }
+                }) {
+                    Text(LocalizedStrings.groupByTags)
+                }
+            }
             Div({
                 style {
                     display(DisplayStyle.Flex)
@@ -845,6 +1192,52 @@ fun FlagsList() {
                     }) {
                         Text(LocalizedStrings.saveCurrentView)
                     }
+                    Div({
+                        style {
+                            display(DisplayStyle.Flex)
+                            gap(8.px)
+                            marginTop(8.px)
+                            property("padding-top", "12px")
+                            property("border-top", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                        }
+                    }) {
+                        Button({
+                            onClick {
+                                copyToClipboard(buildFiltersJson()) {
+                                    globalState.addNotification(Notification(message = LocalizedStrings.filtersCopied, type = NotificationType.SUCCESS))
+                                }
+                            }
+                            style {
+                                padding(8.px, 14.px)
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                color(FlagentTheme.Text)
+                                border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
+                                borderRadius(6.px)
+                                cursor("pointer")
+                                fontSize(13.px)
+                            }
+                        }) {
+                            Text(LocalizedStrings.exportFilters)
+                        }
+                        Button({
+                            onClick {
+                                copyToClipboard(buildShareUrl()) {
+                                    globalState.addNotification(Notification(message = LocalizedStrings.filtersCopied, type = NotificationType.SUCCESS))
+                                }
+                            }
+                            style {
+                                padding(8.px, 14.px)
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                color(FlagentTheme.Text)
+                                border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
+                                borderRadius(6.px)
+                                cursor("pointer")
+                                fontSize(13.px)
+                            }
+                        }) {
+                            Text(LocalizedStrings.copyShareLink)
+                        }
+                    }
                 }
             }
         }
@@ -926,6 +1319,7 @@ fun FlagsList() {
                     result = when (column) {
                         "id" -> result.sortedBy { it.id }
                         "description" -> result.sortedBy { it.description }
+                        "key" -> result.sortedBy { it.key }
                         "updatedBy" -> result.sortedBy { it.updatedBy ?: "" }
                         "updatedAt" -> result.sortedBy { it.updatedAt ?: "" }
                         else -> result
@@ -933,6 +1327,18 @@ fun FlagsList() {
                     if (!sortAscending.value) result = result.reversed()
                 }
                 result
+            }
+
+            val groupedByTag = remember(sortedFlags, groupByTag.value) {
+                if (!groupByTag.value) null
+                else {
+                    val noTagsKey = "\u0000"
+                    sortedFlags
+                        .groupBy { f -> f.tags.firstOrNull()?.value ?: noTagsKey }
+                        .toList()
+                        .sortedBy { (k, _) -> if (k == noTagsKey) "zzz" else k }
+                        .associate { it.first to it.second }
+                }
             }
 
             if (sortedFlags.isEmpty()) {
@@ -1071,12 +1477,23 @@ fun FlagsList() {
                                     }
                                 }
                                 Th({
+                                    onClick { sortFlags("description") }
                                     style {
                                         padding(10.px, 12.px)
+                                        cursor("pointer")
+                                        property("user-select", "none")
                                         fontWeight("600")
                                         fontSize(13.px)
                                         color(FlagentTheme.Text)
                                         textAlign("left")
+                                        property("transition", "background-color 0.2s")
+                                    }
+                                    onMouseEnter {
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.inputBg(themeMode).toString()
+                                    }
+                                    onMouseLeave {
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = ""
                                     }
                                 }) {
                                     Span({
@@ -1092,6 +1509,11 @@ fun FlagsList() {
                                             color = FlagentTheme.Text
                                         )
                                         Text(LocalizedStrings.description)
+                                        if (sortColumn.value == "description") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (sortAscending.value) "↑" else "↓")
+                                            }
+                                        }
                                     }
                                 }
                                 Th({
@@ -1238,192 +1660,22 @@ fun FlagsList() {
                             }
                         }
                         Tbody {
-                            sortedFlags.forEachIndexed { index, flag ->
-                                Tr({
-                                    attr("class", "flag-row-hover")
-                                    onClick { Router.navigateTo(Route.FlagDetail(flag.id)) }
-                                    style {
-                                        cursor("pointer")
-                                        backgroundColor(if (index % 2 == 0) FlagentTheme.cardBg(themeMode) else FlagentTheme.inputBg(themeMode))
-                                        property("transition", "all 0.2s")
-                                    }
-                                    onMouseEnter {
-                                        val element = it.target as org.w3c.dom.HTMLElement
-                                        element.style.backgroundColor =
-                                            FlagentTheme.inputBg(themeMode).toString()
-                                        element.style.setProperty(
-                                            "box-shadow",
-                                            "0 2px 8px ${FlagentTheme.Shadow}"
-                                        )
-                                        element.style.transform = "translateY(-1px)"
-                                    }
-                                    onMouseLeave {
-                                        val element = it.target as org.w3c.dom.HTMLElement
-                                        element.style.backgroundColor =
-                                            if (index % 2 == 0) FlagentTheme.cardBg(themeMode).toString() else FlagentTheme.inputBg(themeMode).toString()
-                                        element.style.setProperty("box-shadow", "none")
-                                        element.style.transform = "translateY(0)"
-                                    }
-                                }) {
-                                    Td({
-                                        style {
-                                            padding(14.px, 12.px)
-                                            textAlign("center")
-                                            width(40.px)
-                                        }
-                                        onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
-                                    }) {
-                                        Input(InputType.Checkbox) {
-                                            checked(flag.id in selectedIds)
-                                            onChange { event ->
-                                                if ((event.target as org.w3c.dom.HTMLInputElement).checked) {
-                                                    selectedIds.add(flag.id)
-                                                } else {
-                                                    selectedIds.remove(flag.id)
-                                                }
-                                            }
-                                            style { cursor("pointer") }
-                                        }
-                                    }
-                                    Td({
-                                        style {
-                                            padding(14.px, 12.px)
-                                            textAlign("left")
-                                            fontWeight("600")
-                                            color(FlagentTheme.Primary)
-                                        }
-                                    }) {
-                                        Span({
-                                            style {
-                                                display(DisplayStyle.InlineBlock)
-                                                padding(4.px, 8.px)
-                                                backgroundColor(FlagentTheme.PrimaryLight)
-                                                color(FlagentTheme.PrimaryDark)
-                                                borderRadius(4.px)
-                                                fontSize(12.px)
-                                            }
-                                        }) {
-                                            Text("#${flag.id}")
-                                        }
-                                    }
-                                    Td({
-                                        style {
-                                            padding(14.px, 12.px)
-                                            maxWidth(300.px)
-                                        }
-                                    }) {
-                                        Div({
-                                            style {
-                                                fontWeight("500")
-                                                color(FlagentTheme.Text)
-                                                marginBottom(4.px)
-                                            }
-                                        }) {
-                                            Text(flag.description)
-                                        }
-                                        if (flag.key.isNotEmpty()) {
-                                            Div({
-                                                style {
-                                                    fontSize(12.px)
-                                                    color(FlagentTheme.textLight(themeMode))
-                                                    fontFamily("monospace")
-                                                }
-                                            }) {
-                                                Text(flag.key)
-                                            }
-                                        }
-                                    }
-                                    Td({
-                                        style {
-                                            padding(14.px, 12.px)
-                                        }
-                                    }) {
-                                        if (flag.tags.isEmpty()) {
-                                            Span({
-                                                style {
-                                                    color(FlagentTheme.textLight(themeMode))
-                                                    fontSize(12.px)
-                                                    fontStyle("italic")
-                                                }
-                                            }) {
-                                                Text(LocalizedStrings.noTags)
-                                            }
-                                        } else {
-                                            flag.tags.forEach { tag ->
-                                                Span({
-                                                    style {
-                                                        display(DisplayStyle.InlineBlock)
-                                                        padding(4.px, 10.px)
-                                                        margin(2.px, 4.px)
-                                                        backgroundColor(FlagentTheme.Accent)
-                                                        color(Color.white)
-                                                        borderRadius(12.px)
-                                                        fontSize(11.px)
-                                                        fontWeight("500")
-                                                        cursor("pointer")
-                                                        property(
-                                                            "box-shadow",
-                                                            "0 1px 2px ${FlagentTheme.Shadow}"
-                                                        )
-                                                    }
-                                                    onClick { if (tag.value !in selectedTags) selectedTags.add(tag.value) }
-                                                }) {
-                                                    Text(tag.value)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Td({
-                                        style {
-                                            padding(14.px, 12.px)
-                                            color(FlagentTheme.textLight(themeMode))
-                                            fontSize(13.px)
-                                        }
-                                    }) { Text(flag.updatedBy ?: "—") }
-                                    Td({
-                                        style {
-                                            padding(14.px, 12.px)
-                                            color(FlagentTheme.textLight(themeMode))
-                                            fontSize(13.px)
-                                        }
-                                    }) { Text(flag.updatedAt?.split(".")?.get(0) ?: "—") }
-                                    Td({
-                                        style {
-                                            padding(14.px, 12.px)
-                                            textAlign("center")
-                                        }
-                                    }) {
-                                        Span({
-                                            style {
-                                                display(DisplayStyle.InlineBlock)
-                                                padding(6.px, 12.px)
-                                                borderRadius(16.px)
-                                                fontSize(12.px)
-                                                fontWeight("600")
-                                                backgroundColor(if (flag.enabled) FlagentTheme.Success else FlagentTheme.Error)
-                                                color(Color.white)
-                                                property(
-                                                    "box-shadow",
-                                                    "0 1px 3px ${FlagentTheme.Shadow}"
-                                                )
-                                            }
-                                        }) {
-                                            Span({
-                                                style {
-                                                    display(DisplayStyle.Flex)
-                                                    alignItems(AlignItems.Center)
-                                                    gap(4.px)
-                                                }
-                                            }) {
-                                                Icon(
-                                                    name = if (flag.enabled) "check_circle" else "cancel",
-                                                    size = 14.px,
-                                                    color = FlagentTheme.cardBg(themeMode)
-                                                )
-                                                Text(if (flag.enabled) "ON" else "OFF")
-                                            }
-                                        }
-                                    }
+                            if (groupedByTag != null) {
+                                GroupedFlagsTableBody(
+                                    groupedByTag = groupedByTag,
+                                    themeMode = themeMode,
+                                    selectedIds = selectedIds,
+                                    selectedTags = selectedTags
+                                )
+                            } else {
+                                sortedFlags.forEachIndexed { index, flag ->
+                                    FlagTableRow(
+                                        flag = flag,
+                                        rowIndex = index,
+                                        themeMode = themeMode,
+                                        selectedIds = selectedIds,
+                                        selectedTags = selectedTags
+                                    )
                                 }
                             }
                         }

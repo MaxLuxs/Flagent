@@ -6,10 +6,11 @@ import flagent.frontend.api.SlackStatusResponse
 import flagent.frontend.components.Icon
 import flagent.frontend.components.export.ExportPanel
 import flagent.frontend.components.settings.ImportPanel
-import flagent.frontend.components.tenants.TenantsList
 import flagent.frontend.config.AppConfig
 import flagent.frontend.config.Edition
 import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.navigation.Route
+import flagent.frontend.navigation.Router
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
@@ -78,9 +79,6 @@ fun SettingsPage() {
                 }
             }
             SettingsTab(themeMode, LocalizedStrings.generalTab, "settings", activeTab == "general") { activeTab = "general" }
-            if (AppConfig.Features.enableMultiTenancy) {
-                SettingsTab(themeMode, LocalizedStrings.multiTenancyTab, "business", activeTab == "tenants") { activeTab = "tenants" }
-            }
             if (AppConfig.Features.enableSso) {
                 SettingsTab(themeMode, LocalizedStrings.ssoProvidersTab, "security", activeTab == "sso") { activeTab = "sso" }
             }
@@ -107,7 +105,6 @@ fun SettingsPage() {
         }) {
         when (activeTab) {
             "general" -> GeneralSettings(themeMode)
-            "tenants" -> if (AppConfig.Features.enableMultiTenancy) TenantsList()
             "sso" -> if (AppConfig.Features.enableSso) SsoSettings(themeMode)
             "slack" -> if (AppConfig.Features.enableSlack) SlackSettings(themeMode)
             "billing" -> if (AppConfig.Features.enableBilling) BillingSettings(themeMode)
@@ -185,6 +182,36 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
             description = LocalizedStrings.apiTimeoutDesc,
             value = "${AppConfig.apiTimeout}ms"
         )
+        
+        if (AppConfig.Features.enableMultiTenancy) {
+            Div({
+                style {
+                    marginBottom(20.px)
+                    paddingBottom(20.px)
+                    property("border-bottom", "1px solid ${FlagentTheme.inputBorder(themeMode)}")
+                }
+            }) {
+                Button({
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(8.px)
+                        padding(0.px)
+                        border(0.px)
+                        backgroundColor(Color.transparent)
+                        color(FlagentTheme.Primary)
+                        cursor("pointer")
+                        fontSize(14.px)
+                        fontWeight("500")
+                        textDecoration("underline")
+                    }
+                    onClick { Router.navigateTo(Route.Tenants) }
+                }) {
+                    Icon("business", size = 18.px, color = FlagentTheme.Primary)
+                    Text(LocalizedStrings.manageTenantsLink)
+                }
+            }
+        }
         
         // Feature flags status
         Div({

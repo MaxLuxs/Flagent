@@ -141,7 +141,8 @@ object ApiClient {
         enabled: Boolean? = null,
         descriptionLike: String? = null,
         key: String? = null,
-        tags: String? = null
+        tags: String? = null,
+        preload: Boolean = false
     ): Pair<List<FlagResponse>, Long> {
         val response = client.get(getApiPath("/flags")) {
             limit?.let { parameter("limit", it) }
@@ -150,7 +151,7 @@ object ApiClient {
             descriptionLike?.takeIf { it.isNotBlank() }?.let { parameter("descriptionLike", it) }
             key?.takeIf { it.isNotBlank() }?.let { parameter("key", it) }
             tags?.takeIf { it.isNotBlank() }?.let { parameter("tags", it) }
-            parameter("preload", false)
+            parameter("preload", preload)
         }
         val total = response.headers["X-Total-Count"]?.toLongOrNull() ?: 0L
         return response.body<List<FlagResponse>>() to total

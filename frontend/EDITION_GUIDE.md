@@ -141,7 +141,7 @@ By default, Open Source self-hosted **requires authentication** — unauthentica
 
 **Optional:** `FLAGENT_JWT_AUTH_ENABLED=true` — protects API routes with JWT; evaluation endpoints can stay whitelisted via `FLAGENT_JWT_AUTH_WHITELIST_PATHS`.
 
-See [docs/configuration.md](../docs/configuration.md) for full Admin Auth and JWT options.
+See [docs/guides/configuration.md](../docs/guides/configuration.md) for full Admin Auth and JWT options.
 
 ### Enterprise Edition
 
@@ -171,7 +171,7 @@ window.ENV_EDITION = "enterprise";
 
 When admin auth is enabled (`FLAGENT_ADMIN_AUTH_ENABLED=true`):
 
-1. **Backend:** Set `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD` (or `FLAGENT_ADMIN_PASSWORD_HASH`), optionally `FLAGENT_ADMIN_API_KEY`, and `FLAGENT_JWT_AUTH_SECRET`. See [docs/configuration.md](../docs/configuration.md) → Admin Auth.
+1. **Backend:** Set `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD` (or `FLAGENT_ADMIN_PASSWORD_HASH`), optionally `FLAGENT_ADMIN_API_KEY`, and `FLAGENT_JWT_AUTH_SECRET`. See [docs/guides/configuration.md](../docs/guides/configuration.md) → Admin Auth.
 2. **Open UI** → if required, you will be prompted to **Login** (admin email/password). Alternatively use **Admin API Key** in settings or `ENV_ADMIN_API_KEY` for API-only access.
 3. Go to **Tenants** → **Create first tenant** (or use "Create first tenant" from error messages). Save the returned **API key** (it is stored in localStorage automatically when created via UI).
 4. Use that API key for all `/api/v1/*` requests (flags, segments, evaluation). The UI sends it as `X-API-Key` when set.

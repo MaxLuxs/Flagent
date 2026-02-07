@@ -5,6 +5,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.browser.window
 
+/** Returns the active tab name for flag sub-routes, or "Config" for FlagDetail. */
+internal fun Route.flagTabName(): String = when (this) {
+    is Route.FlagDetail -> "Config"
+    is Route.FlagHistory -> "History"
+    is Route.FlagMetrics -> "Metrics"
+    is Route.FlagRollout -> "Rollout"
+    is Route.FlagAnomalies -> "Anomalies"
+    else -> "Config"
+}
+
+/** Returns true if route is a flag detail route (FlagDetail or any flag sub-route). */
+internal fun Route.isFlagDetailRoute(): Boolean = when (this) {
+    is Route.FlagDetail, is Route.FlagHistory, is Route.FlagMetrics,
+    is Route.FlagRollout, is Route.FlagAnomalies -> true
+    else -> false
+}
+
 /**
  * Router for Compose for Web with URL-based navigation
  */
@@ -113,6 +130,8 @@ object Router {
         if (addToHistory) {
             history.add(route)
             window.history.pushState(null, "", route.path())
+        } else {
+            window.history.replaceState(null, "", route.path())
         }
     }
 

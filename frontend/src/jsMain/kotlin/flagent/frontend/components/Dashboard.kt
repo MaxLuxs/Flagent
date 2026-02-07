@@ -3,8 +3,6 @@ package flagent.frontend.components
 import androidx.compose.runtime.*
 import flagent.api.model.FlagResponse
 import flagent.frontend.api.ApiClient
-import flagent.frontend.api.GlobalMetricsOverviewResponse
-import flagent.frontend.components.metrics.OverviewChart
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
@@ -30,7 +28,6 @@ fun Dashboard() {
     val scope = rememberCoroutineScope()
     var stats by remember { mutableStateOf<DashboardStats?>(null) }
     var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
-    var overview by remember { mutableStateOf<GlobalMetricsOverviewResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -58,14 +55,6 @@ fun Dashboard() {
                 
                 // Load unresolved alerts
                 anomalyViewModel?.loadUnresolvedAlerts()
-                // Load global metrics overview when metrics feature enabled
-                if (AppConfig.Features.enableMetrics) {
-                    try {
-                        overview = ApiClient.getMetricsOverview(topLimit = 10, timeBucketMs = 3600_000)
-                    } catch (_: Throwable) {
-                        overview = null
-                    }
-                }
             },
             onError = { err ->
                 error = ErrorHandler.getUserMessage(err)
@@ -218,106 +207,6 @@ fun Dashboard() {
                 )
             }
 
-            // Global metrics chart (evaluations over time)
-            if (AppConfig.Features.enableMetrics && overview != null) {
-                Div({
-                    style {
-                        backgroundColor(FlagentTheme.cardBg(themeMode))
-                        borderRadius(8.px)
-                        padding(16.px)
-                        property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
-                        marginBottom(16.px)
-                    }
-                }) {
-                    H2({
-                        style {
-                            fontSize(18.px)
-                            fontWeight("600")
-                            marginBottom(16.px)
-                            color(FlagentTheme.text(themeMode))
-                        }
-                    }) {
-                        Text(flagent.frontend.i18n.LocalizedStrings.evaluationsOverTime)
-                    }
-                    Div({
-                        style {
-                            display(DisplayStyle.Flex)
-                            gap(24.px)
-                            marginBottom(16.px)
-                            flexWrap(FlexWrap.Wrap)
-                        }
-                    }) {
-                        Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px) } }) {
-                            Text("Total: ${overview!!.totalEvaluations}")
-                        }
-                        Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px) } }) {
-                            Text("Unique flags: ${overview!!.uniqueFlags}")
-                        }
-                    }
-                    if (overview!!.timeSeries.isNotEmpty()) {
-                        OverviewChart(
-                            timeSeries = overview!!.timeSeries,
-                            title = flagent.frontend.i18n.LocalizedStrings.evaluationsOverTime
-                        )
-                        if (overview!!.topFlags.isNotEmpty()) {
-                            Div({
-                                style {
-                                    marginTop(16.px)
-                                    paddingTop(16.px)
-                                    property("border-top", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
-                                }
-                            }) {
-                                Span({
-                                    style {
-                                        fontSize(13.px)
-                                        color(FlagentTheme.textLight(themeMode))
-                                        fontWeight("600")
-                                    }
-                                }) {
-                                    Text(flagent.frontend.i18n.LocalizedStrings.topFlagsByEvaluations)
-                                }
-                                Div({
-                                    style {
-                                        display(DisplayStyle.Flex)
-                                        flexWrap(FlexWrap.Wrap)
-                                        gap(8.px)
-                                        marginTop(8.px)
-                                    }
-                                }) {
-                                    overview!!.topFlags.take(5).forEach { tf ->
-                                        A(href = Route.FlagMetrics(tf.flagId).path(), attrs = {
-                                            style {
-                                                fontSize(12.px)
-                                                padding(6.px, 10.px)
-                                                backgroundColor(FlagentTheme.inputBg(themeMode))
-                                                borderRadius(6.px)
-                                                color(FlagentTheme.Primary)
-                                                textDecoration("none")
-                                            }
-                                            onClick { e ->
-                                                e.preventDefault()
-                                                Router.navigateTo(Route.FlagMetrics(tf.flagId))
-                                            }
-                                        }) {
-                                            Text("${tf.flagKey}: ${tf.evaluationCount}")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        P({
-                            style {
-                                color(FlagentTheme.textLight(themeMode))
-                                fontSize(14.px)
-                            }
-                        }) {
-                            Text(flagent.frontend.i18n.LocalizedStrings.noMetricsData)
-                        }
-                    }
-                }
-            }
-            
             // Unresolved Alerts
             if (AppConfig.Features.enableAnomalyDetection && anomalyViewModel != null) {
                 if (anomalyViewModel.alerts.isNotEmpty()) {

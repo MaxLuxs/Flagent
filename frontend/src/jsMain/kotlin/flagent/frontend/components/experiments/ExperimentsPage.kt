@@ -30,7 +30,7 @@ fun ExperimentsPage() {
         error = null
         ErrorHandler.withErrorHandling(
             block = {
-                val (all, _) = ApiClient.getFlags()
+                val (all, _) = ApiClient.getFlags(preload = true)
                 flags = all.filter { it.variants.size >= 2 }
             },
             onError = { err ->

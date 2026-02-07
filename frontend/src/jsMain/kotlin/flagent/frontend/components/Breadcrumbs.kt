@@ -22,28 +22,20 @@ fun Breadcrumbs() {
     val route = Router.currentRoute
     val flagKey = remember { mutableStateOf<String?>(null) }
     
-    // Load flag key for FlagDetail, FlagHistory, FlagMetrics routes
+    // Load flag key for FlagDetail, FlagHistory, FlagMetrics, FlagRollout, FlagAnomalies routes
     LaunchedEffect(route) {
         when (route) {
-            is Route.FlagDetail -> {
+            is Route.FlagDetail, is Route.FlagHistory, is Route.FlagMetrics, is Route.FlagRollout, is Route.FlagAnomalies -> {
                 try {
-                    val flag = ApiClient.getFlag(route.flagId)
-                    flagKey.value = flag.key
-                } catch (e: Exception) {
-                    flagKey.value = null
-                }
-            }
-            is Route.FlagHistory -> {
-                try {
-                    val flag = ApiClient.getFlag(route.flagId)
-                    flagKey.value = flag.key
-                } catch (e: Exception) {
-                    flagKey.value = null
-                }
-            }
-            is Route.FlagMetrics -> {
-                try {
-                    val flag = ApiClient.getFlag(route.flagId)
+                    val flagId = when (route) {
+                        is Route.FlagDetail -> route.flagId
+                        is Route.FlagHistory -> route.flagId
+                        is Route.FlagMetrics -> route.flagId
+                        is Route.FlagRollout -> route.flagId
+                        is Route.FlagAnomalies -> route.flagId
+                        else -> return@LaunchedEffect
+                    }
+                    val flag = ApiClient.getFlag(flagId)
                     flagKey.value = flag.key
                 } catch (e: Exception) {
                     flagKey.value = null
@@ -214,6 +206,80 @@ fun Breadcrumbs() {
                         }
                     }) {
                         Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
+                    }
+                }
+                is Route.FlagRollout -> {
+                    BreadcrumbSeparator()
+                    if (flagKey.value != null) {
+                        A(href = "#", attrs = {
+                            onClick {
+                                it.preventDefault()
+                                Router.navigateTo(Route.FlagDetail(route.flagId))
+                            }
+                            style {
+                                textDecoration("none")
+                                color(FlagentTheme.PrimaryLight)
+                                cursor("pointer")
+                                fontWeight("500")
+                                property("transition", "color 0.2s")
+                            }
+                            onMouseEnter {
+                                val element = it.target as org.w3c.dom.HTMLElement
+                                element.style.color = FlagentTheme.PrimaryLight.toString()
+                            }
+                            onMouseLeave {
+                                val element = it.target as org.w3c.dom.HTMLElement
+                                element.style.color = FlagentTheme.PrimaryLight.toString()
+                            }
+                        }) {
+                            Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
+                        }
+                        BreadcrumbSeparator()
+                    }
+                    Span({
+                        style {
+                            color(FlagentTheme.text(themeMode))
+                            fontWeight("500")
+                        }
+                    }) {
+                        Text(LocalizedStrings.rollout)
+                    }
+                }
+                is Route.FlagAnomalies -> {
+                    BreadcrumbSeparator()
+                    if (flagKey.value != null) {
+                        A(href = "#", attrs = {
+                            onClick {
+                                it.preventDefault()
+                                Router.navigateTo(Route.FlagDetail(route.flagId))
+                            }
+                            style {
+                                textDecoration("none")
+                                color(FlagentTheme.PrimaryLight)
+                                cursor("pointer")
+                                fontWeight("500")
+                                property("transition", "color 0.2s")
+                            }
+                            onMouseEnter {
+                                val element = it.target as org.w3c.dom.HTMLElement
+                                element.style.color = FlagentTheme.PrimaryLight.toString()
+                            }
+                            onMouseLeave {
+                                val element = it.target as org.w3c.dom.HTMLElement
+                                element.style.color = FlagentTheme.PrimaryLight.toString()
+                            }
+                        }) {
+                            Text(flagKey.value ?: LocalizedStrings.flagNumber(route.flagId))
+                        }
+                        BreadcrumbSeparator()
+                    }
+                    Span({
+                        style {
+                            color(FlagentTheme.text(themeMode))
+                            fontWeight("500")
+                        }
+                    }) {
+                        Text(LocalizedStrings.anomalies)
                     }
                 }
                 else -> {}

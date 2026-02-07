@@ -18,6 +18,8 @@ import flagent.api.model.CreateFlagRequest
 import flagent.api.model.PutFlagRequest
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.navigation.flagTabName
+import flagent.frontend.navigation.isFlagDetailRoute
 import flagent.frontend.util.Validation
 import flagent.frontend.util.ValidationResult
 import flagent.frontend.util.createSortable
@@ -39,7 +41,11 @@ import org.jetbrains.compose.web.dom.H5
 @Composable
 fun FlagEditor(flagId: Int?) {
     val themeMode = LocalThemeMode.current
-    val activeTab = remember { mutableStateOf("Config") }
+    val route = Router.currentRoute
+    val activeTab = when {
+        flagId != null && route.isFlagDetailRoute() -> route.flagTabName()
+        else -> "Config"
+    }
     val flag = remember { mutableStateOf<FlagResponse?>(null) }
     val loading = remember { mutableStateOf(flagId != null) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -158,18 +164,18 @@ fun FlagEditor(flagId: Int?) {
                     }
                 }) {
                     Button({
-                        onClick { activeTab.value = "Config" }
+                        onClick { Router.navigateTo(Route.FlagDetail(flagId!!), addToHistory = false) }
                         style {
                             padding(12.px, 24.px)
                             property("background-color", "transparent")
-                            color(if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
+                            color(if (activeTab == "Config") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
                             }
-                            property("border-bottom", if (activeTab.value == "Config") "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
+                            property("border-bottom", if (activeTab == "Config") "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
                             cursor("pointer")
-                            fontWeight(if (activeTab.value == "Config") "600" else "500")
+                            fontWeight(if (activeTab == "Config") "600" else "500")
                             fontSize(15.px)
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
@@ -178,12 +184,12 @@ fun FlagEditor(flagId: Int?) {
                             marginBottom(-2.px)
                         }
                         onMouseEnter {
-                            if (activeTab.value != "Config") {
+                            if (activeTab != "Config") {
                                 (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
                             }
                         }
                         onMouseLeave {
-                            if (activeTab.value != "Config") {
+                            if (activeTab != "Config") {
                                 (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                             }
                         }
@@ -191,23 +197,23 @@ fun FlagEditor(flagId: Int?) {
                         Icon(
                             name = "settings",
                             size = 18.px,
-                            color = if (activeTab.value == "Config") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
+                            color = if (activeTab == "Config") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
                         )
                         Text(LocalizedStrings.config)
                     }
                     Button({
-                        onClick { activeTab.value = "History" }
+                        onClick { Router.navigateTo(Route.FlagHistory(flagId), addToHistory = false) }
                         style {
                             padding(12.px, 24.px)
                             property("background-color", "transparent")
-                            color(if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
+                            color(if (activeTab == "History") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
                             border {
                                 width(0.px)
                                 style(LineStyle.None)
                             }
-                            property("border-bottom", if (activeTab.value == "History") "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
+                            property("border-bottom", if (activeTab == "History") "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
                             cursor("pointer")
-                            fontWeight(if (activeTab.value == "History") "600" else "500")
+                            fontWeight(if (activeTab == "History") "600" else "500")
                             fontSize(15.px)
                             display(DisplayStyle.Flex)
                             alignItems(AlignItems.Center)
@@ -216,12 +222,12 @@ fun FlagEditor(flagId: Int?) {
                             marginBottom(-2.px)
                         }
                         onMouseEnter {
-                            if (activeTab.value != "History") {
+                            if (activeTab != "History") {
                                 (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
                             }
                         }
                         onMouseLeave {
-                            if (activeTab.value != "History") {
+                            if (activeTab != "History") {
                                 (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                             }
                         }
@@ -229,26 +235,33 @@ fun FlagEditor(flagId: Int?) {
                         Icon(
                             name = "history",
                             size = 18.px,
-                            color = if (activeTab.value == "History") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
+                            color = if (activeTab == "History") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
                         )
                         Text(LocalizedStrings.history)
                     }
                     if (flagent.frontend.config.AppConfig.Features.enableMetrics) {
-                        FlagEditorTabButton(themeMode, "Metrics", "analytics", activeTab)
+                        FlagEditorTabButton(themeMode, "Metrics", "analytics", activeTab == "Metrics") {
+                            Router.navigateTo(Route.FlagMetrics(flagId), addToHistory = false)
+                        }
                     }
                     if (flagent.frontend.config.AppConfig.Features.enableSmartRollout) {
-                        FlagEditorTabButton(themeMode, "Rollout", "trending_up", activeTab)
+                        FlagEditorTabButton(themeMode, "Rollout", "trending_up", activeTab == "Rollout") {
+                            Router.navigateTo(Route.FlagRollout(flagId), addToHistory = false)
+                        }
                     }
                     if (flagent.frontend.config.AppConfig.Features.enableAnomalyDetection) {
-                        FlagEditorTabButton(themeMode, "Anomalies", "warning", activeTab)
+                        FlagEditorTabButton(themeMode, "Anomalies", "warning", activeTab == "Anomalies") {
+                            Router.navigateTo(Route.FlagAnomalies(flagId), addToHistory = false)
+                        }
                     }
                 }
                 
                 // Tab content
-                when (activeTab.value) {
+                val metricsMetricType = (route as? Route.FlagMetrics)?.metricType
+                when (activeTab) {
                     "Config" -> FlagConfigTab(flag.value!!, flagId)
                     "History" -> FlagHistory(flagId)
-                    "Metrics" -> flagent.frontend.components.metrics.MetricsDashboard(flagId)
+                    "Metrics" -> flagent.frontend.components.metrics.MetricsDashboard(flagId, metricsMetricType)
                     "Rollout" -> flagent.frontend.components.rollout.SmartRolloutConfig(flagId)
                     "Anomalies" -> flagent.frontend.components.anomaly.AnomalyAlertsList(flagId)
                     else -> FlagConfigTab(flag.value!!, flagId)
@@ -262,10 +275,9 @@ fun FlagEditor(flagId: Int?) {
  * Reusable tab button for flag detail tabs
  */
 @Composable
-private fun FlagEditorTabButton(themeMode: flagent.frontend.state.ThemeMode, label: String, icon: String, activeTab: androidx.compose.runtime.MutableState<String>) {
-    val isActive = activeTab.value == label
+private fun FlagEditorTabButton(themeMode: flagent.frontend.state.ThemeMode, label: String, icon: String, isActive: Boolean, onClick: () -> Unit) {
     Button({
-        onClick { activeTab.value = label }
+        onClick { onClick() }
         style {
             padding(12.px, 24.px)
             property("background-color", "transparent")

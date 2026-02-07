@@ -57,7 +57,7 @@ fun LandingFooter() {
                     "Documentation" to AppConfig.docsUrl,
                     "API Reference" to "${AppConfig.docsUrl}api/",
                     "GitHub" to AppConfig.githubUrl,
-                    "Roadmap" to "${AppConfig.docsUrl}roadmap.md"
+                    "Roadmap" to "${AppConfig.docsUrl}guides/roadmap.md"
                 ))
                 FooterColumn("Product", listOf(
                     "Feature Flags" to Route.FlagsList.PATH,
