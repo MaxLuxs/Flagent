@@ -4,7 +4,7 @@ package flagent.evaluator
  * Canonical rollout algorithm for consistent hashing and variant selection.
  * All clients (backend, SDKs) MUST use this for identical results.
  *
- * Spec: docs/EVALUATION_SPEC.md
+ * Spec: docs/architecture/evaluation-spec.md
  * - Hash input: salt + entityID (no separator)
  * - CRC32 polynomial 0xEDB88320, bucket = crc32 % 1000
  * - Rollout: entity in rollout iff bucket < rolloutPercent * 10
