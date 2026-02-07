@@ -1,8 +1,8 @@
 # CodeQL config: exclude generated/vendor docs from security scanning.
-# Swagger UI docs (docs/index.html, backend/docs/index.html) are single-file
+# Swagger UI docs (docs/api-docs.html, backend/docs/index.html) are single-file
 # bundles of third-party libs (Bootstrap, marked.js, swagger-ui); CodeQL flags
 # patterns there (e.g. .html(), incomplete escape) that we do not control.
 name: "Flagent CodeQL config"
 paths-ignore:
-  - "**/docs/index.html"
+  - "**/docs/api-docs.html"
   - "**/backend/docs/index.html"

@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'gh-pages/**'
+      - 'docs/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -28,13 +28,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p deploy
+          cp -r docs/* deploy/
+          cp docs/.nojekyll deploy/ 2>/dev/null || true
+          cp docs/gh_pages/index.html deploy/index.html
+          sed -i 's|href="../|href="|g' deploy/index.html
+          sed -i 's|src="../|src="|g' deploy/index.html
+          rm -rf deploy/internal
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './gh-pages'
+          path: './deploy'
       
       - name: Deploy to GitHub Pages
         id: deployment
