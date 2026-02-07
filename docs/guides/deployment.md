@@ -61,16 +61,28 @@ See `docker-compose.yml` for the complete configuration.
 
 2. **Build the application**
 
+   **Option A: installDist (distribution with script)**
+
    ```bash
-   ./gradlew build
+   ./gradlew :backend:installDist
    ```
 
-   This creates a JAR file in `backend/build/libs/flagent-0.1.0.jar`
-
-3. **Run the application**
+   This creates `backend/build/install/backend/`. Run:
 
    ```bash
-   java -jar backend/build/libs/flagent-0.1.0.jar
+   ./backend/build/install/backend/bin/backend
+   ```
+
+   **Option B: Fat JAR**
+
+   ```bash
+   ./gradlew :backend:shadowJar
+   ```
+
+   This creates `backend/build/libs/backend-all.jar`. Run:
+
+   ```bash
+   java -jar backend/build/libs/backend-all.jar
    ```
 
 ### Configuration
@@ -87,7 +99,11 @@ export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flag
 export FLAGENT_LOGRUS_LEVEL=info
 export FLAGENT_LOGRUS_FORMAT=json
 
-java -jar backend/build/libs/flagent-0.1.0.jar
+# When using installDist:
+./backend/build/install/backend/bin/backend
+
+# When using fat JAR:
+java -jar backend/build/libs/backend-all.jar
 ```
 
 ## Production Setup
@@ -99,7 +115,6 @@ java -jar backend/build/libs/flagent-0.1.0.jar
 ```bash
 export FLAGENT_DB_DBDRIVER=postgres
 export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db-host:5432/flagent?sslmode=require
-export FLAGENT_DB_POOL_SIZE=20
 ```
 
 **MySQL:**
@@ -107,7 +122,6 @@ export FLAGENT_DB_POOL_SIZE=20
 ```bash
 export FLAGENT_DB_DBDRIVER=mysql
 export FLAGENT_DB_DBCONNECTIONSTR=user:password@tcp(db-host:3306)/flagent?parseTime=true
-export FLAGENT_DB_POOL_SIZE=20
 ```
 
 ### Security Configuration
@@ -116,15 +130,17 @@ export FLAGENT_DB_POOL_SIZE=20
 
 ```bash
 # JWT Authentication
-export FLAGENT_JWT_SECRET=your-secure-secret-key
-export FLAGENT_JWT_EXPIRATION=24h
+export FLAGENT_JWT_AUTH_ENABLED=true
+export FLAGENT_JWT_AUTH_SECRET=your-secure-secret-key
 
 # Or Basic Authentication
+export FLAGENT_BASIC_AUTH_ENABLED=true
 export FLAGENT_BASIC_AUTH_USERNAME=admin
 export FLAGENT_BASIC_AUTH_PASSWORD=secure-password
 
-# Or Header-based API keys
-export FLAGENT_HEADER_AUTH_API_KEYS=key1,key2,key3
+# Or Header-based (user from header, e.g. X-Email)
+export FLAGENT_HEADER_AUTH_ENABLED=true
+export FLAGENT_HEADER_AUTH_USER_FIELD=X-Email
 ```
 
 ### Monitoring Configuration
@@ -196,7 +212,7 @@ spec:
             secretKeyRef:
               name: flagent-secrets
               key: database-url
-        - name: FLAGENT_JWT_SECRET
+        - name: FLAGENT_JWT_AUTH_SECRET
           valueFrom:
             secretKeyRef:
               name: flagent-secrets
@@ -257,7 +273,7 @@ Flagent includes a Dockerfile for containerized deployment:
 ```dockerfile
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY backend/build/libs/flagent-*.jar app.jar
+COPY backend/build/libs/backend-*-all.jar app.jar
 EXPOSE 18000
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
@@ -306,7 +322,7 @@ FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
 FLAGENT_PROMETHEUS_ENABLED=true
-FLAGENT_JWT_SECRET=staging-secret-key
+FLAGENT_JWT_AUTH_SECRET=staging-secret-key
 ```
 
 ### Production
@@ -318,15 +334,15 @@ PORT=18000
 ENVIRONMENT=production
 FLAGENT_DB_DBDRIVER=postgres
 FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@prod-db:5432/flagent?sslmode=require
-FLAGENT_DB_POOL_SIZE=20
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
 FLAGENT_PROMETHEUS_ENABLED=true
 FLAGENT_STATSD_ENABLED=true
-FLAGENT_JWT_SECRET=production-secret-key
-FLAGENT_KAFKA_ENABLED=true
-FLAGENT_KAFKA_BROKERS=kafka1:9092,kafka2:9092
+FLAGENT_JWT_AUTH_SECRET=production-secret-key
+FLAGENT_RECORDER_ENABLED=true
+FLAGENT_RECORDER_TYPE=kafka
+FLAGENT_RECORDER_KAFKA_BROKERS=kafka1:9092,kafka2:9092
 ```
 
 ## Scaling
@@ -361,7 +377,7 @@ Increase resources for better performance:
 
 - **Memory**: 2GB+ recommended for production
 - **CPU**: 2+ cores recommended for high traffic
-- **Database**: Use connection pooling (20+ connections)
+- **Database**: HikariCP pool (default 10 connections; see Database.kt for tuning)
 
 ## Health Checks
 
@@ -473,7 +489,7 @@ Configure PostgreSQL or MySQL for point-in-time recovery:
 ### Performance Issues
 
 1. **Database connection pooling**
-   - Increase pool size: `FLAGENT_DB_POOL_SIZE=20`
+   - Pool size is configured in `Database.kt` (default: 10). Modify `maximumPoolSize` for higher load.
    - Check database connections: `SELECT count(*) FROM pg_stat_activity;`
 
 2. **Cache configuration**
@@ -501,6 +517,6 @@ Configure PostgreSQL or MySQL for point-in-time recovery:
 ## Next Steps
 
 - 📖 [Configuration Guide](configuration.md) - Complete configuration options
-- 🏗️ [Architecture](architecture/backend.md) - Understand Flagent architecture
-- 📚 [API Documentation](api/endpoints.md) - Explore API endpoints
-- 💻 [Examples](examples/README.md) - Code examples and tutorials
+- 🏗️ [Architecture](../architecture/backend.md) - Understand Flagent architecture
+- 📚 [API Documentation](../api/endpoints.md) - Explore API endpoints
+- 💻 [Examples](../examples/README.md) - Code examples and tutorials

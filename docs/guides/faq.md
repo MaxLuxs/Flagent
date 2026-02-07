@@ -247,7 +247,7 @@ Check:
 3. Network latency to database
 4. Database indexes are created
 
-See [Performance Optimizations](features/performance-optimizations.md) for tips.
+See [Performance Optimizations](../features/performance-optimizations.md) for tips.
 
 ## Development & Contributing
 
@@ -297,7 +297,7 @@ Check the [Roadmap](roadmap.md) or [GitHub Issues](https://github.com/MaxLuxs/Fl
 ### Where can I get help?
 
 - **GitHub Issues** - Ask questions, report bugs, or request features
-- **Documentation** - Guides and API reference at https://maxluxs.github.io/Flagent/getting-started.md
+- **Documentation** - Guides and API reference at https://maxluxs.github.io/Flagent/guides/getting-started.md
 - **Code Examples** - Real-world examples in the [samples](https://github.com/MaxLuxs/Flagent/tree/main/samples) folder
 - **Contact** - max.developer.luxs@gmail.com
 

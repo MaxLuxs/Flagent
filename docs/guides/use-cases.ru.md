@@ -334,7 +334,7 @@ val enabledFeatures = tenantFeatures?.get("features")?.split(",") ?: emptyList()
 
 ## Следующие шаги
 
-- 📖 [Начало работы](home.ru.md) - Настройте Flagent
-- 🏗️ [Архитектура](architecture/backend.md) - Поймите, как работает Flagent
-- 📚 [Документация API](api/endpoints.md) - Изучите API endpoints
-- 💻 [Примеры кода](examples/README.md) - См. больше примеров
+- 📖 [Начало работы](getting-started.ru.md) - Настройте Flagent
+- 🏗️ [Архитектура](../architecture/backend.md) - Поймите, как работает Flagent
+- 📚 [Документация API](../api/endpoints.md) - Изучите API endpoints
+- 💻 [Примеры кода](../examples/README.ru.md) - См. больше примеров

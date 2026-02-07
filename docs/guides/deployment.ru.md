@@ -61,17 +61,31 @@ open http://localhost:18000
 
 2. **Собрать приложение**
 
-   ```bash
-   ./gradlew build
-   ```
-
-   Это создаст JAR файл в `backend/build/libs/flagent-0.1.0.jar`
-
-3. **Запустить приложение**
+   **Вариант A: installDist (скрипт)**
 
    ```bash
-   java -jar backend/build/libs/flagent-0.1.0.jar
+   ./gradlew :backend:installDist
    ```
+
+   Создаётся `backend/build/install/backend/`. Запуск:
+
+   ```bash
+   ./backend/build/install/backend/bin/backend
+   ```
+
+   **Вариант B: Fat JAR**
+
+   ```bash
+   ./gradlew :backend:shadowJar
+   ```
+
+   Создаётся `backend/build/libs/backend-<version>-all.jar` (например `backend-0.1.4-all.jar`). Запуск:
+
+   ```bash
+   java -jar backend/build/libs/backend-0.1.4-all.jar
+   ```
+
+   Замените `0.1.4` на версию из корневого файла `VERSION`.
 
 ### Конфигурация
 
@@ -87,7 +101,7 @@ export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flag
 export FLAGENT_LOGRUS_LEVEL=info
 export FLAGENT_LOGRUS_FORMAT=json
 
-java -jar backend/build/libs/flagent-0.1.0.jar
+java -jar backend/build/libs/backend-0.1.4-all.jar
 ```
 
 ## Production настройка
@@ -99,7 +113,6 @@ java -jar backend/build/libs/flagent-0.1.0.jar
 ```bash
 export FLAGENT_DB_DBDRIVER=postgres
 export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db-host:5432/flagent?sslmode=require
-export FLAGENT_DB_POOL_SIZE=20
 ```
 
 **MySQL:**
@@ -107,7 +120,6 @@ export FLAGENT_DB_POOL_SIZE=20
 ```bash
 export FLAGENT_DB_DBDRIVER=mysql
 export FLAGENT_DB_DBCONNECTIONSTR=user:password@tcp(db-host:3306)/flagent?parseTime=true
-export FLAGENT_DB_POOL_SIZE=20
 ```
 
 ### Конфигурация безопасности
@@ -116,15 +128,17 @@ export FLAGENT_DB_POOL_SIZE=20
 
 ```bash
 # JWT аутентификация
-export FLAGENT_JWT_SECRET=your-secure-secret-key
-export FLAGENT_JWT_EXPIRATION=24h
+export FLAGENT_JWT_AUTH_ENABLED=true
+export FLAGENT_JWT_AUTH_SECRET=your-secure-secret-key
 
 # Или базовая аутентификация
+export FLAGENT_BASIC_AUTH_ENABLED=true
 export FLAGENT_BASIC_AUTH_USERNAME=admin
 export FLAGENT_BASIC_AUTH_PASSWORD=secure-password
 
-# Или API ключи через заголовок
-export FLAGENT_HEADER_AUTH_API_KEYS=key1,key2,key3
+# Или через заголовок (пользователь из X-Email и т.п.)
+export FLAGENT_HEADER_AUTH_ENABLED=true
+export FLAGENT_HEADER_AUTH_USER_FIELD=X-Email
 ```
 
 ### Конфигурация мониторинга
@@ -196,7 +210,7 @@ spec:
             secretKeyRef:
               name: flagent-secrets
               key: database-url
-        - name: FLAGENT_JWT_SECRET
+        - name: FLAGENT_JWT_AUTH_SECRET
           valueFrom:
             secretKeyRef:
               name: flagent-secrets
@@ -257,7 +271,7 @@ Flagent включает Dockerfile для контейнеризированн�
 ```dockerfile
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY backend/build/libs/flagent-*.jar app.jar
+COPY backend/build/libs/backend-*-all.jar app.jar
 EXPOSE 18000
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
@@ -306,7 +320,7 @@ FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
 FLAGENT_PROMETHEUS_ENABLED=true
-FLAGENT_JWT_SECRET=staging-secret-key
+FLAGENT_JWT_AUTH_SECRET=staging-secret-key
 ```
 
 ### Production
@@ -318,15 +332,15 @@ PORT=18000
 ENVIRONMENT=production
 FLAGENT_DB_DBDRIVER=postgres
 FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@prod-db:5432/flagent?sslmode=require
-FLAGENT_DB_POOL_SIZE=20
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
 FLAGENT_PROMETHEUS_ENABLED=true
 FLAGENT_STATSD_ENABLED=true
-FLAGENT_JWT_SECRET=production-secret-key
-FLAGENT_KAFKA_ENABLED=true
-FLAGENT_KAFKA_BROKERS=kafka1:9092,kafka2:9092
+FLAGENT_JWT_AUTH_SECRET=production-secret-key
+FLAGENT_RECORDER_ENABLED=true
+FLAGENT_RECORDER_TYPE=kafka
+FLAGENT_RECORDER_KAFKA_BROKERS=kafka1:9092,kafka2:9092
 ```
 
 ## Масштабирование
@@ -361,7 +375,7 @@ services:
 
 - **Память**: 2GB+ рекомендуется для production
 - **CPU**: 2+ ядра рекомендуется для высокого трафика
-- **База данных**: Использовать connection pooling (20+ подключений)
+- **База данных**: HikariCP пул (по умолчанию 10 подключений; см. Database.kt для настройки)
 
 ## Health проверки
 
@@ -473,7 +487,7 @@ mysql -h db-host -u user -p flagent < flagent-backup.sql
 ### Проблемы с производительностью
 
 1. **Пулинг подключений к БД**
-   - Увеличить размер пула: `FLAGENT_DB_POOL_SIZE=20`
+   - Размер пула настраивается в `Database.kt` (по умолчанию: 10). Измените `maximumPoolSize` для высокой нагрузки.
    - Проверить подключения к БД: `SELECT count(*) FROM pg_stat_activity;`
 
 2. **Конфигурация кэша**
@@ -501,6 +515,6 @@ mysql -h db-host -u user -p flagent < flagent-backup.sql
 ## Следующие шаги
 
 - 📖 [Руководство по конфигурации](configuration.ru.md) - Полные опции конфигурации
-- 🏗️ [Архитектура](architecture/backend.md) - Поймите архитектуру Flagent
-- 📚 [Документация API](api/endpoints.md) - Изучите API endpoints
-- 💻 [Примеры](examples/README.md) - Примеры кода и туториалы
+- 🏗️ [Архитектура](../architecture/backend.md) - Поймите архитектуру Flagent
+- 📚 [Документация API](../api/endpoints.md) - Изучите API endpoints
+- 💻 [Примеры](../examples/README.ru.md) - Примеры кода и туториалы

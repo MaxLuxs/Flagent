@@ -55,7 +55,6 @@ postgresql://[user[:password]@][host][:port][/database][?param1=value1&...]
 **Параметры:**
 - `sslmode` - Режим SSL (disable, require, verify-full)
 - `connect_timeout` - Таймаут подключения в секундах
-- `pool_size` - Размер пула подключений (по умолчанию: 10)
 
 ### MySQL
 
@@ -85,19 +84,7 @@ FLAGENT_DB_DBCONNECTIONSTR=/path/to/flagent.sqlite
 
 ### Пулинг подключений
 
-```bash
-# Максимальное количество подключений в пуле (по умолчанию: 10)
-FLAGENT_DB_POOL_SIZE=20
-
-# Таймаут подключения в миллисекундах (по умолчанию: 30000)
-FLAGENT_DB_CONNECTION_TIMEOUT=30000
-
-# Таймаут простоя в миллисекундах (по умолчанию: 600000)
-FLAGENT_DB_IDLE_TIMEOUT=600000
-
-# Максимальное время жизни в миллисекундах (по умолчанию: 1800000)
-FLAGENT_DB_MAX_LIFETIME=1800000
-```
+Пул подключений управляется HikariCP (по умолчанию: 10 подключений). Размер пула задаётся в `Database.kt` и не настраивается через переменные окружения. См. [Database.kt](https://github.com/MaxLuxs/Flagent/blob/main/backend/src/main/kotlin/flagent/repository/Database.kt).
 
 ## Конфигурация Middleware
 
@@ -200,47 +187,32 @@ Health check endpoint всегда доступен по адресу: `http://l
 ### JWT аутентификация
 
 ```bash
-# Секретный ключ JWT
-FLAGENT_JWT_SECRET=your-secret-key
-
-# Время жизни JWT токена (по умолчанию: 24h)
-FLAGENT_JWT_EXPIRATION=24h
-
-# JWT issuer (по умолчанию: flagent)
-FLAGENT_JWT_ISSUER=flagent
+FLAGENT_JWT_AUTH_ENABLED=true
+FLAGENT_JWT_AUTH_SECRET=your-secret-key
 ```
 
 ### Базовая аутентификация
 
 ```bash
-# Имя пользователя для базовой аутентификации
+FLAGENT_BASIC_AUTH_ENABLED=true
 FLAGENT_BASIC_AUTH_USERNAME=admin
-
-# Пароль для базовой аутентификации
 FLAGENT_BASIC_AUTH_PASSWORD=admin
 ```
 
 ### Аутентификация через заголовок
 
-```bash
-# Имя заголовка для API ключа (по умолчанию: X-API-Key)
-FLAGENT_HEADER_AUTH_HEADER=X-API-Key
+Идентификатор пользователя берётся из заголовка запроса (например X-Email для Cloudflare Access):
 
-# API ключи (через запятую)
-FLAGENT_HEADER_AUTH_API_KEYS=key1,key2,key3
+```bash
+FLAGENT_HEADER_AUTH_ENABLED=true
+FLAGENT_HEADER_AUTH_USER_FIELD=X-Email
 ```
 
 ### Аутентификация через cookie
 
 ```bash
-# Имя cookie для аутентификации (по умолчанию: auth_token)
-FLAGENT_COOKIE_AUTH_COOKIE_NAME=auth_token
-
-# Флаг secure для cookie (по умолчанию: false)
-FLAGENT_COOKIE_AUTH_SECURE=true
-
-# Флаг HTTP-only для cookie (по умолчанию: true)
-FLAGENT_COOKIE_AUTH_HTTP_ONLY=true
+FLAGENT_COOKIE_AUTH_ENABLED=true
+FLAGENT_COOKIE_AUTH_USER_FIELD=CF_Authorization
 ```
 
 ### Enterprise Dev Mode (только для локальной разработки)
@@ -400,16 +372,16 @@ PORT=18000
 ENVIRONMENT=production
 FLAGENT_DB_DBDRIVER=postgres
 FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db:5432/flagent?sslmode=require
-FLAGENT_DB_POOL_SIZE=20
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
 FLAGENT_PROMETHEUS_ENABLED=true
 FLAGENT_PROMETHEUS_PATH=/metrics
-FLAGENT_JWT_SECRET=your-secure-secret-key
-FLAGENT_KAFKA_ENABLED=true
-FLAGENT_KAFKA_BROKERS=kafka1:9092,kafka2:9092
-FLAGENT_KAFKA_TOPIC=flagent-evaluations
+FLAGENT_JWT_AUTH_SECRET=your-secure-secret-key
+FLAGENT_RECORDER_ENABLED=true
+FLAGENT_RECORDER_TYPE=kafka
+FLAGENT_RECORDER_KAFKA_BROKERS=kafka1:9092,kafka2:9092
+FLAGENT_RECORDER_KAFKA_TOPIC=flagent-records
 ```
 
 ## Валидация конфигурации
@@ -433,6 +405,6 @@ Flagent валидирует конфигурацию при запуске. Е�
 
 ## Следующие шаги
 
-- 📖 [Руководство по развертыванию](deployment.md) - Узнайте, как развернуть Flagent
-- 🏗️ [Архитектура](architecture/backend.md) - Поймите архитектуру Flagent
-- 📚 [Документация API](api/endpoints.md) - Изучите API endpoints
+- 📖 [Руководство по развертыванию](deployment.ru.md) - Узнайте, как развернуть Flagent
+- 🏗️ [Архитектура](../architecture/backend.md) - Поймите архитектуру Flagent
+- 📚 [Документация API](../api/endpoints.md) - Изучите API endpoints

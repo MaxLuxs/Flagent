@@ -349,7 +349,7 @@ println(result.debugLogs) // Посмотреть, почему флаг сов�
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:flagent-kotlin-client:0.1.0")
+    implementation("com.flagent:kotlin-client:0.1.4")
 }
 ```
 
@@ -389,7 +389,7 @@ const client = new FlagentClient({
 
 ```swift
 // Package.swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.0")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.4")
 ```
 
 ```swift
@@ -431,10 +431,10 @@ manager.enableRealtimeUpdates(baseUrl = "http://localhost:18000")
 
 ## Следующие шаги
 
-- **[Документация API](api/endpoints.md)** - Изучите все API endpoints
-- **[Архитектура](architecture/backend.md)** - Поймите, как работает Flagent
-- **[Сценарии использования](use-cases.md)** - Посмотрите примеры из реального мира
-- **[Примеры](examples/README.md)** - Примеры кода для распространенных сценариев
+- **[Документация API](../api/endpoints.md)** - Изучите все API endpoints
+- **[Архитектура](../architecture/backend.md)** - Поймите, как работает Flagent
+- **[Сценарии использования](use-cases.ru.md)** - Посмотрите примеры из реального мира
+- **[Примеры](../examples/README.ru.md)** - Примеры кода для распространенных сценариев
 
 ## Устранение неполадок
 
@@ -484,7 +484,7 @@ manager.enableRealtimeUpdates(baseUrl = "http://localhost:18000")
 
 ## Поддержка
 
-- **Документация**: https://maxluxs.github.io/Flagent/getting-started.ru.md
+- **Документация**: https://maxluxs.github.io/Flagent/guides/getting-started.ru.md
 - **GitHub Issues**: https://github.com/MaxLuxs/Flagent/issues
 - **Контакт**: max.developer.luxs@gmail.com
 

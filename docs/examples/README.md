@@ -2,6 +2,10 @@
 
 > [English](README.md) | [Русский](README.ru.md)
 
+**In this section:**
+- **API & Ktor** — REST API, flags, segments, evaluation (below)
+- **SDK Integration** — [Ktor, Spring Boot, Kotlin, JavaScript, Swift](sdk-integration.md) — code samples for each platform
+
 ## Table of Contents
 
 - [Basic Usage](#basic-usage)
@@ -97,9 +101,7 @@ POST /api/v1/evaluation/batch
 ```kotlin
 // application.conf or environment variables
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://localhost:5432/flagent
-FLAGENT_DB_USER=flagent
-FLAGENT_DB_PASSWORD=password
+FLAGENT_DB_DBCONNECTIONSTR=postgresql://flagent:password@localhost:5432/flagent
 PORT=18000
 ```
 
@@ -109,7 +111,7 @@ PORT=18000
 FLAGENT_RECORDER_ENABLED=true
 FLAGENT_RECORDER_TYPE=kafka
 FLAGENT_RECORDER_KAFKA_BROKERS=localhost:9092
-FLAGENT_RECORDER_KAFKA_TOPIC=flagent-events
+FLAGENT_RECORDER_KAFKA_TOPIC=flagent-records
 ```
 
 ### Kinesis Configuration
@@ -117,7 +119,7 @@ FLAGENT_RECORDER_KAFKA_TOPIC=flagent-events
 ```kotlin
 FLAGENT_RECORDER_ENABLED=true
 FLAGENT_RECORDER_TYPE=kinesis
-FLAGENT_RECORDER_KINESIS_STREAM_NAME=flagent-events
+FLAGENT_RECORDER_KINESIS_STREAM_NAME=flagent-records
 FLAGENT_RECORDER_KINESIS_REGION=us-east-1
 ```
 
@@ -127,7 +129,7 @@ FLAGENT_RECORDER_KINESIS_REGION=us-east-1
 FLAGENT_RECORDER_ENABLED=true
 FLAGENT_RECORDER_TYPE=pubsub
 FLAGENT_RECORDER_PUBSUB_PROJECT_ID=my-project
-FLAGENT_RECORDER_PUBSUB_TOPIC_NAME=flagent-events
+FLAGENT_RECORDER_PUBSUB_TOPIC_NAME=flagent-records
 ```
 
 ### Authentication Configuration
@@ -223,7 +225,7 @@ if (flag?.enabled == true) {
 ```kotlin
 val recorder = KafkaRecorder(
     brokers = listOf("localhost:9092"),
-    topic = "flagent-events",
+    topic = "flagent-records",
     async = true
 )
 
@@ -234,7 +236,7 @@ recorder.record(evalResult)
 
 ```kotlin
 val recorder = KinesisRecorder(
-    streamName = "flagent-events",
+    streamName = "flagent-records",
     region = "us-east-1",
     async = true
 )
@@ -247,7 +249,7 @@ recorder.record(evalResult)
 ```kotlin
 val recorder = PubSubRecorder(
     projectId = "my-project",
-    topic = "flagent-events",
+    topic = "flagent-records",
     async = true
 )
 
@@ -258,4 +260,4 @@ recorder.record(evalResult)
 
 - [API Documentation](../api/endpoints.md)
 - [Architecture Documentation](../architecture/backend.md)
-- [Deployment Guide](../deployment.md)
+- [Deployment Guide](../guides/deployment.md)

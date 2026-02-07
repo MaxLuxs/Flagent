@@ -1,16 +1,16 @@
 # Flagent Usage Examples
 
-Quick reference for integrating Flagent in your application. See [samples/](../samples) for full runnable examples.
+Quick reference for integrating Flagent in your application. See [samples/](../../samples) for full runnable examples.
 
 ## Summary by Platform
 
 | Platform | Sample | Key Features |
 |----------|--------|--------------|
-| **Ktor** | [samples/ktor](../samples/ktor) | Plugin, single/batch eval, entityContext |
-| **Spring Boot** | [samples/spring-boot](../samples/spring-boot) | Starter, single/batch eval, entityContext |
-| **Kotlin** | [samples/kotlin](../samples/kotlin) | SDK, Enhanced with cache, entityContext |
-| **JavaScript** | [samples/javascript](../samples/javascript) | Web UI, fetch API |
-| **Swift** | [samples/swift](../samples/swift) | Swift SDK, async/await |
+| **Ktor** | [samples/ktor](../../samples/ktor) | Plugin, single/batch eval, entityContext |
+| **Spring Boot** | [samples/spring-boot](../../samples/spring-boot) | Starter, single/batch eval, entityContext |
+| **Kotlin** | [samples/kotlin](../../samples/kotlin) | SDK, Enhanced with cache, entityContext |
+| **JavaScript** | [samples/javascript](../../samples/javascript) | Web UI, fetch API |
+| **Swift** | [samples/swift](../../samples/swift) | Swift SDK, async/await |
 
 ## Ktor
 
@@ -139,10 +139,10 @@ Pass `entityContext` when your flag has segment constraints (e.g., `country` EQ 
 }
 ```
 
-Supported constraint operators: `EQ`, `NEQ`, `IN`, `NOTIN`, `LT`, `LTE`, `GT`, `GTE`, `EREG`, `CONTAINS`. See [compatibility.md](compatibility.md).
+Supported constraint operators: `EQ`, `NEQ`, `IN`, `NOTIN`, `LT`, `LTE`, `GT`, `GTE`, `EREG`, `CONTAINS`. See [compatibility](../guides/compatibility.md).
 
 ## See Also
 
-- [API Compatibility](compatibility.md)
-- [Getting Started](getting-started.md)
-- [API Endpoints](api/endpoints.md)
+- [API Compatibility](../guides/compatibility.md)
+- [Getting Started](../guides/getting-started.md)
+- [API Endpoints](../api/endpoints.md)

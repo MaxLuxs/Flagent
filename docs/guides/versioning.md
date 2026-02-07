@@ -16,4 +16,6 @@
 2. Run `./scripts/sync-version.sh`.
 3. Commit and tag (e.g. `git tag v0.2.0`).
 
-Documentation and README examples are not updated by the script; update version strings there manually or extend the script.
+**Pre-commit hook:** Run `./scripts/install-hooks.sh` to install a hook that blocks commits when `VERSION` or synced files are staged but out of sync. Install once per clone.
+
+The script also updates: README.md, docs/guides (getting-started, deployment), SDK READMEs, frontend ShellLayout/Navbar. CHANGELOG entries and historical references are not touched.

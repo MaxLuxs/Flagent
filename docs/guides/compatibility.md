@@ -158,7 +158,7 @@ curl -X POST http://localhost:18000/api/v1/evaluation \
 
 ## See Also
 
-- [API Reference](api/endpoints.md)
-- [OpenAPI Specification](api/openapi.yaml)
+- [API Reference](../api/endpoints.md)
+- [OpenAPI Specification](../api/openapi.yaml)
 - [Getting Started](getting-started.md)
-- [Examples](examples.md)
+- [Examples](../examples/README.md)

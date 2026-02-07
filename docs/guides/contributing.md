@@ -37,14 +37,21 @@ There are many ways to contribute to Flagent:
    git remote add upstream https://github.com/MaxLuxs/Flagent.git
    ```
 
-3. **Build the project**
+3. **Install hooks (optional but recommended)**
+
+   ```bash
+   ./scripts/install-hooks.sh
+   ```
+   This installs a pre-commit hook that checks VERSION sync when releasing. See [Versioning](versioning.md).
+
+4. **Build the project**
 
    ```bash
    cd flagent
    ./gradlew build
    ```
 
-4. **Run the application**
+5. **Run the application**
 
    ```bash
    ./gradlew :backend:run

@@ -413,7 +413,7 @@ Keep stakeholders informed of rollout progress.
 ## Next Steps
 
 - [Client-Side Evaluation](https://github.com/MaxLuxs/Flagent/blob/main/sdk/kotlin-enhanced/CLIENT_SIDE_EVALUATION.md) - Faster, offline evaluation
-- [Use Cases](../use-cases.md) - More real-world examples
+- [Use Cases](../guides/use-cases.md) - More real-world examples
 - [API Documentation](../api/endpoints.md) - Full API reference
 
 ## Summary

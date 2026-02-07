@@ -483,7 +483,7 @@ groups:
 ### Pre-Launch
 
 - [ ] Database indices created (`PerformanceOptimization.apply()`)
-- [ ] Connection pool configured (50+ connections for production)
+- [ ] Connection pool configured (default 10 in Database.kt; modify `maximumPoolSize` for higher load)
 - [ ] Query timeouts configured
 - [ ] Data retention policies set
 - [ ] Monitoring dashboards deployed
@@ -502,7 +502,7 @@ groups:
 ### Scaling Checklist
 
 When scaling up:
-1. Increase connection pool size (`DB_POOL_SIZE`)
+1. Increase connection pool size (modify `maximumPoolSize` in `Database.kt`)
 2. Add read replicas for read-heavy workloads
 3. Enable Redis caching for multi-instance deployments
 4. Consider database partitioning for large tables
@@ -535,8 +535,7 @@ SELECT query, total_time FROM pg_stat_statements ORDER BY total_time DESC LIMIT 
 
 **Решение:**
 ```bash
-# Reduce pool size
-export DB_POOL_SIZE=20
+# Reduce pool size: modify maximumPoolSize in backend/src/main/kotlin/flagent/repository/Database.kt
 
 # Monitor JVM heap (if using JVM)
 jstat -gc <pid> 1000
@@ -553,7 +552,7 @@ jstat -gc <pid> 1000
 ### Connection Pool Exhaustion
 
 **Решение:**
-1. Increase pool size: `export DB_POOL_SIZE=100`
+1. Increase pool size: modify `maximumPoolSize` in `Database.kt` (default: 10)
 2. Check for connection leaks (monitor `hikaricp_connections_active`)
 3. Reduce connection timeout
 4. Implement connection retry logic

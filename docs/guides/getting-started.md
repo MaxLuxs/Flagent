@@ -349,7 +349,7 @@ println(result.debugLogs) // See why flag matched or didn't match
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:flagent-kotlin-client:0.1.0")
+    implementation("com.flagent:kotlin-client:0.1.4")
 }
 ```
 
@@ -389,7 +389,7 @@ const client = new FlagentClient({
 
 ```swift
 // Package.swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.0")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.4")
 ```
 
 ```swift
@@ -430,10 +430,10 @@ See [Real-Time Updates Guide](https://github.com/MaxLuxs/Flagent/blob/main/sdk/k
 
 ## Next Steps
 
-- **[API Documentation](api/endpoints.md)** - Explore all API endpoints
-- **[Architecture](architecture/backend.md)** - Understand how Flagent works
+- **[API Documentation](../api/endpoints.md)** - Explore all API endpoints
+- **[Architecture](../architecture/backend.md)** - Understand how Flagent works
 - **[Use Cases](use-cases.md)** - See real-world examples
-- **[Examples](examples/README.md)** - Code examples for common scenarios
+- **[Examples](../examples/README.md)** - Code examples for common scenarios
 
 ## Troubleshooting
 
@@ -484,11 +484,11 @@ See [Real-Time Updates Guide](https://github.com/MaxLuxs/Flagent/blob/main/sdk/k
 ## See Also
 
 - [API Compatibility](compatibility.md) - Evaluation API format and migration guide
-- [Examples](examples.md) - Code snippets for Ktor, Spring Boot, Kotlin, and more
+- [Examples](../examples/README.md) - Code snippets for API, Ktor, and [SDK integration](../examples/sdk-integration.md)
 
 ## Support
 
-- **Documentation**: https://maxluxs.github.io/Flagent/getting-started.md
+- **Documentation**: https://maxluxs.github.io/Flagent/guides/getting-started.md
 - **GitHub Issues**: https://github.com/MaxLuxs/Flagent/issues
 - **Contact**: max.developer.luxs@gmail.com
 
