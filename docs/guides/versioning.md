@@ -12,9 +12,18 @@
 **Fallback:** If `VERSION` file is missing, Gradle uses `0.1.0`. The sync script requires `VERSION` to exist and exits with an error if it is missing or empty.
 
 **To release a new version:**
-1. Edit `VERSION` (e.g. set to `0.2.0`).
-2. Run `./scripts/sync-version.sh`.
-3. Commit and tag (e.g. `git tag v0.2.0`).
+```bash
+# One-time after clone
+./scripts/install-hooks.sh
+
+# On release
+echo "0.1.6" > VERSION
+./scripts/sync-version.sh   # required
+git add -A
+git commit -m "chore: release 0.1.6"
+git tag v0.1.6
+git push origin main --tags
+```
 
 **Pre-commit hook:** Run `./scripts/install-hooks.sh` to install a hook that blocks commits when `VERSION` or synced files are staged but out of sync. Install once per clone.
 
