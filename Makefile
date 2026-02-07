@@ -35,7 +35,7 @@ docker-build:
 .PHONY: docker-run
 docker-run:
 	@echo "Running Docker container..."
-	@docker run -it -p 18000:18000 flagent:latest
+	@docker run -it -p 18000:18000 -v flagent-data:/data flagent:latest
 
 .PHONY: lint
 lint:

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Pre-commit hook: ensure VERSION is in sync when VERSION or synced files are staged.
+# Install: ./scripts/install-hooks.sh
+set -e
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# Only run if VERSION is staged or any version-synced file is staged
+STAGED=$(git diff --cached --name-only 2>/dev/null || true)
+SYNCED_FILES="VERSION sdk/javascript/package.json backend/src/main/kotlin/flagent/route/InfoRoutes.kt helm/flagent/Chart.yaml README.md"
+NEED_CHECK=0
+for f in $SYNCED_FILES; do
+  if echo "$STAGED" | grep -q "^$f$"; then NEED_CHECK=1; break; fi
+done
+
+if [ "$NEED_CHECK" -eq 1 ] && [ -f "$ROOT/scripts/check-version-sync.sh" ]; then
+  if ! "$ROOT/scripts/check-version-sync.sh"; then
+    exit 1
+  fi
+fi
+exit 0

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flagent-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: flagent
+      POSTGRES_PASSWORD: flagent
+      POSTGRES_DB: flagent
+    volumes:
+      - flagent-pgdata:/var/lib/postgresql/data
+    networks:
+      - flagent-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flagent -d flagent"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    image: ghcr.io/maxluxs/flagent:latest
+    container_name: flagent-backend
+    restart: unless-stopped
+    ports:
+      - "18000:18000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 18000
+      FLAGENT_DB_DBDRIVER: postgres
+      FLAGENT_DB_DBCONNECTIONSTR: postgresql://flagent:flagent@postgres:5432/flagent
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - flagent-network
+
+volumes:
+  flagent-pgdata:
+
+networks:
+  flagent-network:
+    driver: bridge

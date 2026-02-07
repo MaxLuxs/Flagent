@@ -51,10 +51,13 @@ if [ -f backend/src/main/kotlin/flagent/route/InfoRoutes.kt ]; then
   sed -i '' "s/System.getProperty(\"flagent.version\") ?: \"[^\"]*\"/System.getProperty(\"flagent.version\") ?: \"$VERSION\"/" backend/src/main/kotlin/flagent/route/InfoRoutes.kt
 fi
 
-# Frontend navbar
-if [ -f frontend/src/jsMain/kotlin/flagent/frontend/components/Navbar.kt ]; then
-  sed -i '' "s/Text(\"v[^\"]*\")/Text(\"v$VERSION\")/" frontend/src/jsMain/kotlin/flagent/frontend/components/Navbar.kt
-fi
+# Frontend navbar and shell layout (fallback version when API unreachable)
+for f in frontend/src/jsMain/kotlin/flagent/frontend/components/Navbar.kt frontend/src/jsMain/kotlin/flagent/frontend/components/ShellLayout.kt; do
+  if [ -f "$f" ]; then
+    sed -i '' "s/Text(\"v[^\"]*\")/Text(\"v$VERSION\")/" "$f" 2>/dev/null || true
+    sed -i '' "s/mutableStateOf(\"v[^\"]*\")/mutableStateOf(\"v$VERSION\")/" "$f" 2>/dev/null || true
+  fi
+done
 
 # Go
 if [ -f sdk/go/client.go ]; then sed -i '' "s/defaultUserAgent   = \"flagent-go-client\/[^\"]*\"/defaultUserAgent   = \"flagent-go-client\/$VERSION\"/" sdk/go/client.go; fi
@@ -62,16 +65,42 @@ if [ -f sdk/go/client.go ]; then sed -i '' "s/defaultUserAgent   = \"flagent-go-
 # Kotlin SDK fallback dependency versions (when not building from source)
 for f in sdk/kotlin-enhanced/build.gradle.kts sdk/kotlin-debug-ui/build.gradle.kts; do
   if [ -f "$f" ]; then
-    sed -i '' "s/com\.flagent:flagent-kotlin-client:[0-9][^\"]*/com.flagent:flagent-kotlin-client:$VERSION/g" "$f" 2>/dev/null || true
-    sed -i '' "s/com\.flagent:flagent-kotlin-enhanced-client:[0-9][^\"]*/com.flagent:flagent-kotlin-enhanced-client:$VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/com\.flagent:kotlin-client:[0-9][^\"]*/com.flagent:kotlin-client:$VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/com\.flagent:kotlin-enhanced:[0-9][^\"]*/com.flagent:kotlin-enhanced:$VERSION/g" "$f" 2>/dev/null || true
   fi
 done
 
 # Swift
 if [ -f sdk/swift/project.yml ]; then sed -i '' "s/version: [0-9.]*/version: $VERSION/" sdk/swift/project.yml; fi
+
+# sdk/ANDROID_IOS.md OpenAPI generator artifactVersion
+if [ -f sdk/ANDROID_IOS.md ]; then sed -i '' "s/artifactVersion=[0-9][0-9.]*/artifactVersion=$VERSION/" sdk/ANDROID_IOS.md; fi
+
 if [ -f sdk/swift/FlagentClient.podspec ]; then
   sed -i '' "s/s.version = '[^']*'/s.version = '$VERSION'/" sdk/swift/FlagentClient.podspec
   sed -i '' "s/:tag => 'v[^']*'/:tag => 'v$VERSION'/" sdk/swift/FlagentClient.podspec
 fi
 
-echo "Synced version $VERSION to package.json, setup.py, Chart.yaml, OpenAPI, Java, backend, frontend, Go, Swift. Gradle uses root VERSION file."
+# Docs and README: com.flagent:artifact:VERSION, backend-X-all.jar, from: "VERSION", @flagent/client@X
+for f in README.md README.ru.md docs/guides/getting-started.md docs/guides/getting-started.ru.md docs/guides/deployment.md docs/guides/deployment.ru.md; do
+  if [ -f "$f" ]; then
+    sed -i '' "s/\(com\.flagent:[a-z-]*:\)[0-9][0-9.]*/\1$VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/backend-[0-9][0-9.]*-all\.jar/backend-$VERSION-all.jar/g" "$f" 2>/dev/null || true
+    sed -i '' "s/from: \"[0-9][0-9.]*\"/from: \"$VERSION\"/" "$f" 2>/dev/null || true
+    sed -i '' "s/@flagent\/client@[0-9][0-9.]*/@flagent\/client@$VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/(current: [0-9][0-9.]*)/(current: $VERSION)/" "$f" 2>/dev/null || true
+  fi
+done
+
+# SDK READMEs
+for f in sdk/kotlin/README.md sdk/kotlin-enhanced/README.md sdk/kotlin-debug-ui/README.md sdk/javascript/README.md sdk/javascript/README.ru.md sdk/swift/README.md sdk/swift-enhanced/README.md sdk/swift-debug-ui/README.md sdk/java/README.md sdk/spring-boot-starter/README.md sdk/ANDROID_IOS.md ktor-flagent/README.md; do
+  if [ -f "$f" ]; then
+    sed -i '' "s/\(com\.flagent:[a-z-]*:\)[0-9][0-9.]*/\1$VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/<version>[0-9][0-9.]*<\/version>/<version>$VERSION<\/version>/" "$f" 2>/dev/null || true
+    sed -i '' "s/from: \"[0-9][0-9.]*\"/from: \"$VERSION\"/" "$f" 2>/dev/null || true
+    sed -i '' "s/@flagent\/client@[0-9][0-9.]*/@flagent\/client@$VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/API version: [0-9][0-9.]*/API version: $VERSION/g" "$f" 2>/dev/null || true
+  fi
+done
+
+echo "Synced version $VERSION to package.json, setup.py, Chart.yaml, OpenAPI, Java, backend, frontend, Go, Swift, docs, SDK READMEs. Gradle uses root VERSION file."
