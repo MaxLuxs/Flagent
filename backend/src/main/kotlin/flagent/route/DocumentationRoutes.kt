@@ -11,6 +11,18 @@ import java.io.FileNotFoundException
 
 private val logger = KotlinLogging.logger {}
 
+private fun loadOpenApiSpec(): String {
+    val currentDir = File(System.getProperty("user.dir"))
+    val filePaths = listOf(
+        File(currentDir, "docs/api/openapi.yaml"),
+        File(currentDir.parentFile, "docs/api/openapi.yaml"),
+        File(currentDir.parentFile?.parentFile, "docs/api/openapi.yaml")
+    )
+    return filePaths.firstOrNull { it.exists() }?.readText()
+        ?: ApiConstants::class.java.classLoader.getResourceAsStream("openapi/documentation.yaml")?.use { it.reader().readText() }
+        ?: throw FileNotFoundException("OpenAPI spec not found on disk or classpath")
+}
+
 /**
  * Documentation routes - Swagger UI and OpenAPI specification
  */
@@ -121,21 +133,7 @@ fun Routing.configureDocumentationRoutes() {
     route(ApiConstants.API_BASE_PATH) {
             get("/openapi.yaml") {
                 try {
-                    // Load OpenAPI file from file system
-                    // Try multiple possible locations
-                    val content = run {
-                        val currentDir = File(System.getProperty("user.dir"))
-                        val possiblePaths = listOf(
-                            File(currentDir, "docs/api/openapi.yaml"), // From project root
-                            File(currentDir.parentFile, "docs/api/openapi.yaml"), // From backend directory
-                            File(currentDir.parentFile?.parentFile, "docs/api/openapi.yaml") // From workspace root
-                        )
-                        
-                        possiblePaths.firstOrNull { it.exists() }?.readText()
-                            ?: throw FileNotFoundException(
-                                "OpenAPI specification not found. Tried: ${possiblePaths.joinToString { it.absolutePath }}"
-                            )
-                    }
+                    val content = loadOpenApiSpec()
                     call.respondText(
                         content,
                         ContentType.parse("application/x-yaml"),
@@ -153,21 +151,7 @@ fun Routing.configureDocumentationRoutes() {
             // GET /api/v1/openapi.json - OpenAPI specification in JSON format (optional)
             get("/openapi.json") {
                 try {
-                    // Load OpenAPI file from file system
-                    // Try multiple possible locations
-                    val yamlContent = run {
-                        val currentDir = File(System.getProperty("user.dir"))
-                        val possiblePaths = listOf(
-                            File(currentDir, "docs/api/openapi.yaml"), // From project root
-                            File(currentDir.parentFile, "docs/api/openapi.yaml"), // From backend directory
-                            File(currentDir.parentFile?.parentFile, "docs/api/openapi.yaml") // From workspace root
-                        )
-                        
-                        possiblePaths.firstOrNull { it.exists() }?.readText()
-                            ?: throw FileNotFoundException(
-                                "OpenAPI specification not found. Tried: ${possiblePaths.joinToString { it.absolutePath }}"
-                            )
-                    }
+                    val yamlContent = loadOpenApiSpec()
                     
                     // Convert YAML to JSON using Jackson
                     val yamlMapper = com.fasterxml.jackson.dataformat.yaml.YAMLMapper()

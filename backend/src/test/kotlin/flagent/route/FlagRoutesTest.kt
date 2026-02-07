@@ -17,6 +17,12 @@ import kotlin.test.*
 import kotlinx.serialization.json.*
 
 class FlagRoutesTest {
+
+    @BeforeTest
+    fun beforeTest() {
+        Database.close()
+    }
+
     @Test
     fun testGetFlags() = testApplication {
         Database.init()
@@ -63,7 +69,7 @@ class FlagRoutesTest {
                 setBody("""{"description":"Test flag"}""")
             }
             
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(HttpStatusCode.OK, response.status, "Create flag failed: ${response.status} - ${response.bodyAsText()}")
             val json = response.bodyJsonObject()
             assertTrue(json.containsKey("id"))
             assertTrue(json.containsKey("key"))
@@ -93,7 +99,7 @@ class FlagRoutesTest {
                 contentType(ContentType.Application.Json)
                 setBody("""{"description":"Test flag"}""")
             }
-            assertEquals(HttpStatusCode.OK, createResponse.status)
+            assertEquals(HttpStatusCode.OK, createResponse.status, "Create flag failed: ${createResponse.status} - ${createResponse.bodyAsText()}")
             val createdFlag = createResponse.bodyJsonObject()
             val flagId = createdFlag.intOrNull("id") ?: error("Missing id in create response: ${createResponse.bodyAsText()}")
             
@@ -242,7 +248,7 @@ class FlagRoutesTest {
                 contentType(ContentType.Application.Json)
                 setBody("""{"description":"Batch test flag","key":"batch_test_flag"}""")
             }
-            assertEquals(HttpStatusCode.OK, createResponse.status)
+            assertEquals(HttpStatusCode.OK, createResponse.status, "Create flag failed: ${createResponse.status} - ${createResponse.bodyAsText()}")
             val created = createResponse.bodyJsonObject()
             val flagId = created.intOrNull("id") ?: error("Missing id in create response: ${createResponse.bodyAsText()}")
             
