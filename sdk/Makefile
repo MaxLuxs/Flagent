@@ -1,4 +1,4 @@
-.PHONY: generate-kotlin generate-javascript generate-swift generate all
+.PHONY: generate-kotlin generate-javascript generate-swift generate-java generate all
 
 generate-kotlin:
 	@echo "Generating Kotlin SDK..."
@@ -12,6 +12,10 @@ generate-swift:
 	@echo "Generating Swift SDK..."
 	cd swift && ./generate.sh
 
-generate: generate-kotlin generate-javascript generate-swift
+generate-java:
+	@echo "Generating Java SDK..."
+	cd java && ./generate.sh
+
+generate: generate-kotlin generate-javascript generate-swift generate-java
 
 all: generate

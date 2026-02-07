@@ -412,4 +412,4 @@ val result = offlineManager.evaluate(
 
 - [Kotlin Enhanced SDK README](README.md)
 - [API Documentation](https://maxluxs.github.io/Flagent/api/openapi.yaml)
-- [Architecture Documentation](https://maxluxs.github.io/Flagent/#/architecture/backend)
+- [Architecture Documentation](https://maxluxs.github.io/Flagent/architecture/backend.md)

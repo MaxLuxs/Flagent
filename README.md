@@ -36,11 +36,11 @@
   
   <p>
     <a href="#-quick-start">Quick Start</a> •
-    <a href="https://maxluxs.github.io/Flagent/getting-started.md">Documentation</a> •
+    <a href="https://maxluxs.github.io/Flagent/guides/getting-started.md">Documentation</a> •
     <a href="#-key-features">Features</a> •
     <a href="#-sdks">SDKs</a> •
     <a href="#-use-cases">Use Cases</a> •
-    <a href="docs/roadmap.md">Roadmap</a>
+    <a href="docs/guides/roadmap.md">Roadmap</a>
   </p>
 </div>
 
@@ -82,7 +82,7 @@ docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 open http://localhost:18000
 ```
 
-Configure admin auth via `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. See [docs/configuration.md](docs/configuration.md).
+Configure admin auth via `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. See [docs/guides/configuration.md](docs/guides/configuration.md).
 
 ## Self-Hosted (Open Source) from GitHub
 
@@ -122,11 +122,11 @@ Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when p
 
 **Docker:** The image at `ghcr.io/maxluxs/flagent` is backend-only (no UI in image). For full self-hosted UI, use option 2 or 3 above, or build frontend and mount it into a custom image.
 
-**With Enterprise (internal submodule):** Admin login and protected `/admin/*` are available. See [frontend/EDITION_GUIDE.md](frontend/EDITION_GUIDE.md) for first run (admin env → login → create tenant) and [docs/configuration.md](docs/configuration.md) for Admin Auth variables.
+**With Enterprise (internal submodule):** Admin login and protected `/admin/*` are available. See [frontend/EDITION_GUIDE.md](frontend/EDITION_GUIDE.md) for first run (admin env → login → create tenant) and [docs/guides/configuration.md](docs/guides/configuration.md) for Admin Auth variables.
 
 **OSS frontend + Enterprise backend:** If you build the frontend as Open Source (default) but run the backend with `internal` (enterprise), you will get 401 until a tenant exists. The UI shows "Create tenant first: POST /admin/tenants" and two actions: **Create first tenant** (opens /tenants) and **Log in (admin)** (opens /login). Set on the backend: `FLAGENT_ADMIN_AUTH_ENABLED=true`, `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET` (min 32 chars), and optionally `FLAGENT_ADMIN_API_KEY`. Then log in at /login or create a tenant at /tenants.
 
-**"Admin auth is disabled"** when logging in means the backend has admin login turned off. Set `FLAGENT_ADMIN_AUTH_ENABLED=true` and the env vars above on the backend and restart. See [docs/configuration.md](docs/configuration.md) → Admin Auth.
+**"Admin auth is disabled"** when logging in means the backend has admin login turned off. Set `FLAGENT_ADMIN_AUTH_ENABLED=true` and the env vars above on the backend and restart. See [docs/guides/configuration.md](docs/guides/configuration.md) → Admin Auth.
 
 **Login first (always show login screen):** In the frontend set `ENV_FEATURE_AUTH=true` (e.g. in `frontend/src/jsMain/resources/index.html` or via `?ENV_FEATURE_AUTH=true`). Unauthenticated users will be redirected to /login before seeing the dashboard.
 
@@ -159,8 +159,8 @@ Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when p
 
 ## 📖 Documentation
 
-- 📖 **[Getting Started](https://maxluxs.github.io/Flagent/getting-started.md)** - Quick start and setup
-- 📖 **[API Compatibility](https://maxluxs.github.io/Flagent/compatibility.md)** - Evaluation API, migration guide
+- 📖 **[Getting Started](https://maxluxs.github.io/Flagent/guides/getting-started.md)** - Quick start and setup
+- 📖 **[API Compatibility](https://maxluxs.github.io/Flagent/guides/compatibility.md)** - Evaluation API, migration guide
 - 📖 **[API Reference](https://maxluxs.github.io/Flagent)** - API docs and OpenAPI
 - 📖 **[OpenAPI spec](https://maxluxs.github.io/Flagent/api/openapi.yaml)** - OpenAPI specification
 - 📖 **[Architecture](https://maxluxs.github.io/Flagent/architecture/backend.md)** - System design
@@ -173,12 +173,12 @@ flagent/
 ├── frontend/         # Compose for Web UI
 ├── sdk/              # Client SDKs (Kotlin, JS, Swift, Python, Go)
 ├── ktor-flagent/     # Ktor plugin
-└── docs/roadmap.md   # Development roadmap
+└── docs/guides/roadmap.md   # Development roadmap
 ```
 
 ## Development
 
-**Version:** single source is root file `VERSION`. Gradle reads it; run `./scripts/sync-version.sh` to propagate to npm/pip/Go/Swift/Helm/Java. See [docs/versioning.md](docs/versioning.md).
+**Version:** single source is root file `VERSION`. Gradle reads it; run `./scripts/sync-version.sh` to propagate to npm/pip/Go/Swift/Helm/Java. See [docs/guides/versioning.md](docs/guides/versioning.md).
 
 ### Requirements
 - JDK 21+
@@ -243,25 +243,25 @@ repositories {
 
 dependencies {
     // Ktor plugin (server)
-    implementation("com.flagent:ktor-flagent:0.1.0")
+    implementation("com.flagent:ktor-flagent:0.1.4")
     // Kotlin client
-    implementation("com.flagent:kotlin-client:0.1.0")
+    implementation("com.flagent:kotlin-client:0.1.4")
     // Kotlin Enhanced (offline eval, SSE)
-    implementation("com.flagent:kotlin-enhanced:0.1.0")
+    implementation("com.flagent:kotlin-enhanced:0.1.4")
     // Kotlin Debug UI
-    implementation("com.flagent:kotlin-debug-ui:0.1.0")
+    implementation("com.flagent:kotlin-debug-ui:0.1.4")
     // Shared (KMP; pulled transitively by ktor-flagent, or use for multi-platform)
-    implementation("com.flagent:shared:0.1.0")
+    implementation("com.flagent:shared:0.1.4")
 }
 ```
 
-Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace `0.1.0` with the [release version](https://github.com/MaxLuxs/Flagent/releases).
+Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases) (current: 0.1.4).
 
 ### Server-Side Integration
 
 - **Ktor Plugin** - [ktor-flagent](ktor-flagent) - First-class Ktor integration with middleware support
 
-See [Getting Started](https://maxluxs.github.io/Flagent/getting-started.md) and [API Reference](https://maxluxs.github.io/Flagent) for usage guides.
+See [Getting Started](https://maxluxs.github.io/Flagent/guides/getting-started.md) and [API Reference](https://maxluxs.github.io/Flagent) for usage guides.
 
 ## 🛠️ Technology Stack
 
@@ -298,7 +298,7 @@ cd Flagent
 ./gradlew :backend:run
 ```
 
-See [Deployment Guide](https://maxluxs.github.io/Flagent/deployment.md) for production setup.
+See [Deployment Guide](https://maxluxs.github.io/Flagent/guides/deployment.md) for production setup.
 
 ## 🤝 Contributing
 
@@ -308,7 +308,7 @@ We welcome contributions from the community! Flagent is built with love by devel
 
 1. **Fork the repository**
 2. **Create your feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes** - Follow our [code style guidelines](https://maxluxs.github.io/Flagent/contributing.md)
+3. **Make your changes** - Follow our [code style guidelines](https://maxluxs.github.io/Flagent/guides/contributing.md)
 4. **Add tests** - Ensure your changes are well-tested
 5. **Commit your changes** (`git commit -m 'Add some amazing feature'`)
 6. **Push to the branch** (`git push origin feature/amazing-feature`)
@@ -317,14 +317,14 @@ We welcome contributions from the community! Flagent is built with love by devel
 ### Areas to Contribute
 
 - 🐛 **Bug Fixes** - Help us squash bugs
-- ✨ **New Features** - Implement features from our [roadmap](docs/roadmap.md)
+- ✨ **New Features** - Implement features from our [roadmap](docs/guides/roadmap.md)
 - 📚 **Documentation** - Improve guides and examples
 - 🌍 **SDKs** - Add support for new languages
 - 🎨 **UI/UX** - Enhance the admin dashboard
 - ⚡ **Performance** - Optimize evaluation speed
 - 🧪 **Tests** - Increase test coverage
 
-For more details, see our [Contributing Guide](https://maxluxs.github.io/Flagent/contributing.md) and [Development Setup](README.md#development).
+For more details, see our [Contributing Guide](https://maxluxs.github.io/Flagent/guides/contributing.md) and [Development Setup](README.md#development).
 
 ## 📄 License
 
@@ -381,7 +381,7 @@ Flagent is evolving into a production-ready feature flag and experimentation pla
 
 **Target**: 5000+ stars, $50k MRR, 50+ enterprise customers
 
-See our [detailed roadmap](docs/roadmap.md) for more information.
+See our [detailed roadmap](docs/guides/roadmap.md) for more information.
 
 ## 🌟 Community & Support
 
@@ -390,9 +390,9 @@ Join our growing community of developers building better feature flag systems!
 ### Get Help
 
 - 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Ask questions, report bugs, or request features
-- 📚 **[Documentation](https://maxluxs.github.io/Flagent/getting-started.md)** - Guides and API reference
+- 📚 **[Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md)** - Guides and API reference
 - 💻 **[Code Examples](samples)** - Real-world examples in Kotlin, Python, JavaScript, Swift, and Go
-- 🎯 **[Roadmap](docs/roadmap.md)** - Our journey to becoming the best open-source feature flag platform
+- 🎯 **[Roadmap](docs/guides/roadmap.md)** - Our journey to becoming the best open-source feature flag platform
 
 ### Stay Updated
 
@@ -443,7 +443,7 @@ Flagent is trusted by teams building high-performance Kotlin applications:
 
 ## 🔗 Links
 
-- 📖 **[Documentation](https://maxluxs.github.io/Flagent/getting-started.md)**
+- 📖 **[Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md)**
 - 📖 **[API Reference](https://maxluxs.github.io/Flagent)**
 - 🐳 **[Container image (GHCR)](https://github.com/MaxLuxs/Flagent/pkgs/container/flagent)**
 - 📦 **[Releases](https://github.com/MaxLuxs/Flagent/releases)**

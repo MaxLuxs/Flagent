@@ -78,16 +78,21 @@ export class FlagentAnalytics {
     window.addEventListener('popstate', logCurrentPage);
   }
 
+  private getSecureRandomString(): string {
+    const arr = new Uint8Array(12);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 11);
+  }
+
   private getOrCreateSessionId(): string {
+    const randomPart = this.getSecureRandomString();
+    const sid = 'sess_' + Date.now() + '_' + randomPart;
     if (typeof sessionStorage !== 'undefined') {
-      let sid = sessionStorage.getItem('flagent_session_id');
-      if (!sid) {
-        sid = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-        sessionStorage.setItem('flagent_session_id', sid);
-      }
-      return sid;
+      const existing = sessionStorage.getItem('flagent_session_id');
+      if (existing) return existing;
+      sessionStorage.setItem('flagent_session_id', sid);
     }
-    return 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    return sid;
   }
 
   private scheduleFlush(): void {

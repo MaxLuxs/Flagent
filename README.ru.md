@@ -56,7 +56,7 @@ docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 open http://localhost:18000
 ```
 
-Настройте admin auth через `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. См. [docs/configuration.md](docs/configuration.md).
+Настройте admin auth через `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. См. [docs/guides/configuration.md](docs/guides/configuration.md).
 
 ## ✨ Ключевые возможности
 
@@ -85,14 +85,14 @@ open http://localhost:18000
 
 ## 📖 Документация
 
-- 📖 **[Начало работы](https://maxluxs.github.io/Flagent/getting-started.ru.md)** - Быстрый старт и настройка
-- 📖 **[Совместимость API](https://maxluxs.github.io/Flagent/compatibility.md)** - Evaluation API, руководство по миграции
+- 📖 **[Начало работы](https://maxluxs.github.io/Flagent/guides/getting-started.ru.md)** - Быстрый старт и настройка
+- 📖 **[Совместимость API](https://maxluxs.github.io/Flagent/guides/compatibility.md)** - Evaluation API, руководство по миграции
 - 📖 **[API Reference](https://maxluxs.github.io/Flagent)** - Документация API
 - 📖 **[OpenAPI спецификация](https://maxluxs.github.io/Flagent/api/openapi.yaml)** - OpenAPI YAML
 - 📖 **[Архитектура](https://maxluxs.github.io/Flagent/architecture/backend.md)** - Дизайн системы
-- 📖 **[Конфигурация](https://maxluxs.github.io/Flagent/configuration.ru.md)** - Переменные окружения
-- 📖 **[Развертывание](https://maxluxs.github.io/Flagent/deployment.ru.md)** - Production развертывание
-- 📖 **[Сценарии использования](https://maxluxs.github.io/Flagent/use-cases.ru.md)** - Примеры
+- 📖 **[Конфигурация](https://maxluxs.github.io/Flagent/guides/configuration.ru.md)** - Переменные окружения
+- 📖 **[Развертывание](https://maxluxs.github.io/Flagent/guides/deployment.ru.md)** - Production развертывание
+- 📖 **[Сценарии использования](https://maxluxs.github.io/Flagent/guides/use-cases.ru.md)** - Примеры
 
 ## 🏗️ Структура проекта
 
@@ -102,10 +102,10 @@ flagent/
 ├── frontend/         # Compose for Web UI
 ├── sdk/              # Client SDKs (Kotlin, JS, Swift, Python, Go)
 ├── ktor-flagent/     # Ktor plugin
-└── docs/roadmap.md   # Roadmap разработки
+└── docs/guides/roadmap.md   # Roadmap разработки
 ```
 
-**Версия:** единственный источник — корневой файл `VERSION`. Gradle читает его; для npm/pip/Go/Swift/Helm/Java запустите `./scripts/sync-version.sh`. См. [docs/versioning.md](docs/versioning.md).
+**Версия:** единственный источник — корневой файл `VERSION`. Gradle читает его; для npm/pip/Go/Swift/Helm/Java запустите `./scripts/sync-version.sh`. См. [docs/guides/versioning.md](docs/guides/versioning.md).
 
 См. [README.md](README.md#development) для детальной структуры проекта и настройки разработки.
 
@@ -146,7 +146,7 @@ cd Flagent
 
 **Требуется Java 21.** При ошибке `UnsupportedClassVersionError` задайте `JAVA_HOME` на JDK 21 (например, `~/.gradle/jdks/eclipse_adoptium-21-*/jdk-*/Contents/Home` при auto-provisioning Gradle).
 
-См. [Руководство по развертыванию](https://maxluxs.github.io/Flagent/deployment.ru.md) для production настройки.
+См. [Руководство по развертыванию](https://maxluxs.github.io/Flagent/guides/deployment.ru.md) для production настройки.
 
 ## 🎯 SDK и интеграции
 
@@ -170,15 +170,15 @@ repositories {
 
 dependencies {
     // Ktor plugin (сервер)
-    implementation("com.flagent:ktor-flagent:0.1.0")
+    implementation("com.flagent:ktor-flagent:0.1.4")
     // Kotlin client
-    implementation("com.flagent:kotlin-client:0.1.0")
+    implementation("com.flagent:kotlin-client:0.1.4")
     // Kotlin Enhanced (offline eval, SSE)
-    implementation("com.flagent:kotlin-enhanced:0.1.0")
+    implementation("com.flagent:kotlin-enhanced:0.1.4")
     // Kotlin Debug UI
-    implementation("com.flagent:kotlin-debug-ui:0.1.0")
+    implementation("com.flagent:kotlin-debug-ui:0.1.4")
     // Shared (KMP; подтягивается ktor-flagent или для multiplatform)
-    implementation("com.flagent:shared:0.1.0")
+    implementation("com.flagent:shared:0.1.4")
 }
 ```
 
@@ -284,7 +284,7 @@ Flagent полностью локализован для СНГ рынка:
 
 ## 📊 Roadmap
 
-См. наш детальный [Roadmap](docs/roadmap.md) для полного видения проекта.
+См. наш детальный [Roadmap](docs/guides/roadmap.md) для полного видения проекта.
 
 ### Фаза 1: Foundation (Q1 2026)
 - ✅ Client-side evaluation (Go Enhanced, Kotlin Enhanced)
@@ -312,7 +312,7 @@ Flagent полностью локализован для СНГ рынка:
 ## 💬 Сообщество и поддержка
 
 - 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Вопросы, баги, запросы функций
-- 📚 **[Документация](https://maxluxs.github.io/Flagent/getting-started.ru.md)** - Руководства и API
+- 📚 **[Документация](https://maxluxs.github.io/Flagent/guides/getting-started.ru.md)** - Руководства и API
 - 💻 **[Примеры](samples)** - Примеры кода и туториалы
 - 📧 **Поддержка:** max.developer.luxs@gmail.com
 

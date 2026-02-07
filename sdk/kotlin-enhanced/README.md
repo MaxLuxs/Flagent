@@ -16,11 +16,11 @@ Enhanced Kotlin client library for Flagent API with caching, management, and con
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:flagent-kotlin-enhanced-client:0.1.0")
+    implementation("com.flagent:kotlin-enhanced:0.1.4")
 }
 ```
 
-**Note**: This library depends on the base Flagent Kotlin SDK (`com.flagent:flagent-kotlin-client`).
+**Note**: This library depends on the base Flagent Kotlin SDK (`com.flagent:kotlin-client`).
 
 ## Quick Start Guide
 
@@ -177,4 +177,4 @@ The Enhanced SDK provides:
 3. **Cache management**: Clear cache, evict expired entries
 4. **Better performance**: Reduced API calls through caching
 
-The base SDK (`com.flagent:flagent-kotlin-client`) provides low-level API access without caching.
+The base SDK (`com.flagent:kotlin-client`) provides low-level API access without caching.

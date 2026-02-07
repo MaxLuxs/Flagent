@@ -59,7 +59,7 @@ k6 run -e EVAL_VUS=2000 -e EVAL_DURATION=60s -e BASE_URL=http://localhost:18000 
 - p50 < 5ms, p95 < 50ms, p99 < 100ms
 - Error rate < 1%
 
-См. [docs/performance/benchmarks.md](../docs/performance/benchmarks.md) для деталей.
+См. [docs/performance/benchmarks.md](../../docs/performance/benchmarks.md) для деталей.
 
 ### 2. Metrics Load Test
 

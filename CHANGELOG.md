@@ -7,15 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+(No changes yet)
+
+## [0.1.4] - 2025-02-08
+
 ### Added
+- Core metrics: `evaluation_events` table, `CoreMetricsService`, `EvaluationEventRepository`, `GET /api/v1/metrics/overview` (OSS only when enterprise absent)
 - Enterprise contract: `EnterpriseConfigurator.configureRoutes(Routing, EnterpriseBackendContext)` for registering tenant/billing/SSO routes from enterprise module
 - `EnterpriseBackendContext`: `createTenantSchema`, `runTenantSchemaMigrations`, `dropTenantSchema` for tenant provisioning in enterprise
 - Backend `Database`: tenant schema helpers for enterprise (`createTenantSchema`, `runTenantSchemaMigrations`, `dropTenantSchema`)
 - When enterprise absent: core creates tenant/billing/SSO tables (self-hosted) and registers routes via `DefaultEnterpriseConfigurator.configureRoutes`
 - When enterprise present: `EnterprisePlugin.configure()` runs migrations; route registration in enterprise is prepared (repos/services/routes move is follow-up)
-
-### Changed
-- Application.kt: tenant/billing/SSO middleware and routes only when enterprise absent; always calls `enterpriseConfigurator.configureRoutes()`; enterprise tables created by enterprise when present, by core when absent
 
 ### Fixed
 - Fixed all broken links in README files
@@ -25,10 +27,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - SDK documentation is now included in repository for better discoverability
+- Application.kt: tenant/billing/SSO middleware and routes only when enterprise absent; always calls `enterpriseConfigurator.configureRoutes()`; enterprise tables created by enterprise when present, by core when absent
 
-## [0.1.0] - 18-01-2025
+## [0.1.0] - 2025-01-18
 
 ### Added
+- Initial release of Flagent
+- Feature flags management
+- A/B testing and experimentation
+- Dynamic configuration
+- REST API for flags management and evaluation
+- Kotlin/Ktor backend
+- Compose for Web frontend
+- Multiple database support (PostgreSQL, MySQL, SQLite)
+- Authentication middleware (JWT, Basic, Header, Cookie)
+- Data recording (Kafka, Kinesis, PubSub)
+- OpenAPI/Swagger documentation
+- Kotlin and JavaScript SDKs
 - Professional CI/CD infrastructure with GitHub Actions
 - Docker multi-stage build support
 - Comprehensive documentation with Docsify (English and Russian)
@@ -45,21 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Added CodeQL security scanning workflow
 
-## [0.1.0] - 2024-XX-XX
-
-### Added
-- Initial release of Flagent
-- Feature flags management
-- A/B testing and experimentation
-- Dynamic configuration
-- REST API for flags management and evaluation
-- Kotlin/Ktor backend
-- Compose for Web frontend
-- Multiple database support (PostgreSQL, MySQL, SQLite)
-- Authentication middleware (JWT, Basic, Header, Cookie)
-- Data recording (Kafka, Kinesis, PubSub)
-- OpenAPI/Swagger documentation
-- Kotlin and JavaScript SDKs
-
-[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/MaxLuxs/Flagent/compare/v0.1.0...v0.1.4
 [0.1.0]: https://github.com/MaxLuxs/Flagent/releases/tag/v0.1.0

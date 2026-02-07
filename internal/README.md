@@ -2,6 +2,8 @@
 
 This directory can hold the **flagent-enterprise** module (multi-tenancy, billing, SSO, smart rollout, anomaly detection).
 
+Internal documentation (build plans, migration plans) is in `internal/docs/`.
+
 ## Open-source build (no enterprise)
 
 - If `internal/flagent-enterprise` is absent or empty, the build uses only core. No submodule init needed.
