@@ -55,6 +55,7 @@ fun ImportPanel() {
                 fontSize(20.px)
                 fontWeight(600)
                 marginBottom(20.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text("Import Flags")
@@ -91,7 +92,7 @@ fun ImportPanel() {
                 gap(12.px)
             }
         }) {
-            Span({ style { fontWeight("500") } }) { Text("Format:") }
+            Span({ style { fontWeight("500"); color(FlagentTheme.text(themeMode)) } }) { Text("Format:") }
             Select(attrs = {
                 attr("value", format.value)
                 onChange { event ->

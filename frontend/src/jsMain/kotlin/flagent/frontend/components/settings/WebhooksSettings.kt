@@ -65,6 +65,7 @@ fun WebhooksSettings() {
                 fontSize(20.px)
                 fontWeight("600")
                 marginBottom(20.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text("Webhooks")
@@ -92,7 +93,13 @@ fun WebhooksSettings() {
             }
         }
         if (loading.value && webhooks.value.isEmpty()) {
-            Div({ style { padding(20.px); textAlign("center") } }) { Text("Loading...") }
+            Div({
+                style {
+                    padding(20.px)
+                    textAlign("center")
+                    color(FlagentTheme.textLight(themeMode))
+                }
+            }) { Text("Loading...") }
         } else {
             Button({
                 onClick { showAddDialog = true }
@@ -127,7 +134,7 @@ fun WebhooksSettings() {
                     Div({
                         style {
                             padding(12.px)
-                            backgroundColor(FlagentTheme.BackgroundAlt)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
                             borderRadius(6.px)
                             marginBottom(10.px)
                         }
@@ -283,22 +290,43 @@ private fun WebhookEditDialog(
             }
             onClick { it.stopPropagation() }
         }) {
-            H3({ style { marginBottom(16.px) } }) { Text(if (initialUrl.isEmpty()) "Add Webhook" else "Edit Webhook") }
+            H3({
+                style {
+                    marginBottom(16.px)
+                    color(FlagentTheme.text(themeMode))
+                }
+            }) { Text(if (initialUrl.isEmpty()) "Add Webhook" else "Edit Webhook") }
             Div({ style { marginBottom(12.px) } }) {
-                Span({ style { display(DisplayStyle.Block); marginBottom(4.px); fontWeight("500") } }) { Text("URL") }
+                Span({
+                    style {
+                        display(DisplayStyle.Block)
+                        marginBottom(4.px)
+                        fontWeight("500")
+                        color(FlagentTheme.text(themeMode))
+                    }
+                }) { Text("URL") }
                 Input(InputType.Text) {
                     value(url)
                     onInput { url = it.value }
                     style {
                         width(100.percent)
                         padding(10.px)
-                        border(1.px, LineStyle.Solid, FlagentTheme.Border)
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
                         borderRadius(6.px)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
                     }
                 }
             }
             Div({ style { marginBottom(12.px) } }) {
-                Span({ style { display(DisplayStyle.Block); marginBottom(4.px); fontWeight("500") } }) { Text("Events") }
+                Span({
+                    style {
+                        display(DisplayStyle.Block)
+                        marginBottom(4.px)
+                        fontWeight("500")
+                        color(FlagentTheme.text(themeMode))
+                    }
+                }) { Text("Events") }
                 Div({
                     style {
                         display(DisplayStyle.Flex)
@@ -326,15 +354,24 @@ private fun WebhookEditDialog(
                 }
             }
             Div({ style { marginBottom(12.px) } }) {
-                Span({ style { display(DisplayStyle.Block); marginBottom(4.px); fontWeight("500") } }) { Text("Secret (optional, for HMAC)") }
+                Span({
+                    style {
+                        display(DisplayStyle.Block)
+                        marginBottom(4.px)
+                        fontWeight("500")
+                        color(FlagentTheme.text(themeMode))
+                    }
+                }) { Text("Secret (optional, for HMAC)") }
                 Input(InputType.Password) {
                     value(secret)
                     onInput { secret = it.value }
                     style {
                         width(100.percent)
                         padding(10.px)
-                        border(1.px, LineStyle.Solid, FlagentTheme.Border)
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
                         borderRadius(6.px)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
                     }
                 }
             }
@@ -343,7 +380,7 @@ private fun WebhookEditDialog(
                     checked(enabled)
                     onInput { enabled = (it.target.asDynamic().checked as Boolean) }
                 }
-                Span { Text("Enabled") }
+                Span({ style { color(FlagentTheme.text(themeMode)) } }) { Text("Enabled") }
             }
             Div({
                 style {

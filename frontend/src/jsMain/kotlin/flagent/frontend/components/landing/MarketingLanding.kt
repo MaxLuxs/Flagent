@@ -42,16 +42,37 @@ fun MarketingLanding() {
                 property("z-index", "1")
             }
         }) {
-            HeroSection()
-            FeaturesSection()
-            UseCasesSection()
+            Div(attrs = {
+                id("hero-section")
+                classes("reveal-on-scroll")
+                attr("data-reveal", "true")
+            }) {
+                HeroSection()
+            }
+            Div(attrs = {
+                classes("reveal-on-scroll")
+                attr("data-reveal", "true")
+            }) {
+                FeaturesSection()
+            }
+            Div(attrs = {
+                classes("reveal-on-scroll")
+                attr("data-reveal", "true")
+            }) {
+                UseCasesSection()
+            }
         }
-        LandingFooter()
+        Div(attrs = {
+            classes("reveal-on-scroll")
+            attr("data-reveal", "true")
+        }) {
+            LandingFooter()
+        }
     }
 }
 
 @Composable
-private fun LandingBackgroundShapes() {
+fun LandingBackgroundShapes() {
     Div(attrs = {
         style {
             position(Position.Absolute)
@@ -109,6 +130,7 @@ private fun LandingBackgroundShapes() {
 @Composable
 private fun HeroSection() {
     Div(attrs = {
+        classes("hero-content")
         style {
             textAlign("center")
             padding(48.px, 0.px)
@@ -135,6 +157,7 @@ private fun HeroSection() {
             Icon("flag", size = 36.px, color = Color.white)
         }
         H1(attrs = {
+            classes("hero-title")
             style {
                 fontSize(52.px)
                 fontWeight(700)
@@ -143,8 +166,9 @@ private fun HeroSection() {
                 property("letter-spacing", "-0.03em")
                 property("line-height", "1.15")
             }
-        }) { Text("The First Kotlin-Native Feature Flag Platform") }
+        }) { Text("Ship Features Safely. Experiment Confidently.") }
         P(attrs = {
+            classes("hero-subtitle")
             style {
                 fontSize(20.px)
                 color(Color("rgba(255,255,255,0.7)"))
@@ -153,7 +177,7 @@ private fun HeroSection() {
                 property("margin", "0 auto 40px")
             }
         }) {
-            Text("Type-safe, coroutine-first feature flags and experimentation. Manage flags, run experiments, and roll out changes safely.")
+            Text("Feature flags, A/B testing, and gradual rollouts. Reduce release risk, run experiments, and roll back instantly — without redeploying.")
         }
         Div(attrs = {
             style {
@@ -187,12 +211,12 @@ private fun HeroSection() {
                     onClick { Router.navigateTo(Route.Login) }
                     onMouseEnter {
                         val el = it.target as org.w3c.dom.HTMLElement
-                        el.style.transform = "translateY(-3px)"
+                        el.style.transform = "translateY(-3px) scale(1.02)"
                         el.style.setProperty("box-shadow", "0 12px 32px rgba(14, 165, 233, 0.55)")
                     }
                     onMouseLeave {
                         val el = it.target as org.w3c.dom.HTMLElement
-                        el.style.transform = "translateY(0)"
+                        el.style.transform = "translateY(0) scale(1)"
                         el.style.setProperty("box-shadow", "0 8px 24px rgba(14, 165, 233, 0.45)")
                     }
                 }) {
@@ -218,11 +242,13 @@ private fun HeroSection() {
                     val el = it.target as org.w3c.dom.HTMLElement
                     el.style.backgroundColor = "rgba(14, 165, 233, 0.15)"
                     el.style.borderColor = FlagentTheme.PrimaryLight.toString()
+                    el.style.transform = "translateY(-2px) scale(1.02)"
                 }
                 onMouseLeave {
                     val el = it.target as org.w3c.dom.HTMLElement
                     el.style.backgroundColor = "transparent"
                     el.style.borderColor = "rgba(14, 165, 233, 0.6)"
+                    el.style.transform = "translateY(0) scale(1)"
                 }
             }) {
                 Text("Get Started")
@@ -255,6 +281,68 @@ private fun HeroSection() {
                 Text("GitHub")
             }
         }
+        P(attrs = {
+            style {
+                marginTop(32.px)
+                fontSize(14.px)
+                color(Color("rgba(255,255,255,0.55)"))
+            }
+        }) {
+            A(href = AppConfig.docsUrl, attrs = {
+                attr("target", "_blank")
+                attr("rel", "noopener noreferrer")
+                style {
+                    color(Color("rgba(255,255,255,0.7)"))
+                    textDecoration("none")
+                }
+            }) {
+                Text("Powered by open source Flagent")
+            }
+        }
+        Div(attrs = {
+            classes("hero-mockup")
+            style {
+                marginTop(48.px)
+                property("margin-left", "auto")
+                property("margin-right", "auto")
+                maxWidth(900.px)
+                property("border-radius", "12px")
+                property("border", "1px solid rgba(255,255,255,0.12)")
+                property("box-shadow", "0 24px 48px rgba(0,0,0,0.4)")
+                overflow("hidden")
+                property("animation", "fadeIn 0.8s ease-out 0.2s both")
+            }
+        }) {
+            Div(attrs = {
+                style {
+                    padding(12.px, 16.px)
+                    property("background", "rgba(0,0,0,0.3)")
+                    property("border-bottom", "1px solid rgba(255,255,255,0.08)")
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    gap(8.px)
+                }
+            }) {
+                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(Color("#EF4444")) } }) {}
+                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(Color("#F59E0B")) } }) {}
+                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(Color("#10B981")) } }) {}
+                Span(attrs = { style { marginLeft(16.px); fontSize(12.px); color(Color("rgba(255,255,255,0.5)")) } }) { Text("Flagent Dashboard") }
+            }
+            Div(attrs = {
+                style {
+                    padding(80.px)
+                    property("background", "linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.9) 100%)")
+                    display(DisplayStyle.Flex)
+                    flexDirection(FlexDirection.Column)
+                    alignItems(AlignItems.Center)
+                    justifyContent(JustifyContent.Center)
+                    gap(16.px)
+                }
+            }) {
+                Icon("dashboard", size = 64.px, color = FlagentTheme.PrimaryLight)
+                Span(attrs = { style { fontSize(14.px); color(Color("rgba(255,255,255,0.5)")) } }) { Text("Dashboard preview") }
+            }
+        }
     }
 }
 
@@ -275,22 +363,23 @@ private fun FeaturesSection() {
             }
         }) { Text("Why Flagent?") }
         Div(attrs = {
+            classes("features-grid")
             style {
                 display(DisplayStyle.Grid)
                 property("grid-template-columns", "repeat(auto-fit, minmax(250px, 1fr))")
                 gap(24.px)
             }
         }) {
-            MarketingFeatureCard("flag", "Feature Flags", "Toggle features on or off without redeploying. Target users by segments and attributes.") {
+            MarketingFeatureCard(1, "flag", "Feature Flags", "Toggle features on or off without redeploying. Target users by segments and attributes.") {
                 Router.navigateTo(Route.FlagsList)
             }
-            MarketingFeatureCard("science", "A/B Testing", "Run experiments with variants. Measure impact and roll out winners confidently.") {
+            MarketingFeatureCard(2, "science", "A/B Testing", "Run experiments with variants. Measure impact and roll out winners confidently.") {
                 Router.navigateTo(Route.Experiments)
             }
-            MarketingFeatureCard("trending_up", "Gradual Rollout", "Release features gradually. Percentage-based rollouts with instant rollback.") {
+            MarketingFeatureCard(3, "trending_up", "Gradual Rollout", "Release features gradually. Percentage-based rollouts with instant rollback.") {
                 Router.navigateTo(Route.Dashboard)
             }
-            MarketingFeatureCard("emergency", "Kill Switches", "Disable features instantly when issues arise. No deployment required.") {
+            MarketingFeatureCard(4, "emergency", "Kill Switches", "Disable features instantly when issues arise. No deployment required.") {
                 Router.navigateTo(Route.FlagsList)
             }
         }
@@ -299,6 +388,7 @@ private fun FeaturesSection() {
 
 @Composable
 private fun MarketingFeatureCard(
+    index: Int,
     icon: String,
     title: String,
     description: String,
@@ -314,21 +404,39 @@ private fun MarketingFeatureCard(
             property("box-shadow", "0 4px 24px rgba(0,0,0,0.15)")
             property("transition", "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)")
             cursor("pointer")
+            position(Position.Relative)
         }
         onClick { onClick() }
         onMouseEnter {
             val el = it.target as org.w3c.dom.HTMLElement
-            el.style.transform = "translateY(-6px)"
+            el.style.transform = "translateY(-6px) scale(1.02)"
             el.style.setProperty("box-shadow", "0 12px 40px rgba(0,0,0,0.25)")
             el.style.setProperty("border-color", "rgba(14, 165, 233, 0.3)")
         }
         onMouseLeave {
             val el = it.target as org.w3c.dom.HTMLElement
-            el.style.transform = "translateY(0)"
+            el.style.transform = "translateY(0) scale(1)"
             el.style.setProperty("box-shadow", "0 4px 24px rgba(0,0,0,0.15)")
             el.style.setProperty("border-color", "rgba(255, 255, 255, 0.08)")
         }
     }) {
+        Span(attrs = {
+            style {
+                position(Position.Absolute)
+                property("top", "16px")
+                property("right", "16px")
+                width(24.px)
+                height(24.px)
+                borderRadius(50.percent)
+                property("background", "rgba(14, 165, 233, 0.2)")
+                color(FlagentTheme.PrimaryLight)
+                fontSize(12.px)
+                fontWeight(600)
+                display(DisplayStyle.Flex)
+                alignItems(AlignItems.Center)
+                justifyContent(JustifyContent.Center)
+            }
+        }) { Text(index.toString()) }
         Div(attrs = {
             style {
                 width(52.px)

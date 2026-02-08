@@ -78,7 +78,13 @@ fun RolesSettings(themeMode: flagent.frontend.state.ThemeMode) {
             }
         }
         if (loading.value) {
-            Div({ style { padding(20.px); textAlign("center") } }) { Text("Loading...") }
+            Div({
+                style {
+                    padding(20.px)
+                    textAlign("center")
+                    color(FlagentTheme.textLight(themeMode))
+                }
+            }) { Text("Loading...") }
         } else {
             H3({
                 style {
@@ -95,19 +101,20 @@ fun RolesSettings(themeMode: flagent.frontend.state.ThemeMode) {
                 Div({
                     style {
                         padding(12.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         borderRadius(6.px)
                         marginBottom(8.px)
                     }
                 }) {
-                    Span({ style { fontWeight("500") } }) { Text("${role.name} (${role.key})") }
+                    Span({ style { fontWeight("500"); color(FlagentTheme.text(themeMode)) } }) { Text("${role.name} (${role.key})") }
                     if (role.isBuiltIn) {
                         Span({
                             style {
                                 marginLeft(8.px)
                                 fontSize(11.px)
                                 padding(2.px, 6.px)
-                                backgroundColor(Color("#E5E7EB"))
+                                backgroundColor(FlagentTheme.badgeBg(themeMode))
+                                color(FlagentTheme.badgeText(themeMode))
                                 borderRadius(4.px)
                             }
                         }) { Text("Built-in") }

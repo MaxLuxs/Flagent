@@ -226,6 +226,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                     fontSize(16.px)
                     fontWeight("600")
                     marginBottom(15.px)
+                    color(FlagentTheme.text(themeMode))
                 }
             }) {
                 Text(LocalizedStrings.enabledFeatures)
@@ -308,7 +309,7 @@ private fun FeatureBadge(themeMode: flagent.frontend.state.ThemeMode, name: Stri
             alignItems(AlignItems.Center)
             gap(6.px)
             padding(8.px, 12.px)
-            backgroundColor(if (enabled) Color("#D1FAE5") else FlagentTheme.inputBg(themeMode))
+            backgroundColor(if (enabled) FlagentTheme.successBg(themeMode) else FlagentTheme.inputBg(themeMode))
             borderRadius(6.px)
             fontSize(13.px)
         }
@@ -374,9 +375,9 @@ private fun SsoSettings(themeMode: flagent.frontend.state.ThemeMode) {
             Div({
                 style {
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                     marginBottom(15.px)
                 }
             }) {
@@ -396,7 +397,13 @@ private fun SsoSettings(themeMode: flagent.frontend.state.ThemeMode) {
             }
         }
         if (viewModel.isLoading && viewModel.providers.isEmpty()) {
-            Div({ style { padding(20.px); textAlign("center") } }) { Text(LocalizedStrings.loading) }
+            Div({
+                style {
+                    padding(20.px)
+                    textAlign("center")
+                    color(FlagentTheme.textLight(themeMode))
+                }
+            }) { Text(LocalizedStrings.loading) }
         } else if (viewModel.providers.isEmpty()) {
             Div({
                 style {
@@ -482,7 +489,13 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
             Text(LocalizedStrings.slackSubtitle)
         }
         if (slackLoading.value) {
-            Div({ style { padding(20.px); textAlign("center") } }) { Text(LocalizedStrings.loading) }
+            Div({
+                style {
+                    padding(20.px)
+                    textAlign("center")
+                    color(FlagentTheme.textLight(themeMode))
+                }
+            }) { Text(LocalizedStrings.loading) }
         } else         if (slackError.value != null) {
             Div({
                 style {
@@ -611,9 +624,9 @@ private fun BillingSettings(themeMode: flagent.frontend.state.ThemeMode) {
             Div({
                 style {
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                     marginBottom(15.px)
                 }
             }) {
@@ -633,7 +646,13 @@ private fun BillingSettings(themeMode: flagent.frontend.state.ThemeMode) {
             }
         }
         if (viewModel.isLoading && viewModel.subscription == null) {
-            Div({ style { padding(20.px); textAlign("center") } }) { Text(LocalizedStrings.loading) }
+            Div({
+                style {
+                    padding(20.px)
+                    textAlign("center")
+                    color(FlagentTheme.textLight(themeMode))
+                }
+            }) { Text(LocalizedStrings.loading) }
         } else if (viewModel.subscription != null) {
             val sub = viewModel.subscription!!
             Div({

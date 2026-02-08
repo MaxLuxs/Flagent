@@ -20,6 +20,8 @@ fun LoginForm(
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val passwordVisible = remember { mutableStateOf(false) }
+    val rememberMe = remember { mutableStateOf(false) }
 
     Div({
         classes("login-page")
@@ -225,8 +227,8 @@ fun LoginForm(
                 }
             }
 
-            // Password input
-            Div(attrs = { style { marginBottom(28.px) } }) {
+            // Password input with visibility toggle
+            Div(attrs = { style { marginBottom(20.px) } }) {
                 Label(attrs = {
                     style {
                         display(DisplayStyle.Block)
@@ -238,29 +240,90 @@ fun LoginForm(
                 }) {
                     Text("Password")
                 }
-                Input(InputType.Password) {
-                    value(password.value)
-                    onInput { e -> password.value = (e.target as? org.w3c.dom.HTMLInputElement)?.value ?: "" }
-                    attr("placeholder", "••••••••")
+                Div(attrs = {
                     style {
-                        width(100.percent)
-                        padding(14.px, 16.px)
-                        property("background", "rgba(255,255,255,0.06)")
-                        property("border", "1px solid rgba(255,255,255,0.12)")
-                        borderRadius(10.px)
-                        fontSize(15.px)
-                        color(Color.white)
-                        property("box-sizing", "border-box")
-                        property("transition", "all 0.2s ease")
+                        position(Position.Relative)
                     }
-                    onFocus {
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(14, 165, 233, 0.6)")
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "0 0 0 3px rgba(14, 165, 233, 0.2)")
+                }) {
+                    Input(if (passwordVisible.value) InputType.Text else InputType.Password) {
+                        value(password.value)
+                        onInput { e -> password.value = (e.target as? org.w3c.dom.HTMLInputElement)?.value ?: "" }
+                        attr("placeholder", "••••••••")
+                        style {
+                            width(100.percent)
+                            padding(14.px, 44.px, 14.px, 16.px)
+                            property("background", "rgba(255,255,255,0.06)")
+                            property("border", "1px solid rgba(255,255,255,0.12)")
+                            borderRadius(10.px)
+                            fontSize(15.px)
+                            color(Color.white)
+                            property("box-sizing", "border-box")
+                            property("transition", "all 0.2s ease")
+                        }
+                        onFocus {
+                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(14, 165, 233, 0.6)")
+                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "0 0 0 3px rgba(14, 165, 233, 0.2)")
+                        }
+                        onBlur {
+                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(255,255,255,0.12)")
+                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "none")
+                        }
                     }
-                    onBlur {
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(255,255,255,0.12)")
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "none")
+                    Button(attrs = {
+                        style {
+                            position(Position.Absolute)
+                            property("top", "50%")
+                            property("right", "12px")
+                            property("transform", "translateY(-50%)")
+                            padding(4.px)
+                            backgroundColor(Color.transparent)
+                            color(Color("rgba(255,255,255,0.6)"))
+                            border(0.px)
+                            cursor("pointer")
+                            display(DisplayStyle.Flex)
+                            alignItems(AlignItems.Center)
+                            justifyContent(JustifyContent.Center)
+                        }
+                        onClick { passwordVisible.value = !passwordVisible.value }
+                        onMouseEnter {
+                            (it.target as org.w3c.dom.HTMLElement).style.color = "white"
+                        }
+                        onMouseLeave {
+                            (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                        }
+                    }) {
+                        Icon(if (passwordVisible.value) "visibility_off" else "visibility", size = 20.px, color = Color("rgba(255,255,255,0.6)"))
                     }
+                }
+            }
+
+            // Remember me
+            Div(attrs = {
+                style {
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    marginBottom(28.px)
+                    gap(8.px)
+                }
+            }) {
+                Input(InputType.Checkbox) {
+                    checked(rememberMe.value)
+                    onInput { rememberMe.value = (it.target as? org.w3c.dom.HTMLInputElement)?.checked ?: false }
+                    style {
+                        width(18.px)
+                        height(18.px)
+                        cursor("pointer")
+                    }
+                }
+                Label(attrs = {
+                    style {
+                        fontSize(14.px)
+                        color(Color("rgba(255,255,255,0.7)"))
+                        cursor("pointer")
+                    }
+                    onClick { rememberMe.value = !rememberMe.value }
+                }) {
+                    Text("Remember me")
                 }
             }
 
