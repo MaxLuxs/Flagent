@@ -1,52 +1,54 @@
-# Trunk-Based Development с Flagent
+# Trunk-Based Development with Flagent
 
-Рекомендации по использованию Flagent в trunk-based workflow: feature ветки → feature flags.
+> [English](trunk-based-development.md) | [Русский](trunk-based-development.ru.md)
 
-## Конвенция: ветка → ключ флага
+Guidelines for using Flagent in trunk-based workflow: feature branches → feature flags.
 
-| Ветка | Ключ флага |
-|-------|------------|
+## Convention: branch → flag key
+
+| Branch | Flag key |
+|--------|----------|
 | `feature/new-payment` | `feature_new-payment` |
 | `fix/FLAG-123` | `fix_flag-123` |
 | `refs/heads/feature/foo` | `feature_foo` |
 
-Правила преобразования:
+Conversion rules:
 
-- Убирается префикс `refs/heads/`
-- `/` заменяется на `_`
-- Недопустимые символы заменяются на `_`
-- Регистр приводится к нижнему
+- Strip prefix `refs/heads/`
+- Replace `/` with `_`
+- Replace invalid chars with `_`
+- Lowercase
 
-## CLI: создание флага из ветки
+## CLI: create flag from branch
 
 ```bash
-# Из текущей git-ветки
+# From current git branch
 ./scripts/flagent-cli.sh flag create --from-branch --url https://flagent.example.com --api-key sk-xxx
 
-# Из указанной ветки
+# From specified branch
 ./scripts/flagent-cli.sh flag create --from-branch feature/new-payment --url https://flagent.example.com --api-key sk-xxx
 ```
 
 ## GitHub Webhook
 
-При открытии PR флаг создаётся автоматически. См. [GitOps guide](gitops.md#github-webhook).
+On PR open, flag is created automatically. See [GitOps guide](gitops.md#github-webhook).
 
 ## Workflow
 
-1. Создаёте ветку `feature/new-checkout`
-2. Пишете код, обёрнутый в `FeatureFlag(key="feature_new-checkout")`
-3. Открываете PR → webhook создаёт флаг `feature_new-checkout`
-4. В preview-среде передаёте `entityContext: { _branch: "feature/new-checkout" }` для таргетинга
-5. После merge — включаете флаг в production и удаляете dead code
+1. Create branch `feature/new-checkout`
+2. Write code wrapped in `FeatureFlag(key="feature_new-checkout")`
+3. Open PR → webhook creates flag `feature_new-checkout`
+4. In preview env pass `entityContext: { _branch: "feature/new-checkout" }` for targeting
+5. After merge — enable flag in production and remove dead code
 
-## Резервированные ключи entityContext
+## Reserved entityContext keys
 
-Для preview/PR окружений:
+For preview/PR environments:
 
-| Ключ | Описание |
-|------|----------|
-| `_preview_pr` | Номер PR (string) |
-| `_preview_env` | Имя окружения (например `pr-123`) |
-| `_branch` | Ветка |
+| Key | Description |
+|-----|-------------|
+| `_preview_pr` | PR number (string) |
+| `_preview_env` | Environment name (e.g. `pr-123`) |
+| `_branch` | Branch name |
 
-См. [Preview environments](preview-environments.md).
+See [Preview environments](preview-environments.md).

@@ -1,28 +1,30 @@
-# GitOps с Flagent
+# GitOps with Flagent
 
-Flagent поддерживает GitOps-подход к управлению feature flags: конфигурация хранится в репозитории, синхронизируется через CI/CD.
+> [English](gitops.md) | [Русский](gitops.ru.md)
 
-## Обзор
+Flagent supports GitOps: flag configuration lives in the repository and syncs via CI/CD.
 
-- **Export**: экспорт флагов в YAML/JSON
-- **Import**: импорт из файла в Flagent
-- **GitHub Action**: автоматический sync при push в `main`
-- **GitHub Webhook**: автоподсказка/создание флага при открытии PR
+## Overview
+
+- **Export**: export flags to YAML/JSON
+- **Import**: import from file into Flagent
+- **GitHub Action**: automatic sync on push to `main`
+- **GitHub Webhook**: auto-create flag when PR is opened
 
 ## Quick Start
 
-### 1. Настройка secrets в GitHub
+### 1. Configure GitHub secrets
 
-В настройках репозитория: **Settings → Secrets and variables → Actions** добавьте:
+In repository **Settings → Secrets and variables → Actions** add:
 
-| Secret | Описание |
-|--------|----------|
-| `FLAGENT_URL` | URL инстанса Flagent (например `https://flagent.example.com`) |
-| `FLAGENT_API_KEY` | API ключ для импорта (X-API-Key) |
+| Secret | Description |
+|--------|-------------|
+| `FLAGENT_URL` | Flagent instance URL (e.g. `https://flagent.example.com`) |
+| `FLAGENT_API_KEY` | API key for import (X-API-Key) |
 
-### 2. Добавьте workflow
+### 2. Add workflow
 
-Скопируйте [`.github/workflows/flagent-sync.yml`](../.github/workflows/flagent-sync.yml) в свой репозиторий или создайте:
+Copy [`.github/workflows/flagent-sync.yml`](../../.github/workflows/flagent-sync.yml) or create:
 
 ```yaml
 name: Flagent GitOps Sync
@@ -42,9 +44,9 @@ jobs:
           ./scripts/flagent-cli.sh import --url ${{ secrets.FLAGENT_URL }} --file flags.yaml --api-key ${{ secrets.FLAGENT_API_KEY }}
 ```
 
-### 3. Формат flags.yaml
+### 3. flags.yaml format
 
-Пример:
+Example:
 
 ```yaml
 flags:
@@ -56,7 +58,7 @@ flags:
     enabled: true
 ```
 
-Полный формат смотрите в [Import API](../api/endpoints.md#import).
+Full format: [Import API](../api/endpoints.md#import).
 
 ## CLI
 
@@ -75,22 +77,22 @@ flags:
 ### Create flag from branch (Trunk-based)
 
 ```bash
-# Создать флаг из текущей git-ветки
+# From current git branch
 ./scripts/flagent-cli.sh flag create --from-branch --url https://flagent.example.com --api-key sk-xxx
 
-# Создать флаг из указанной ветки
+# From specified branch
 ./scripts/flagent-cli.sh flag create --from-branch feature/new-payment --url https://flagent.example.com --api-key sk-xxx
 ```
 
-Имя ветки преобразуется в ключ флага: `feature/new-payment` → `feature_new-payment`.
+Branch name is converted to flag key: `feature/new-payment` → `feature_new-payment`.
 
 ---
 
-## GitHub Webhook (автосоздание флага при PR) {#github-webhook}
+## GitHub Webhook (auto-create flag on PR) {#github-webhook}
 
-При открытии Pull Request Flagent может автоматически создать флаг по имени ветки.
+When a Pull Request is opened, Flagent can create a flag from the branch name.
 
-### Настройка в GitHub
+### GitHub setup
 
 1. **Settings → Webhooks → Add webhook**
 
@@ -101,37 +103,37 @@ flags:
 
 3. **Content type**: `application/json`
 
-4. **Secret**: сгенерируйте случайную строку и укажите её. Эту же строку задайте в переменной окружения Flagent `FLAGENT_GITHUB_WEBHOOK_SECRET`.
+4. **Secret**: generate a random string and set it. Use the same value for Flagent env var `FLAGENT_GITHUB_WEBHOOK_SECRET`.
 
-5. **Which events**: выберите **Let me select individual events** → **Pull requests**
+5. **Which events**: **Let me select individual events** → **Pull requests**
 
-6. Сохраните webhook.
+6. Save webhook.
 
-### Настройка Flagent
+### Flagent configuration
 
-| Переменная | Описание | По умолчанию |
-|------------|----------|--------------|
-| `FLAGENT_GITHUB_WEBHOOK_SECRET` | Секрет для проверки подписи (обязательно для production) | — |
-| `FLAGENT_GITHUB_AUTO_CREATE_FLAG` | Включить автоподсказку/создание флага при PR | `true` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `FLAGENT_GITHUB_WEBHOOK_SECRET` | Secret for signature verification (required in production) | — |
+| `FLAGENT_GITHUB_AUTO_CREATE_FLAG` | Enable auto-create flag on PR | `true` |
 
-### Поведение
+### Behavior
 
-- При событии **pull_request** с `action: opened` или `synchronize`
-- Берётся ветка PR: `pull_request.head.ref` (например `feature/new-payment`)
-- Преобразуется в ключ: `feature_new-payment`
-- Если флаг с таким ключом **не существует** — создаётся с описанием `Auto from PR #<number> branch: <branch>`
-- Если флаг **уже существует** — возвращается 200 без изменений
+- On **pull_request** with `action: opened` or `synchronize`
+- Uses branch from `pull_request.head.ref` (e.g. `feature/new-payment`)
+- Converts to key: `feature_new-payment`
+- If flag **does not exist** — creates with description `Auto from PR #<number> branch: <branch>`
+- If flag **already exists** — returns 200 with no changes
 
-### Безопасность
+### Security
 
-- **Обязательно** задайте `FLAGENT_GITHUB_WEBHOOK_SECRET` в production
-- Webhook проверяет заголовок `X-Hub-Signature-256` (HMAC SHA256)
-- Без корректного секрета запросы отклоняются с 401
+- **Always** set `FLAGENT_GITHUB_WEBHOOK_SECRET` in production
+- Webhook validates `X-Hub-Signature-256` (HMAC SHA256)
+- Without valid secret, requests are rejected with 401
 
-### Тестирование webhook
+### Testing webhook
 
 ```bash
-# Проверка (без секрета, если FLAGENT_GITHUB_WEBHOOK_SECRET пуст)
+# Without secret (only if FLAGENT_GITHUB_WEBHOOK_SECRET is empty)
 curl -X POST https://your-flagent.com/api/v1/integrations/github/webhook \
   -H "Content-Type: application/json" \
   -d '{"action":"opened","pull_request":{"number":1,"head":{"ref":"feature/test"}}}'
@@ -139,7 +141,7 @@ curl -X POST https://your-flagent.com/api/v1/integrations/github/webhook \
 
 ---
 
-## См. также
+## See also
 
 - [Trunk-based development](trunk-based-development.md)
 - [Preview environments](preview-environments.md)

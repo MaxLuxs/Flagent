@@ -47,7 +47,6 @@ There are many ways to contribute to Flagent:
 4. **Build the project**
 
    ```bash
-   cd flagent
    ./gradlew build
    ```
 
@@ -61,7 +60,7 @@ There are many ways to contribute to Flagent:
 
 ## Code Style
 
-Flagent follows Kotlin Coding Conventions. See [.cursorrules](https://github.com/MaxLuxs/Flagent/blob/main/flagent/.cursorrules) for detailed guidelines.
+Flagent follows Kotlin Coding Conventions. See [.cursorrules](https://github.com/MaxLuxs/Flagent/blob/main/.cursorrules) for detailed guidelines.
 
 ### Key Points
 
@@ -184,7 +183,7 @@ Aim for at least **80% code coverage** for critical business logic.
 
 ### User Documentation
 
-- Update [docs/](https://github.com/MaxLuxs/Flagent/tree/main/flagent/docs) for user-facing documentation
+- Update [docs/](https://github.com/MaxLuxs/Flagent/tree/main/docs) for user-facing documentation
 - Add examples for new features
 - Update README if needed
 - Include code examples

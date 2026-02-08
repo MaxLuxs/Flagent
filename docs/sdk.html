@@ -23,7 +23,7 @@
                     <a href="quickstart.html" data-i18n="nav.quickstart">Quick Start</a>
                     <a href="sdk.html" data-i18n="nav.sdk">SDKs</a>
                     <a href="api-docs.html" data-i18n="nav.api">API</a>
-                    <a href="https://github.com/MaxLuxs/Flagent/blob/main/docs/README.md" target="_blank" rel="noopener" data-i18n="nav.docs">Docs</a>
+                    <a href="docs.html" data-i18n="nav.docs">Docs</a>
                     <div class="lang-switcher">
                         <button class="lang-btn active" data-lang="ru">RU</button>
                         <button class="lang-btn" data-lang="en">EN</button>
@@ -207,6 +207,93 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Python SDK -->
+                <div class="sdk-detail-card">
+                    <div class="sdk-header">
+                        <div class="sdk-icon">🐍</div>
+                        <div>
+                            <h3>Python SDK</h3>
+                            <span class="sdk-badge" data-i18n="sdk.status.available">Available</span>
+                        </div>
+                    </div>
+                    <p class="sdk-description">
+                        Python клиентская библиотека для серверных приложений
+                    </p>
+                    <div class="sdk-info">
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.installation">Installation:</strong>
+                            <code>pip install flagent-client</code>
+                        </div>
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.platforms">Platforms:</strong>
+                            <span>Python 3.8+</span>
+                        </div>
+                    </div>
+                    <div class="sdk-links">
+                        <a href="https://github.com/MaxLuxs/Flagent/tree/main/sdk/python" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                            Documentation
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Go SDK -->
+                <div class="sdk-detail-card">
+                    <div class="sdk-header">
+                        <div class="sdk-icon">🔷</div>
+                        <div>
+                            <h3>Go SDK</h3>
+                            <span class="sdk-badge" data-i18n="sdk.status.available">Available</span>
+                        </div>
+                    </div>
+                    <p class="sdk-description">
+                        Go клиентская библиотека для серверных приложений
+                    </p>
+                    <div class="sdk-info">
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.installation">Installation:</strong>
+                            <code>go get github.com/MaxLuxs/Flagent/sdk/go</code>
+                        </div>
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.platforms">Platforms:</strong>
+                            <span>Go 1.21+</span>
+                        </div>
+                    </div>
+                    <div class="sdk-links">
+                        <a href="https://github.com/MaxLuxs/Flagent/tree/main/sdk/go" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                            Documentation
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Java SDK -->
+                <div class="sdk-detail-card">
+                    <div class="sdk-header">
+                        <div class="sdk-icon">☕</div>
+                        <div>
+                            <h3>Java SDK</h3>
+                            <span class="sdk-badge" data-i18n="sdk.status.available">Available</span>
+                        </div>
+                    </div>
+                    <p class="sdk-description">
+                        Java клиентская библиотека, сгенерированная из OpenAPI
+                    </p>
+                    <div class="sdk-info">
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.installation">Installation:</strong>
+                            <span>Maven, Gradle</span>
+                        </div>
+                        <div class="info-item">
+                            <strong data-i18n="sdk.info.platforms">Platforms:</strong>
+                            <span>JVM, Android</span>
+                        </div>
+                    </div>
+                    <div class="sdk-links">
+                        <a href="https://github.com/MaxLuxs/Flagent/tree/main/sdk/java" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                            Documentation
+                        </a>
+                    </div>
+                </div>
             </div>
             <p class="sdk-note" style="margin-top: 1rem; font-size: 0.9rem;">
                 <strong>React Native:</strong> Используйте <a href="https://github.com/MaxLuxs/Flagent/blob/main/sdk/REACT_NATIVE.md">JavaScript SDK</a> — <code>@flagent/client</code> + <code>@flagent/enhanced-client</code>
@@ -277,6 +364,15 @@
                         Улучшенная версия Dart SDK с кэшированием и удобным API (в разработке)
                     </p>
                     <a href="https://github.com/MaxLuxs/Flagent/tree/main/sdk/flutter-enhanced" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
+                        Documentation
+                    </a>
+                </div>
+                <div class="sdk-detail-card">
+                    <h3>Go Enhanced</h3>
+                    <p>
+                        Улучшенная версия Go SDK с кэшированием, offline режимом и SSE real-time updates
+                    </p>
+                    <a href="https://github.com/MaxLuxs/Flagent/tree/main/sdk/go-enhanced" target="_blank" rel="noopener" class="btn-secondary" data-i18n="sdk.link.docs">
                         Documentation
                     </a>
                 </div>
@@ -371,7 +467,7 @@
                 <div class="footer-section">
                     <h4 class="footer-title" data-i18n="footer.product">Продукт</h4>
                     <ul class="footer-links">
-                        <li><a href="https://github.com/MaxLuxs/Flagent/blob/main/docs/README.md" target="_blank" rel="noopener" data-i18n="footer.docs">Документация</a></li>
+                        <li><a href="docs.html" data-i18n="footer.docs">Документация</a></li>
                         <li><a href="index.html" data-i18n="footer.home">Главная</a></li>
                         <li><a href="quickstart.html" data-i18n="footer.quickstart">Quick Start</a></li>
                         <li><a href="sdk.html" data-i18n="footer.sdk">SDKs</a></li>

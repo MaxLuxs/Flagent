@@ -10,14 +10,14 @@ Feature flags, A/B testing, dynamic configuration. Documentation index.
 |------------|-------|
 | **Run Flagent in 5 min** | [Quick Start](quickstart.html) |
 | **See all SDKs** | [SDKs Overview](sdk.html) |
-| **Try the API** | [API Docs (Swagger)](api-docs.html) |
+| **Try the API** | [API Reference](api-docs.html) |
 | **Read step-by-step** | [Getting Started](guides/getting-started.md) |
 
 ---
 
 ## Flagent Cloud — Coming Soon
 
-Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags and A/B testing as a service. [Home](index.html)
+Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags and A/B testing as a service. [Home](/)
 
 ---
 
@@ -32,6 +32,13 @@ Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature
 | Compatibility | [Guide](guides/compatibility.md) | — |
 | FAQ | [Guide](guides/faq.md) | — |
 | Use Cases | [Guide](guides/use-cases.md) | [Русский](guides/use-cases.ru.md) |
+| GitOps | [Guide](guides/gitops.md) | [Русский](guides/gitops.ru.md) |
+| Preview Environments | [Guide](guides/preview-environments.md) | [Русский](guides/preview-environments.ru.md) |
+| Trunk-Based Development | [Guide](guides/trunk-based-development.md) | [Русский](guides/trunk-based-development.ru.md) |
+| Build-Time Verification | [Guide](guides/build-time-verification.md) | [Русский](guides/build-time-verification.ru.md) |
+| Declarative UI | [Guide](guides/declarative-ui.md) | — |
+| VS Code Extension | [Guide](guides/vscode-extension.md) | [Русский](guides/vscode-extension.ru.md) |
+| Publishing | [Guide](guides/publishing.md) | [Русский](guides/publishing.ru.md) |
 | Roadmap | [Guide](guides/roadmap.md) | — |
 | Contributing | [Guide](guides/contributing.md) | — |
 
