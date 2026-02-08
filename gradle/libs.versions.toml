@@ -17,6 +17,9 @@ kotlinx-coroutines = "1.10.2"
 compose = "1.10.0"
 compose-bom = "2026.01.00"
 
+# Database Migrations
+flyway = "10.22.0"
+
 # Database Drivers
 postgresql = "42.7.9"
 mysql = "9.5.0"
@@ -48,6 +51,9 @@ stripe = "31.2.0"
 
 # Firebase / Google
 google-auth = "1.28.0"
+
+# MCP (Model Context Protocol)
+mcp = "0.8.3"
 
 # Utilities
 commons-lang3 = "3.20.0"
@@ -135,6 +141,10 @@ compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 
+# Database Migrations
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+
 # Database Drivers
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
@@ -164,6 +174,9 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 # Billing
 stripe-java = { module = "com.stripe:stripe-java", version.ref = "stripe" }
+
+# MCP (Model Context Protocol)
+kotlin-sdk-server = { module = "io.modelcontextprotocol:kotlin-sdk-server", version.ref = "mcp" }
 
 # Firebase / Google Auth
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "google-auth" }
