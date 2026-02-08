@@ -53,7 +53,7 @@ tasks.register("run") {
 // Copy production index (loads only frontend.js; dev index loads kotlin/ modules, SPA fallback returns HTML for missing .js)
 tasks.named("jsBrowserProductionWebpack").configure {
     doLast {
-        val outDir = file("$buildDir/kotlin-webpack/js/productionExecutable")
+        val outDir = layout.buildDirectory.dir("kotlin-webpack/js/productionExecutable").get().asFile
         if (outDir.exists()) {
             val indexProd = file("$projectDir/src/jsMain/resources/index.production.html")
             if (indexProd.exists()) {
@@ -70,7 +70,7 @@ tasks.named<Sync>("jsBrowserDistribution").configure {
 // Development bundle works (production has CoroutineContext.Element.minusKey "this" undefined bug). Copy index for backend serving.
 tasks.named("jsBrowserDevelopmentWebpack").configure {
     doLast {
-        val outDir = file("$buildDir/kotlin-webpack/js/developmentExecutable")
+        val outDir = layout.buildDirectory.dir("kotlin-webpack/js/developmentExecutable").get().asFile
         if (outDir.exists()) {
             val indexProd = file("$projectDir/src/jsMain/resources/index.production.html")
             if (indexProd.exists()) {
