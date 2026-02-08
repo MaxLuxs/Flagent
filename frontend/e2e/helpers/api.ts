@@ -318,7 +318,8 @@ export async function seedAnalyticsData(
       flags.push({ id, key: body.key || key, expectedEvals: evalCounts[i] });
     }
 
-    await new Promise((r) => setTimeout(r, 1500));
+    // Wait for EvalCache to pick up new flags (CI: 100ms refresh; local: 3s default)
+    await new Promise((r) => setTimeout(r, 3500));
 
     let total = 0;
     for (const f of flags) {
