@@ -36,7 +36,7 @@ fun createFlagentMcpServer(
     val server = Server(
         serverInfo = Implementation(
             name = "flagent",
-            version = "0.1.5"
+            version = "0.1.6"
         ),
         options = ServerOptions(
             capabilities = ServerCapabilities(

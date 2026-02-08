@@ -79,10 +79,10 @@ open http://localhost:18000
    ./gradlew :backend:shadowJar
    ```
 
-   Создаётся `backend/build/libs/backend-<version>-all.jar` (например `backend-0.1.5-all.jar`). Запуск:
+   Создаётся `backend/build/libs/backend-<version>-all.jar` (например `backend-0.1.6-all.jar`). Запуск:
 
    ```bash
-   java -jar backend/build/libs/backend-0.1.5-all.jar
+   java -jar backend/build/libs/backend-0.1.6-all.jar
    ```
 
    Замените `0.1.4` на версию из корневого файла `VERSION`.
@@ -101,7 +101,7 @@ export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flag
 export FLAGENT_LOGRUS_LEVEL=info
 export FLAGENT_LOGRUS_FORMAT=json
 
-java -jar backend/build/libs/backend-0.1.5-all.jar
+java -jar backend/build/libs/backend-0.1.6-all.jar
 ```
 
 ## Production настройка

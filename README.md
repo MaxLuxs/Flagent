@@ -258,19 +258,19 @@ repositories {
 
 dependencies {
     // Ktor plugin (server)
-    implementation("com.flagent:ktor-flagent:0.1.5")
+    implementation("com.flagent:ktor-flagent:0.1.6")
     // Kotlin client
-    implementation("com.flagent:kotlin-client:0.1.5")
+    implementation("com.flagent:kotlin-client:0.1.6")
     // Kotlin Enhanced (offline eval, SSE)
-    implementation("com.flagent:kotlin-enhanced:0.1.5")
+    implementation("com.flagent:kotlin-enhanced:0.1.6")
     // Kotlin Debug UI
-    implementation("com.flagent:kotlin-debug-ui:0.1.5")
+    implementation("com.flagent:kotlin-debug-ui:0.1.6")
     // Shared (KMP; pulled transitively by ktor-flagent, or use for multi-platform)
-    implementation("com.flagent:shared:0.1.5")
+    implementation("com.flagent:shared:0.1.6")
 }
 ```
 
-Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases) (current: 0.1.5).
+Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases) (current: 0.1.6).
 
 ### Server-Side Integration
 

@@ -170,15 +170,15 @@ repositories {
 
 dependencies {
     // Ktor plugin (сервер)
-    implementation("com.flagent:ktor-flagent:0.1.5")
+    implementation("com.flagent:ktor-flagent:0.1.6")
     // Kotlin client
-    implementation("com.flagent:kotlin-client:0.1.5")
+    implementation("com.flagent:kotlin-client:0.1.6")
     // Kotlin Enhanced (offline eval, SSE)
-    implementation("com.flagent:kotlin-enhanced:0.1.5")
+    implementation("com.flagent:kotlin-enhanced:0.1.6")
     // Kotlin Debug UI
-    implementation("com.flagent:kotlin-debug-ui:0.1.5")
+    implementation("com.flagent:kotlin-debug-ui:0.1.6")
     // Shared (KMP; подтягивается ktor-flagent или для multiplatform)
-    implementation("com.flagent:shared:0.1.5")
+    implementation("com.flagent:shared:0.1.6")
 }
 ```
 

@@ -72,8 +72,8 @@ For production, use published packages:
 
 ```yaml
 dependencies:
-  flagent_client: ^0.1.5
-  flagent_enhanced: ^0.1.5
+  flagent_client: ^0.1.6
+  flagent_enhanced: ^0.1.6
 ```
 
 ## License

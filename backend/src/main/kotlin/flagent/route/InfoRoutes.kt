@@ -15,7 +15,7 @@ import io.ktor.server.routing.*
 fun Routing.configureInfoRoutes() {
     route(ApiConstants.API_BASE_PATH) {
         get("/info") {
-            val version = System.getProperty("flagent.version") ?: "0.1.5"
+            val version = System.getProperty("flagent.version") ?: "0.1.6"
             val buildTime = System.getProperty("flagent.buildTime")
             val gitCommit = System.getProperty("flagent.gitCommit")
             call.respond(

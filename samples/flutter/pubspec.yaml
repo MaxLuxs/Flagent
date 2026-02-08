@@ -1,6 +1,6 @@
 name: flagent_flutter_sample
 description: Flagent Flutter/Dart SDK sample application
-version: 0.1.5
+version: 0.1.6
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

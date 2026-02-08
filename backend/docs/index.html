@@ -670,7 +670,7 @@
   /*!
    * json-schema-view-js
    * https://github.com/mohsen1/json-schema-view-js#readme
-   * Version: 0.1.5 - 2015-11-12T17:19:27.615Z
+   * Version: 0.4.1 - 2015-11-12T17:19:27.615Z
    * License: MIT
    */.json-schema-view .toggle-handle:after,.json-schema-view.json-schema-view-dark .toggle-handle:after,json-schema-view .toggle-handle:after,json-schema-view[json-schema-view-dark] .toggle-handle:after{content:"\25BC"}.json-schema-view .title,.json-schema-view.json-schema-view-dark .title,json-schema-view .title,json-schema-view[json-schema-view-dark] .title{font-weight:700;cursor:pointer}.json-schema-view,json-schema-view{font-family:monospace;font-size:0;display:table-cell}.json-schema-view>*,json-schema-view>*{font-size:14px}.json-schema-view .toggle-handle,json-schema-view .toggle-handle{cursor:pointer;margin:auto .3em;font-size:10px;display:inline-block;transform-origin:50% 40%;transition:transform 150ms ease-in}.json-schema-view .toggle-handle,.json-schema-view .toggle-handle:hover,json-schema-view .toggle-handle,json-schema-view .toggle-handle:hover{text-decoration:none;color:#333}.json-schema-view .description,json-schema-view .description{color:gray;font-style:italic}
      .pattern {
@@ -945,8 +945,8 @@
       "type" : "string",
       "description" : "Determine how flagTags is used to filter flags to be evaluated. OR extends the evaluation to those which contains at least one of the provided flagTags or AND limit the evaluation to those which contains all the flagTags.",
       "nullable" : true,
-      "enum" : [ "ANY", "ALL" ],
-      "default" : "ANY"
+      "default" : "ANY",
+      "enum" : [ "ANY", "ALL" ]
     }
   },
   "example" : {
@@ -1095,8 +1095,8 @@
       "type" : "string",
       "description" : "Determine how flagTags is used to filter flags to be evaluated.",
       "nullable" : true,
-      "enum" : [ "ANY", "ALL" ],
-      "default" : "ANY"
+      "default" : "ANY",
+      "enum" : [ "ANY", "ALL" ]
     }
   },
   "example" : {
@@ -1316,7 +1316,7 @@
     }
   },
   "example" : {
-    "version" : "0.1.5",
+    "version" : "0.1.6",
     "buildTime" : "2024-01-01T00:00:00Z",
     "gitCommit" : "abc123"
   }
@@ -1718,7 +1718,7 @@
         <div id="header">
           <div id="api-_">
             <h2 id="welcome-to-apidoc">API and SDK Documentation</h2>
-              <div class="app-desc">Version: 0.1.5</div>
+              <div class="app-desc">Version: 0.1.6</div>
             <hr>
             <div><p>Flagent is a feature flagging, A/B testing and dynamic configuration microservice. The base path for all the APIs is &quot;/api/v1&quot;.</p>
 <h2>Authentication</h2>
