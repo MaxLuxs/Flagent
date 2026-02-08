@@ -84,7 +84,7 @@ for f in frontend/src/jsMain/kotlin/flagent/frontend/components/Navbar.kt fronte
 done
 
 # Go
-if [ -f sdk/go/client.go ]; then sed -i '' "s/defaultUserAgent   = \"flagent-go-client\/[^\"]*\"/defaultUserAgent   = \"flagent-go-client\/$VERSION\"/" sdk/go/client.go; fi
+if [ -f sdk/go/client.go ]; then sed -i '' "s/defaultUserAgent = \"flagent-go-client\/[^\"]*\"/defaultUserAgent = \"flagent-go-client\/$VERSION\"/" sdk/go/client.go; fi
 
 # Kotlin SDK fallback dependency versions (when not building from source)
 for f in sdk/kotlin-enhanced/build.gradle.kts sdk/kotlin-debug-ui/build.gradle.kts; do
@@ -116,8 +116,8 @@ for f in README.md README.ru.md docs/guides/getting-started.md docs/guides/getti
   fi
 done
 
-# SDK READMEs
-for f in sdk/kotlin/README.md sdk/kotlin-enhanced/README.md sdk/kotlin-debug-ui/README.md sdk/javascript/README.md sdk/javascript/README.ru.md sdk/swift/README.md sdk/swift-enhanced/README.md sdk/swift-debug-ui/README.md sdk/java/README.md sdk/spring-boot-starter/README.md sdk/ANDROID_IOS.md sdk/README.md ktor-flagent/README.md; do
+# SDK READMEs (including flagent-koin, dart, flutter-enhanced, samples)
+for f in sdk/kotlin/README.md sdk/kotlin-enhanced/README.md sdk/kotlin-debug-ui/README.md sdk/javascript/README.md sdk/javascript/README.ru.md sdk/swift/README.md sdk/swift-enhanced/README.md sdk/swift-debug-ui/README.md sdk/java/README.md sdk/spring-boot-starter/README.md sdk/flagent-koin/README.md sdk/dart/README.md sdk/flutter-enhanced/README.md sdk/go/api/README.md sdk/ANDROID_IOS.md sdk/README.md ktor-flagent/README.md samples/flutter/README.md; do
   if [ -f "$f" ]; then
     sed -i '' "s/\(com\.flagent:[a-z-]*:\)[0-9][0-9.]*/\1$VERSION/g" "$f" 2>/dev/null || true
     sed -i '' "s/<version>[0-9][0-9.]*<\/version>/<version>$VERSION<\/version>/" "$f" 2>/dev/null || true
@@ -125,8 +125,37 @@ for f in sdk/kotlin/README.md sdk/kotlin-enhanced/README.md sdk/kotlin-debug-ui/
     sed -i '' "s/@flagent\/client@[0-9][0-9.]*/@flagent\/client@$VERSION/g" "$f" 2>/dev/null || true
     sed -i '' "s/API version: [0-9][0-9.]*/API version: $VERSION/g" "$f" 2>/dev/null || true
     sed -i '' "s/API version [0-9][0-9.]*\.x/API version ${VERSION%.*}.x/g" "$f" 2>/dev/null || true
+    sed -i '' "s/Package version: [0-9][0-9.]*/Package version: $VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/flagent_client: [0-9][0-9.]*/flagent_client: $VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/flagent_client: \^[0-9][0-9.]*/flagent_client: ^$VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/flagent_enhanced: \^[0-9][0-9.]*/flagent_enhanced: ^$VERSION/g" "$f" 2>/dev/null || true
   fi
 done
+
+# Backend MCP plugin version
+if [ -f backend/src/main/kotlin/flagent/mcp/FlagentMcpPlugin.kt ]; then
+  sed -i '' "s/version = \"[0-9][0-9.]*\"/version = \"$VERSION\"/" backend/src/main/kotlin/flagent/mcp/FlagentMcpPlugin.kt
+fi
+
+# docs/index.html (Swagger UI version display)
+if [ -f docs/index.html ]; then
+  sed -i '' "s/\"version\" : \"[0-9][0-9.]*\"/\"version\" : \"$VERSION\"/" docs/index.html
+  sed -i '' "s/Version: [0-9][0-9.]*/Version: $VERSION/" docs/index.html
+fi
+
+# Samples
+if [ -f samples/react-native/package.json ]; then sed -i '' "s/\"version\": \"[0-9][0-9.]*\"/\"version\": \"$VERSION\"/" samples/react-native/package.json; fi
+
+# SDK generate.sh scripts (packageVersion/pubVersion for next codegen)
+if [ -f sdk/go/generate.sh ]; then sed -i '' "s/packageVersion=[0-9][0-9.]*/packageVersion=$VERSION/" sdk/go/generate.sh; fi
+if [ -f sdk/dart/generate.sh ]; then sed -i '' "s/pubVersion=[0-9][0-9.]*/pubVersion=$VERSION/" sdk/dart/generate.sh; fi
+if [ -f sdk/python/generate.sh ]; then sed -i '' "s/packageVersion=[0-9][0-9.]*/packageVersion=$VERSION/" sdk/python/generate.sh; fi
+
+# JS test expectation (HealthApi.test.ts)
+if [ -f sdk/javascript/__tests__/HealthApi.test.ts ]; then
+  sed -i '' "s/version: '[0-9][0-9.]*'/version: '$VERSION'/" sdk/javascript/__tests__/HealthApi.test.ts
+  sed -i '' "s/\.toBe('[0-9][0-9.]*')/\.toBe('$VERSION')/" sdk/javascript/__tests__/HealthApi.test.ts
+fi
 
 # docs/script.js (i18n strings with API version)
 if [ -f docs/script.js ]; then
