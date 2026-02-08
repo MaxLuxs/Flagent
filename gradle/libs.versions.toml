@@ -55,6 +55,9 @@ google-auth = "1.28.0"
 # MCP (Model Context Protocol)
 mcp = "0.8.3"
 
+# Koin (DI)
+koin = "4.0.0"
+
 # Utilities
 commons-lang3 = "3.20.0"
 jackson = "2.21.0"
@@ -185,6 +188,12 @@ google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-librar
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+# Koin
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 
 # Testing
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }

@@ -1,38 +1,50 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.api.tasks.compile.JavaCompile
 
 plugins {
     kotlin("jvm")
+    alias(libs.plugins.kotlin.plugin.compose)
     `maven-publish`
 }
 
 group = "com.flagent"
-// version inherited from root (VERSION file)
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
-    // Enhanced SDK - use local project if available, otherwise Maven
+    if (findProject(":kotlin-client") != null) {
+        implementation(project(":kotlin-client"))
+    } else {
+        implementation("com.flagent:kotlin-client:0.1.5")
+    }
     if (findProject(":kotlin-enhanced") != null) {
         implementation(project(":kotlin-enhanced"))
     } else {
         implementation("com.flagent:kotlin-enhanced:0.1.5")
     }
-    
-    // Compose for UI - using Compose Multiplatform
-    // Note: These dependencies will be used when Compose UI is fully implemented
-    // Currently commented out to avoid build errors until Compose Multiplatform is properly configured
-    // implementation("org.jetbrains.compose.ui:ui:1.6.1")
-    // implementation("org.jetbrains.compose.foundation:foundation:1.6.1")
-    // implementation("org.jetbrains.compose.material:material:1.6.1")
+    implementation(libs.kotlinx.coroutines.core)
+    val composeBom = platform(libs.compose.bom)
+    implementation(composeBom)
+    implementation(libs.compose.runtime)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.material3)
+
+    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(composeBom)
+    testImplementation("androidx.compose.ui:ui-test-junit4")
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        jvmTarget.set(JvmTarget.JVM_21)
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+        freeCompilerArgs.add("-opt-in=androidx.compose.ui.test.ExperimentalTestApi")
     }
 }
 

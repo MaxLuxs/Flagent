@@ -10,16 +10,29 @@ dependencies {
 }
 ```
 
-**Note**: This library depends on `kotlin-enhanced`.
+**Note**: This library depends on `kotlin-enhanced` and `androidx.compose`.
 
-## Usage
+## Declarative FeatureFlag
+
+```kotlin
+import com.flagent.debug.ui.FeatureFlag
+import com.flagent.debug.ui.FlagentProvider
+
+FlagentProvider(manager = manager) {
+    FeatureFlag(key = "new_checkout", fallback = { OldCheckout() }) {
+        NewCheckout()
+    }
+}
+```
+
+## Usage (Debug UI)
 
 ```kotlin
 import com.flagent.debug.ui.FlagentDebugUI
 import com.flagent.enhanced.manager.FlagentManager
 
 val manager = FlagentManager(evaluationApi, config)
-FlagentDebugUI.show(manager)
+FlagentDebugUI.DebugScreen(manager)
 ```
 
 ## Features

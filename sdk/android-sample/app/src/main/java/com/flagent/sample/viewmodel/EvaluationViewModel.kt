@@ -34,10 +34,7 @@ class EvaluationViewModel : ViewModel() {
         if (currentBaseUrl != baseUrl) {
             currentBaseUrl = baseUrl
             evaluationApi = AppModule.getEvaluationApi(baseUrl)
-            flagentManager = AppModule.getFlagentManager(
-                baseUrl,
-                com.flagent.enhanced.config.FlagentConfig()
-            )
+            flagentManager = AppModule.getFlagentManager(baseUrl, com.flagent.enhanced.config.FlagentConfig())
         }
     }
     

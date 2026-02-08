@@ -404,6 +404,7 @@ Join our growing community of developers building better feature flag systems!
 
 ### Get Help
 
+- 💝 **[Sponsor the project](https://github.com/sponsors/MaxLuxs)** - Support Flagent development
 - 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Ask questions, report bugs, or request features
 - 📚 **[Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md)** - Guides and API reference
 - 💻 **[Code Examples](samples)** - Real-world examples in Kotlin, Python, JavaScript, Swift, and Go

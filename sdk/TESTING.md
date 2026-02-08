@@ -1,5 +1,21 @@
 # Testing SDK Clients
 
+## Покрытие тестами
+
+| SDK | Тесты | Команда |
+|-----|-------|---------|
+| Kotlin (base) | Model + API | `./gradlew :kotlin-client:test` |
+| Kotlin Enhanced | Manager, Cache, Evaluator, Storage, Realtime | `./gradlew :kotlin-enhanced:jvmTest` |
+| Java | Model + API | `./gradlew :java-client:test` |
+| JavaScript Enhanced | FlagentManager, EvaluationCache | `cd sdk/javascript-enhanced && npm test` |
+| Go | client_test | `cd sdk/go && go test ./...` |
+| Go Enhanced | evaluator, manager | `cd sdk/go-enhanced && go test ./...` |
+| Dart (base) | Model + API (generated) | `cd sdk/dart && dart pub get && dart run build_runner build && dart test` |
+| Flutter Enhanced | Cache, Manager, buildEvaluationEntity | `cd sdk/flutter-enhanced && dart pub get && dart test` |
+| Swift Enhanced | FlagentEnhancedTests | `cd sdk/swift-enhanced && swift test` |
+| Python | client, models | `cd sdk/python && pip install -e ".[dev]" && pytest` |
+| JavaScript (base) | EvaluationApi, exports | `cd sdk/javascript && npm test` |
+
 ## Как проверить SDK
 
 ### 1. Проверка генерации
@@ -111,6 +127,25 @@ api.getHealth()
 Запустите:
 ```bash
 node test.js
+```
+
+### 4. Dart / Flutter Enhanced
+
+```bash
+cd sdk/dart
+dart pub get
+dart test
+
+cd ../flutter-enhanced
+dart pub get
+dart test
+```
+
+### 5. Go
+
+```bash
+cd sdk/go && go test ./...
+cd ../go-enhanced && go test ./...
 ```
 
 ## Интеграционное тестирование

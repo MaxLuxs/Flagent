@@ -2,6 +2,8 @@
 
 Go client library for Flagent feature flags and experimentation platform.
 
+The base API layer (`api/` package) is generated from the OpenAPI specification. The `Client` in this package is a thin wrapper providing a convenient API (`Evaluate`, `EvaluateBatch`, `GetFlag`, etc.) and error conversion.
+
 ## Features
 
 - ✅ **Idiomatic Go** - Clean, simple API following Go conventions
@@ -153,7 +155,7 @@ results, err := client.EvaluateBatch(ctx, &flagent.BatchEvaluationRequest{
 })
 
 for _, result := range results {
-    fmt.Printf("%s for %s: %s\n", *result.FlagKey, *result.EntityID, *result.VariantKey)
+    fmt.Printf("%s: %s\n", result.GetFlagKey(), result.GetVariantKey())
 }
 ```
 
@@ -196,7 +198,9 @@ if err != nil {
 }
 
 fmt.Printf("Flags: %d\n", len(snapshot.Flags))
-fmt.Printf("Export time: %d\n", snapshot.ExportAt)
+if snapshot.Revision != nil {
+    fmt.Printf("Revision: %s\n", *snapshot.Revision)
+}
 ```
 
 ### Health Check
@@ -207,7 +211,7 @@ if err != nil {
     log.Fatal(err)
 }
 
-fmt.Printf("Status: %s\n", health.Status)
+fmt.Printf("Status: %s\n", health.GetStatus())
 ```
 
 ## Advanced Usage

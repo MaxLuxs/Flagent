@@ -149,6 +149,10 @@ object AppConfig {
     val statsdAPMPort: String = System.getenv("FLAGENT_STATSD_APM_PORT") ?: "8126"
     val statsdAPMServiceName: String = System.getenv("FLAGENT_STATSD_APM_SERVICE_NAME") ?: "flagent"
 
+    // GitHub Integration Webhook
+    val githubWebhookSecret: String = System.getenv("FLAGENT_GITHUB_WEBHOOK_SECRET") ?: ""
+    val githubAutoCreateFlag: Boolean = System.getenv("FLAGENT_GITHUB_AUTO_CREATE_FLAG")?.toBoolean() ?: true
+
     // MCP (Model Context Protocol) - for AI assistants (Cursor, Claude, GigaChat)
     val mcpEnabled: Boolean = System.getenv("FLAGENT_MCP_ENABLED")?.toBoolean() ?: false
     val mcpPath: String = System.getenv("FLAGENT_MCP_PATH")?.takeIf { it.isNotBlank() } ?: "/mcp"
@@ -264,7 +268,12 @@ object AppConfig {
     val jwtAuthDebug: Boolean = System.getenv("FLAGENT_JWT_AUTH_DEBUG")?.toBoolean() ?: false
     val jwtAuthPrefixWhitelistPaths: List<String> =
         System.getenv("FLAGENT_JWT_AUTH_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
-            ?: listOf("${ApiConstants.API_BASE_PATH}/health", "${ApiConstants.API_BASE_PATH}/evaluation", "/static")
+            ?: listOf(
+                "${ApiConstants.API_BASE_PATH}/health",
+                "${ApiConstants.API_BASE_PATH}/evaluation",
+                "${ApiConstants.API_BASE_PATH}/integrations/github/webhook",
+                "/static"
+            )
     val jwtAuthExactWhitelistPaths: List<String> =
         System.getenv("FLAGENT_JWT_AUTH_EXACT_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
             ?: listOf("", "/")
@@ -298,7 +307,12 @@ object AppConfig {
     val basicAuthPassword: String = System.getenv("FLAGENT_BASIC_AUTH_PASSWORD") ?: ""
     val basicAuthPrefixWhitelistPaths: List<String> =
         System.getenv("FLAGENT_BASIC_AUTH_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
-            ?: listOf("${ApiConstants.API_BASE_PATH}/health", "${ApiConstants.API_BASE_PATH}/flags", "${ApiConstants.API_BASE_PATH}/evaluation")
+            ?: listOf(
+                "${ApiConstants.API_BASE_PATH}/health",
+                "${ApiConstants.API_BASE_PATH}/flags",
+                "${ApiConstants.API_BASE_PATH}/evaluation",
+                "${ApiConstants.API_BASE_PATH}/integrations/github/webhook"
+            )
     val basicAuthExactWhitelistPaths: List<String> =
         System.getenv("FLAGENT_BASIC_AUTH_EXACT_WHITELIST_PATHS")?.split(",")?.map { it.trim() }
             ?: emptyList()

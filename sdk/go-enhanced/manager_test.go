@@ -8,10 +8,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MaxLuxs/Flagent/sdk/go/api"
 	flagent "github.com/MaxLuxs/Flagent/sdk/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func makeEvalResult(flagKey, variantKey string) *api.EvalResult {
+	r := &api.EvalResult{}
+	r.SetFlagKey(flagKey)
+	r.VariantKey = *api.NewNullableString(&variantKey)
+	return r
+}
 
 func TestNewManager(t *testing.T) {
 	client, _ := flagent.NewClient("http://localhost:18000/api/v1")
@@ -40,11 +48,8 @@ func TestManagerEvaluate(t *testing.T) {
 		callCount := 0
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			callCount++
-			result := &flagent.EvaluationResult{
-				FlagKey:    flagent.StringPtr("test_flag"),
-				VariantKey: flagent.StringPtr("control"),
-			}
-			json.NewEncoder(w).Encode(result)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			json.NewEncoder(w).Encode(makeEvalResult("test_flag", "control"))
 		}))
 		defer server.Close()
 
@@ -73,11 +78,8 @@ func TestManagerEvaluate(t *testing.T) {
 		callCount := 0
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			callCount++
-			result := &flagent.EvaluationResult{
-				FlagKey:    flagent.StringPtr("test_flag"),
-				VariantKey: flagent.StringPtr("control"),
-			}
-			json.NewEncoder(w).Encode(result)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			json.NewEncoder(w).Encode(makeEvalResult("test_flag", "control"))
 		}))
 		defer server.Close()
 
@@ -106,11 +108,8 @@ func TestManagerEvaluate(t *testing.T) {
 
 func TestManagerIsEnabled(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		result := &flagent.EvaluationResult{
-			FlagKey:    flagent.StringPtr("test_flag"),
-			VariantKey: flagent.StringPtr("control"),
-		}
-		json.NewEncoder(w).Encode(result)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(makeEvalResult("test_flag", "control"))
 	}))
 	defer server.Close()
 
@@ -127,11 +126,8 @@ func TestManagerIsEnabled(t *testing.T) {
 
 func TestManagerGetVariant(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		result := &flagent.EvaluationResult{
-			FlagKey:    flagent.StringPtr("test_flag"),
-			VariantKey: flagent.StringPtr("treatment"),
-		}
-		json.NewEncoder(w).Encode(result)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(makeEvalResult("test_flag", "treatment"))
 	}))
 	defer server.Close()
 
@@ -148,11 +144,8 @@ func TestManagerGetVariant(t *testing.T) {
 
 func TestManagerClearCache(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		result := &flagent.EvaluationResult{
-			FlagKey:    flagent.StringPtr("test_flag"),
-			VariantKey: flagent.StringPtr("control"),
-		}
-		json.NewEncoder(w).Encode(result)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(makeEvalResult("test_flag", "control"))
 	}))
 	defer server.Close()
 
@@ -176,11 +169,8 @@ func TestManagerClearCache(t *testing.T) {
 
 func TestManagerEvictExpired(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		result := &flagent.EvaluationResult{
-			FlagKey:    flagent.StringPtr("test_flag"),
-			VariantKey: flagent.StringPtr("control"),
-		}
-		json.NewEncoder(w).Encode(result)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(makeEvalResult("test_flag", "control"))
 	}))
 	defer server.Close()
 

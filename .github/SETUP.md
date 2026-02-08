@@ -21,7 +21,7 @@
 3. Добавьте репозиторий `MaxLuxs/Flagent`
 4. Добавьте токен в **Settings** → **Secrets and variables** → **Actions** → **New repository secret**:
    - **Name**: `CODECOV_TOKEN`
-   - **Value**: `1da897aa-9578-4842-8424-00cff4bdbcce`
+   - **Value**: скопируйте токен из Codecov (Settings → General → Repository upload token)
 
 Токен уже настроен в workflow `ci.yml`, после добавления секрета покрытие кода будет автоматически загружаться в Codecov.
 

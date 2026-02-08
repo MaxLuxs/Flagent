@@ -1,0 +1,2651 @@
+openapi: 3.0.0
+info:
+  contact:
+    name: Flagent API Support
+  description: |
+    Flagent is a feature flagging, A/B testing and dynamic configuration microservice. The base path for all the APIs is "/api/v1".
+    ## Authentication
+    Flagent supports multiple authentication methods (configured via environment variables): - **JWT Authentication**: Bearer token authentication - **Basic Authentication**: Username/password authentication - **Header Authentication**: Custom header-based authentication - **Cookie Authentication**: Cookie-based authentication
+    Some endpoints (like `/health`, `/evaluation`) may be whitelisted and don't require authentication.
+    ## Error Responses
+    All error responses follow the same format: ```json {
+      "message": "Error description"
+    } ```
+    Common HTTP status codes: - `200`: Success - `400`: Bad Request - invalid input parameters - `404`: Not Found - resource doesn't exist - `429`: Too Many Requests - rate limit exceeded - `500`: Internal Server Error - server error
+    ## Rate Limiting
+    Rate limiting is configured via environment variables: - `FLAGENT_RATELIMITER_PERFLAG_PERSECOND_CONSOLE_LOGGING`: Maximum evaluations per flag per second (default: 100)
+    When rate limit is exceeded, the API returns `429 Too Many Requests` status code.
+    ## Best Practices
+    - Use batch evaluation (`/evaluation/batch`) when evaluating multiple flags for multiple entities - Use `enableDebug: true` only in development environments - Preload flags with `preload=true` parameter when fetching flags to reduce subsequent API calls - Use tags to organize and filter flags efficiently
+  license:
+    name: MIT
+  title: Flagent API
+  version: 0.1.5
+servers:
+- description: Local development server
+  url: http://localhost:18000/api/v1
+- description: Production server
+  url: https://api.flagent.example.com/api/v1
+tags:
+- description: Everything about the flag
+  name: flag
+- description: "Segment defines the audience of the flag, it's the user segmentation"
+  name: segment
+- description: Constraint is the unit of defining a small subset of users
+  name: constraint
+- description: Distribution is the percent distribution of variants within that segment
+  name: distribution
+- description: Variants are the possible outcomes of flag evaluation
+  name: variant
+- description: Tags for organizing flags
+  name: tag
+- description: Evaluation is the process of evaluating a flag given the entity context
+  name: evaluation
+- description: Check if Flagent is healthy
+  name: health
+- description: Export operations
+  name: export
+paths:
+  /health:
+    get:
+      description: Check if Flagent is healthy
+      operationId: getHealth
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+          description: Service is healthy
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Generic error response
+      summary: Health check
+      tags:
+      - health
+  /info:
+    get:
+      operationId: getInfo
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Info"
+          description: Version information
+      summary: Get version information
+      tags:
+      - health
+  /flags:
+    get:
+      operationId: findFlags
+      parameters:
+      - description: The numbers of flags to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          format: int64
+          type: integer
+        style: form
+      - description: "Return flags given the offset, it should usually set together\
+          \ with limit"
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          format: int64
+          type: integer
+        style: form
+      - description: Return flags having given enabled status
+        explode: true
+        in: query
+        name: enabled
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: Filter flags by exact description match
+        explode: true
+        in: query
+        name: description
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter flags by exact key match
+        explode: true
+        in: query
+        name: key
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter flags by partial description match
+        explode: true
+        in: query
+        name: descriptionLike
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Preload segments, variants, and tags"
+        explode: true
+        in: query
+        name: preload
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: Include deleted flags in results
+        explode: true
+        in: query
+        name: deleted
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: Filter flags by tags (comma-separated)
+        explode: true
+        in: query
+        name: tags
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                key: new_feature
+                description: New feature flag
+                enabled: true
+                dataRecordsEnabled: true
+                snapshotID: 1
+                segments: []
+                variants: []
+                tags: []
+              schema:
+                items:
+                  $ref: "#/components/schemas/Flag"
+                type: array
+          description: List of flags
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid parameters
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get all flags
+      tags:
+      - flag
+    post:
+      operationId: createFlag
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: New feature flag
+              key: new_feature
+            schema:
+              $ref: "#/components/schemas/CreateFlagRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: 1
+                key: new_feature
+                description: New feature flag
+                enabled: false
+                dataRecordsEnabled: false
+                snapshotID: 0
+                segments: []
+                variants: []
+                tags: []
+              schema:
+                $ref: "#/components/schemas/Flag"
+          description: Created flag
+        "400":
+          content:
+            application/json:
+              example:
+                message: Description is required
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Create a new flag
+      tags:
+      - flag
+  /flags/{flagId}:
+    delete:
+      operationId: deleteFlag
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Flag deleted
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Generic error response
+      summary: Delete flag
+      tags:
+      - flag
+    get:
+      operationId: getFlag
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flag"
+          description: Flag details
+        "400":
+          content:
+            application/json:
+              example:
+                message: Invalid flag ID
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID
+        "404":
+          content:
+            application/json:
+              example:
+                message: Flag not found
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get flag by ID
+      tags:
+      - flag
+    put:
+      operationId: putFlag
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutFlagRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flag"
+          description: Updated flag
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Generic error response
+      summary: Update flag
+      tags:
+      - flag
+  /flags/{flagId}/enabled:
+    put:
+      operationId: setFlagEnabled
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              enabled: true
+            schema:
+              $ref: "#/components/schemas/SetFlagEnabledRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flag"
+          description: Flag updated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID or request body
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Set flag enabled status
+      tags:
+      - flag
+  /flags/{flagId}/restore:
+    put:
+      operationId: restoreFlag
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flag"
+          description: Flag restored
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Restore deleted flag
+      tags:
+      - flag
+  /flags/{flagId}/snapshots:
+    get:
+      operationId: getFlagSnapshots
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: The number of snapshots to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          format: int64
+          type: integer
+        style: form
+      - description: Return snapshots given the offset
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          format: int64
+          type: integer
+        style: form
+      - description: Sort order
+        explode: true
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - ASC
+          - DESC
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                updatedBy: admin
+                updatedAt: 2024-01-01T00:00:00Z
+                flag:
+                  id: 1
+                  key: new_feature
+                  description: New feature flag
+                  enabled: true
+                  dataRecordsEnabled: true
+                  snapshotID: 1
+              schema:
+                items:
+                  $ref: "#/components/schemas/FlagSnapshot"
+                type: array
+          description: List of flag snapshots
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID or parameters
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get flag snapshots
+      tags:
+      - flag
+  /flags/entity_types:
+    get:
+      operationId: getFlagEntityTypes
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - user
+              - session
+              - device
+              schema:
+                items:
+                  type: string
+                type: array
+          description: List of entity types
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get all entity types
+      tags:
+      - flag
+  /flags/{flagId}/segments:
+    get:
+      operationId: findSegments
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                flagID: 1
+                description: US users
+                rank: 0
+                rolloutPercent: 100
+                constraints: []
+                distributions: []
+              schema:
+                items:
+                  $ref: "#/components/schemas/Segment"
+                type: array
+          description: Segments ordered by rank
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get segments for flag
+      tags:
+      - segment
+    post:
+      description: Create a new segment for the flag. Segments define the audience
+        and are evaluated in order by rank.
+      operationId: createSegment
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: US users
+              rolloutPercent: 100
+            schema:
+              $ref: "#/components/schemas/CreateSegmentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: 1
+                flagID: 1
+                description: US users
+                rank: 0
+                rolloutPercent: 100
+                constraints: []
+                distributions: []
+              schema:
+                $ref: "#/components/schemas/Segment"
+          description: Created segment
+        "400":
+          content:
+            application/json:
+              example:
+                message: Description is required
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Create segment
+      tags:
+      - segment
+  /flags/{flagId}/segments/reorder:
+    put:
+      operationId: putSegmentReorder
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              segmentIDs:
+              - 2
+              - 1
+              - 3
+            schema:
+              $ref: "#/components/schemas/PutSegmentReorderRequest"
+        required: true
+      responses:
+        "200":
+          description: Segments reordered successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID or segment IDs
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or segments not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Reorder segments
+      tags:
+      - segment
+  /flags/{flagId}/segments/{segmentId}:
+    delete:
+      description: Delete a segment. This will also delete all constraints and distributions
+        associated with the segment.
+      operationId: deleteSegment
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Segment deleted successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID or segment ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or segment not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Delete segment
+      tags:
+      - segment
+    put:
+      operationId: putSegment
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              description: US users - updated
+              rolloutPercent: 50
+            schema:
+              $ref: "#/components/schemas/PutSegmentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Segment"
+          description: Updated segment
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or segment not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Update segment
+      tags:
+      - segment
+  /flags/{flagId}/segments/{segmentId}/constraints:
+    get:
+      operationId: findConstraints
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                segmentID: 1
+                property: region
+                operator: EQ
+                value: US
+              schema:
+                items:
+                  $ref: "#/components/schemas/Constraint"
+                type: array
+          description: Constraints under the segment
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID or segment ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or segment not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get constraints for segment
+      tags:
+      - constraint
+    post:
+      description: Create a constraint for the segment. Constraints define conditions
+        that must be met for a segment to match.
+      operationId: createConstraint
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              property: region
+              operator: EQ
+              value: US
+            schema:
+              $ref: "#/components/schemas/CreateConstraintRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: 1
+                segmentID: 1
+                property: region
+                operator: EQ
+                value: US
+              schema:
+                $ref: "#/components/schemas/Constraint"
+          description: Created constraint
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or segment not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Create constraint
+      tags:
+      - constraint
+  /flags/{flagId}/segments/{segmentId}/constraints/{constraintId}:
+    delete:
+      description: Delete a constraint from the segment.
+      operationId: deleteConstraint
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the constraint
+        explode: false
+        in: path
+        name: constraintId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Constraint deleted successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid IDs
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: "Flag, segment or constraint not found"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Delete constraint
+      tags:
+      - constraint
+    put:
+      operationId: putConstraint
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the constraint
+        explode: false
+        in: path
+        name: constraintId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              property: region
+              operator: IN
+              value: "US,CA,MX"
+            schema:
+              $ref: "#/components/schemas/PutConstraintRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Constraint"
+          description: Updated constraint
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: "Flag, segment or constraint not found"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Update constraint
+      tags:
+      - constraint
+  /flags/{flagId}/segments/{segmentId}/distributions:
+    get:
+      operationId: findDistributions
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                segmentID: 1
+                variantID: 1
+                variantKey: control
+                percent: 50
+              - id: 2
+                segmentID: 1
+                variantID: 2
+                variantKey: treatment
+                percent: 50
+              schema:
+                items:
+                  $ref: "#/components/schemas/Distribution"
+                type: array
+          description: Distributions under the segment
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID or segment ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or segment not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get distributions for segment
+      tags:
+      - distribution
+    put:
+      description: Replace the distribution with the new setting. The sum of all percentages
+        must equal 100.
+      operationId: putDistributions
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the segment
+        explode: false
+        in: path
+        name: segmentId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              distributions:
+              - variantID: 1
+                variantKey: control
+                percent: 50
+              - variantID: 2
+                variantKey: treatment
+                percent: 50
+            schema:
+              $ref: "#/components/schemas/PutDistributionsRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                segmentID: 1
+                variantID: 1
+                variantKey: control
+                percent: 50
+              - id: 2
+                segmentID: 1
+                variantID: 2
+                variantKey: treatment
+                percent: 50
+              schema:
+                items:
+                  $ref: "#/components/schemas/Distribution"
+                type: array
+          description: Updated distributions
+        "400":
+          content:
+            application/json:
+              example:
+                message: Distribution percentages must sum to 100
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data or percentages don't sum to
+            100
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: "Flag, segment or variants not found"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Update distributions
+      tags:
+      - distribution
+  /flags/{flagId}/variants:
+    get:
+      operationId: findVariants
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                flagID: 1
+                key: control
+                attachment: null
+              - id: 2
+                flagID: 1
+                key: treatment
+                attachment:
+                  color: blue
+                  size: large
+              schema:
+                items:
+                  $ref: "#/components/schemas/Variant"
+                type: array
+          description: Variants ordered by variantID
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get variants for flag
+      tags:
+      - variant
+    post:
+      description: Create a variant for the flag. Variants are the possible outcomes
+        of flag evaluation.
+      operationId: createVariant
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              key: treatment
+              attachment:
+                color: blue
+                size: large
+            schema:
+              $ref: "#/components/schemas/CreateVariantRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: 2
+                flagID: 1
+                key: treatment
+                attachment:
+                  color: blue
+                  size: large
+              schema:
+                $ref: "#/components/schemas/Variant"
+          description: Created variant
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Create variant
+      tags:
+      - variant
+  /flags/{flagId}/variants/{variantId}:
+    delete:
+      description: Delete a variant. This will also remove it from all distributions.
+      operationId: deleteVariant
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the variant
+        explode: false
+        in: path
+        name: variantId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Variant deleted successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid IDs
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or variant not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Delete variant
+      tags:
+      - variant
+    put:
+      operationId: putVariant
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the variant
+        explode: false
+        in: path
+        name: variantId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              key: treatment_updated
+              attachment:
+                color: red
+                size: small
+            schema:
+              $ref: "#/components/schemas/PutVariantRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Variant"
+          description: Updated variant
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag or variant not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Update variant
+      tags:
+      - variant
+  /flags/{flagId}/tags:
+    get:
+      operationId: findFlagTags
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                value: production
+              - id: 2
+                value: feature
+              schema:
+                items:
+                  $ref: "#/components/schemas/Tag"
+                type: array
+          description: Tags for the flag
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid flag ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get tags for flag
+      tags:
+      - tag
+    post:
+      description: Create a tag and associate it with the flag. Tags are used for
+        organizing and filtering flags.
+      operationId: createFlagTag
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              value: production
+            schema:
+              $ref: "#/components/schemas/CreateTagRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: 1
+                value: production
+              schema:
+                $ref: "#/components/schemas/Tag"
+          description: Created tag
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid input data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Create tag and associate with flag
+      tags:
+      - tag
+  /flags/{flagId}/tags/{tagId}:
+    delete:
+      operationId: deleteFlagTag
+      parameters:
+      - description: Numeric ID of the flag
+        explode: false
+        in: path
+        name: flagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      - description: Numeric ID of the tag
+        explode: false
+        in: path
+        name: tagId
+        required: true
+        schema:
+          format: int64
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Tag removed
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Generic error response
+      summary: Remove tag from flag
+      tags:
+      - tag
+  /tags:
+    get:
+      operationId: findAllTags
+      parameters:
+      - description: The numbers of tags to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          format: int64
+          type: integer
+        style: form
+      - description: Return tags given the offset
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          format: int64
+          type: integer
+        style: form
+      - description: Return tags partially matching given value
+        explode: true
+        in: query
+        name: value_like
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: 1
+                value: production
+              - id: 2
+                value: feature
+              - id: 3
+                value: experiment
+              schema:
+                items:
+                  $ref: "#/components/schemas/Tag"
+                type: array
+          description: List of all tags
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid parameters
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Get all tags
+      tags:
+      - tag
+  /evaluation:
+    post:
+      operationId: postEvaluation
+      requestBody:
+        content:
+          application/json:
+            example:
+              flagID: 1
+              entityID: user123
+              entityType: user
+              entityContext:
+                region: US
+                tier: premium
+              enableDebug: false
+            schema:
+              $ref: "#/components/schemas/EvalContext"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                flagID: 1
+                flagKey: new_feature
+                flagSnapshotID: 1
+                flagTags: []
+                segmentID: 1
+                variantID: 1
+                variantKey: control
+                variantAttachment: {}
+                evalContext:
+                  entityID: user123
+                  entityType: user
+                  entityContext:
+                    region: US
+                    tier: premium
+                timestamp: 2024-01-01T00:00:00Z
+              schema:
+                $ref: "#/components/schemas/EvalResult"
+          description: Evaluation result
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid evaluation context
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Flag not found
+        "429":
+          content:
+            application/json:
+              example:
+                message: "Rate limit exceeded. Maximum evaluations per flag per second:\
+                  \ 100"
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Too Many Requests - rate limit exceeded
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Evaluate flag
+      tags:
+      - evaluation
+  /evaluation/batch:
+    post:
+      description: Evaluate multiple flags for multiple entities in a single request.
+        More efficient than multiple single evaluation requests.
+      operationId: postEvaluationBatch
+      requestBody:
+        content:
+          application/json:
+            example:
+              entities:
+              - entityID: user123
+                entityType: user
+                entityContext:
+                  region: US
+                  tier: premium
+              - entityID: user456
+                entityType: user
+                entityContext:
+                  region: EU
+                  tier: basic
+              flagIDs:
+              - 1
+              - 2
+              enableDebug: false
+            schema:
+              $ref: "#/components/schemas/EvaluationBatchRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                evaluationResults:
+                - flagID: 1
+                  flagKey: new_feature
+                  flagSnapshotID: 1
+                  flagTags: []
+                  segmentID: 1
+                  variantID: 1
+                  variantKey: control
+                  variantAttachment: {}
+                  evalContext:
+                    entityID: user123
+                    entityType: user
+                    entityContext:
+                      region: US
+                      tier: premium
+                  timestamp: 2024-01-01T00:00:00Z
+                - flagID: 2
+                  flagKey: another_feature
+                  flagSnapshotID: 1
+                  flagTags: []
+                  segmentID: 2
+                  variantID: 3
+                  variantKey: treatment
+                  variantAttachment: {}
+                  evalContext:
+                    entityID: user123
+                    entityType: user
+                    entityContext:
+                      region: US
+                      tier: premium
+                  timestamp: 2024-01-01T00:00:00Z
+              schema:
+                $ref: "#/components/schemas/EvaluationBatchResponse"
+          description: Evaluation batch result
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid evaluation context
+        "429":
+          content:
+            application/json:
+              example:
+                message: "Rate limit exceeded. Maximum evaluations per flag per second:\
+                  \ 100"
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Too Many Requests - rate limit exceeded
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Batch evaluate flags
+      tags:
+      - evaluation
+  /export/eval_cache/json:
+    get:
+      description: Export JSON format of the eval cache dump. This endpoint exports
+        the current state of the evaluation cache in JSON format.
+      operationId: getExportEvalCacheJSON
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                flags:
+                - id: 1
+                  key: new_feature
+                  enabled: true
+              schema:
+                additionalProperties: true
+                type: object
+          description: Eval cache JSON export
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Export eval cache as JSON
+      tags:
+      - export
+  /export/sqlite:
+    get:
+      description: "Export sqlite3 format of the db dump, which is converted from\
+        \ the main database. Returns a SQLite database file that can be used for backup\
+        \ or migration purposes."
+      operationId: getExportSQLite
+      parameters:
+      - description: Export without snapshots data - useful for smaller db without
+          snapshots
+        explode: true
+        in: query
+        name: exclude_snapshots
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+          description: SQLite database file
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request - invalid parameters
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: Export database as SQLite
+      tags:
+      - export
+components:
+  schemas:
+    Health:
+      example:
+        status: OK
+      properties:
+        status:
+          description: Health status of the service
+          example: OK
+          type: string
+      type: object
+    Info:
+      example:
+        version: 0.1.5
+        buildTime: 2024-01-01T00:00:00Z
+        gitCommit: abc123
+      properties:
+        version:
+          description: Application version
+          type: string
+        buildTime:
+          description: Build timestamp
+          nullable: true
+          type: string
+        gitCommit:
+          description: Git commit hash
+          nullable: true
+          type: string
+      type: object
+    Error:
+      example:
+        message: Flag not found
+      properties:
+        message:
+          description: Error message describing what went wrong
+          minLength: 1
+          type: string
+      required:
+      - message
+      type: object
+    Flag:
+      example:
+        id: 1
+        key: new_feature
+        description: New feature flag
+        enabled: true
+        dataRecordsEnabled: true
+        snapshotID: 1
+        entityType: user
+        notes: This flag controls the new feature rollout
+        createdBy: admin
+        updatedBy: admin
+        segments: []
+        variants: []
+        tags: []
+      properties:
+        id:
+          format: int64
+          minimum: 1
+          type: integer
+        key:
+          description: Unique key representation of the flag
+          type: string
+        description:
+          type: string
+        enabled:
+          type: boolean
+        snapshotID:
+          format: int64
+          type: integer
+        dataRecordsEnabled:
+          description: Enabled data records will get data logging in the metrics pipeline
+          type: boolean
+        entityType:
+          description: It will override the entityType in the evaluation logs if it's
+            not empty
+          nullable: true
+          type: string
+        notes:
+          description: Flag usage details in markdown format
+          nullable: true
+          type: string
+        createdBy:
+          nullable: true
+          type: string
+        updatedBy:
+          nullable: true
+          type: string
+        segments:
+          items:
+            $ref: "#/components/schemas/Segment"
+          type: array
+        variants:
+          items:
+            $ref: "#/components/schemas/Variant"
+          type: array
+        tags:
+          items:
+            $ref: "#/components/schemas/Tag"
+          type: array
+      required:
+      - dataRecordsEnabled
+      - description
+      - enabled
+      - id
+      - key
+      type: object
+    CreateFlagRequest:
+      example:
+        description: New feature flag
+        key: new_feature
+        template: null
+      properties:
+        description:
+          minLength: 1
+          type: string
+        key:
+          description: Unique key representation of the flag
+          nullable: true
+          type: string
+        template:
+          description: Template for flag creation
+          nullable: true
+          type: string
+      required:
+      - description
+      type: object
+    PutFlagRequest:
+      example:
+        description: Updated description
+        key: new_feature_updated
+        dataRecordsEnabled: true
+        entityType: user
+        notes: Updated notes
+      properties:
+        description:
+          minLength: 1
+          nullable: true
+          type: string
+        key:
+          nullable: true
+          type: string
+        dataRecordsEnabled:
+          description: Enabled data records will get data logging in the metrics pipeline
+          nullable: true
+          type: boolean
+        entityType:
+          description: It will overwrite entityType into evaluation logs if it's not
+            empty
+          nullable: true
+          type: string
+        notes:
+          nullable: true
+          type: string
+      type: object
+    SetFlagEnabledRequest:
+      example:
+        enabled: true
+      properties:
+        enabled:
+          type: boolean
+      required:
+      - enabled
+      type: object
+    FlagSnapshot:
+      example:
+        id: 1
+        updatedBy: admin
+        updatedAt: 2024-01-01T00:00:00Z
+        flag:
+          id: 1
+          key: new_feature
+          description: New feature flag
+          enabled: true
+          dataRecordsEnabled: true
+          snapshotID: 1
+      properties:
+        id:
+          format: int64
+          minimum: 1
+          type: integer
+        updatedBy:
+          nullable: true
+          type: string
+        flag:
+          $ref: "#/components/schemas/Flag"
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+      - flag
+      - id
+      - updatedAt
+      type: object
+    Segment:
+      example:
+        id: 1
+        flagID: 1
+        description: US users
+        rank: 0
+        rolloutPercent: 100
+        constraints: []
+        distributions: []
+      properties:
+        id:
+          format: int64
+          minimum: 1
+          type: integer
+        flagID:
+          format: int64
+          type: integer
+        description:
+          type: string
+        rank:
+          format: int64
+          minimum: 0
+          type: integer
+        rolloutPercent:
+          format: int64
+          maximum: 100
+          minimum: 0
+          type: integer
+        constraints:
+          items:
+            $ref: "#/components/schemas/Constraint"
+          type: array
+        distributions:
+          items:
+            $ref: "#/components/schemas/Distribution"
+          type: array
+      required:
+      - description
+      - flagID
+      - id
+      - rank
+      - rolloutPercent
+      type: object
+    CreateSegmentRequest:
+      example:
+        description: US users
+        rolloutPercent: 100
+      properties:
+        description:
+          minLength: 1
+          type: string
+        rolloutPercent:
+          format: int64
+          maximum: 100
+          minimum: 0
+          type: integer
+      required:
+      - description
+      - rolloutPercent
+      type: object
+    PutSegmentRequest:
+      example:
+        description: US users - updated
+        rolloutPercent: 50
+      properties:
+        description:
+          minLength: 1
+          type: string
+        rolloutPercent:
+          format: int64
+          maximum: 100
+          minimum: 0
+          type: integer
+      required:
+      - description
+      - rolloutPercent
+      type: object
+    PutSegmentReorderRequest:
+      example:
+        segmentIDs:
+        - 2
+        - 1
+        - 3
+      properties:
+        segmentIDs:
+          items:
+            format: int64
+            minimum: 1
+            type: integer
+          minItems: 1
+          type: array
+      required:
+      - segmentIDs
+      type: object
+    Constraint:
+      example:
+        id: 1
+        segmentID: 1
+        property: region
+        operator: EQ
+        value: US
+      properties:
+        id:
+          format: int64
+          minimum: 1
+          type: integer
+        segmentID:
+          format: int64
+          type: integer
+        property:
+          minLength: 1
+          type: string
+        operator:
+          enum:
+          - EQ
+          - NEQ
+          - LT
+          - LTE
+          - GT
+          - GTE
+          - EREG
+          - NEREG
+          - IN
+          - NOTIN
+          - CONTAINS
+          - NOTCONTAINS
+          type: string
+        value:
+          minLength: 1
+          type: string
+      required:
+      - id
+      - operator
+      - property
+      - segmentID
+      - value
+      type: object
+    CreateConstraintRequest:
+      example:
+        property: region
+        operator: EQ
+        value: US
+      properties:
+        property:
+          minLength: 1
+          type: string
+        operator:
+          type: string
+        value:
+          minLength: 1
+          type: string
+      required:
+      - operator
+      - property
+      - value
+      type: object
+    PutConstraintRequest:
+      example:
+        property: region
+        operator: IN
+        value: "US,CA,MX"
+      properties:
+        property:
+          minLength: 1
+          type: string
+        operator:
+          type: string
+        value:
+          minLength: 1
+          type: string
+      required:
+      - operator
+      - property
+      - value
+      type: object
+    Distribution:
+      example:
+        id: 1
+        segmentID: 1
+        variantID: 1
+        variantKey: control
+        percent: 50
+      properties:
+        id:
+          format: int64
+          minimum: 1
+          type: integer
+        segmentID:
+          format: int64
+          type: integer
+        variantID:
+          format: int64
+          minimum: 1
+          type: integer
+        variantKey:
+          nullable: true
+          type: string
+        percent:
+          format: int64
+          maximum: 100
+          minimum: 0
+          type: integer
+      required:
+      - id
+      - percent
+      - segmentID
+      - variantID
+      type: object
+    PutDistributionsRequest:
+      example:
+        distributions:
+        - variantID: 1
+          variantKey: control
+          percent: 50
+        - variantID: 1
+          variantKey: control
+          percent: 50
+      properties:
+        distributions:
+          items:
+            $ref: "#/components/schemas/DistributionRequest"
+          type: array
+      required:
+      - distributions
+      type: object
+    DistributionRequest:
+      example:
+        variantID: 1
+        variantKey: control
+        percent: 50
+      properties:
+        variantID:
+          format: int64
+          minimum: 1
+          type: integer
+        variantKey:
+          nullable: true
+          type: string
+        percent:
+          format: int64
+          maximum: 100
+          minimum: 0
+          type: integer
+      required:
+      - percent
+      - variantID
+      type: object
+    Variant:
+      example:
+        id: 1
+        flagID: 1
+        key: control
+        attachment: null
+      properties:
+        id:
+          format: int64
+          minimum: 1
+          type: integer
+        flagID:
+          format: int64
+          type: integer
+        key:
+          minLength: 1
+          type: string
+        attachment:
+          additionalProperties: true
+          nullable: true
+          type: object
+      required:
+      - flagID
+      - id
+      - key
+      type: object
+    CreateVariantRequest:
+      example:
+        key: treatment
+        attachment:
+          color: blue
+          size: large
+      properties:
+        key:
+          minLength: 1
+          type: string
+        attachment:
+          additionalProperties: true
+          nullable: true
+          type: object
+      required:
+      - key
+      type: object
+    PutVariantRequest:
+      example:
+        key: treatment_updated
+        attachment:
+          color: red
+          size: small
+      properties:
+        key:
+          minLength: 1
+          type: string
+        attachment:
+          additionalProperties: true
+          nullable: true
+          type: object
+      required:
+      - key
+      type: object
+    Tag:
+      example:
+        id: 1
+        value: production
+      properties:
+        id:
+          format: int64
+          minimum: 1
+          type: integer
+        value:
+          minLength: 1
+          type: string
+      required:
+      - id
+      - value
+      type: object
+    CreateTagRequest:
+      example:
+        value: production
+      properties:
+        value:
+          minLength: 1
+          type: string
+      required:
+      - value
+      type: object
+    EvalContext:
+      example:
+        flagID: 1
+        entityID: user123
+        entityType: user
+        entityContext:
+          region: US
+          tier: premium
+        enableDebug: false
+      properties:
+        entityID:
+          description: "EntityID is used to deterministically at random to evaluate\
+            \ the flag result. If it's empty, Flagent will randomly generate one."
+          type: string
+        entityType:
+          type: string
+        entityContext:
+          additionalProperties: true
+          nullable: true
+          type: object
+        enableDebug:
+          default: false
+          type: boolean
+        flagID:
+          description: FlagID. flagID or flagKey will resolve to the same flag. Either
+            works.
+          format: int64
+          minimum: 1
+          nullable: true
+          type: integer
+        flagKey:
+          description: FlagKey. flagID or flagKey will resolve to the same flag. Either
+            works.
+          nullable: true
+          type: string
+        flagTags:
+          description: FlagTags. flagTags looks up flags by tag. Either works.
+          items:
+            type: string
+          nullable: true
+          type: array
+        flagTagsOperator:
+          default: ANY
+          description: Determine how flagTags is used to filter flags to be evaluated.
+            OR extends the evaluation to those which contains at least one of the
+            provided flagTags or AND limit the evaluation to those which contains
+            all the flagTags.
+          enum:
+          - ANY
+          - ALL
+          nullable: true
+          type: string
+      type: object
+    EvalResult:
+      example:
+        flagID: 1
+        flagKey: new_feature
+        flagSnapshotID: 1
+        flagTags: []
+        segmentID: 1
+        variantID: 1
+        variantKey: control
+        variantAttachment: {}
+        evalContext:
+          entityID: user123
+          entityType: user
+          entityContext:
+            region: US
+            tier: premium
+        timestamp: 2024-01-01T00:00:00Z
+      properties:
+        flagID:
+          format: int64
+          type: integer
+        flagKey:
+          type: string
+        flagSnapshotID:
+          format: int64
+          type: integer
+        flagTags:
+          items:
+            type: string
+          nullable: true
+          type: array
+        segmentID:
+          format: int64
+          nullable: true
+          type: integer
+        variantID:
+          format: int64
+          nullable: true
+          type: integer
+        variantKey:
+          nullable: true
+          type: string
+        variantAttachment:
+          additionalProperties: true
+          nullable: true
+          type: object
+        evalContext:
+          $ref: "#/components/schemas/EvalContext"
+        timestamp:
+          format: date-time
+          type: string
+        evalDebugLog:
+          $ref: "#/components/schemas/EvalDebugLog"
+      type: object
+    EvalDebugLog:
+      example:
+        msg: Evaluation completed
+        segmentDebugLogs:
+        - segmentID: 1
+          msg: Segment matched
+      properties:
+        msg:
+          type: string
+        segmentDebugLogs:
+          items:
+            $ref: "#/components/schemas/SegmentDebugLog"
+          type: array
+      type: object
+    SegmentDebugLog:
+      example:
+        segmentID: 1
+        msg: Segment matched
+      properties:
+        segmentID:
+          format: int64
+          minimum: 1
+          type: integer
+        msg:
+          type: string
+      type: object
+    EvaluationBatchRequest:
+      example:
+        entities:
+        - entityID: user123
+          entityType: user
+          entityContext:
+            region: US
+            tier: premium
+        flagIDs:
+        - 1
+        - 2
+        enableDebug: false
+      properties:
+        entities:
+          items:
+            $ref: "#/components/schemas/EvaluationEntity"
+          minItems: 1
+          type: array
+        enableDebug:
+          default: false
+          type: boolean
+        flagIDs:
+          description: "FlagIDs. Either flagIDs, flagKeys or flagTags works. If pass\
+            \ in multiples, Flagent may return duplicate results."
+          items:
+            type: integer
+          nullable: true
+          type: array
+        flagKeys:
+          description: "FlagKeys. Either flagIDs, flagKeys or flagTags works. If pass\
+            \ in multiples, Flagent may return duplicate results."
+          items:
+            type: string
+          nullable: true
+          type: array
+        flagTags:
+          description: "FlagTags. Either flagIDs, flagKeys or flagTags works. If pass\
+            \ in multiples, Flagent may return duplicate results."
+          items:
+            type: string
+          nullable: true
+          type: array
+        flagTagsOperator:
+          default: ANY
+          description: Determine how flagTags is used to filter flags to be evaluated.
+          enum:
+          - ANY
+          - ALL
+          nullable: true
+          type: string
+      required:
+      - entities
+      type: object
+    EvaluationEntity:
+      example:
+        entityID: user123
+        entityType: user
+        entityContext:
+          region: US
+          tier: premium
+      properties:
+        entityID:
+          type: string
+        entityType:
+          type: string
+        entityContext:
+          additionalProperties: true
+          nullable: true
+          type: object
+      type: object
+    EvaluationBatchResponse:
+      example:
+        evaluationResults:
+        - flagID: 1
+          flagKey: new_feature
+          flagSnapshotID: 1
+          flagTags: []
+          segmentID: 1
+          variantID: 1
+          variantKey: control
+          variantAttachment: {}
+          evalContext:
+            entityID: user123
+            entityType: user
+            entityContext:
+              region: US
+              tier: premium
+          timestamp: 2024-01-01T00:00:00Z
+      properties:
+        evaluationResults:
+          items:
+            $ref: "#/components/schemas/EvalResult"
+          type: array
+      required:
+      - evaluationResults
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      description: JWT token authentication
+      scheme: bearer
+      type: http
+    basicAuth:
+      description: Basic username/password authentication
+      scheme: basic
+      type: http

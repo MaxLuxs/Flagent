@@ -89,12 +89,13 @@ public class FlagentAnalytics {
 
     /// Flush buffered events to server.
     public func flush() {
-        let toSend: [AnalyticsEventPayload]
-        queue.sync {
-            guard !eventBuffer.isEmpty else { return }
-            toSend = eventBuffer
+        let toSend: [AnalyticsEventPayload] = queue.sync {
+            guard !eventBuffer.isEmpty else { return [] }
+            let result = eventBuffer
             eventBuffer = []
+            return result
         }
+        guard !toSend.isEmpty else { return }
         let url = URL(string: "\(baseUrl)/api/v1/analytics/events")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

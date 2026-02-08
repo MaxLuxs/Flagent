@@ -1,0 +1,15 @@
+name: flagent_flutter_sample
+description: Flagent Flutter/Dart SDK sample application
+version: 0.1.5
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+executables:
+  flagent_flutter_sample: main
+
+dependencies:
+  flagent_client:
+    path: ../../sdk/dart
+  flagent_enhanced:
+    path: ../../sdk/flutter-enhanced

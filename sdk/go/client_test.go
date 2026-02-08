@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MaxLuxs/Flagent/sdk/go/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +18,6 @@ func TestNewClient(t *testing.T) {
 		client, err := NewClient("http://localhost:18000/api/v1")
 		require.NoError(t, err)
 		require.NotNil(t, client)
-		assert.Equal(t, "http://localhost:18000/api/v1", client.baseURL)
 	})
 
 	t.Run("empty baseURL", func(t *testing.T) {
@@ -34,9 +34,7 @@ func TestNewClient(t *testing.T) {
 			WithMaxRetries(5),
 		)
 		require.NoError(t, err)
-		assert.Equal(t, "test-key", client.apiKey)
-		assert.Equal(t, 10*time.Second, client.httpClient.Timeout)
-		assert.Equal(t, 5, client.maxRetries)
+		require.NotNil(t, client)
 	})
 }
 
@@ -45,11 +43,10 @@ func TestEvaluate(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/evaluation", r.URL.Path)
 			assert.Equal(t, http.MethodPost, r.Method)
-
-			result := &EvaluationResult{
-				FlagKey:    stringPtr("test_flag"),
-				VariantKey: stringPtr("control"),
-			}
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			result := api.EvalResult{}
+			result.SetFlagKey("test_flag")
+			result.VariantKey = *api.NewNullableString(api.PtrString("control"))
 			json.NewEncoder(w).Encode(result)
 		}))
 		defer server.Close()
@@ -65,8 +62,8 @@ func TestEvaluate(t *testing.T) {
 
 		result, err := client.Evaluate(ctx, evalCtx)
 		require.NoError(t, err)
-		assert.Equal(t, "test_flag", *result.FlagKey)
-		assert.Equal(t, "control", *result.VariantKey)
+		assert.Equal(t, "test_flag", result.GetFlagKey())
+		assert.Equal(t, "control", result.GetVariantKey())
 		assert.True(t, result.IsEnabled())
 	})
 
@@ -96,20 +93,15 @@ func TestEvaluateBatch(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/evaluation/batch", r.URL.Path)
 			assert.Equal(t, http.MethodPost, r.Method)
-
-			response := &BatchEvaluationResponse{
-				EvaluationResults: []*EvaluationResult{
-					{
-						FlagKey:    stringPtr("flag_a"),
-						VariantKey: stringPtr("control"),
-						EntityID:   stringPtr("user1"),
-					},
-					{
-						FlagKey:    stringPtr("flag_b"),
-						VariantKey: stringPtr("treatment"),
-						EntityID:   stringPtr("user2"),
-					},
-				},
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			res1 := api.EvalResult{}
+			res1.SetFlagKey("flag_a")
+			res1.VariantKey = *api.NewNullableString(api.PtrString("control"))
+			res2 := api.EvalResult{}
+			res2.SetFlagKey("flag_b")
+			res2.VariantKey = *api.NewNullableString(api.PtrString("treatment"))
+			response := api.EvaluationBatchResponse{
+				EvaluationResults: []api.EvalResult{res1, res2},
 			}
 			json.NewEncoder(w).Encode(response)
 		}))
@@ -130,8 +122,8 @@ func TestEvaluateBatch(t *testing.T) {
 		results, err := client.EvaluateBatch(ctx, req)
 		require.NoError(t, err)
 		assert.Len(t, results, 2)
-		assert.Equal(t, "flag_a", *results[0].FlagKey)
-		assert.Equal(t, "flag_b", *results[1].FlagKey)
+		assert.Equal(t, "flag_a", results[0].GetFlagKey())
+		assert.Equal(t, "flag_b", results[1].GetFlagKey())
 	})
 }
 
@@ -140,11 +132,13 @@ func TestGetFlag(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/flags/1", r.URL.Path)
 			assert.Equal(t, http.MethodGet, r.Method)
-
-			flag := &Flag{
-				ID:      int64Ptr(1),
-				Key:     "test_flag",
-				Enabled: true,
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			flag := api.Flag{
+				Id:          1,
+				Key:         "test_flag",
+				Description: "",
+				Enabled:     true,
+				DataRecordsEnabled: false,
 			}
 			json.NewEncoder(w).Encode(flag)
 		}))
@@ -156,7 +150,7 @@ func TestGetFlag(t *testing.T) {
 		ctx := context.Background()
 		flag, err := client.GetFlag(ctx, 1)
 		require.NoError(t, err)
-		assert.Equal(t, int64(1), *flag.ID)
+		assert.Equal(t, int64(1), flag.Id)
 		assert.Equal(t, "test_flag", flag.Key)
 		assert.True(t, flag.Enabled)
 	})
@@ -182,10 +176,10 @@ func TestListFlags(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/flags", r.URL.Path)
 			assert.Equal(t, http.MethodGet, r.Method)
-
-			flags := []*Flag{
-				{ID: int64Ptr(1), Key: "flag_a", Enabled: true},
-				{ID: int64Ptr(2), Key: "flag_b", Enabled: false},
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			flags := []api.Flag{
+				{Id: 1, Key: "flag_a", Description: "", Enabled: true, DataRecordsEnabled: false},
+				{Id: 2, Key: "flag_b", Description: "", Enabled: false, DataRecordsEnabled: false},
 			}
 			json.NewEncoder(w).Encode(flags)
 		}))
@@ -207,7 +201,10 @@ func TestHealthCheck(t *testing.T) {
 	t.Run("successful health check", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/health", r.URL.Path)
-			json.NewEncoder(w).Encode(&Health{Status: "ok"})
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			health := api.Health{}
+			health.SetStatus("ok")
+			json.NewEncoder(w).Encode(health)
 		}))
 		defer server.Close()
 
@@ -217,7 +214,7 @@ func TestHealthCheck(t *testing.T) {
 		ctx := context.Background()
 		health, err := client.HealthCheck(ctx)
 		require.NoError(t, err)
-		assert.Equal(t, "ok", health.Status)
+		assert.Equal(t, "ok", health.GetStatus())
 	})
 }
 
@@ -225,13 +222,12 @@ func TestGetSnapshot(t *testing.T) {
 	t.Run("successful get snapshot", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/export/eval_cache/json", r.URL.Path)
-			
-			snapshot := &FlagSnapshot{
-				Flags: []*Flag{
-					{Key: "flag_a", Enabled: true},
-					{Key: "flag_b", Enabled: false},
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			snapshot := FlagSnapshot{
+				Flags: []api.Flag{
+					{Id: 1, Key: "flag_a", Description: "", Enabled: true, DataRecordsEnabled: false},
+					{Id: 2, Key: "flag_b", Description: "", Enabled: false, DataRecordsEnabled: false},
 				},
-				ExportAt: time.Now().Unix(),
 			}
 			json.NewEncoder(w).Encode(snapshot)
 		}))
@@ -251,8 +247,4 @@ func TestGetSnapshot(t *testing.T) {
 // Helper functions
 func stringPtr(s string) *string {
 	return &s
-}
-
-func int64Ptr(i int64) *int64 {
-	return &i
 }

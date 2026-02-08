@@ -65,6 +65,9 @@ dependencies {
     implementation(project(":kotlin-client"))
     implementation(project(":kotlin-enhanced"))
     implementation(project(":kotlin-debug-ui"))
+    implementation(project(":flagent-koin"))
+
+    implementation(libs.koin.android)
 
     implementation(libs.ktor.client.android)
     implementation(libs.bundles.ktor.client)

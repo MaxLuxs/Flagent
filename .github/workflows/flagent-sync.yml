@@ -1,0 +1,41 @@
+name: Flagent GitOps Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'flags.yaml'
+      - 'flags/*.yaml'
+  workflow_dispatch:
+    inputs:
+      file:
+        description: 'Path to flags file (default: flags.yaml)'
+        required: false
+        default: 'flags.yaml'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if flags file exists
+        id: check
+        run: |
+          FILE="${{ github.event.inputs.file || 'flags.yaml' }}"
+          if [[ -f "$FILE" ]]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "file=$FILE" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Sync flags to Flagent
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          chmod +x scripts/flagent-cli.sh
+          FILE="${{ steps.check.outputs.file }}"
+          ./scripts/flagent-cli.sh import \
+            --url "${{ secrets.FLAGENT_URL }}" \
+            --file "$FILE" \
+            --api-key "${{ secrets.FLAGENT_API_KEY }}"

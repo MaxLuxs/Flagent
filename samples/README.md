@@ -71,6 +71,29 @@ swift build
 swift run
 ```
 
+### Flutter Sample (`flutter/`)
+
+Dart console application demonstrating the usage of Flagent Flutter/Dart SDK.
+
+**Features:**
+- Single flag evaluation
+- Batch evaluation
+- Flag ID evaluation
+- Enhanced SDK with caching
+
+**Run:**
+```bash
+cd samples/flutter
+dart pub get
+dart run bin/main.dart
+```
+
+### React Native Sample (`react-native/`)
+
+Reference code for using Flagent SDK in React Native. Uses `@flagent/client` and `@flagent/enhanced-client`.
+
+**See:** [sdk/REACT_NATIVE.md](../sdk/REACT_NATIVE.md) for full integration guide.
+
 ### Ktor Plugin Sample (`ktor/`)
 
 Ktor application sample demonstrating Flagent Ktor plugin usage.
@@ -107,6 +130,8 @@ samples/
 ├── javascript/       # JavaScript/HTML sample
 ├── kotlin/           # Kotlin/JVM sample
 ├── swift/            # Swift sample
+├── flutter/          # Flutter/Dart sample
+├── react-native/     # React Native reference
 ├── ktor/             # Ktor plugin sample
 └── README.md         # This file
 ```

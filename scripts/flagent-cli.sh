@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Flagent CLI - GitOps sync for feature flags
+# Flagent CLI - GitOps sync and trunk-based development
 # Usage:
 #   flagent export --url <api> [--output flags.yaml] [--api-key <key>]
 #   flagent import --url <api> --file flags.yaml [--api-key <key>]
-#   flagent sync --url <api> --file flags.yaml [--api-key <key>]  (alias for import)
+#   flagent sync   --url <api> --file flags.yaml [--api-key <key>]  (alias for import)
+#   flagent flag create --from-branch [branch] --url <api> [--api-key <key>]
 
 set -e
 
@@ -12,18 +13,28 @@ API_KEY=""
 FILE=""
 OUTPUT="flags.yaml"
 FORMAT="yaml"
+BRANCH=""
+
+# Converts branch name to flag key: feature/foo -> feature_foo
+branch_to_flag_key() {
+    local b="${1:-}"
+    b="${b#refs/heads/}"
+    echo "$b" | sed 's/\//_/g' | sed 's/[^a-zA-Z0-9_.-]/_/g' | tr '[:upper:]' '[:lower:]' | sed 's/^ *$//' | sed 's/^$/unnamed/'
+}
 
 usage() {
-    echo "Flagent CLI - GitOps sync"
+    echo "Flagent CLI - GitOps sync and trunk-based development"
     echo ""
     echo "Usage:"
     echo "  flagent export --url <api> [--output flags.yaml] [--api-key <key>]"
     echo "  flagent import --url <api> --file <path> [--api-key <key>]"
     echo "  flagent sync   --url <api> --file <path> [--api-key <key>]"
+    echo "  flagent flag create --from-branch [branch] --url <api> [--api-key <key>]"
     echo ""
     echo "Examples:"
     echo "  flagent export --url https://flagent.example.com --api-key sk-xxx"
     echo "  flagent import --url https://flagent.example.com --file flags.yaml --api-key sk-xxx"
+    echo "  flagent flag create --from-branch feature/new-payment --url https://flagent.example.com --api-key sk-xxx"
     exit 1
 }
 
@@ -34,9 +45,35 @@ parse_args() {
             --file) FILE="$2"; shift 2 ;;
             --output) OUTPUT="$2"; shift 2 ;;
             --api-key) API_KEY="$2"; shift 2 ;;
+            --from-branch) BRANCH="$2"; shift 2 ;;
             *) shift ;;
         esac
     done
+}
+
+create_flag_from_branch() {
+    if [[ -z "$API_URL" ]]; then
+        echo "Error: --url is required"
+        usage
+    fi
+    local branch="${BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')}"
+    if [[ -z "$branch" ]]; then
+        echo "Error: --from-branch or git branch required"
+        usage
+    fi
+    local key
+    key=$(branch_to_flag_key "$branch")
+    BASE="${API_URL%/}"
+    BASE="${BASE%/api/v1}"
+    BASE="${BASE%/api}"
+    local url="${BASE}/api/v1/flags"
+    CURL_OPTS=(-s -S -X POST -H "Content-Type: application/json")
+    [[ -n "$API_KEY" ]] && CURL_OPTS+=(-H "X-API-Key: $API_KEY")
+    local body
+    body=$(jq -n --arg key "$key" --arg desc "Auto from branch: $branch" '{key: $key, description: $desc}')
+    echo "Creating flag key=$key from branch=$branch at $url ..."
+    RESULT=$(curl "${CURL_OPTS[@]}" -d "$body" "$url")
+    echo "$RESULT" | jq -r '"Created: \(.key) (id: \(.id))"' 2>/dev/null || echo "$RESULT"
 }
 
 export_flags() {
@@ -83,5 +120,12 @@ case "${1:-}" in
     export) shift; parse_args "$@"; export_flags ;;
     import) shift; parse_args "$@"; import_flags ;;
     sync) shift; parse_args "$@"; import_flags ;;
+    flag)
+        shift
+        case "${1:-}" in
+            create) shift; parse_args "$@"; create_flag_from_branch ;;
+            *) usage ;;
+        esac
+        ;;
     *) usage ;;
 esac

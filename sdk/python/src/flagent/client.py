@@ -1,38 +1,32 @@
 """Flagent Python client with async/await support."""
 
-import httpx
-from typing import Dict, List, Optional, Any
-from .models import (
-    EvaluationResult,
-    EvaluationContext,
-    Flag,
-    BatchEvaluationRequest,
-    BatchEvaluationResponse,
+from typing import Any, Dict, List, Optional
+
+from flagent._generated import ApiClient, Configuration
+from flagent._generated.api import EvaluationApi, ExportApi, FlagApi, HealthApi
+from flagent._generated.exceptions import (
+    ApiException,
+    NotFoundException,
+    ServiceException,
 )
+from flagent._generated.models import (
+    EvalContext,
+    EvalResult,
+    EvaluationBatchRequest,
+    EvaluationEntity,
+    Flag,
+)
+from .models import EvaluationResult
 from .exceptions import FlagentError, FlagNotFoundError, EvaluationError, NetworkError
 
 
 class FlagentClient:
     """
     Async Flagent client for feature flag evaluation and management.
-    
-    Features:
-    - Async/await API using httpx
-    - Type-safe with Pydantic models
-    - Automatic retry on network errors
-    - Connection pooling
-    
-    Example:
-        >>> client = FlagentClient(base_url="http://localhost:18000/api/v1")
-        >>> result = await client.evaluate(
-        ...     flag_key="new_feature",
-        ...     entity_id="user123",
-        ...     entity_context={"tier": "premium"}
-        ... )
-        >>> if result.is_enabled():
-        ...     # Feature is enabled
+
+    Wraps generated OpenAPI client with convenient API and error handling.
     """
-    
+
     def __init__(
         self,
         base_url: str,
@@ -40,41 +34,51 @@ class FlagentClient:
         timeout: float = 30.0,
         max_retries: int = 3,
     ):
-        """
-        Initialize Flagent client.
-        
-        Args:
-            base_url: Base URL of Flagent server (e.g., "http://localhost:18000/api/v1")
-            api_key: Optional API key for authentication
-            timeout: Request timeout in seconds
-            max_retries: Maximum number of retry attempts on network errors
-        """
+        """Initialize Flagent client."""
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.timeout = timeout
-        
-        # Configure httpx client with retries
-        self._client = httpx.AsyncClient(
-            timeout=timeout,
-            transport=httpx.AsyncHTTPTransport(retries=max_retries),
+
+        config = Configuration(
+            host=self.base_url,
+            api_key={"bearerAuth": api_key} if api_key else None,
+            api_key_prefix={"bearerAuth": "Bearer"},
+            retries=max_retries,
         )
-        
-        # Set auth header if API key provided
-        if api_key:
-            self._client.headers["Authorization"] = f"Bearer {api_key}"
-    
+        self._api_client = ApiClient(configuration=config)
+        self._evaluation_api = EvaluationApi(self._api_client)
+        self._flag_api = FlagApi(self._api_client)
+        self._health_api = HealthApi(self._api_client)
+        self._export_api = ExportApi(self._api_client)
+
     async def __aenter__(self):
         """Context manager entry."""
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         await self.close()
-    
+
     async def close(self):
         """Close HTTP client and release resources."""
-        await self._client.aclose()
-    
+        await self._api_client.close()
+
+    def _to_evaluation_result(self, result: EvalResult) -> EvaluationResult:
+        """Convert generated EvalResult to our EvaluationResult."""
+        return EvaluationResult.model_validate(result.model_dump(by_alias=True))
+
+    def _convert_error(self, e: Exception, context: str = "") -> FlagentError:
+        """Convert generated exceptions to our exception types."""
+        if isinstance(e, NotFoundException):
+            return FlagNotFoundError(f"{context}: {e}" if context else str(e))
+        if isinstance(e, ApiException):
+            if e.status and e.status >= 500:
+                return NetworkError(f"{context}: {e}" if context else str(e))
+            return EvaluationError(f"{context}: {e}" if context else str(e))
+        if isinstance(e, (ConnectionError, OSError, TimeoutError)):
+            return NetworkError(f"{context}: {e}" if context else str(e))
+        return EvaluationError(f"{context}: {e}" if context else str(e))
+
     async def evaluate(
         self,
         flag_key: Optional[str] = None,
@@ -84,60 +88,28 @@ class FlagentClient:
         entity_context: Optional[Dict[str, Any]] = None,
         enable_debug: bool = False,
     ) -> EvaluationResult:
-        """
-        Evaluate a feature flag.
-        
-        Args:
-            flag_key: Flag key to evaluate (required if flag_id not provided)
-            flag_id: Flag ID to evaluate (required if flag_key not provided)
-            entity_id: Entity ID for consistent bucketing
-            entity_type: Entity type (e.g., "user", "session")
-            entity_context: Additional context for constraint matching
-            enable_debug: Enable debug logging
-        
-        Returns:
-            EvaluationResult with variant assignment
-        
-        Raises:
-            FlagNotFoundError: If flag not found
-            EvaluationError: If evaluation fails
-            NetworkError: If network request fails
-        
-        Example:
-            >>> result = await client.evaluate(
-            ...     flag_key="new_checkout",
-            ...     entity_id="user123",
-            ...     entity_context={"region": "US", "tier": "premium"}
-            ... )
-            >>> print(f"Variant: {result.variant_key}")
-            >>> print(f"Enabled: {result.is_enabled()}")
-        """
-        ctx = EvaluationContext(
-            flagKey=flag_key,
-            flagID=flag_id,
-            entityID=entity_id,
-            entityType=entity_type,
-            entityContext=entity_context,
-            enableDebug=enable_debug,
+        """Evaluate a feature flag."""
+        ctx = EvalContext(
+            flag_key=flag_key,
+            flag_id=flag_id,
+            entity_id=entity_id,
+            entity_type=entity_type,
+            entity_context=entity_context,
+            enable_debug=enable_debug,
         )
-        
         try:
-            response = await self._client.post(
-                f"{self.base_url}/evaluation",
-                json=ctx.model_dump(by_alias=True, exclude_none=True),
+            result = await self._evaluation_api.post_evaluation(
+                eval_context=ctx,
+                _request_timeout=self.timeout,
             )
-            response.raise_for_status()
-            
-            data = response.json()
-            return EvaluationResult(**data)
-            
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                raise FlagNotFoundError(f"Flag not found: {flag_key or flag_id}")
-            raise EvaluationError(f"Evaluation failed: {e}")
-        except httpx.RequestError as e:
-            raise NetworkError(f"Network error: {e}")
-    
+            return self._to_evaluation_result(result)
+        except Exception as e:
+            if isinstance(e, NotFoundException):
+                raise FlagNotFoundError(
+                    f"Flag not found: {flag_key or flag_id}"
+                ) from e
+            raise self._convert_error(e, "Evaluation failed") from e
+
     async def evaluate_batch(
         self,
         entities: List[Dict[str, Any]],
@@ -145,84 +117,44 @@ class FlagentClient:
         flag_ids: Optional[List[int]] = None,
         enable_debug: bool = False,
     ) -> List[EvaluationResult]:
-        """
-        Batch evaluate flags for multiple entities.
-        
-        Args:
-            entities: List of entities to evaluate
-            flag_keys: List of flag keys to evaluate
-            flag_ids: List of flag IDs to evaluate
-            enable_debug: Enable debug logging
-        
-        Returns:
-            List of evaluation results
-        
-        Raises:
-            EvaluationError: If evaluation fails
-            NetworkError: If network request fails
-        
-        Example:
-            >>> results = await client.evaluate_batch(
-            ...     entities=[
-            ...         {"entityID": "user1", "entityContext": {"tier": "free"}},
-            ...         {"entityID": "user2", "entityContext": {"tier": "premium"}},
-            ...     ],
-            ...     flag_keys=["feature_a", "feature_b"]
-            ... )
-            >>> for result in results:
-            ...     print(f"{result.flag_key}: {result.variant_key}")
-        """
-        request = BatchEvaluationRequest(
-            entities=entities,
-            flagKeys=flag_keys,
-            flagIDs=flag_ids,
-            enableDebug=enable_debug,
-        )
-        
-        try:
-            response = await self._client.post(
-                f"{self.base_url}/evaluation/batch",
-                json=request.model_dump(by_alias=True, exclude_none=True),
+        """Batch evaluate flags for multiple entities."""
+        eval_entities = [
+            EvaluationEntity(
+                entity_id=e.get("entityID"),
+                entity_type=e.get("entityType"),
+                entity_context=e.get("entityContext"),
             )
-            response.raise_for_status()
-            
-            data = response.json()
-            batch_response = BatchEvaluationResponse(**data)
-            return batch_response.evaluation_results
-            
-        except httpx.HTTPStatusError as e:
-            raise EvaluationError(f"Batch evaluation failed: {e}")
-        except httpx.RequestError as e:
-            raise NetworkError(f"Network error: {e}")
-    
-    async def get_flag(self, flag_id: int) -> Flag:
-        """
-        Get flag by ID.
-        
-        Args:
-            flag_id: Flag ID
-        
-        Returns:
-            Flag model
-        
-        Raises:
-            FlagNotFoundError: If flag not found
-            NetworkError: If network request fails
-        """
+            for e in entities
+        ]
+        request = EvaluationBatchRequest(
+            entities=eval_entities,
+            flag_keys=flag_keys,
+            flag_ids=flag_ids,
+            enable_debug=enable_debug,
+        )
         try:
-            response = await self._client.get(f"{self.base_url}/flags/{flag_id}")
-            response.raise_for_status()
-            
-            data = response.json()
-            return Flag(**data)
-            
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                raise FlagNotFoundError(f"Flag not found: {flag_id}")
-            raise FlagentError(f"Failed to get flag: {e}")
-        except httpx.RequestError as e:
-            raise NetworkError(f"Network error: {e}")
-    
+            response = await self._evaluation_api.post_evaluation_batch(
+                evaluation_batch_request=request,
+                _request_timeout=self.timeout,
+            )
+            return [
+                self._to_evaluation_result(r) for r in response.evaluation_results
+            ]
+        except Exception as e:
+            raise self._convert_error(e, "Batch evaluation failed") from e
+
+    async def get_flag(self, flag_id: int) -> Flag:
+        """Get flag by ID."""
+        try:
+            return await self._flag_api.get_flag(
+                flag_id=flag_id,
+                _request_timeout=self.timeout,
+            )
+        except NotFoundException as e:
+            raise FlagNotFoundError(f"Flag not found: {flag_id}") from e
+        except Exception as e:
+            raise self._convert_error(e, "Failed to get flag") from e
+
     async def list_flags(
         self,
         limit: int = 100,
@@ -230,62 +162,24 @@ class FlagentClient:
         enabled: Optional[bool] = None,
         preload: bool = True,
     ) -> List[Flag]:
-        """
-        List flags with optional filters.
-        
-        Args:
-            limit: Maximum number of flags to return
-            offset: Offset for pagination
-            enabled: Filter by enabled status
-            preload: Preload segments, variants, etc.
-        
-        Returns:
-            List of flags
-        
-        Raises:
-            NetworkError: If network request fails
-        
-        Example:
-            >>> flags = await client.list_flags(limit=50, enabled=True)
-            >>> for flag in flags:
-            ...     print(f"{flag.key}: {flag.enabled}")
-        """
-        params = {
-            "limit": limit,
-            "offset": offset,
-            "preload": preload,
-        }
-        if enabled is not None:
-            params["enabled"] = enabled
-        
+        """List flags with optional filters."""
         try:
-            response = await self._client.get(
-                f"{self.base_url}/flags",
-                params=params,
+            return await self._flag_api.find_flags(
+                limit=limit,
+                offset=offset,
+                enabled=enabled,
+                preload=preload,
+                _request_timeout=self.timeout,
             )
-            response.raise_for_status()
-            
-            data = response.json()
-            return [Flag(**item) for item in data]
-            
-        except httpx.HTTPStatusError as e:
-            raise FlagentError(f"Failed to list flags: {e}")
-        except httpx.RequestError as e:
-            raise NetworkError(f"Network error: {e}")
-    
+        except Exception as e:
+            raise self._convert_error(e, "Failed to list flags") from e
+
     async def health_check(self) -> Dict[str, Any]:
-        """
-        Check server health.
-        
-        Returns:
-            Health status dict
-        
-        Raises:
-            NetworkError: If health check fails
-        """
+        """Check server health."""
         try:
-            response = await self._client.get(f"{self.base_url}/health")
-            response.raise_for_status()
-            return response.json()
-        except httpx.RequestError as e:
-            raise NetworkError(f"Health check failed: {e}")
+            health = await self._health_api.get_health(
+                _request_timeout=self.timeout,
+            )
+            return {"status": health.status}
+        except Exception as e:
+            raise self._convert_error(e, "Health check failed") from e

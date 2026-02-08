@@ -2,6 +2,8 @@
 
 Async Python client for Flagent feature flags and experimentation platform.
 
+The base API layer (`flagent._generated`) is generated from the OpenAPI specification. The `FlagentClient` is a thin wrapper providing a convenient API (`evaluate`, `evaluate_batch`, `get_flag`, etc.) and error conversion.
+
 ## Features
 
 - ✅ **Async/Await** - Built on httpx for modern async Python

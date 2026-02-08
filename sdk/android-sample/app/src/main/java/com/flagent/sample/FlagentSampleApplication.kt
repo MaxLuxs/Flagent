@@ -2,10 +2,13 @@ package com.flagent.sample
 
 import android.app.Application
 import com.flagent.enhanced.crash.FlagentCrashReporter
+import com.flagent.koin.flagentManagerProviderModule
+import io.ktor.client.engine.android.Android
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 /**
- * Application class that installs Flagent crash reporter.
- * Captures uncaught exceptions and sends to Flagent backend.
+ * Application class that installs Flagent crash reporter and Koin DI.
  */
 class FlagentSampleApplication : Application() {
 
@@ -22,5 +25,10 @@ class FlagentSampleApplication : Application() {
             appVersion = BuildConfig.VERSION_NAME,
             deviceInfo = "Android ${android.os.Build.VERSION.SDK_INT}, ${android.os.Build.MODEL}"
         ).install()
+
+        startKoin {
+            androidContext(this@FlagentSampleApplication)
+            modules(flagentManagerProviderModule(httpClientEngine = Android.create()))
+        }
     }
 }

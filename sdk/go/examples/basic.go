@@ -71,8 +71,20 @@ func main() {
 	if err != nil {
 		log.Printf("Error: %v", err)
 	} else {
-		for _, result := range results {
-			fmt.Printf("%s for %s: %s\n", *result.FlagKey, *result.EntityID, *result.VariantKey)
+		for i, result := range results {
+			flagKey := ""
+			if result.FlagKey != nil {
+				flagKey = *result.FlagKey
+			}
+			variantKey := ""
+			if result.VariantKey != nil {
+				variantKey = *result.VariantKey
+			}
+			entityID := "user1"
+			if i >= len(results)/2 {
+				entityID = "user2"
+			}
+			fmt.Printf("%s for %s: %s\n", flagKey, entityID, variantKey)
 		}
 	}
 
@@ -111,7 +123,7 @@ func main() {
 	if err != nil {
 		log.Printf("Error: %v", err)
 	} else {
-		fmt.Printf("Status: %s\n", health.Status)
+		fmt.Printf("Status: %s\n", health.GetStatus())
 	}
 
 	// Example 7: Get snapshot
@@ -121,6 +133,8 @@ func main() {
 		log.Printf("Error: %v", err)
 	} else {
 		fmt.Printf("Flags in snapshot: %d\n", len(snapshot.Flags))
-		fmt.Printf("Export time: %d\n", snapshot.ExportAt)
+		if snapshot.Revision != nil {
+			fmt.Printf("Revision: %s\n", *snapshot.Revision)
+		}
 	}
 }

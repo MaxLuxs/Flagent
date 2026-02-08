@@ -26,17 +26,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: JS SDK build
+      - name: JS SDK build and test
         run: |
-          (cd sdk/javascript && (npm ci || npm install) && npm run build)
-          (cd sdk/javascript-enhanced && npm install && npm run build)
+          (cd sdk/javascript && (npm ci || npm install) && npm run build && npm test)
+          (cd sdk/javascript-enhanced && npm install && npm run build && npm test)
           (cd sdk/javascript-debug-ui && npm install && npm run build)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Python SDK check
-        run: cd sdk/python && pip install -e . && python -c "import flagent; print('OK')"
+      - name: Python SDK check and test
+        run: |
+          cd sdk/python
+          pip install -e ".[dev]"
+          python -c "import flagent; print('OK')"
+          pytest tests/ -v
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - name: Dart SDK build and test
+        run: |
+          (cd sdk/dart && dart pub get && dart run build_runner build --delete-conflicting-outputs && dart analyze && dart test)
+          (cd sdk/flutter-enhanced && dart pub get && dart analyze && dart test)
 
   release-validation-android:
     runs-on: ubuntu-latest
@@ -148,6 +161,21 @@ jobs:
           tar czvf "flagent-swift-enhanced-sdk-$VERSION.tar.gz" -C sdk swift-enhanced
           tar czvf "flagent-swift-debug-ui-sdk-$VERSION.tar.gz" -C sdk swift-debug-ui
 
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Set version and pack Dart SDKs
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          sed -i "s/^version: .*/version: $VERSION/" sdk/dart/pubspec.yaml
+          sed -i "s/^version: .*/version: $VERSION/" sdk/flutter-enhanced/pubspec.yaml
+          (cd sdk/dart && dart pub get)
+          (cd sdk/flutter-enhanced && dart pub get)
+          tar czvf "flagent-dart-sdk-$VERSION.tar.gz" -C sdk dart
+          tar czvf "flagent-flutter-enhanced-sdk-$VERSION.tar.gz" -C sdk flutter-enhanced
+
       - name: Publish to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -195,5 +223,7 @@ jobs:
             flagent-swift-sdk-*.tar.gz
             flagent-swift-enhanced-sdk-*.tar.gz
             flagent-swift-debug-ui-sdk-*.tar.gz
+            flagent-dart-sdk-*.tar.gz
+            flagent-flutter-enhanced-sdk-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

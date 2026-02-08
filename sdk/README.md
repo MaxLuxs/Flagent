@@ -13,6 +13,7 @@ Client libraries (SDK) for Flagent API - a feature flagging, A/B testing and dyn
 | Swift | [swift/](./swift/) | ✅ Available | Native Swift client library (iOS, macOS) |
 | Python | [python/](./python/) | ✅ Available | Python client library with async/await support |
 | Go | [go/](./go/) | ✅ Available | Go client library with context support |
+| Dart | [dart/](./dart/) | ✅ Available | Dart client library (Flutter, iOS, Android, Web) |
 
 ## Enhanced SDKs
 
@@ -24,6 +25,7 @@ Enhanced SDKs provide caching, convenient API, and optional client-side evaluati
 | Swift | [swift-enhanced/](./swift-enhanced/) | ✅ Available | Enhanced Swift SDK with caching |
 | JavaScript/TypeScript | [javascript-enhanced/](./javascript-enhanced/) | ✅ Available | Enhanced TypeScript SDK with caching |
 | Go | [go-enhanced/](./go-enhanced/) | ✅ Available | Caching, **client-side evaluation**, **SSE real-time updates** |
+| Dart/Flutter | [flutter-enhanced/](./flutter-enhanced/) | ✅ Available | Enhanced Dart SDK with caching |
 
 ## Debug UI Libraries
 
@@ -74,6 +76,18 @@ See [Go SDK README](./go/README.md) for installation and usage.
 #### Enhanced Go SDK
 
 See [Go Enhanced SDK README](./go-enhanced/README.md) for installation and usage with caching.
+
+#### Dart SDK
+
+See [Dart SDK README](./dart/README.md) for installation and usage.
+
+#### Enhanced Flutter/Dart SDK
+
+See [Flutter Enhanced SDK README](./flutter-enhanced/README.md) for installation and usage with caching.
+
+#### React Native
+
+See [REACT_NATIVE.md](./REACT_NATIVE.md) — use JavaScript SDK (`@flagent/client` + `@flagent/enhanced-client`).
 
 ### Debug UI Usage
 
@@ -148,7 +162,28 @@ cd sdk/javascript
 # Generate Swift SDK
 cd sdk/swift
 ./generate.sh
+
+# Generate Dart SDK
+cd sdk/dart
+./generate.sh
+
+# Generate Go SDK
+cd sdk/go
+./generate.sh
+
+# Generate Python SDK
+cd sdk/python
+./generate.sh
 ```
+
+Or use the Makefile from `sdk/` directory:
+
+```bash
+cd sdk
+make generate
+```
+
+Note: Go and Python base SDKs are generated from OpenAPI; the `client` layer (FlagentClient, convenient methods) is a thin wrapper over the generated API.
 
 Enhanced SDKs and Debug UI libraries are manually implemented and depend on the base SDKs.
 
@@ -169,7 +204,10 @@ Enhanced SDKs and Debug UI libraries are manually implemented and depend on the 
 ### JavaScript/TypeScript SDK
 - ✅ Node.js
 - ✅ Browser
-- ✅ React Native
+- ✅ React Native (see [REACT_NATIVE.md](./REACT_NATIVE.md))
+
+### Dart SDK (Flutter)
+- ✅ Flutter (iOS, Android, Web)
 
 ## Testing
 

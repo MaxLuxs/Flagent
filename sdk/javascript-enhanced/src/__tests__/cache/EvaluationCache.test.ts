@@ -3,7 +3,7 @@ import { EvalResult } from '@flagent/client';
 
 describe('InMemoryEvaluationCache', () => {
   let cache: InMemoryEvaluationCache;
-  const ttlMs = 5000; // 5 seconds for testing
+  const ttlMs = 100; // 100ms for fast testing
 
   beforeEach(() => {
     cache = new InMemoryEvaluationCache(ttlMs);
@@ -38,12 +38,12 @@ describe('InMemoryEvaluationCache', () => {
 
       await cache.put(key, evalResult);
 
-      // Wait for expiration
-      await new Promise((resolve) => setTimeout(resolve, ttlMs + 100));
+      // Wait for expiration (ttlMs + small buffer)
+      await new Promise((resolve) => setTimeout(resolve, ttlMs + 50));
 
       const result = await cache.get(key);
       expect(result).toBeNull();
-    });
+    }, 5000);
   });
 
   describe('put', () => {
@@ -106,14 +106,14 @@ describe('InMemoryEvaluationCache', () => {
       await cache.put(key1, result1);
 
       // Wait for expiration
-      await new Promise((resolve) => setTimeout(resolve, ttlMs + 100));
+      await new Promise((resolve) => setTimeout(resolve, ttlMs + 50));
 
       await cache.put(key2, result2);
       await cache.evictExpired();
 
       expect(await cache.get(key1)).toBeNull();
       expect(await cache.get(key2)).toEqual(result2);
-    });
+    }, 5000);
 
     it('should keep non-expired entries', async () => {
       const key: CacheKey = { flagKey: 'test_flag', entityID: 'user1' };

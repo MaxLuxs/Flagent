@@ -33,6 +33,7 @@ import flagent.route.configureSegmentRoutes
 import flagent.route.configureTagRoutes
 import flagent.route.configureVariantRoutes
 import flagent.route.configureWebhookRoutes
+import flagent.route.integration.configureIntegrationWebhookRoutes
 import flagent.mcp.configureMcpRoutes
 import flagent.middleware.configureSSE
 import flagent.middleware.configureRealtimeEventBus
@@ -189,6 +190,7 @@ fun Application.module() {
                 configureExportRoutes(cacheAndSync.evalCache, services.exportService)
                 configureImportRoutes(services.importService)
                 configureWebhookRoutes(services.webhookService)
+                configureIntegrationWebhookRoutes(services.flagService)
 
                 if (!EnterprisePresence.enterpriseEnabled && services.coreMetricsService != null) {
                     configureCoreMetricsRoutes(services.coreMetricsService, services.flagService)

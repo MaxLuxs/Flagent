@@ -1,0 +1,24 @@
+{
+  "name": "flagent-react-native-sample",
+  "version": "0.1.5",
+  "private": true,
+  "description": "Flagent React Native SDK sample",
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios"
+  },
+  "dependencies": {
+    "@flagent/client": "file:../../sdk/javascript",
+    "@flagent/enhanced-client": "file:../../sdk/javascript-enhanced",
+    "react": "18.2.0",
+    "react-native": "0.73.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/runtime": "^7.20.0",
+    "@react-native/babel-preset": "0.73.0",
+    "@react-native/metro-config": "0.73.0"
+  }
+}

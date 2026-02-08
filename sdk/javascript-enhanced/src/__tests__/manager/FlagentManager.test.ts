@@ -33,6 +33,10 @@ describe('FlagentManager', () => {
     manager = new FlagentManager(mockConfig);
   });
 
+  afterEach(() => {
+    manager.destroy();
+  });
+
   describe('evaluate', () => {
     it('should evaluate flag and return result', async () => {
       const expectedResult: EvalResult = {
@@ -170,45 +174,49 @@ describe('FlagentManager', () => {
     it('should remove expired entries from cache', async () => {
       const managerWithShortTTL = new FlagentManager(mockConfig, {
         enableCache: true,
-        cacheTtlMs: 100, // Very short TTL for testing
+        cacheTtlMs: 50, // Very short TTL for testing
         enableDebugLogging: false,
       });
 
-      const expectedResult: EvalResult = {
-        flagKey: 'test_flag',
-        variantKey: 'control',
-      };
+      try {
+        const expectedResult: EvalResult = {
+          flagKey: 'test_flag',
+          variantKey: 'control',
+        };
 
-      (mockApi.postEvaluation as jest.Mock).mockResolvedValue({
-        data: expectedResult,
-      });
+        (mockApi.postEvaluation as jest.Mock).mockResolvedValue({
+          data: expectedResult,
+        });
 
-      await managerWithShortTTL.evaluate({
-        flagKey: 'test_flag',
-        entityID: 'user1',
-      });
+        await managerWithShortTTL.evaluate({
+          flagKey: 'test_flag',
+          entityID: 'user1',
+        });
 
-      // Wait for expiration
-      await new Promise((resolve) => setTimeout(resolve, 150));
+        // Wait for expiration
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
-      await managerWithShortTTL.evictExpired();
+        await managerWithShortTTL.evictExpired();
 
-      // Should call API again after eviction
-      await managerWithShortTTL.evaluate({
-        flagKey: 'test_flag',
-        entityID: 'user1',
-      });
+        // Should call API again after eviction
+        await managerWithShortTTL.evaluate({
+          flagKey: 'test_flag',
+          entityID: 'user1',
+        });
 
-      expect(mockApi.postEvaluation).toHaveBeenCalledTimes(2);
-    });
+        expect(mockApi.postEvaluation).toHaveBeenCalledTimes(2);
+      } finally {
+        managerWithShortTTL.destroy();
+      }
+    }, 5000);
   });
 
   describe('destroy', () => {
     it('should clear cleanup interval', () => {
-      const manager = new FlagentManager(mockConfig);
-      manager.destroy();
+      const managerToDestroy = new FlagentManager(mockConfig);
+      managerToDestroy.destroy();
       // Just verify it doesn't throw
-      expect(manager).toBeDefined();
+      expect(managerToDestroy).toBeDefined();
     });
   });
 });

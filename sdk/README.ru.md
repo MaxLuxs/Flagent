@@ -13,6 +13,7 @@ SDK для Flagent API — платформы feature flags, A/B тестиро�
 | Swift | [`swift/`](./swift/) | Доступен | Нативный Swift клиент (iOS, macOS) |
 | Python | [`python/`](./python/) | Доступен | Async Python SDK (async/await) |
 | Go | [`go/`](./go/) | Доступен | Go SDK с `context.Context` |
+| Dart | [`dart/`](./dart/) | Доступен | Dart клиент (Flutter, iOS, Android, Web) |
 
 ## Enhanced SDKs
 
@@ -24,6 +25,7 @@ Enhanced SDK добавляют кэширование и удобные API п�
 | Swift | [`swift-enhanced/`](./swift-enhanced/) | Доступен | Swift SDK с кэшем |
 | JavaScript/TypeScript | [`javascript-enhanced/`](./javascript-enhanced/) | Доступен | TypeScript SDK с кэшем |
 | Go | [`go-enhanced/`](./go-enhanced/) | Доступен | Кэш, **client-side evaluation**, **SSE real-time** |
+| Dart/Flutter | [`flutter-enhanced/`](./flutter-enhanced/) | Доступен | Dart SDK с кэшем |
 
 ## Debug UI
 

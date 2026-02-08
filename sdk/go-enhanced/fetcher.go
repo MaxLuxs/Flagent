@@ -36,49 +36,49 @@ func (f *SnapshotFetcher) FetchSnapshot(ctx context.Context, ttlMs int64) (*Flag
 		Revision:  getRevision(serverSnapshot),
 	}
 
-	// Convert flags
+	// Convert flags (api.Flag uses Id, Segments, Variants - value types)
 	for _, serverFlag := range serverSnapshot.Flags {
-		if serverFlag.ID == nil {
+		if serverFlag.Id == 0 {
 			continue
 		}
 
 		localFlag := &LocalFlag{
-			ID:          *serverFlag.ID,
+			ID:          serverFlag.Id,
 			Key:         serverFlag.Key,
 			Enabled:     serverFlag.Enabled,
-			Description: getStringValue(serverFlag.Description),
-			EntityType:  getStringValue(serverFlag.EntityType),
+			Description: serverFlag.Description,
+			EntityType:  serverFlag.GetEntityType(),
 			Segments:    make([]*LocalSegment, 0),
 			Variants:    make([]*LocalVariant, 0),
 		}
 
 		// Convert segments
 		for _, serverSegment := range serverFlag.Segments {
-			if serverSegment.ID == nil {
+			if serverSegment.Id == 0 {
 				continue
 			}
 
 			localSegment := &LocalSegment{
-				ID:             *serverSegment.ID,
-				FlagID:         *serverFlag.ID,
-				Rank:           serverSegment.Rank,
-				RolloutPercent: serverSegment.RolloutPercent,
-				Description:    getStringValue(serverSegment.Description),
+				ID:             serverSegment.Id,
+				FlagID:         serverFlag.Id,
+				Rank:           int(serverSegment.Rank),
+				RolloutPercent: int(serverSegment.RolloutPercent),
+				Description:    serverSegment.Description,
 				Constraints:    make([]*LocalConstraint, 0),
 				Distributions:  make([]*LocalDistribution, 0),
 			}
 
 			// Convert constraints
 			for _, serverConstraint := range serverSegment.Constraints {
-				if serverConstraint.ID == nil {
+				if serverConstraint.Id == 0 {
 					continue
 				}
 
 				localConstraint := &LocalConstraint{
-					ID:       *serverConstraint.ID,
+					ID:       serverConstraint.Id,
 					Property: serverConstraint.Property,
 					Operator: serverConstraint.Operator,
-					Value:    getStringValue(serverConstraint.Value),
+					Value:    serverConstraint.Value,
 				}
 
 				localSegment.Constraints = append(localSegment.Constraints, localConstraint)
@@ -86,15 +86,20 @@ func (f *SnapshotFetcher) FetchSnapshot(ctx context.Context, ttlMs int64) (*Flag
 
 			// Convert distributions
 			for _, serverDist := range serverSegment.Distributions {
-				if serverDist.ID == nil {
+				if serverDist.Id == 0 {
 					continue
 				}
 
+				variantKey := ""
+				if serverDist.VariantKey.IsSet() && serverDist.VariantKey.Get() != nil {
+					variantKey = *serverDist.VariantKey.Get()
+				}
+
 				localDist := &LocalDistribution{
-					ID:         *serverDist.ID,
+					ID:         serverDist.Id,
 					VariantID:  serverDist.VariantID,
-					VariantKey: serverDist.VariantKey,
-					Percent:    serverDist.Percent,
+					VariantKey:  variantKey,
+					Percent:    int(serverDist.Percent),
 				}
 
 				localSegment.Distributions = append(localSegment.Distributions, localDist)
@@ -105,15 +110,22 @@ func (f *SnapshotFetcher) FetchSnapshot(ctx context.Context, ttlMs int64) (*Flag
 
 		// Convert variants
 		for _, serverVariant := range serverFlag.Variants {
-			if serverVariant.ID == nil {
+			if serverVariant.Id == 0 {
 				continue
 			}
 
+			attachment := make(map[string]interface{})
+			if serverVariant.Attachment != nil {
+				for k, v := range serverVariant.Attachment {
+					attachment[k] = v
+				}
+			}
+
 			localVariant := &LocalVariant{
-				ID:         *serverVariant.ID,
-				FlagID:     *serverFlag.ID,
+				ID:         serverVariant.Id,
+				FlagID:     serverFlag.Id,
 				Key:        serverVariant.Key,
-				Attachment: serverVariant.Attachment,
+				Attachment: attachment,
 			}
 
 			localFlag.Variants = append(localFlag.Variants, localVariant)
@@ -123,14 +135,6 @@ func (f *SnapshotFetcher) FetchSnapshot(ctx context.Context, ttlMs int64) (*Flag
 	}
 
 	return localSnapshot, nil
-}
-
-// getStringValue safely gets string value from pointer
-func getStringValue(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
 }
 
 // getRevision extracts revision from server snapshot

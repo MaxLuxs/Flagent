@@ -20,6 +20,7 @@ include(":java-client")
 include(":flagent-spring-boot-starter")
 include(":kotlin-enhanced")
 include(":kotlin-debug-ui")
+include(":flagent-koin")
 
 // Android sample
 include(":android-sample")
@@ -46,6 +47,7 @@ project(":java-client").projectDir = file("sdk/java")
 project(":flagent-spring-boot-starter").projectDir = file("sdk/spring-boot-starter")
 project(":kotlin-enhanced").projectDir = file("sdk/kotlin-enhanced")
 project(":kotlin-debug-ui").projectDir = file("sdk/kotlin-debug-ui")
+project(":flagent-koin").projectDir = file("sdk/flagent-koin")
 
 project(":android-sample").projectDir = file("sdk/android-sample")
 project(":android-sample:app").projectDir = file("sdk/android-sample/app")

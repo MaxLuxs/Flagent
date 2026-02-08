@@ -28,7 +28,9 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=[
-        "httpx>=0.24.0",
+        "aiohttp>=3.8.0",
+        "aiohttp-retry>=2.8.0",
+        "python-dateutil>=2.8.0",
         "pydantic>=2.0.0",
         "typing-extensions>=4.0.0",
     ],

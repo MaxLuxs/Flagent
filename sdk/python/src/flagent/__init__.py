@@ -10,32 +10,27 @@ Usage:
 """
 
 from .client import FlagentClient
-from .models import (
-    EvaluationResult,
-    EvaluationContext,
-    Flag,
-    Segment,
-    Variant,
-    Constraint,
-)
+from .models import EvaluationResult
 from .exceptions import (
     FlagentError,
     FlagNotFoundError,
     EvaluationError,
     NetworkError,
+    InvalidConfigError,
 )
+
+# Re-export generated models for advanced usage
+from flagent._generated.models import Flag, EvalContext
 
 __version__ = "0.1.5"
 __all__ = [
     "FlagentClient",
     "EvaluationResult",
-    "EvaluationContext",
     "Flag",
-    "Segment",
-    "Variant",
-    "Constraint",
+    "EvalContext",
     "FlagentError",
     "FlagNotFoundError",
     "EvaluationError",
     "NetworkError",
+    "InvalidConfigError",
 ]

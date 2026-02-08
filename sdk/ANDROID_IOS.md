@@ -4,8 +4,10 @@
 
 - **Android**: Используйте [Kotlin SDK](./kotlin/) - работает нативно на Android через JVM
 - **iOS**: Используйте [Swift SDK](./swift/) - нативный Swift SDK для iOS
+- **React Native**: Используйте [JavaScript SDK](./REACT_NATIVE.md) - `@flagent/client` + `@flagent/enhanced-client`
+- **Flutter**: Используйте [Dart SDK](./dart/) + [Flutter Enhanced](./flutter-enhanced/) (в разработке)
 
-Оба SDK генерируются из одной OpenAPI спецификации и полностью совместимы.
+Все base SDK генерируются из одной OpenAPI спецификации и полностью совместимы.
 
 ## Использование
 

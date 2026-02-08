@@ -189,6 +189,8 @@ tasks.test {
     environment("FLAGENT_JWT_AUTH_SECRET", "test-secret-at-least-32-characters-long")
     // E2ETest creates tenant via POST /admin/tenants; when enterprise is present AdminAuth requires X-Admin-Key
     environment("FLAGENT_ADMIN_API_KEY", "test-admin-key")
+    // IntegrationWebhookRoutesTest - GitHub webhook auto-create
+    environment("FLAGENT_GITHUB_AUTO_CREATE_FLAG", "true")
     reports {
         junitXml.required.set(false)
         html.required.set(false)
