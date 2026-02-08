@@ -85,6 +85,18 @@ class AnalyticsEventRepository {
             )
         }
     }
+
+    /**
+     * Delete analytics events older than cutoffMs (for retention/cleanup).
+     * @return number of deleted rows
+     */
+    suspend fun deleteOlderThan(cutoffMs: Long): Int = withContext(Dispatchers.IO) {
+        Database.transaction {
+            AnalyticsEvents.deleteWhere {
+                AnalyticsEvents.timestampMs less cutoffMs
+            }
+        }
+    }
 }
 
 @Serializable
