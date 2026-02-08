@@ -1,5 +1,6 @@
 package flagent.route
 
+import flagent.api.AuditLoggerRegistry
 import flagent.repository.Database
 import flagent.repository.impl.FlagRepository
 import flagent.service.FlagService
@@ -21,6 +22,7 @@ class FlagRoutesTest {
     @BeforeTest
     fun beforeTest() {
         Database.close()
+        AuditLoggerRegistry.logger = null
     }
 
     @Test
