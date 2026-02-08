@@ -30,6 +30,9 @@ services:
       PORT: 18000
       FLAGENT_DB_DBDRIVER: postgres
       FLAGENT_DB_DBCONNECTIONSTR: postgresql://flagent:flagent@postgres:5432/flagent
+      FLAGENT_ADMIN_EMAIL: admin@local
+      FLAGENT_ADMIN_PASSWORD: admin
+      FLAGENT_JWT_AUTH_SECRET: change-me-in-production-min-32-chars
     depends_on:
       postgres:
         condition: service_healthy

@@ -74,7 +74,6 @@
 Get Flagent running in under 5 minutes:
 
 ```bash
-# Using Docker (Recommended)
 docker pull ghcr.io/maxluxs/flagent
 docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 
@@ -82,7 +81,19 @@ docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 open http://localhost:18000
 ```
 
-Configure admin auth via `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. See [docs/guides/configuration.md](docs/guides/configuration.md).
+**Default credentials:** `admin@local` / `admin`
+
+For production: set `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET` (min 32 chars). See [Configuration](docs/guides/configuration.md).
+
+### Choose your path
+
+| Goal | Action |
+|------|--------|
+| Quick try (Docker) | `docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent` → http://localhost:18000 |
+| Development with UI | `./gradlew run` (backend 18000 + frontend 8080) |
+| Production | Docker Compose or K8s + PostgreSQL |
+
+**Requirements:** Java 21 for local run. JDK 21 required for `./gradlew run`.
 
 ## Self-Hosted (Open Source) from GitHub
 
@@ -120,7 +131,11 @@ Then open http://localhost:8080. Frontend defaults to edition `open_source` and 
 ```
 Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when present; open http://localhost:18000.
 
-**Docker:** The image at `ghcr.io/maxluxs/flagent` is backend-only (no UI in image). For full self-hosted UI, use option 2 or 3 above, or build frontend and mount it into a custom image.
+**Docker:** The image includes UI. Single `docker run` gives you full Flagent at http://localhost:18000.
+
+**Docker Compose (production-like):** For PostgreSQL and persistent data, use `docker compose up -d`. See [docker-compose.yml](docker-compose.yml).
+
+### Advanced: Enterprise
 
 **With Enterprise (internal submodule):** Admin login and protected `/admin/*` are available. See [frontend/EDITION_GUIDE.md](frontend/EDITION_GUIDE.md) for first run (admin env → login → create tenant) and [docs/guides/configuration.md](docs/guides/configuration.md) for Admin Auth variables.
 

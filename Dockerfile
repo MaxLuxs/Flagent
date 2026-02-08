@@ -17,14 +17,19 @@ COPY build.gradle.kts ./
 COPY settings.gradle.kts ./
 COPY gradle/libs.versions.toml ./gradle/
 
-# Copy source code
+# Copy source code (backend + frontend + deps for Gradle project structure)
 COPY shared ./shared
 COPY backend ./backend
+COPY frontend ./frontend
+COPY ktor-flagent ./ktor-flagent
+COPY sdk ./sdk
+COPY samples ./samples
 
-# Build the application
+# Build backend and frontend
 WORKDIR /app
 RUN chmod +x ./gradlew && \
-    ./gradlew :backend:installDist --no-daemon --stacktrace
+    ./gradlew :backend:installDist --no-daemon --stacktrace && \
+    ./gradlew :frontend:jsBrowserDevelopmentWebpack --no-daemon
 
 ######################################
 # Runtime stage
@@ -40,6 +45,7 @@ RUN apk add --no-cache tzdata && \
 
 # Copy built application from build stage
 COPY --from=build /app/backend/build/install/backend ./backend
+COPY --from=build /app/frontend/build/kotlin-webpack/js/developmentExecutable ./static
 
 # Set ownership
 RUN chown -R appuser:appgroup /app
@@ -52,6 +58,12 @@ ENV HOST=0.0.0.0
 ENV PORT=18000
 ENV FLAGENT_DB_DBDRIVER=sqlite3
 ENV FLAGENT_DB_DBCONNECTIONSTR=/data/flagent.sqlite
+ENV FLAGENT_STATIC_DIR=/app/static
+
+# Default credentials for dev (override in production)
+ENV FLAGENT_ADMIN_EMAIL=admin@local
+ENV FLAGENT_ADMIN_PASSWORD=admin
+ENV FLAGENT_JWT_AUTH_SECRET=dev-secret-min-32-chars-required-for-jwt
 
 # Expose port
 EXPOSE 18000

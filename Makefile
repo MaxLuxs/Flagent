@@ -37,6 +37,13 @@ docker-run:
 	@echo "Running Docker container..."
 	@docker run -it -p 18000:18000 -v flagent-data:/data flagent:latest
 
+.PHONY: docker-build-run
+docker-build-run:
+	@echo "Building and running Docker (detached)..."
+	@docker rm -f flagent-local 2>/dev/null || true
+	@docker build -t flagent:local . && docker run -d -p 18000:18000 --name flagent-local flagent:local
+	@echo "Flagent running at http://localhost:18000 (admin@local / admin)"
+
 .PHONY: lint
 lint:
 	@echo "Running linters..."
@@ -61,8 +68,9 @@ help:
 	@echo "  make test          - Run tests"
 	@echo "  make clean         - Clean build artifacts"
 	@echo "  make run           - Run the server locally"
-	@echo "  make docker-build  - Build Docker image"
-	@echo "  make docker-run    - Run Docker container"
+	@echo "  make docker-build      - Build Docker image"
+	@echo "  make docker-run        - Run Docker container"
+	@echo "  make docker-build-run  - Build and run Docker (detached, http://localhost:18000)"
 	@echo "  make lint          - Run linters"
 	@echo "  make test-coverage - Generate test coverage report"
 	@echo "  make serve-docs    - Serve documentation locally"
