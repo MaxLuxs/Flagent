@@ -291,19 +291,22 @@ class EvalCacheTest {
             enabled = true
         )
         
-        val repository = mockk<IFlagRepository> {
-            coEvery { findAll(preload = true) } returnsMany listOf(
-                listOf(flag1), // First call from start()
-                listOf(flag1, flag2) // Second call from refresh()
-            )
+        val fetcher = object : EvalCacheFetcher {
+            var callCount = 0
+            override suspend fun fetch(): List<Flag> {
+                callCount++
+                return when (callCount) {
+                    1 -> listOf(flag1)
+                    else -> listOf(flag1, flag2)
+                }
+            }
         }
+        val cache = EvalCache(flagRepository = null, fetcher = fetcher)
+        cache.refresh() // First load: flag1 only (no start() to avoid periodic refresh race)
         
-        val cache = EvalCache(repository)
-        cache.start() // This calls reloadCache() with first list (flag1 only)
-        
-        // After start, only flag1 should be in cache
+        // After first refresh, only flag1 should be in cache
         var result = cache.getByFlagKeyOrID(2)
-        assertNull(result, "flag2 should not be in cache after start")
+        assertNull(result, "flag2 should not be in cache after first refresh")
         
         // Verify flag1 is in cache
         result = cache.getByFlagKeyOrID(1)
@@ -315,15 +318,12 @@ class EvalCacheTest {
         
         // Now flag2 should be available
         result = cache.getByFlagKeyOrID(2)
-        assertNotNull(result, "flag2 should be in cache after refresh")
+        assertNotNull(result, "flag2 should be in cache after second refresh")
         assertEquals(flag2, result)
         
-        // flag1 should still be available
         result = cache.getByFlagKeyOrID(1)
-        assertNotNull(result, "flag1 should still be in cache after refresh")
+        assertNotNull(result, "flag1 should still be in cache after second refresh")
         assertEquals(flag1, result)
-        
-        cache.stop()
     }
     
     @Test
