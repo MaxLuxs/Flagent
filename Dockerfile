@@ -1,12 +1,12 @@
 ######################################
-# Build stage
+# Build stage (Debian-based: Gradle's Node.js binary requires glibc, Alpine uses musl)
 ######################################
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:21-jdk-jammy AS build
 
 WORKDIR /app
 
 # Install dependencies for building
-RUN apk add --no-cache git
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 
 # Copy Gradle wrapper and build files
 COPY gradlew ./
