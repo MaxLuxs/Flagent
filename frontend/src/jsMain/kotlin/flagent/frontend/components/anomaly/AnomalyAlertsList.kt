@@ -6,6 +6,7 @@ import flagent.frontend.components.Icon
 import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.SkeletonLoader
 import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.format
 import flagent.frontend.viewmodel.AnomalyViewModel
@@ -84,8 +85,8 @@ private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewMode
     Div({
         style {
             padding(16.px)
-            border(1.px, LineStyle.Solid, getSeverityColor(alert.severity))
-            backgroundColor(getSeverityBgColor(alert.severity))
+            border(1.px, LineStyle.Solid, getSeverityColor(alert.severity, themeMode))
+            backgroundColor(getSeverityBgColor(alert.severity, themeMode))
             borderRadius(6.px)
             marginBottom(12.px)
             opacity(if (alert.resolved) 0.6 else 1.0)
@@ -108,11 +109,11 @@ private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewMode
                         marginBottom(8.px)
                     }
                 }) {
-                    Icon("warning", size = 20.px, color = getSeverityColor(alert.severity))
+                    Icon("warning", size = 20.px, color = getSeverityColor(alert.severity, themeMode))
                     Span({
                         style {
                             padding(4.px, 8.px)
-                            backgroundColor(getSeverityColor(alert.severity))
+                            backgroundColor(getSeverityColor(alert.severity, themeMode))
                             color(Color.white)
                             borderRadius(4.px)
                             fontSize(12.px)
@@ -180,20 +181,28 @@ private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewMode
     }
 }
 
-private fun getSeverityColor(severity: AlertSeverity): CSSColorValue {
+private fun getSeverityColor(severity: AlertSeverity, themeMode: ThemeMode): CSSColorValue {
     return when (severity) {
-        AlertSeverity.LOW -> Color("#3B82F6")
+        AlertSeverity.LOW -> if (themeMode == ThemeMode.Dark) Color("#60A5FA") else Color("#3B82F6")
         AlertSeverity.MEDIUM -> Color("#F59E0B")
         AlertSeverity.HIGH -> Color("#EF4444")
-        AlertSeverity.CRITICAL -> Color("#991B1B")
+        AlertSeverity.CRITICAL -> if (themeMode == ThemeMode.Dark) Color("#FCA5A5") else Color("#991B1B")
     }
 }
 
-private fun getSeverityBgColor(severity: AlertSeverity): CSSColorValue {
-    return when (severity) {
-        AlertSeverity.LOW -> Color("#DBEAFE")
-        AlertSeverity.MEDIUM -> Color("#FEF3C7")
-        AlertSeverity.HIGH -> Color("#FEE2E2")
-        AlertSeverity.CRITICAL -> Color("#FEE2E2")
+private fun getSeverityBgColor(severity: AlertSeverity, themeMode: ThemeMode): CSSColorValue {
+    return when (themeMode) {
+        ThemeMode.Dark -> when (severity) {
+            AlertSeverity.LOW -> Color("rgba(59, 130, 246, 0.2)")
+            AlertSeverity.MEDIUM -> Color("rgba(245, 158, 11, 0.2)")
+            AlertSeverity.HIGH -> Color("rgba(239, 68, 68, 0.2)")
+            AlertSeverity.CRITICAL -> Color("rgba(239, 68, 68, 0.25)")
+        }
+        ThemeMode.Light -> when (severity) {
+            AlertSeverity.LOW -> Color("#DBEAFE")
+            AlertSeverity.MEDIUM -> Color("#FEF3C7")
+            AlertSeverity.HIGH -> Color("#FEE2E2")
+            AlertSeverity.CRITICAL -> Color("#FEE2E2")
+        }
     }
 }

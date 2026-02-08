@@ -32,14 +32,14 @@ fun DebugConsole(initialFlagKey: String? = null) {
     val themeMode = LocalThemeMode.current
     val activeSection = remember { mutableStateOf("single") } // "single" or "batch"
     
-    Div({
-        style {
-            padding(25.px)
-            border {
-                width(1.px)
-                style(LineStyle.Solid)
-                color(FlagentTheme.Border)
-            }
+        Div({
+            style {
+                padding(25.px)
+                border {
+                    width(1.px)
+                    style(LineStyle.Solid)
+                    color(FlagentTheme.cardBorder(themeMode))
+                }
             borderRadius(10.px)
             backgroundColor(FlagentTheme.cardBg(themeMode))
             property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
@@ -83,7 +83,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 display(DisplayStyle.Flex)
                 gap(8.px)
                 marginBottom(25.px)
-                property("border-bottom", "2px solid ${FlagentTheme.Border}")
+                property("border-bottom", "2px solid ${FlagentTheme.inputBorder(themeMode)}")
                 paddingBottom(0.px)
             }
         }) {
@@ -92,7 +92,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 style {
                     padding(12.px, 24.px)
                     property("background-color", "transparent")
-                    color(if (activeSection.value == "single") FlagentTheme.Primary else FlagentTheme.TextLight)
+                    color(if (activeSection.value == "single") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -109,19 +109,19 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 }
                 onMouseEnter {
                     if (activeSection.value != "single") {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.text(themeMode).toString()
                     }
                 }
                 onMouseLeave {
                     if (activeSection.value != "single") {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.TextLight.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                     }
                 }
             }) {
                 Icon(
                     name = "search",
                     size = 18.px,
-                    color = if (activeSection.value == "single") FlagentTheme.Primary else FlagentTheme.TextLight
+                    color = if (activeSection.value == "single") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
                 )
                 Text(LocalizedStrings.evaluation)
             }
@@ -130,7 +130,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 style {
                     padding(12.px, 24.px)
                     property("background-color", "transparent")
-                    color(if (activeSection.value == "batch") FlagentTheme.Primary else FlagentTheme.TextLight)
+                    color(if (activeSection.value == "batch") FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
                     border {
                         width(0.px)
                         style(LineStyle.None)
@@ -147,19 +147,19 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 }
                 onMouseEnter {
                     if (activeSection.value != "batch") {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.text(themeMode).toString()
                     }
                 }
                 onMouseLeave {
                     if (activeSection.value != "batch") {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.TextLight.toString()
+                        (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                     }
                 }
             }) {
                 Icon(
                     name = if (activeSection.value == "batch") "inventory_2" else "list",
                     size = 18.px,
-                    color = if (activeSection.value == "batch") FlagentTheme.Primary else FlagentTheme.TextLight
+                    color = if (activeSection.value == "batch") FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
                 )
                 Text(LocalizedStrings.batchEvaluation)
             }
@@ -177,6 +177,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
  */
 @Composable
 private fun SingleEvaluationSection(initialFlagKey: String?) {
+    val themeMode = LocalThemeMode.current
     val flagKey = remember { mutableStateOf(initialFlagKey ?: "") }
     val entityID = remember { mutableStateOf("a1234") }
     val entityType = remember { mutableStateOf("report") }
@@ -222,7 +223,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                     marginBottom(10.px)
                 }
             }) {
-                Span {
+                Span({ style { color(FlagentTheme.text(themeMode)) } }) {
                     Text(LocalizedStrings.request)
                 }
                 Button({
@@ -323,10 +324,12 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                         style {
                             width(100.percent)
                             padding(5.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -340,10 +343,12 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                         style {
                             width(100.percent)
                             padding(5.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -357,10 +362,12 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                         style {
                             width(100.percent)
                             padding(5.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -377,10 +384,12 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                             minHeight(150.px)
                             fontFamily("monospace")
                             fontSize(12.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -404,7 +413,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                                 cursor("pointer")
                             }
                         }
-                        Text(LocalizedStrings.enableDebug)
+                        Span({ style { color(FlagentTheme.text(themeMode)) } }) { Text(LocalizedStrings.enableDebug) }
                     }
                 }
             }
@@ -422,16 +431,16 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                     display(DisplayStyle.Block)
                 }
             }) {
-                Text(LocalizedStrings.response)
+                Span({ style { color(FlagentTheme.text(themeMode)) } }) { Text(LocalizedStrings.response) }
             }
             if (loading.value) {
                 Spinner()
             } else if (error.value != null) {
                 Div({
                     style {
-                        color(Color.red)
+                        color(FlagentTheme.errorText(themeMode))
                         padding(10.px)
-                        property("background-color", "rgba(239, 68, 68, 0.1)")
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
                         borderRadius(5.px)
                     }
                 }) {
@@ -441,11 +450,11 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                 Pre({
                     style {
                         padding(15.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(5.px)
                         overflow("auto")
@@ -454,6 +463,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                         fontSize(12.px)
                         whiteSpace("pre-wrap")
                         property("word-wrap", "break-word")
+                        color(FlagentTheme.text(themeMode))
                     }
                 }) {
                     Text(result.value!!)
@@ -462,15 +472,15 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                 Div({
                     style {
                         padding(15.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(5.px)
                         minHeight(200.px)
-                        color(FlagentTheme.TextLight)
+                        color(FlagentTheme.textLight(themeMode))
                     }
                 }) {
                     Text(LocalizedStrings.noResponseYet)
@@ -485,6 +495,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
  */
 @Composable
 private fun BatchEvaluationSection(initialFlagKey: String?) {
+    val themeMode = LocalThemeMode.current
     val entitiesJson = remember { mutableStateOf("""[
   {
     "entityID": "a1234",
@@ -544,7 +555,7 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                     marginBottom(10.px)
                 }
             }) {
-                Span {
+                Span({ style { color(FlagentTheme.text(themeMode)) } }) {
                     Text(LocalizedStrings.request)
                 }
                 Button({
@@ -645,10 +656,12 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                             minHeight(200.px)
                             fontFamily("monospace")
                             fontSize(12.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -663,10 +676,12 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                         style {
                             width(100.percent)
                             padding(5.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -681,10 +696,12 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                         style {
                             width(100.percent)
                             padding(5.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
                             border {
                                 width(1.px)
                                 style(LineStyle.Solid)
-                                color(FlagentTheme.Border)
+                                color(FlagentTheme.inputBorder(themeMode))
                             }
                             borderRadius(3.px)
                         }
@@ -708,7 +725,7 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                                 cursor("pointer")
                             }
                         }
-                        Text(LocalizedStrings.enableDebug)
+                        Span({ style { color(FlagentTheme.text(themeMode)) } }) { Text(LocalizedStrings.enableDebug) }
                     }
                 }
             }
@@ -726,16 +743,16 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                     display(DisplayStyle.Block)
                 }
             }) {
-                Text(LocalizedStrings.response)
+                Span({ style { color(FlagentTheme.text(themeMode)) } }) { Text(LocalizedStrings.response) }
             }
             if (loading.value) {
                 Spinner()
             } else if (error.value != null) {
                 Div({
                     style {
-                        color(Color.red)
+                        color(FlagentTheme.errorText(themeMode))
                         padding(10.px)
-                        property("background-color", "rgba(239, 68, 68, 0.1)")
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
                         borderRadius(5.px)
                     }
                 }) {
@@ -745,11 +762,11 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                 Pre({
                     style {
                         padding(15.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(5.px)
                         overflow("auto")
@@ -758,6 +775,7 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                         fontSize(12.px)
                         whiteSpace("pre-wrap")
                         property("word-wrap", "break-word")
+                        color(FlagentTheme.text(themeMode))
                     }
                 }) {
                     Text(result.value!!)
@@ -766,15 +784,15 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                 Div({
                     style {
                         padding(15.px)
-                        backgroundColor(FlagentTheme.BackgroundAlt)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(FlagentTheme.Border)
+                            color(FlagentTheme.inputBorder(themeMode))
                         }
                         borderRadius(5.px)
                         minHeight(200.px)
-                        color(FlagentTheme.TextLight)
+                        color(FlagentTheme.textLight(themeMode))
                     }
                 }) {
                     Text(LocalizedStrings.noResponseYet)

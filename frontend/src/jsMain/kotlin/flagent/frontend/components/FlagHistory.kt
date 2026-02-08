@@ -20,6 +20,7 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun FlagHistory(flagId: Int) {
+    val themeMode = LocalThemeMode.current
     val history = remember { mutableStateListOf<FlagSnapshotResponse>() }
     val loading = remember { mutableStateOf(true) }
     val error = remember { mutableStateOf<String?>(null) }
@@ -46,6 +47,7 @@ fun FlagHistory(flagId: Int) {
         H3({
             style {
                 margin(0.px, 0.px, 20.px, 0.px)
+                color(FlagentTheme.text(themeMode))
             }
         }) {
             Text(LocalizedStrings.flagHistory)
@@ -61,9 +63,9 @@ fun FlagHistory(flagId: Int) {
         } else if (error.value != null) {
             Div({
                 style {
-                    color(FlagentTheme.Error)
+                    color(FlagentTheme.errorText(themeMode))
                     padding(10.px)
-                    property("background-color", "rgba(239, 68, 68, 0.1)")
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(5.px)
                 }
             }) {
@@ -74,7 +76,7 @@ fun FlagHistory(flagId: Int) {
                 style {
                     padding(20.px)
                     textAlign("center")
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.textLight(themeMode))
                 }
             }) {
                 Text(LocalizedStrings.noHistory)
@@ -127,7 +129,7 @@ private fun SnapshotDiffCard(diff: DiffItem) {
             border {
                 width(1.px)
                 style(LineStyle.Solid)
-                color(FlagentTheme.Border)
+                color(FlagentTheme.cardBorder(themeMode))
             }
             borderRadius(5.px)
             backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -216,9 +218,9 @@ private fun SnapshotDiffCard(diff: DiffItem) {
             Div({
                 style {
                     padding(15.px)
-                    backgroundColor(FlagentTheme.BackgroundAlt)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     borderRadius(5.px)
-                    color(FlagentTheme.TextLight)
+                    color(FlagentTheme.textLight(themeMode))
                 }
             }) {
                 Text(LocalizedStrings.noChanges)
@@ -228,11 +230,11 @@ private fun SnapshotDiffCard(diff: DiffItem) {
                 id("diff-${diff.newSnapshot.id}")
                 style {
                     padding(15.px)
-                    backgroundColor(FlagentTheme.BackgroundAlt)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
                     border {
                         width(1.px)
                         style(LineStyle.Solid)
-                        color(FlagentTheme.Border)
+                        color(FlagentTheme.inputBorder(themeMode))
                     }
                     borderRadius(5.px)
                     overflow("auto")

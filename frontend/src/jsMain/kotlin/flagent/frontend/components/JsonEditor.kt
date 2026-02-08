@@ -106,7 +106,7 @@ fun JsonEditor(
                 }
                 onBlur {
                     val element = it.target as org.w3c.dom.HTMLElement
-                    element.style.borderColor = if (isValid.value) FlagentTheme.Border.toString() else FlagentTheme.Error.toString()
+                    element.style.borderColor = if (isValid.value) FlagentTheme.inputBorder(themeMode).toString() else FlagentTheme.Error.toString()
                 }
             }
         }
