@@ -101,6 +101,7 @@ fun Dashboard() {
                 style {
                     textAlign("center")
                     padding(40.px)
+                    color(FlagentTheme.textLight(themeMode))
                 }
             }) {
                 Text(flagent.frontend.i18n.LocalizedStrings.loading)
@@ -113,9 +114,9 @@ fun Dashboard() {
             Div({
                 style {
                     padding(20.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(8.px)
-                    color(Color("#DC2626"))
+                    color(FlagentTheme.errorText(themeMode))
                 }
             }) {
                 Text(error!!)
@@ -131,7 +132,7 @@ fun Dashboard() {
                     }) {
                         Button({
                             style {
-                                color(Color("#DC2626"))
+                                color(FlagentTheme.errorText(themeMode))
                                 textDecoration("underline")
                                 fontWeight("600")
                                 backgroundColor(Color("transparent"))
@@ -146,7 +147,7 @@ fun Dashboard() {
                         }
                         Button({
                             style {
-                                color(Color("#DC2626"))
+                                color(FlagentTheme.errorText(themeMode))
                                 textDecoration("underline")
                                 fontWeight("600")
                                 backgroundColor(Color("transparent"))
@@ -232,6 +233,7 @@ fun Dashboard() {
                                     fontSize(20.px)
                                     fontWeight("600")
                                     margin(0.px)
+                                    color(FlagentTheme.text(themeMode))
                                 }
                             }) {
                                 Text("🚨 Unresolved Alerts")

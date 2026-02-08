@@ -525,8 +525,8 @@ fun AnalyticsPage() {
                                         style {
                                             padding(4.px, 8.px)
                                             borderRadius(6.px)
-                                            backgroundColor(if (flag.enabled) Color("#D1FAE5") else FlagentTheme.inputBg(themeMode))
-                                            color(if (flag.enabled) Color("#065F46") else FlagentTheme.textLight(themeMode))
+                                            backgroundColor(if (flag.enabled) FlagentTheme.successBg(themeMode) else FlagentTheme.inputBg(themeMode))
+                                            color(if (flag.enabled) FlagentTheme.Success else FlagentTheme.textLight(themeMode))
                                         }
                                     }) {
                                         Text(if (flag.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled)

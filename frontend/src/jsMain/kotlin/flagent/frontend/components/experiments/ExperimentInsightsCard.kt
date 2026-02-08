@@ -198,8 +198,8 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                         style {
                             padding(6.px, 12.px)
                             borderRadius(6.px)
-                            backgroundColor(if (insights.isSignificant) Color("#D1FAE5") else Color("#FEF3C7"))
-                            color(if (insights.isSignificant) Color("#065F46") else Color("#92400E"))
+                            backgroundColor(if (insights.isSignificant) FlagentTheme.successBg(themeMode) else FlagentTheme.warningBg(themeMode))
+                            color(if (insights.isSignificant) FlagentTheme.Success else FlagentTheme.Warning)
                             fontSize(13.px)
                             fontWeight("500")
                         }
