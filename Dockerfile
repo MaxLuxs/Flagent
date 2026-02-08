@@ -34,7 +34,7 @@ ENV GRADLE_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
 WORKDIR /app
 RUN chmod +x ./gradlew
 
-RUN ./gradlew :backend:installDist --no-daemon --stacktrace -x dependencyCheck
+RUN ./gradlew :backend:installDist --no-daemon --stacktrace
 
 RUN ./gradlew :frontend:jsBrowserDevelopmentWebpack --no-daemon
 
