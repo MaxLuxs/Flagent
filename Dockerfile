@@ -24,12 +24,18 @@ COPY frontend ./frontend
 COPY ktor-flagent ./ktor-flagent
 COPY sdk ./sdk
 COPY samples ./samples
+COPY VERSION ./
 
-# Build backend and frontend
+# Limit Gradle heap in Docker so multi-platform build does not OOM (runner has ~7GB)
+ENV GRADLE_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
+
+# Build backend and frontend (separate RUNs for clearer CI logs on failure)
 WORKDIR /app
-RUN chmod +x ./gradlew && \
-    ./gradlew :backend:installDist --no-daemon --stacktrace && \
-    ./gradlew :frontend:jsBrowserDevelopmentWebpack --no-daemon
+RUN chmod +x ./gradlew
+
+RUN ./gradlew :backend:installDist --no-daemon --stacktrace
+
+RUN ./gradlew :frontend:jsBrowserDevelopmentWebpack --no-daemon
 
 ######################################
 # Runtime stage
