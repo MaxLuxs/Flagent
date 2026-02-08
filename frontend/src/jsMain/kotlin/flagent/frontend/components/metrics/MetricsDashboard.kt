@@ -162,7 +162,7 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                         marginBottom(24.px)
                     }
                 }) {
-                    MetricCard("Total evaluations", stats.evaluationCount.toString())
+                    MetricCard(themeMode, "Total evaluations", stats.evaluationCount.toString())
                 }
                 if (stats.timeSeries.isNotEmpty()) {
                     Div({
@@ -193,10 +193,10 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                     marginBottom(24.px)
                 }
             }) {
-                MetricCard("Count", agg.count.toString())
-                MetricCard("Average", agg.avg.format(2))
-                MetricCard("Min", agg.min.format(2))
-                MetricCard("Max", agg.max.format(2))
+                MetricCard(themeMode, "Count", agg.count.toString())
+                MetricCard(themeMode, "Average", agg.avg.format(2))
+                MetricCard(themeMode, "Min", agg.min.format(2))
+                MetricCard(themeMode, "Max", agg.max.format(2))
             }
         }
         
@@ -229,7 +229,7 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                 P({
                     style {
                         fontSize(14.px)
-                        color(Color("#64748B"))
+                        color(FlagentTheme.textLight(themeMode))
                         margin(0.px)
                         marginTop(16.px)
                     }
@@ -245,9 +245,9 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                 style {
                     marginTop(16.px)
                     padding(12.px)
-                    backgroundColor(Color("#FEE2E2"))
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(6.px)
-                    color(Color("#991B1B"))
+                    color(FlagentTheme.errorText(themeMode))
                     fontSize(14.px)
                 }
             }) {
@@ -258,19 +258,19 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
 }
 
 @Composable
-private fun MetricCard(label: String, value: String) {
+private fun MetricCard(themeMode: flagent.frontend.state.ThemeMode, label: String, value: String) {
     Div({
         style {
             padding(16.px)
-            backgroundColor(Color("#F8FAFC"))
+            backgroundColor(FlagentTheme.inputBg(themeMode))
             borderRadius(6.px)
-            border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+            border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
         }
     }) {
         P({
             style {
                 fontSize(12.px)
-                color(Color("#64748B"))
+                color(FlagentTheme.textLight(themeMode))
                 margin(0.px)
                 marginBottom(8.px)
                 textTransform("uppercase")
@@ -283,7 +283,7 @@ private fun MetricCard(label: String, value: String) {
             style {
                 fontSize(24.px)
                 fontWeight(600)
-                color(Color("#1E293B"))
+                color(FlagentTheme.text(themeMode))
                 margin(0.px)
             }
         }) {

@@ -88,7 +88,7 @@ fun CrashDashboard() {
                 marginBottom(24.px)
             }
         }) {
-            Icon("bug_report", size = 28.px, color = Color("#DC2626"))
+            Icon("bug_report", size = 28.px, color = FlagentTheme.Error)
             H2({
                 style {
                     fontSize(20.px)
