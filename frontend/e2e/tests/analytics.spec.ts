@@ -217,7 +217,7 @@ test.describe('Analytics per-flag metrics (Core) @oss', () => {
     const lastHourBtn = page.getByRole('button', {
       name: /Last Hour|Последний час/i,
     });
-    await expect(heading.or(lastHourBtn)).toBeVisible({ timeout: 15000 });
+    await expect(heading.or(lastHourBtn).first()).toBeVisible({ timeout: 15000 });
   });
 
   test('Flag metrics page shows evaluation count from seeded data', async ({
@@ -248,7 +248,7 @@ test.describe('Analytics per-flag metrics (Core) @oss', () => {
     const lastHourBtn = page.getByRole('button', {
       name: /Last Hour|Последний час/i,
     });
-    await expect(totalEvals.or(lastHourBtn)).toBeVisible({ timeout: 15000 });
+    await expect(totalEvals.or(lastHourBtn).first()).toBeVisible({ timeout: 15000 });
     const anyNumber = page.getByText(/\b[1-9]\d*\b/).first();
     await expect(anyNumber).toBeVisible({ timeout: 10000 });
   });
