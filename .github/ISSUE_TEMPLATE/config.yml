@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/MaxLuxs/Flagent/tree/main/flagent/docs
+    about: Check the docs before opening an issue
+  - name: Discussions
+    url: https://github.com/MaxLuxs/Flagent/discussions
+    about: Ask questions and discuss ideas
