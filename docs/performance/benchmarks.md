@@ -2,19 +2,6 @@
 
 Performance benchmarks for the evaluation API (`POST /api/v1/evaluation`).
 
-## Comparison (Evaluation API)
-
-| Metric       | Flagr (vegeta, 2000 req/s) | Flagent (k6, 2000 VUs) |
-|--------------|----------------------------|-------------------------|
-| Throughput   | ~2000 req/s                | Run locally to measure  |
-| Mean latency | ~0.37 ms                   | Target < 1 ms           |
-| p50          | ~0.33 ms                   | Target < 5 ms           |
-| p95          | ~0.6 ms                    | Target < 50 ms          |
-| p99          | ~1.4 ms                    | Target < 10 ms          |
-| Error rate   | 0%                         | Target < 1%             |
-
-Flagr benchmark source: [openflagr/flagr benchmark](https://github.com/openflagr/flagr/tree/master/benchmark) (vegeta, 100 workers).
-
 ## Target Metrics
 
 | Metric | Target | CI Threshold |
