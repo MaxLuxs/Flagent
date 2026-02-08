@@ -36,6 +36,23 @@ func TestNewClient(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, client)
 	})
+
+	t.Run("WithHTTPClient and WithRetryDelay", func(t *testing.T) {
+		hc := &http.Client{Timeout: 5 * time.Second}
+		client, err := NewClient(
+			"http://localhost:18000/api/v1",
+			WithHTTPClient(hc),
+			WithRetryDelay(time.Second),
+		)
+		require.NoError(t, err)
+		require.NotNil(t, client)
+	})
+
+	t.Run("WithAPIKey empty string does not set header", func(t *testing.T) {
+		client, err := NewClient("http://localhost:18000/api/v1", WithAPIKey(""))
+		require.NoError(t, err)
+		require.NotNil(t, client)
+	})
 }
 
 func TestEvaluate(t *testing.T) {
@@ -86,9 +103,48 @@ func TestEvaluate(t *testing.T) {
 		require.Error(t, err)
 		assert.IsType(t, &FlagNotFoundError{}, err)
 	})
+
+	t.Run("Evaluate with nil evalCtx", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			result := api.EvalResult{}
+			result.SetFlagKey("test")
+			json.NewEncoder(w).Encode(result)
+		}))
+		defer server.Close()
+		client, err := NewClient(server.URL)
+		require.NoError(t, err)
+		result, err := client.Evaluate(context.Background(), nil)
+		require.NoError(t, err)
+		assert.Equal(t, "test", result.GetFlagKey())
+	})
+
+	t.Run("Evaluate API error returns EvaluationError", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.Write([]byte(`{"message":"bad request"}`))
+		}))
+		defer server.Close()
+		client, err := NewClient(server.URL)
+		require.NoError(t, err)
+		_, err = client.Evaluate(context.Background(), &EvaluationContext{FlagKey: stringPtr("f1")})
+		require.Error(t, err)
+		assert.IsType(t, &EvaluationError{}, err)
+	})
 }
 
 func TestEvaluateBatch(t *testing.T) {
+	t.Run("nil request returns InvalidConfigError", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }))
+		defer server.Close()
+		client, err := NewClient(server.URL)
+		require.NoError(t, err)
+		_, err = client.EvaluateBatch(context.Background(), nil)
+		require.Error(t, err)
+		assert.IsType(t, &InvalidConfigError{}, err)
+	})
+
 	t.Run("successful batch evaluation", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/evaluation/batch", r.URL.Path)
@@ -124,6 +180,23 @@ func TestEvaluateBatch(t *testing.T) {
 		assert.Len(t, results, 2)
 		assert.Equal(t, "flag_a", results[0].GetFlagKey())
 		assert.Equal(t, "flag_b", results[1].GetFlagKey())
+	})
+
+	t.Run("API error returns EvaluationError", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.Write([]byte(`{"message":"invalid request"}`))
+		}))
+		defer server.Close()
+		client, err := NewClient(server.URL)
+		require.NoError(t, err)
+		_, err = client.EvaluateBatch(context.Background(), &BatchEvaluationRequest{
+			Entities: []EvaluationEntity{{EntityID: "u1"}},
+			FlagKeys: []string{"f1"},
+		})
+		require.Error(t, err)
+		assert.IsType(t, &EvaluationError{}, err)
 	})
 }
 
@@ -195,6 +268,38 @@ func TestListFlags(t *testing.T) {
 		assert.Equal(t, "flag_a", flags[0].Key)
 		assert.Equal(t, "flag_b", flags[1].Key)
 	})
+
+	t.Run("ListFlags with opts", func(t *testing.T) {
+		enabled := true
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "/flags", r.URL.Path)
+			q := r.URL.Query()
+			assert.Equal(t, "5", q.Get("limit"))
+			assert.Equal(t, "10", q.Get("offset"))
+			assert.Equal(t, "true", q.Get("enabled"))
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			json.NewEncoder(w).Encode([]api.Flag{})
+		}))
+		defer server.Close()
+		client, err := NewClient(server.URL)
+		require.NoError(t, err)
+		flags, err := client.ListFlags(context.Background(), &ListFlagsOptions{
+			Limit: 5, Offset: 10, Enabled: &enabled, Preload: false,
+		})
+		require.NoError(t, err)
+		assert.Empty(t, flags)
+	})
+}
+
+func TestConvertErrorAndEvaluatePaths(t *testing.T) {
+	t.Run("Evaluate network error returns NetworkError", func(t *testing.T) {
+		// Use unreachable host to trigger non-GenericOpenAPIError (connection refused etc)
+		client, err := NewClient("http://127.0.0.1:19999", WithTimeout(time.Millisecond))
+		require.NoError(t, err)
+		_, err = client.Evaluate(context.Background(), &EvaluationContext{FlagKey: stringPtr("f1")})
+		require.Error(t, err)
+		assert.IsType(t, &NetworkError{}, err)
+	})
 }
 
 func TestHealthCheck(t *testing.T) {
@@ -219,6 +324,20 @@ func TestHealthCheck(t *testing.T) {
 }
 
 func TestGetSnapshot(t *testing.T) {
+	t.Run("malformed JSON returns error", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.Write([]byte(`{invalid json`))
+		}))
+		defer server.Close()
+		client, err := NewClient(server.URL)
+		require.NoError(t, err)
+		_, err = client.GetSnapshot(context.Background())
+		require.Error(t, err)
+		// OpenAPI client returns GenericOpenAPIError for decode failures -> convertError yields EvaluationError
+		assert.IsType(t, &EvaluationError{}, err)
+	})
+
 	t.Run("successful get snapshot", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/export/eval_cache/json", r.URL.Path)

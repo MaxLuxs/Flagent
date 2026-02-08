@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, patch
 
 from flagent import FlagentClient
 from flagent.models import EvaluationResult
-from flagent.exceptions import FlagNotFoundError, NetworkError
+from flagent.exceptions import EvaluationError, FlagNotFoundError, NetworkError
 from flagent._generated.models import EvalResult
-from flagent._generated.exceptions import NotFoundException
+from flagent._generated.exceptions import ApiException, NotFoundException
 
 
 class TestFlagentClientInit:
@@ -65,6 +65,18 @@ class TestFlagentClientEvaluate:
             with pytest.raises(NetworkError):
                 await client.evaluate(flag_key="test")
 
+    @pytest.mark.asyncio
+    async def test_evaluate_api_error_raises_evaluation_error(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._evaluation_api,
+            "post_evaluation",
+            new_callable=AsyncMock,
+            side_effect=ApiException(status=400, reason="Bad Request", body="Invalid context"),
+        ):
+            with pytest.raises(EvaluationError):
+                await client.evaluate(flag_key="test")
+
 
 class TestFlagentClientEvaluateBatch:
     @pytest.mark.asyncio
@@ -91,6 +103,80 @@ class TestFlagentClientEvaluateBatch:
             assert len(results) == 2
             assert results[0].flag_key == "f1"
             assert results[1].variant_key == "variant_a"
+
+    @pytest.mark.asyncio
+    async def test_evaluate_batch_error(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._evaluation_api,
+            "post_evaluation_batch",
+            new_callable=AsyncMock,
+            side_effect=ApiException(status=400, reason="Bad Request", body="Invalid request"),
+        ):
+            with pytest.raises(EvaluationError):
+                await client.evaluate_batch(
+                    entities=[{"entityID": "user1"}],
+                    flag_keys=["f1"],
+                )
+
+
+class TestFlagentClientGetFlag:
+    @pytest.mark.asyncio
+    async def test_get_flag_success(self):
+        from flagent._generated.models import Flag
+
+        client = FlagentClient(base_url="http://test/api/v1")
+        mock_flag = Flag(
+            id=1,
+            key="test_flag",
+            description="",
+            enabled=True,
+            data_records_enabled=False,
+        )
+        with patch.object(
+            client._flag_api,
+            "get_flag",
+            new_callable=AsyncMock,
+            return_value=mock_flag,
+        ):
+            flag = await client.get_flag(flag_id=1)
+            assert flag.id == 1
+            assert flag.key == "test_flag"
+            assert flag.enabled is True
+
+    @pytest.mark.asyncio
+    async def test_get_flag_404_raises_flag_not_found(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._flag_api,
+            "get_flag",
+            new_callable=AsyncMock,
+            side_effect=NotFoundException(status=404, reason="Not Found", body="Flag not found"),
+        ):
+            with pytest.raises(FlagNotFoundError):
+                await client.get_flag(flag_id=999)
+
+
+class TestFlagentClientListFlags:
+    @pytest.mark.asyncio
+    async def test_list_flags_success(self):
+        from flagent._generated.models import Flag
+
+        client = FlagentClient(base_url="http://test/api/v1")
+        mock_flags = [
+            Flag(id=1, key="f1", description="", enabled=True, data_records_enabled=False),
+            Flag(id=2, key="f2", description="", enabled=False, data_records_enabled=False),
+        ]
+        with patch.object(
+            client._flag_api,
+            "find_flags",
+            new_callable=AsyncMock,
+            return_value=mock_flags,
+        ):
+            flags = await client.list_flags(limit=10, offset=0)
+            assert len(flags) == 2
+            assert flags[0].key == "f1"
+            assert flags[1].key == "f2"
 
 
 class TestFlagentClientHealthCheck:
@@ -120,3 +206,87 @@ class TestFlagentClientContextManager:
         ):
             async with FlagentClient(base_url="http://test/api/v1") as client:
                 assert client is not None
+
+    @pytest.mark.asyncio
+    async def test_close(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(client._api_client, "close", new_callable=AsyncMock) as mock_close:
+            await client.close()
+            mock_close.assert_called_once()
+
+
+class TestFlagentClientConvertError:
+    @pytest.mark.asyncio
+    async def test_evaluate_batch_404_raises_flag_not_found(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._evaluation_api,
+            "post_evaluation_batch",
+            new_callable=AsyncMock,
+            side_effect=NotFoundException(status=404, reason="Not Found", body="Not found"),
+        ):
+            with pytest.raises(FlagNotFoundError):
+                await client.evaluate_batch(
+                    entities=[{"entityID": "user1"}],
+                    flag_keys=["f1"],
+                )
+
+    @pytest.mark.asyncio
+    async def test_api_exception_500_raises_network_error(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._evaluation_api,
+            "post_evaluation",
+            new_callable=AsyncMock,
+            side_effect=ApiException(status=503, reason="Service Unavailable", body="Unavailable"),
+        ):
+            with pytest.raises(NetworkError):
+                await client.evaluate(flag_key="test")
+
+    @pytest.mark.asyncio
+    async def test_get_flag_api_error(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._flag_api,
+            "get_flag",
+            new_callable=AsyncMock,
+            side_effect=ApiException(status=400, reason="Bad Request", body="Invalid"),
+        ):
+            with pytest.raises(EvaluationError):
+                await client.get_flag(flag_id=1)
+
+    @pytest.mark.asyncio
+    async def test_list_flags_error(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._flag_api,
+            "find_flags",
+            new_callable=AsyncMock,
+            side_effect=ApiException(status=500, reason="Server Error", body="Error"),
+        ):
+            with pytest.raises(NetworkError):
+                await client.list_flags()
+
+    @pytest.mark.asyncio
+    async def test_health_check_error(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._health_api,
+            "get_health",
+            new_callable=AsyncMock,
+            side_effect=TimeoutError("Request timeout"),
+        ):
+            with pytest.raises(NetworkError):
+                await client.health_check()
+
+    @pytest.mark.asyncio
+    async def test_generic_exception_raises_evaluation_error(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._evaluation_api,
+            "post_evaluation",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("unexpected"),
+        ):
+            with pytest.raises(EvaluationError):
+                await client.evaluate(flag_key="test")

@@ -329,3 +329,41 @@ func TestFlagSnapshot_GetFlagByKey(t *testing.T) {
 		assert.Nil(t, flag)
 	})
 }
+
+func TestFlagSnapshot_GetFlagByID(t *testing.T) {
+	snapshot := &FlagSnapshot{
+		Flags: map[int64]*LocalFlag{
+			1: {ID: 1, Key: "flag_a"},
+			2: {ID: 2, Key: "flag_b"},
+		},
+	}
+	assert.NotNil(t, snapshot.GetFlagByID(1))
+	assert.NotNil(t, snapshot.GetFlagByID(2))
+	assert.Nil(t, snapshot.GetFlagByID(999))
+}
+
+func TestLocalEvaluator_EvaluateBatch(t *testing.T) {
+	evaluator := NewLocalEvaluator()
+	snapshot := &FlagSnapshot{
+		Flags: map[int64]*LocalFlag{
+			1: {
+				ID:      1,
+				Key:     "f1",
+				Enabled: true,
+				Segments: []*LocalSegment{{
+					ID: 1, FlagID: 1, Rank: 1, RolloutPercent: 100,
+					Constraints: nil,
+					Distributions: []*LocalDistribution{{ID: 1, VariantID: 1, VariantKey: "control", Percent: 100}},
+				}},
+				Variants: []*LocalVariant{{ID: 1, FlagID: 1, Key: "control"}},
+			},
+		},
+	}
+	key := "f1"
+	reqs := []*OfflineEvaluationRequest{
+		{FlagKey: &key, EntityID: "u1"},
+	}
+	results := evaluator.EvaluateBatch(reqs, snapshot)
+	require.Len(t, results, 1)
+	assert.True(t, results[0].IsEnabled())
+}

@@ -41,6 +41,21 @@ func TestNewManager(t *testing.T) {
 		assert.Equal(t, 10*time.Minute, manager.config.CacheTTL)
 		assert.True(t, manager.config.EnableDebugLogging)
 	})
+
+	t.Run("WithEnableCache false", func(t *testing.T) {
+		config := DefaultConfig().WithEnableCache(false)
+		manager := NewManager(client, config)
+		require.NotNil(t, manager)
+		assert.Nil(t, manager.cache)
+	})
+
+	t.Run("WithSnapshotRefreshInterval", func(t *testing.T) {
+		config := DefaultConfig().WithSnapshotRefreshInterval(100 * time.Millisecond)
+		manager := NewManager(client, config)
+		require.NotNil(t, manager)
+		time.Sleep(150 * time.Millisecond)
+		manager.Close()
+	})
 }
 
 func TestManagerEvaluate(t *testing.T) {
@@ -196,4 +211,31 @@ func TestManagerEvictExpired(t *testing.T) {
 
 	// Cache should be empty
 	assert.Equal(t, 0, cache.Size())
+}
+
+func TestManagerEvaluateBatch(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/evaluation/batch", r.URL.Path)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		res := api.EvaluationBatchResponse{
+			EvaluationResults: []api.EvalResult{
+				*makeEvalResult("f1", "control"),
+				*makeEvalResult("f2", "treatment"),
+			},
+		}
+		json.NewEncoder(w).Encode(res)
+	}))
+	defer server.Close()
+
+	client, err := flagent.NewClient(server.URL)
+	require.NoError(t, err)
+
+	manager := NewManager(client, DefaultConfig())
+	ctx := context.Background()
+
+	results, err := manager.EvaluateBatch(ctx, []string{"f1", "f2"}, []flagent.EvaluationEntity{{EntityID: "user1"}})
+	require.NoError(t, err)
+	assert.Len(t, results, 2)
+	assert.Equal(t, "f1", results[0].GetFlagKey())
+	assert.Equal(t, "f2", results[1].GetFlagKey())
 }
