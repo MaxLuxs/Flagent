@@ -55,3 +55,6 @@ project(":android-sample:app").projectDir = file("sdk/android-sample/app")
 project(":sample-ktor").projectDir = file("samples/ktor")
 project(":sample-kotlin").projectDir = file("samples/kotlin")
 project(":sample-spring-boot").projectDir = file("samples/spring-boot")
+
+// Gradle plugin (use via includeBuild)
+includeBuild("gradle-plugins/flagent-gradle-plugin")
