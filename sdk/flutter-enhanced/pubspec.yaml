@@ -3,6 +3,7 @@ description: Enhanced Flutter/Dart client for Flagent API with caching and conve
 version: 0.1.5
 homepage: https://github.com/MaxLuxs/Flagent
 repository: https://github.com/MaxLuxs/Flagent
+publish_to: none
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

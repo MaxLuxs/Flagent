@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flagent_client/flagent_client.dart';
 import 'package:flagent_enhanced/flagent_enhanced.dart';
 import 'package:test/test.dart';
 
