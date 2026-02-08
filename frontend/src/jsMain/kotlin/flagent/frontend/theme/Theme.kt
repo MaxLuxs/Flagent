@@ -108,4 +108,24 @@ object FlagentTheme {
         ThemeMode.Dark -> Color("#FCA5A5")
         ThemeMode.Light -> Color("#991B1B")
     }
+    /** Badge/tag background (Built-in, ENT, etc.) */
+    fun badgeBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> Color("rgba(255,255,255,0.12)")
+        ThemeMode.Light -> Color("#E5E7EB")
+    }
+    /** Badge/tag text color */
+    fun badgeText(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> WorkspaceTextLight
+        ThemeMode.Light -> TextLight
+    }
+    /** Success/enabled badge background (e.g. FeatureBadge) */
+    fun successBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> Color("rgba(16, 185, 129, 0.2)")
+        ThemeMode.Light -> Color("#D1FAE5")
+    }
+    /** Warning/not-significant badge background */
+    fun warningBg(mode: ThemeMode) = when (mode) {
+        ThemeMode.Dark -> Color("rgba(245, 158, 11, 0.2)")
+        ThemeMode.Light -> Color("#FEF3C7")
+    }
 }

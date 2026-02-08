@@ -127,6 +127,11 @@ object AppConfig {
 
     /** Documentation URL (GitHub Pages). */
     val docsUrl: String get() = "https://maxluxs.github.io/Flagent/"
+
+    /** SaaS URL for Flagent Cloud. null until SaaS is ready; use for "Try Flagent Cloud" CTA. */
+    val saasUrl: String? by lazy {
+        (js("window.ENV_SAAS_URL") as? String)?.takeIf { it.isNotBlank() }
+    }
     /** GitHub repository URL. */
     val githubUrl: String get() = "https://github.com/MaxLuxs/Flagent"
     /** Blog URL (GitHub Discussions or external). */
@@ -207,9 +212,10 @@ object AppConfig {
             isEnterprise && ((js("window.ENV_FEATURE_RBAC") as? String)?.toBoolean() ?: true)
         }
 
-        /** Crash Analytics dashboard (Enterprise only). */
+        /** Crash Analytics dashboard. OSS: always available. Enterprise: when enabled. */
         val enableCrashAnalytics: Boolean by lazy {
-            isEnterprise && ((js("window.ENV_FEATURE_CRASH_ANALYTICS") as? String)?.toBoolean() ?: true)
+            (js("window.ENV_FEATURE_CRASH_ANALYTICS") as? String)?.toBoolean()
+                ?: true
         }
     }
 }
