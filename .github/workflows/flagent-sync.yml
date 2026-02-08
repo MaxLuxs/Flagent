@@ -24,10 +24,10 @@ jobs:
         run: |
           FILE="${{ github.event.inputs.file || 'flags.yaml' }}"
           if [[ -f "$FILE" ]]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "file=$FILE" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "file=$FILE" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Sync flags to Flagent
