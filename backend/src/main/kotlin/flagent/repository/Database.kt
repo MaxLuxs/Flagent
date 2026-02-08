@@ -6,12 +6,14 @@ import flagent.config.AppConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import flagent.repository.tables.AnalyticsEvents
+import flagent.repository.tables.CrashReports
 import flagent.repository.tables.Constraints
 import flagent.repository.tables.Distributions
 import flagent.repository.tables.EvaluationEvents
@@ -81,37 +83,46 @@ object Database {
 
         logger.info { "Connected to database: ${AppConfig.dbDriver}" }
 
-        // Run migrations
-        runMigrations()
+        runMigrations(jdbcUrl, dbDriver)
     }
 
     /**
-     * Run database migrations
-     * Creates all tables if they don't exist
+     * Run database migrations.
+     * Uses Flyway for postgres/mysql when enabled; falls back to SchemaUtils for SQLite.
      */
-    private fun runMigrations() {
-        transaction(exposedDatabase!!) {
-            if (AppConfig.dbConnectionDebug) {
-                addLogger(StdOutSqlLogger)
+    private fun runMigrations(jdbcUrl: String, dbDriver: String) {
+        if (AppConfig.flywayEnabled && dbDriver == "postgres") {
+            val flyway = Flyway.configure()
+                .dataSource(dataSource!!)
+                .locations("classpath:db/migration")
+                .baselineOnMigrate(true)
+                .baselineVersion("1")
+                .load()
+            val result = flyway.migrate()
+            logger.info { "Flyway migrations completed: ${result.migrationsExecuted} applied" }
+        } else {
+            transaction(exposedDatabase!!) {
+                if (AppConfig.dbConnectionDebug) {
+                    addLogger(StdOutSqlLogger)
+                }
+                SchemaUtils.createMissingTablesAndColumns(
+                    Flags,
+                    Segments,
+                    Variants,
+                    Constraints,
+                    Distributions,
+                    Tags,
+                    FlagsTags,
+                    FlagSnapshots,
+                    FlagEntityTypes,
+                    Webhooks,
+                    Users,
+                    EvaluationEvents,
+                    AnalyticsEvents,
+                    CrashReports
+                )
+                logger.info { "Database migrations completed (SchemaUtils)" }
             }
-
-            // Create core Flagent tables only (enterprise creates its own tables when present)
-            SchemaUtils.createMissingTablesAndColumns(
-                Flags,
-                Segments,
-                Variants,
-                Constraints,
-                Distributions,
-                Tags,
-                FlagsTags,
-                FlagSnapshots,
-                FlagEntityTypes,
-                Webhooks,
-                Users,
-                EvaluationEvents,
-                AnalyticsEvents
-            )
-            logger.info { "Database migrations completed" }
         }
     }
 

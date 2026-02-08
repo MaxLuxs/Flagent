@@ -165,6 +165,26 @@ object AnalyticsEvents : LongIdTable("analytics_events") {
 }
 
 /**
+ * Crash reports table (OSS) - Firebase Crashlytics-level crash ingestion.
+ * tenantId nullable for OSS; Enterprise uses same table with tenant isolation.
+ */
+object CrashReports : LongIdTable("crash_reports") {
+    val stackTrace = text("stack_trace")
+    val message = text("message")
+    val platform = varchar("platform", 64)
+    val appVersion = varchar("app_version", 64).nullable()
+    val deviceInfo = text("device_info").nullable()
+    val breadcrumbs = text("breadcrumbs").nullable()
+    val customKeys = text("custom_keys").nullable()
+    val timestamp = long("timestamp").index("idx_crash_timestamp")
+    val tenantId = varchar("tenant_id", 255).nullable().index("idx_crash_tenant")
+    val createdAt = datetime("created_at")
+    init {
+        index(false, platform, timestamp)
+    }
+}
+
+/**
  * Users table
  */
 object Users : IntIdTable("users") {
