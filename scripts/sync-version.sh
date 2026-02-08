@@ -32,12 +32,36 @@ if [ -f helm/flagent/Chart.yaml ]; then
 fi
 
 # OpenAPI (API version)
-for f in docs/api/openapi.yaml sdk/java/api/openapi.yaml backend/src/main/resources/openapi/documentation.yaml; do
+for f in docs/api/openapi.yaml sdk/java/api/openapi.yaml sdk/go/api/api/openapi.yaml backend/src/main/resources/openapi/documentation.yaml; do
   if [ -f "$f" ]; then
     sed -i '' "s/^  version: .*/  version: $VERSION/" "$f" 2>/dev/null || true
     sed -i '' "s/version: \"[^\"]*\"/version: \"$VERSION\"/" "$f" 2>/dev/null || true
+    sed -i '' "s/version: [0-9][0-9.]*$/version: $VERSION/" "$f" 2>/dev/null || true
   fi
 done
+
+# Swagger UI static bundles (version in header and Info example)
+for f in docs/api-docs.html backend/docs/index.html; do
+  if [ -f "$f" ]; then
+    sed -i '' "s/Version: [0-9][0-9.]*/Version: $VERSION/" "$f"
+    sed -i '' "s/\"version\" : \"[0-9][0-9.]*\"/\"version\" : \"$VERSION\"/" "$f"
+  fi
+done
+
+# Flutter/Dart pubspec
+for f in sdk/flutter-enhanced/pubspec.yaml sdk/dart/pubspec.yaml samples/flutter/pubspec.yaml; do
+  if [ -f "$f" ]; then sed -i '' "s/^version: .*/version: $VERSION/" "$f"; fi
+done
+
+# docs/sdk.html (Flutter example)
+if [ -f docs/sdk.html ]; then
+  sed -i '' "s/flagent_client: \^[0-9][0-9.]*/flagent_client: ^$VERSION/" docs/sdk.html
+fi
+
+# sdk/java/build.gradle (standalone Maven/Gradle build)
+if [ -f sdk/java/build.gradle ]; then
+  sed -i '' "s/version = '[0-9][0-9.]*'/version = '$VERSION'/" sdk/java/build.gradle
+fi
 
 # sdk/java (pom project version is line 8)
 if [ -f sdk/java/pom.xml ]; then sed -i '' "8s/<version>.*<\/version>/<version>$VERSION<\/version>/" sdk/java/pom.xml; fi
@@ -93,14 +117,21 @@ for f in README.md README.ru.md docs/guides/getting-started.md docs/guides/getti
 done
 
 # SDK READMEs
-for f in sdk/kotlin/README.md sdk/kotlin-enhanced/README.md sdk/kotlin-debug-ui/README.md sdk/javascript/README.md sdk/javascript/README.ru.md sdk/swift/README.md sdk/swift-enhanced/README.md sdk/swift-debug-ui/README.md sdk/java/README.md sdk/spring-boot-starter/README.md sdk/ANDROID_IOS.md ktor-flagent/README.md; do
+for f in sdk/kotlin/README.md sdk/kotlin-enhanced/README.md sdk/kotlin-debug-ui/README.md sdk/javascript/README.md sdk/javascript/README.ru.md sdk/swift/README.md sdk/swift-enhanced/README.md sdk/swift-debug-ui/README.md sdk/java/README.md sdk/spring-boot-starter/README.md sdk/ANDROID_IOS.md sdk/README.md ktor-flagent/README.md; do
   if [ -f "$f" ]; then
     sed -i '' "s/\(com\.flagent:[a-z-]*:\)[0-9][0-9.]*/\1$VERSION/g" "$f" 2>/dev/null || true
     sed -i '' "s/<version>[0-9][0-9.]*<\/version>/<version>$VERSION<\/version>/" "$f" 2>/dev/null || true
     sed -i '' "s/from: \"[0-9][0-9.]*\"/from: \"$VERSION\"/" "$f" 2>/dev/null || true
     sed -i '' "s/@flagent\/client@[0-9][0-9.]*/@flagent\/client@$VERSION/g" "$f" 2>/dev/null || true
     sed -i '' "s/API version: [0-9][0-9.]*/API version: $VERSION/g" "$f" 2>/dev/null || true
+    sed -i '' "s/API version [0-9][0-9.]*\.x/API version ${VERSION%.*}.x/g" "$f" 2>/dev/null || true
   fi
 done
+
+# docs/script.js (i18n strings with API version)
+if [ -f docs/script.js ]; then
+  sed -i '' "s/API version [0-9][0-9.]*\.x/API version ${VERSION%.*}.x/g" docs/script.js
+  sed -i '' "s/версии [0-9][0-9.]*\.x/версии ${VERSION%.*}.x/g" docs/script.js
+fi
 
 echo "Synced version $VERSION to package.json, setup.py, Chart.yaml, OpenAPI, Java, backend, frontend, Go, Swift, docs, SDK READMEs. Gradle uses root VERSION file."

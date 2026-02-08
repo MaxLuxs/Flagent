@@ -125,8 +125,8 @@ object AppConfig {
         }
     }
 
-    /** Documentation URL (GitHub Pages). */
-    val docsUrl: String get() = "https://maxluxs.github.io/Flagent/"
+    /** Documentation URL (GitHub Pages, Docsify). */
+    val docsUrl: String get() = "https://maxluxs.github.io/Flagent/docs.html"
 
     /** SaaS URL for Flagent Cloud. null until SaaS is ready; use for "Try Flagent Cloud" CTA. */
     val saasUrl: String? by lazy {
