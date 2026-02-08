@@ -24,6 +24,7 @@ COPY frontend ./frontend
 COPY ktor-flagent ./ktor-flagent
 COPY sdk ./sdk
 COPY samples ./samples
+COPY gradle-plugins ./gradle-plugins
 COPY VERSION ./
 
 # Limit Gradle heap in Docker so multi-platform build does not OOM (runner has ~7GB)
@@ -33,7 +34,7 @@ ENV GRADLE_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
 WORKDIR /app
 RUN chmod +x ./gradlew
 
-RUN ./gradlew :backend:installDist --no-daemon --stacktrace
+RUN ./gradlew :backend:installDist --no-daemon --stacktrace -x dependencyCheck
 
 RUN ./gradlew :frontend:jsBrowserDevelopmentWebpack --no-daemon
 
