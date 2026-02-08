@@ -6,7 +6,7 @@ Koin DI module for Flagent Kotlin client. Auto-configures `HttpClient`, `Evaluat
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:flagent-koin:0.1.5")
+    implementation("com.flagent:flagent-koin:0.1.6")
     implementation("io.insert-koin:koin-android:4.0.0")  // for Android
     implementation("io.insert-koin:koin-androidx-compose:4.0.0")  // for Compose ViewModel
 }

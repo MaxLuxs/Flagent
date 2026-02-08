@@ -36,7 +36,7 @@ $GENERATOR_CMD generate \
     -i "$OPENAPI_SPEC" \
     -g dart-dio \
     -o "$OUTPUT_DIR" \
-    --additional-properties=pubName=flagent_client,pubVersion=0.1.5,pubDescription=Flagent_API_client,pubAuthor=Flagent_Team,pubHomepage=https://github.com/MaxLuxs/Flagent
+    --additional-properties=pubName=flagent_client,pubVersion=0.1.6,pubDescription=Flagent_API_client,pubAuthor=Flagent_Team,pubHomepage=https://github.com/MaxLuxs/Flagent
 
 echo "Dart SDK generated successfully in $OUTPUT_DIR"
 echo "Run: cd $OUTPUT_DIR && dart pub get && dart run build_runner build --delete-conflicting-outputs"

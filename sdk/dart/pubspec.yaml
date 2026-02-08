@@ -1,5 +1,5 @@
 name: flagent_client
-version: 0.1.5
+version: 0.1.6
 description: Flagent API client for Dart and Flutter. Auto-generated from OpenAPI.
 homepage: https://github.com/MaxLuxs/Flagent
 

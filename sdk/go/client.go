@@ -13,7 +13,7 @@ import (
 
 const (
 	defaultTimeout   = 30 * time.Second
-	defaultUserAgent = "flagent-go-client/0.1.5"
+	defaultUserAgent = "flagent-go-client/0.1.6"
 )
 
 // ClientOption is a function that configures a Client

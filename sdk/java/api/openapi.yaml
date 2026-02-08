@@ -20,7 +20,7 @@ info:
   license:
     name: MIT
   title: Flagent API
-  version: 0.1.5
+  version: 0.1.6
 servers:
 - description: Local development server
   url: http://localhost:18000/api/v1
@@ -1979,7 +1979,7 @@ components:
       type: object
     Info:
       example:
-        version: 0.1.5
+        version: 0.1.6
         buildTime: 2024-01-01T00:00:00Z
         gitCommit: abc123
       properties:

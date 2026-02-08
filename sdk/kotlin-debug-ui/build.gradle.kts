@@ -19,12 +19,12 @@ dependencies {
     if (findProject(":kotlin-client") != null) {
         implementation(project(":kotlin-client"))
     } else {
-        implementation("com.flagent:kotlin-client:0.1.5")
+        implementation("com.flagent:kotlin-client:0.1.6")
     }
     if (findProject(":kotlin-enhanced") != null) {
         implementation(project(":kotlin-enhanced"))
     } else {
-        implementation("com.flagent:kotlin-enhanced:0.1.5")
+        implementation("com.flagent:kotlin-enhanced:0.1.6")
     }
     implementation(libs.kotlinx.coroutines.core)
     val composeBom = platform(libs.compose.bom)

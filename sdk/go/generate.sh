@@ -36,7 +36,7 @@ $GENERATOR_CMD generate \
     -i "$OPENAPI_SPEC" \
     -g go \
     -o "$OUTPUT_DIR" \
-    --additional-properties=packageName=api,withGoMod=false,isGoSubmodule=true,packageVersion=0.1.5
+    --additional-properties=packageName=api,withGoMod=false,isGoSubmodule=true,packageVersion=0.1.6
 
 # Fix: OpenAPI Generator uses undefined FLAG_TAGS_OPERATOR type for inline enum
 for f in "$OUTPUT_DIR/model_eval_context.go" "$OUTPUT_DIR/model_evaluation_batch_request.go"; do

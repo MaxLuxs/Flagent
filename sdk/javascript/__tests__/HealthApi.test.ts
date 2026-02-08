@@ -31,11 +31,11 @@ describe('HealthApi', () => {
     const api = new HealthApi(config, 'https://api.example.com/api/v1', mockAxios);
 
     (mockAxios.request as jest.Mock).mockResolvedValue({
-      data: { version: '0.1.5' },
+      data: { version: '0.1.6' },
       status: 200,
     });
 
     const result = await api.getInfo();
-    expect(result.data.version).toBe('0.1.5');
+    expect(result.data.version).toBe('0.1.6');
   });
 });

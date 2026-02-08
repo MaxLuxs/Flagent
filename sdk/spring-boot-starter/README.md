@@ -15,14 +15,14 @@ From the Flagent repo (when published to Maven):
 <dependency>
   <groupId>com.flagent</groupId>
   <artifactId>flagent-spring-boot-starter</artifactId>
-  <version>0.1.5</version>
+  <version>0.1.6</version>
 </dependency>
 ```
 
 Or Gradle:
 
 ```kotlin
-implementation("com.flagent:flagent-spring-boot-starter:0.1.5")
+implementation("com.flagent:flagent-spring-boot-starter:0.1.6")
 ```
 
 ## Configuration

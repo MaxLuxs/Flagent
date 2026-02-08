@@ -135,7 +135,7 @@ packages:
       path: "../dart"
       relative: true
     source: path
-    version: "0.1.5"
+    version: "0.1.6"
   frontend_server_client:
     dependency: transitive
     description:

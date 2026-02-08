@@ -38,7 +38,7 @@ $GENERATOR_CMD generate \
     -i "$OPENAPI_SPEC" \
     -g python \
     -o "$TEMP_DIR" \
-    --additional-properties=packageName=openapi_client,packageVersion=0.1.5,library=asyncio,generateSourceCodeOnly=true,projectName=flagent-generated
+    --additional-properties=packageName=openapi_client,packageVersion=0.1.6,library=asyncio,generateSourceCodeOnly=true,projectName=flagent-generated
 
 # Remove old generated code
 rm -rf "$OUTPUT_DIR"

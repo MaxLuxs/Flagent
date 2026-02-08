@@ -29,14 +29,14 @@ Add dependency (when published):
 <dependency>
   <groupId>com.flagent</groupId>
   <artifactId>flagent-java-client</artifactId>
-  <version>0.1.5</version>
+  <version>0.1.6</version>
 </dependency>
 ```
 
 Or with Gradle:
 
 ```kotlin
-implementation("com.flagent:flagent-java-client:0.1.5")
+implementation("com.flagent:flagent-java-client:0.1.6")
 ```
 
 Example:

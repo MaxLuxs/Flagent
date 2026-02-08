@@ -23,7 +23,7 @@ Or when published to pub.dev:
 
 ```yaml
 dependencies:
-  flagent_enhanced: ^0.1.5
+  flagent_enhanced: ^0.1.6
 ```
 
 ## Usage
