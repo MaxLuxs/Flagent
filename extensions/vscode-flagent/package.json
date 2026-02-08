@@ -1,0 +1,61 @@
+{
+  "name": "flagent",
+  "displayName": "Flagent Feature Flags",
+  "description": "View and manage Flagent feature flags from VS Code",
+  "version": "0.1.0",
+  "publisher": "flagent",
+  "repository": { "type": "git", "url": "https://github.com/MaxLuxs/Flagent", "directory": "extensions/vscode-flagent" },
+  "bugs": { "url": "https://github.com/MaxLuxs/Flagent/issues" },
+  "homepage": "https://github.com/MaxLuxs/Flagent#readme",
+  "license": "Apache-2.0",
+  "engines": { "vscode": "^1.74.0" },
+  "categories": ["Other"],
+  "activationEvents": ["onView:flagentFlags"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "flagent.refresh", "title": "Refresh Flags" },
+      { "command": "flagent.copyKey", "title": "Copy Key" },
+      { "command": "flagent.insertSnippet", "title": "Insert Key" },
+      { "command": "flagent.configure", "title": "Open Settings" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "flagent.refresh", "when": "view == flagentFlags", "group": "navigation" },
+        { "command": "flagent.configure", "when": "view == flagentFlags", "group": "navigation" }
+      ],
+      "view/item/context": [
+        { "command": "flagent.copyKey", "when": "view == flagentFlags && viewItem == flag", "group": "1@1" },
+        { "command": "flagent.insertSnippet", "when": "view == flagentFlags && viewItem == flag", "group": "1@2" }
+      ]
+    },
+    "views": {
+      "explorer": [{ "id": "flagentFlags", "name": "Feature Flags" }]
+    },
+    "configuration": {
+      "properties": {
+        "flagent.baseUrl": { "type": "string", "default": "http://localhost:18000", "description": "Flagent API base URL" },
+        "flagent.apiKey": { "type": "string", "description": "API key for authentication (X-API-Key header)" }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "jest",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package --no-dependencies"
+  },
+  "dependencies": { "@flagent/client": "file:../../sdk/javascript" },
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.0",
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.74.0",
+    "axios": "^1.6.1",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  }
+}
