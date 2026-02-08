@@ -60,6 +60,10 @@ dependencies {
     // Database - Exposed
     implementation(libs.bundles.exposed)
 
+    // Database Migrations
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.database.postgresql)
+
     // Database Drivers
     implementation(libs.bundles.database.drivers)
     implementation(libs.hikaricp)
@@ -88,6 +92,9 @@ dependencies {
 
     // Firebase / Google Auth (for Remote Config REST API)
     implementation(libs.google.auth.library.oauth2.http)
+
+    // MCP (Model Context Protocol) - optional, for AI assistants integration
+    implementation(libs.kotlin.sdk.server)
 
     // Utilities
     implementation(libs.commons.lang3)

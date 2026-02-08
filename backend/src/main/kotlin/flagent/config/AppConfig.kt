@@ -16,6 +16,9 @@ object AppConfig {
     val workerPoolSize: Int = System.getenv("FLAGENT_WORKER_POOL_SIZE")?.toIntOrNull()
         ?: Runtime.getRuntime().availableProcessors()
 
+    // Static files (frontend). If set, backend serves UI from this directory (e.g. /app/static in Docker).
+    val staticDir: String? = System.getenv("FLAGENT_STATIC_DIR")?.takeIf { it.isNotBlank() }
+
     // Logging
     val logrusLevel: String = System.getenv("FLAGENT_LOGRUS_LEVEL") ?: "info"
     val logrusFormat: String = System.getenv("FLAGENT_LOGRUS_FORMAT") ?: "text"
@@ -51,6 +54,9 @@ object AppConfig {
 
     // Database
     val dbDriver: String = System.getenv("FLAGENT_DB_DBDRIVER") ?: "sqlite3"
+    val flywayEnabled: Boolean =
+        System.getenv("FLAGENT_FLYWAY_ENABLED")?.toBoolean()
+            ?: (dbDriver in listOf("postgres", "postgresql"))
 
     val evalOnlyMode: Boolean =
         System.getenv("FLAGENT_EVAL_ONLY_MODE")?.toBoolean() ?: (dbDriver in listOf(
@@ -65,6 +71,15 @@ object AppConfig {
     val dbConnectionRetryDelay: Duration =
         System.getenv("FLAGENT_DB_DBCONNECTION_RETRY_DELAY")?.let { parseDuration(it) }
             ?: 100.milliseconds
+
+    // Analytics events retention (cleanup job)
+    val analyticsRetentionDays: Int =
+        System.getenv("FLAGENT_ANALYTICS_RETENTION_DAYS")?.toIntOrNull() ?: 90
+    val analyticsCleanupEnabled: Boolean =
+        System.getenv("FLAGENT_ANALYTICS_CLEANUP_ENABLED")?.toBoolean() ?: true
+    val analyticsCleanupInterval: Duration =
+        System.getenv("FLAGENT_ANALYTICS_CLEANUP_INTERVAL")?.let { parseDuration(it) }
+            ?: 24.hours
 
     // Evaluation events retention (core metrics cleanup)
     val evaluationEventsRetentionDays: Int =
@@ -133,6 +148,10 @@ object AppConfig {
     val statsdAPMEnabled: Boolean = System.getenv("FLAGENT_STATSD_APM_ENABLED")?.toBoolean() ?: false
     val statsdAPMPort: String = System.getenv("FLAGENT_STATSD_APM_PORT") ?: "8126"
     val statsdAPMServiceName: String = System.getenv("FLAGENT_STATSD_APM_SERVICE_NAME") ?: "flagent"
+
+    // MCP (Model Context Protocol) - for AI assistants (Cursor, Claude, GigaChat)
+    val mcpEnabled: Boolean = System.getenv("FLAGENT_MCP_ENABLED")?.toBoolean() ?: false
+    val mcpPath: String = System.getenv("FLAGENT_MCP_PATH")?.takeIf { it.isNotBlank() } ?: "/mcp"
 
     // Prometheus
     val prometheusEnabled: Boolean = System.getenv("FLAGENT_PROMETHEUS_ENABLED")?.toBoolean() ?: false
@@ -286,6 +305,10 @@ object AppConfig {
 
     // Web Prefix
     val webPrefix: String = System.getenv("FLAGENT_WEB_PREFIX") ?: ""
+
+    // Frontend static files directory (takes precedence over FLAGENT_STATIC_DIR for frontend builds)
+    val frontendStaticDir: String? =
+        System.getenv("FLAGENT_FRONTEND_STATIC_DIR")?.takeIf { it.isNotBlank() }
 
     // Admin Auth (for POST /auth/login and /admin/* protection when used with enterprise)
     val adminAuthEnabled: Boolean = System.getenv("FLAGENT_ADMIN_AUTH_ENABLED")?.toBoolean() ?: true

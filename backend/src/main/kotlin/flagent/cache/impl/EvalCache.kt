@@ -40,16 +40,23 @@ class EvalCache(
     private var snapshot: CacheSnapshot = CacheSnapshot(emptyMap(), emptyMap(), emptyMap())
     
     /**
-     * Start periodic cache refresh
+     * Start periodic cache refresh. Initial load and subsequent refreshes run asynchronously.
+     * First requests may see empty cache until initial load completes (cold start).
      */
     fun start() {
-        // Initial load
-        runBlocking {
-            reloadCache()
-        }
-        
-        // Periodic refresh
         cacheScope.launch {
+            try {
+                withTimeout(AppConfig.evalCacheRefreshTimeout) {
+                    reloadCache()
+                }
+            } catch (e: Exception) {
+                val isClosed = generateSequence<Throwable>(e) { it.cause }.any { it.message?.contains("has been closed") == true }
+                if (isClosed) {
+                    logger.debug { "EvalCache initial load skipped: DB closed" }
+                } else {
+                    logger.error(e) { "Failed to reload evaluation cache on start" }
+                }
+            }
             while (isActive) {
                 delay(AppConfig.evalCacheRefreshInterval)
                 try {
@@ -57,7 +64,6 @@ class EvalCache(
                         reloadCache()
                     }
                 } catch (e: Exception) {
-                    // During shutdown/tests DB may be closed; avoid noisy stack trace
                     val isClosed = generateSequence<Throwable>(e) { it.cause }.any { it.message?.contains("has been closed") == true }
                     if (isClosed) {
                         logger.debug { "EvalCache refresh skipped: DB closed" }
