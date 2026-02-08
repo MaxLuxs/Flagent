@@ -23,6 +23,18 @@ PORT=18000
 ENVIRONMENT=production
 ```
 
+### Статические файлы (Frontend UI)
+
+Когда backend отдаёт admin UI из того же процесса, он ищет статику в нескольких путях. Используйте `FLAGENT_STATIC_DIR` для переопределения (например, в Docker):
+
+```bash
+# Абсолютный путь к директории со собранным frontend (index.html, frontend.js и т.д.)
+# При установке backend отдаёт UI из этой директории. Используется в Docker-образе (/app/static).
+FLAGENT_STATIC_DIR=/app/static
+```
+
+Если не задано, backend ищет относительно рабочей директории: `frontend/build/kotlin-webpack/js/productionExecutable`, `frontend/build/dist/js/productionExecutable` и т.д.
+
 ### Логирование
 
 ```bash

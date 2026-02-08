@@ -27,7 +27,7 @@ open http://localhost:18000
 ```
 
 **Default credentials:**
-- Username: `admin`
+- Email: `admin@local`
 - Password: `admin`
 
 ## Docker Compose (with PostgreSQL)

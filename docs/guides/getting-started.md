@@ -50,7 +50,7 @@ http://localhost:18000
 ```
 
 **Default credentials:**
-- Username: `admin`
+- Email: `admin@local`
 - Password: `admin`
 
 ### 3. Create Your First Flag
@@ -427,6 +427,29 @@ manager.enableRealtimeUpdates(baseUrl = "http://localhost:18000")
 ```
 
 See [Real-Time Updates Guide](https://github.com/MaxLuxs/Flagent/blob/main/sdk/kotlin-enhanced/REALTIME_UPDATES.md)
+
+## Troubleshooting: First Run
+
+### Cannot log in (500 or "Admin credentials not configured")
+
+1. **Docker:** The image has default credentials. For custom setup:
+   ```bash
+   docker run -d -p 18000:18000 \
+     -e FLAGENT_ADMIN_EMAIL=admin@local \
+     -e FLAGENT_ADMIN_PASSWORD=admin \
+     -e FLAGENT_JWT_AUTH_SECRET=your-secret-min-32-chars \
+     ghcr.io/maxluxs/flagent
+   ```
+2. **Login uses email**, not username — use `admin@local`, not `admin`.
+3. **JWT secret** must be at least 32 characters.
+
+### UnsupportedClassVersionError
+
+Java 21 is required. Set `JAVA_HOME` to JDK 21 or use Gradle's toolchain.
+
+### No UI at localhost:18000
+
+Docker image includes UI. If you see only Swagger at /docs, ensure you use the latest image. For self-built backend, run `./gradlew :frontend:jsBrowserDevelopmentWebpack` before `./gradlew :backend:run`.
 
 ## Next Steps
 

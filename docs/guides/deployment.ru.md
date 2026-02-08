@@ -27,7 +27,7 @@ open http://localhost:18000
 ```
 
 **Данные по умолчанию:**
-- Имя пользователя: `admin`
+- Email: `admin@local`
 - Пароль: `admin`
 
 ## Docker Compose (с PostgreSQL)

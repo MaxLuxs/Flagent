@@ -161,7 +161,7 @@ const translations = {
         'docker.step3.desc': 'Откройте браузер и перейдите на:',
         'docker.step4.title': 'Step 4: Default Credentials',
         'docker.step4.desc': 'Если аутентификация включена, используйте:',
-        'docker.step4.username': 'Username:',
+        'docker.step4.username': 'Email:',
         'docker.step4.password': 'Password:',
         'docker.step5.title': 'Step 5: Verify Installation',
         'docker.step5.desc': 'Проверьте, что сервер работает:',
@@ -210,7 +210,7 @@ const translations = {
         'troubleshooting.db.title': 'Database Connection Issues',
         'troubleshooting.db.desc': 'Убедитесь, что строка подключения к БД правильная и база данных доступна. Проверьте логи контейнера для деталей.',
         'troubleshooting.auth.title': 'Authentication Issues',
-        'troubleshooting.auth.desc': 'Если включена аутентификация, используйте правильные credentials. По умолчанию: admin/admin. Проверьте настройки через переменные окружения.'
+        'troubleshooting.auth.desc': 'Если включена аутентификация, используйте правильные credentials. По умолчанию: admin@local / admin. Проверьте настройки через переменные окружения.'
     },
     en: {
         'title': 'Flagent - Feature Management Platform | Open Source Feature Flags',
@@ -373,7 +373,7 @@ const translations = {
         'docker.step3.desc': 'Open your browser and navigate to:',
         'docker.step4.title': 'Step 4: Default Credentials',
         'docker.step4.desc': 'If authentication is enabled, use:',
-        'docker.step4.username': 'Username:',
+        'docker.step4.username': 'Email:',
         'docker.step4.password': 'Password:',
         'docker.step5.title': 'Step 5: Verify Installation',
         'docker.step5.desc': 'Verify that the server is running:',
@@ -422,7 +422,7 @@ const translations = {
         'troubleshooting.db.title': 'Database Connection Issues',
         'troubleshooting.db.desc': 'Make sure the database connection string is correct and database is accessible. Check container logs for details.',
         'troubleshooting.auth.title': 'Authentication Issues',
-        'troubleshooting.auth.desc': 'If authentication is enabled, use correct credentials. Default: admin/admin. Check settings via environment variables.'
+        'troubleshooting.auth.desc': 'If authentication is enabled, use correct credentials. Default: admin@local / admin. Check settings via environment variables.'
     }
 };
 

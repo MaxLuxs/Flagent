@@ -15,6 +15,12 @@ Feature flags, A/B testing, dynamic configuration. Documentation index.
 
 ---
 
+## Flagent Cloud — Coming Soon
+
+Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags and A/B testing as a service. [Home](index.html)
+
+---
+
 ## Guides
 
 | Topic | EN | RU |

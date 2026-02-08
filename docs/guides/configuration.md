@@ -26,6 +26,18 @@ FLAGENT_WORKER_POOL_SIZE=8
 ENVIRONMENT=production
 ```
 
+### Static Files (Frontend UI)
+
+When the backend serves the admin UI from the same process, it looks for static files in several locations. Use `FLAGENT_STATIC_DIR` to override (e.g. in Docker):
+
+```bash
+# Absolute path to directory with built frontend (index.html, frontend.js, etc.)
+# When set, backend serves UI from this directory. Used in Docker image (/app/static).
+FLAGENT_STATIC_DIR=/app/static
+```
+
+If not set, the backend searches relative to the working directory: `frontend/build/kotlin-webpack/js/productionExecutable`, `frontend/build/dist/js/productionExecutable`, etc.
+
 ### Logging
 
 ```bash
@@ -375,6 +387,43 @@ FLAGENT_FIREBASE_ANALYTICS_CLIENT_ID_KEY=client_id
 ```
 
 **Required:** Pass `app_instance_id` (Firebase app) or `client_id` (web) in `entityContext` when evaluating so events attach to the correct user in GA4.
+
+## Analytics Retention
+
+Control retention of analytics events (Firebase-level: first_open, session_start, screen_view, custom).
+
+```bash
+# Retention days (default: 90)
+FLAGENT_ANALYTICS_RETENTION_DAYS=90
+
+# Enable cleanup job (default: true)
+FLAGENT_ANALYTICS_CLEANUP_ENABLED=true
+
+# Cleanup interval (default: 24h). Examples: 1h, 12h, 24h
+FLAGENT_ANALYTICS_CLEANUP_INTERVAL=24h
+```
+
+## MCP (Model Context Protocol)
+
+MCP enables AI assistants (Cursor, Claude, GigaChat, DeepSeek) to access Flagent configurations and evaluate flags. Connect via Streamable HTTP or SSE transport.
+
+```bash
+# Enable MCP server (default: false)
+FLAGENT_MCP_ENABLED=true
+
+# MCP endpoint path (default: /mcp)
+FLAGENT_MCP_PATH=/mcp
+```
+
+**Tools:** `evaluate_flag`, `list_flags`, `get_flag`  
+**Resources:** `flagent://flags`, `flagent://config/snapshot`
+
+**Connect with MCP Inspector:**
+```bash
+npx -y @modelcontextprotocol/inspector --connect http://localhost:18000/mcp
+```
+
+For Cursor: add to MCP settings with transport `http` and URL `http://localhost:18000/mcp`.
 
 ## Example Configuration Files
 
