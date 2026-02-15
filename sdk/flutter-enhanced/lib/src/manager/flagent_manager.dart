@@ -70,6 +70,35 @@ class FlagentManager {
     }
   }
 
+  /// Convenience method: returns true if the flag evaluates to an "on" variant.
+  ///
+  /// Calls [evaluate] and interprets [EvalResult.variantKey]: non-null and not
+  /// `off`/`false`/`0` (case-insensitive) means enabled. On error or missing
+  /// variant, returns [defaultValue].
+  Future<bool> isEnabled({
+    required String flagKey,
+    required String entityID,
+    String? entityType,
+    Map<String, dynamic>? entityContext,
+    bool defaultValue = false,
+  }) async {
+    try {
+      final result = await evaluate(
+        flagKey: flagKey,
+        entityID: entityID,
+        entityType: entityType,
+        entityContext: entityContext,
+      );
+      final key = result.variantKey;
+      if (key == null || key.isEmpty) return defaultValue;
+      final lower = key.toLowerCase();
+      if (lower == 'off' || lower == 'false' || lower == '0') return false;
+      return true;
+    } catch (_) {
+      return defaultValue;
+    }
+  }
+
   /// Evaluate a flag for a given entity context.
   Future<EvalResult> evaluate({
     String? flagKey,

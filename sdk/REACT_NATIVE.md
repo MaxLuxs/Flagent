@@ -15,19 +15,15 @@ yarn add @flagent/client @flagent/enhanced-client
 ### Базовый вариант (с кэшем)
 
 ```tsx
-import { Configuration } from '@flagent/client';
-import { FlagentManager } from '@flagent/enhanced-client';
+import { Flagent } from '@flagent/enhanced-client';
 
 // Один раз при старте приложения
-const configuration = new Configuration({
+const client = Flagent.create({
   basePath: 'https://api.example.com/api/v1',
-  // Добавьте API key если нужна аутентификация:
-  // accessToken: 'your-api-key',
-});
-
-const manager = new FlagentManager(configuration, {
   cacheTtlMs: 5 * 60 * 1000, // 5 минут
   enableCache: true,
+  // Аутентификация при необходимости:
+  // accessToken: 'your-api-key',
 });
 
 // В компоненте или хуке
@@ -35,7 +31,7 @@ const MyComponent = () => {
   const [variant, setVariant] = useState<string | null>(null);
 
   useEffect(() => {
-    manager
+    client
       .evaluate({
         flagKey: 'new_feature',
         entityID: 'user123',
@@ -58,7 +54,7 @@ const useFeatureFlag = (flagKey: string, entityID?: string) => {
   return useQuery({
     queryKey: ['flag', flagKey, entityID],
     queryFn: () =>
-      manager.evaluate({
+      client.evaluate({
         flagKey,
         entityID: entityID ?? 'anonymous',
       }),
@@ -68,7 +64,7 @@ const useFeatureFlag = (flagKey: string, entityID?: string) => {
 
 // Использование
 const { data } = useFeatureFlag('new_feature', 'user123');
-const isEnabled = data?.variantKey != null;
+const isEnabled = data?.variantKey != null && data.variantKey !== 'control';
 ```
 
 ### Опционально: Persistent Cache (AsyncStorage)

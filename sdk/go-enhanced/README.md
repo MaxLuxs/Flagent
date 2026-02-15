@@ -22,13 +22,55 @@ go get github.com/MaxLuxs/Flagent/sdk/go-enhanced
 
 **Note**: This library depends on the base Flagent Go SDK (`github.com/MaxLuxs/Flagent/sdk/go`).
 
-## Quick Start Guide
+## Recommended: unified client (NewFlagent)
+
+Create a client in one call; use only `Evaluate`, `IsEnabled`, and `EvaluateBatch`. No need to choose between base client, Manager, or OfflineManager—mode is set in options.
+
+```go
+import (
+    "context"
+    "log"
+
+    enhanced "github.com/MaxLuxs/Flagent/sdk/go-enhanced"
+)
+
+func main() {
+    ctx := context.Background()
+    opts := enhanced.DefaultOptions()
+    opts.Offline = false // server-side evaluation; set true for client-side/offline
+
+    client, err := enhanced.NewFlagent(ctx, "http://localhost:18000/api/v1", opts)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer client.Close()
+
+    // Evaluate / IsEnabled / EvaluateBatch
+    res, _ := client.Evaluate(ctx, "new_feature", "user123", nil)
+    if res.Enabled {
+        log.Println("Feature is enabled, variant:", res.VariantKey)
+    }
+
+    ok, _ := client.IsEnabled(ctx, "new_feature", "user123", nil)
+    if ok {
+        // feature on
+    }
+}
+```
+
+**Offline (client-side evaluation):** set `opts.Offline = true`. `NewFlagent` will bootstrap the snapshot; then use the same `Evaluate` / `IsEnabled` / `EvaluateBatch` API.
+
+**Options:** `Options` (see `DefaultOptions()`) supports `BaseURL`, `APIKey`, `HTTPClient`, `Timeout`, `Offline`, cache and TTL for server mode, persistence and refresh for offline mode, and `EnableDebugLogging`. The returned value implements the `Client` interface (`Evaluate`, `IsEnabled`, `EvaluateBatch`, `Close`).
+
+---
+
+## Quick Start Guide (advanced: direct Manager / OfflineManager)
 
 ### Option 1: Server-Side Evaluation (Traditional)
 
 Best for: Real-time updates, server-controlled flags
 
-### Option 2: Client-Side Evaluation (Recommended) ⭐
+### Option 2: Client-Side Evaluation ⭐
 
 Best for: Low latency, offline support, reduced server load
 
@@ -43,7 +85,7 @@ import (
     enhanced "github.com/MaxLuxs/Flagent/sdk/go-enhanced"
 )
 
-// Setup (once on app start)
+// Setup (once on app start) — alternative to NewFlagent
 client, _ := flagent.NewClient("http://localhost:18000/api/v1")
 manager := enhanced.NewOfflineManager(client, enhanced.DefaultOfflineConfig())
 defer manager.Close()
@@ -73,7 +115,7 @@ if result.IsEnabled() {
 
 ### Server-Side Evaluation (Traditional)
 
-### Basic Setup
+### Basic Setup (direct Manager — advanced)
 
 ```go
 import (
@@ -419,16 +461,15 @@ go test -race ./...
 ## Migration from Base SDK
 
 ```go
-// Before (Base SDK)
-client, _ := flagent.NewClient("http://localhost:18000/api/v1")
-result, err := client.Evaluate(ctx, &flagent.EvaluationContext{
-    FlagKey:  flagent.StringPtr("feature"),
-    EntityID: flagent.StringPtr("user123"),
-})
+// Recommended: unified client (one entry point)
+client, _ := enhanced.NewFlagent(ctx, "http://localhost:18000/api/v1", enhanced.DefaultOptions())
+defer client.Close()
+res, _ := client.Evaluate(ctx, "feature", "user123", nil)
+// res.Enabled, res.VariantKey, res.FlagKey, res.EntityID
 
-// After (Enhanced SDK)
-client, _ := flagent.NewClient("http://localhost:18000/api/v1")
-manager := enhanced.NewManager(client, enhanced.DefaultConfig())
+// Alternative: direct Manager (advanced)
+baseClient, _ := flagent.NewClient("http://localhost:18000/api/v1")
+manager := enhanced.NewManager(baseClient, enhanced.DefaultConfig())
 result, err := manager.Evaluate(ctx, "feature", "user123", nil)
 ```
 
