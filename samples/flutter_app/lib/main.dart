@@ -27,8 +27,8 @@ class FlagentApp extends StatelessWidget {
             .replaceFirst('127.0.0.1', '10.0.2.2')
         : basePath;
 
-    final manager = FlagentManager(
-      resolved,
+    final manager = Flagent.create(
+      baseUrl: resolved,
       config: const FlagentConfig(
         cacheTtlMs: 5 * 60 * 1000,
         enableCache: true,
