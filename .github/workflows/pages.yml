@@ -34,7 +34,7 @@ jobs:
           cp -r docs/* deploy/
           cp docs/.nojekyll deploy/ 2>/dev/null || true
           cp docs/gh_pages/index.html deploy/index.html
-          cp docs/index.html deploy/api-reference.html
+          cp docs/api-reference.html deploy/api-reference.html
           sed -i 's|href="../|href="|g' deploy/index.html
           sed -i 's|src="../|src="|g' deploy/index.html
           rm -rf deploy/internal

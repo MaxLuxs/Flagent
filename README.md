@@ -228,12 +228,12 @@ export PORT=18000
 
 ## 📚 SDKs
 
-Official SDKs available for multiple platforms:
+Official SDKs available for multiple platforms. The Kotlin SDK is **full Kotlin Multiplatform (KMP)**: `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, and `flagent-koin` support JVM, Android, iOS, JS, and Native (linuxX64, mingwX64, macosX64).
 
 | Language | Package | Status | Features |
 |----------|---------|--------|----------|
-| **Kotlin** | [flagent-kotlin](sdk/kotlin) | ✅ Stable | Full API support, coroutines |
-| **Kotlin Enhanced** | [kotlin-enhanced](sdk/kotlin-enhanced) | ✅ Stable | Client-side eval, real-time updates |
+| **Kotlin (KMP)** | [kotlin-client](sdk/kotlin) | ✅ Stable | Full API, JVM/Android/iOS/JS/Native |
+| **Kotlin Enhanced** | [kotlin-enhanced](sdk/kotlin-enhanced) | ✅ Stable | Client-side eval, real-time, KMP |
 | **JavaScript/TypeScript** | [flagent-js](sdk/javascript) | ✅ Stable | Full API support, async/await |
 | **Swift** | [flagent-swift](sdk/swift) | ✅ Stable | Full API support, async/await |
 | **Python** | [flagent-python](sdk/python) | ✅ Stable | Full API support, asyncio |
