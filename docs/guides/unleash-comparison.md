@@ -19,7 +19,7 @@ This document summarizes open-source Unleash functionality and how Flagent compa
 | **SDK** | Client SDKs (many languages) | ✅ KMP SDK (Android, iOS, JVM, JS), Ktor plugin |
 | **Offline / cache** | Varies by SDK | ✅ Offline-first, TTL cache, bootstrap |
 | **Admin UI** | React app | ✅ Compose for Web (Kotlin/JS) |
-| **GitOps / Export** | Export/import | ✅ YAML/JSON export, GitOps guide |
+| **GitOps / Export** | Export/import | ✅ YAML/JSON import and export, CLI script, GitOps guide |
 | **Webhooks** | Yes | ✅ Flag events |
 | **Audit** | Enterprise | ✅ Snapshots, history (OSS) |
 | **MCP / AI** | — | ✅ MCP server (evaluate, list, create, update, analyze) |

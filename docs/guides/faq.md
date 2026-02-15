@@ -190,7 +190,7 @@ See [Configuration](configuration.md#authentication-configuration) for details.
 
 ### Can I use OAuth or SAML?
 
-OAuth and SAML support is planned for future releases. Currently, you can use JWT tokens or API keys.
+Yes, in the **Enterprise** build (internal module): SAML and OAuth/OIDC providers are supported, tenant-scoped. Users log in via your IdP (e.g. Okta, Auth0, Azure AD); the server issues a JWT with `tenant_id`. Without Enterprise, use JWT tokens or API keys (X-API-Key).
 
 ### Is my data secure?
 
@@ -277,14 +277,11 @@ Yes! Create a feature request on [GitHub](https://github.com/MaxLuxs/Flagent/iss
 
 ## Roadmap
 
-### What features are planned?
+### What's available and what's planned?
 
-Upcoming features:
-- GitOps integration (feature flags as code)
-- Advanced analytics with ML insights
-- More SDKs (Python, Go, Java, .NET)
-- Multi-region support
-- Enterprise SSO (SAML, OIDC, LDAP)
+**Available now:** YAML/JSON import (POST /import) and export from Settings; CLI script (`scripts/flagent-cli.sh`) and GitHub webhook for PR-based flag creation; Python, Go, Java SDKs; Enterprise (internal module): multi-tenancy, SSO (SAML, OIDC), RBAC, Smart Rollout, Anomaly Detection.
+
+**Planned:** CLI as a released binary, more webhooks/integrations, advanced analytics, .NET SDK, multi-region, audit logs. LDAP not implemented.
 
 See [Roadmap](roadmap.md) for full details.
 

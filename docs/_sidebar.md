@@ -43,6 +43,7 @@
 * **Architecture & Features**
   * [Backend](architecture/backend.md)
   * [Frontend](architecture/frontend.md)
+  * [Design System](design-system/README.md)
   * [Evaluation Spec](architecture/evaluation-spec.md)
   * [Offline-First SDK](features/offline-first-sdk.md)
   * [Performance](features/performance-optimizations.md)

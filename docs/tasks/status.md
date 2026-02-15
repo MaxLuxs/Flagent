@@ -18,11 +18,12 @@
 1. **Documentation** — keep improving guides (configuration, testing, MCP, frontend UI), add or update examples where needed.
 2. **Optional: Projects polish** — filter flags by `projectId` (GET `/flags?projectId=…`), link API key to Instance for Projects (if desired).
 3. **Optional: Newsletter** — connect landing-page “Subscribe” (LandingFooter) to a backend endpoint or external provider (e.g. Mailchimp/SendGrid) when needed.
-4. **Q2+** — Feature flags as code (YAML/CLI), webhooks (see roadmap).
+4. **Q2+** — YAML/JSON import/export and CLI script are done; released CLI binary and more webhooks (see roadmap).
 
 ## Running tests
 
 - Default: `./gradlew :backend:test` (e2e excluded).
 - With E2E: `./gradlew :backend:test -PincludeE2E`.
-- Frontend: `./gradlew :frontend:jsTest`; E2E: see [demo-data](guides/demo-data.md).
+- Frontend: `./gradlew :frontend:jsTest`; E2E: see [demo-data](../guides/demo-data.md).
 - Dart SDK: `cd sdk/dart && dart test`.
+- Samples & SDK (Kotlin Debug UI, Flutter App): see [Testing (samples & SDK)](verification-and-tests.md).
