@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Why I built Flagent: feature flags that actually fit. By Maxim, Android developer.">
+    <title>Why I built Flagent — Flagent Blog</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .article-page { padding: var(--spacing-2xl) 0; max-width: 720px; margin: 0 auto; }
+        .article-header { margin-bottom: var(--spacing-xl); }
+        .article-header h1 { font-size: 1.75rem; line-height: 1.3; margin-bottom: 0.5rem; }
+        .article-meta { color: var(--color-text-lighter); font-size: 0.875rem; margin-bottom: var(--spacing-md); }
+        .article-meta a { color: var(--color-primary); }
+        .article-body { font-size: 1.0625rem; line-height: 1.7; }
+        .article-body h2 { font-size: 1.25rem; margin-top: var(--spacing-xl); margin-bottom: 0.5rem; }
+        .article-body h3 { font-size: 1.1rem; margin-top: var(--spacing-lg); margin-bottom: 0.5rem; }
+        .article-body p { margin-bottom: 1rem; }
+        .article-body ul, .article-body ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .article-body li { margin-bottom: 0.25rem; }
+        .article-body code { background: var(--color-bg-alt); padding: 0.15em 0.4em; border-radius: var(--radius-sm); font-size: 0.9em; }
+        .article-body pre { background: var(--color-bg-dark); padding: var(--spacing-md); border-radius: var(--radius-md); overflow-x: auto; margin-bottom: 1rem; }
+        .article-body pre code { background: none; padding: 0; }
+        .article-body strong { font-weight: 600; }
+        .back-link { display: inline-block; margin-bottom: var(--spacing-lg); color: var(--color-primary); text-decoration: none; font-size: 0.95rem; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <a href="../index.html" style="text-decoration: none;"><span class="logo-text">Flagent</span></a>
+                </div>
+                <div class="nav-links">
+                    <a href="../index.html">Home</a>
+                    <a href="../quickstart.html">Quick Start</a>
+                    <a href="../sdk.html">SDKs</a>
+                    <a href="../api-docs.html">API</a>
+                    <a href="../docs.html">Docs</a>
+                    <a href="index.html" style="font-weight: 600;">Blog</a>
+                    <div class="lang-switcher">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="ru">RU</button>
+                    </div>
+                    <a href="https://github.com/MaxLuxs/Flagent" class="nav-github" target="_blank" rel="noopener">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="article-page">
+        <div class="container">
+            <a href="index.html" class="back-link">← Blog</a>
+
+            <article>
+                <header class="article-header">
+                    <h1>Why I built Flagent: feature flags that actually fit</h1>
+                    <div class="article-meta">15 Feb 2026 · <a href="2026-02-15-intro-ru.html">Русский</a></div>
+                </header>
+
+                <div class="article-body">
+                    <p>Hi. I’m <strong>Maxim</strong>, and I’ve been building Android apps for about five years. Over time I kept running into the same problem: I wanted feature flags, gradual rollouts, and a way to experiment without betting the whole release on one big deploy — but nothing I tried really fit.</p>
+
+                    <p>Either the stack didn’t match (no proper Kotlin-native story), or it was too heavy for what I needed, or it was yet another SaaS I had to wire into our pipeline. So at some point I thought: why not build something that fits the way I work?</p>
+
+                    <h2>What I was missing</h2>
+                    <p>I wanted:</p>
+                    <ul>
+                        <li><strong>Feature flags</strong> — turn things on and off without a new app release.</li>
+                        <li><strong>Experimentation</strong> — A/B tests and rollouts with clear rules, not ad‑hoc ifs in code.</li>
+                        <li><strong>Faster, safer releases</strong> — ship often, hide behind flags, and kill a feature in one click if something goes wrong.</li>
+                        <li>Something that plays nice with <strong>Kotlin</strong> and the rest of my stack, not a bolt-on from another ecosystem.</li>
+                    </ul>
+                    <p>I looked at what’s out there and took ideas from several systems, but I couldn’t find one that was “this is exactly what I need.” So I started a pet project. That project is <strong>Flagent</strong>.</p>
+
+                    <h2>What Flagent is today</h2>
+                    <p>It’s an open-source feature-flag and experimentation backend plus a small admin UI. You can self-host it and plug it into your apps. Right now it already has:</p>
+                    <ul>
+                        <li><strong>Backend</strong> — Ktor, Clean Architecture, PostgreSQL / MySQL / SQLite.</li>
+                        <li><strong>Admin UI</strong> — Compose for Web: flags, segments, variants, constraints, a debug console.</li>
+                        <li><strong>SDKs</strong> — Kotlin (including an “enhanced” one with offline eval and real-time updates), JavaScript/TS, Swift, Python, Go. Plus a Ktor plugin for server-side evaluation.</li>
+                        <li><strong>Evaluation</strong> — deterministic bucketing (MurmurHash3), targeting by segments and constraints.</li>
+                        <li><strong>Client-side evaluation</strong> in Kotlin and Go — evaluate locally, no round-trip for every check.</li>
+                        <li><strong>Real-time updates</strong> (SSE) so clients get new flag state without polling.</li>
+                    </ul>
+                    <p>So it’s already usable: you can run the server, create flags, connect an SDK, and start gating features or running simple experiments. I use ideas from other platforms, but the design and implementation are tuned for what I care about: type safety, coroutines, and something I can host myself.</p>
+
+                    <h2>How to use it</h2>
+                    <p>Get the server up:</p>
+                    <pre><code>docker run -p 18000:18000 ghcr.io/maxluxs/flagent</code></pre>
+                    <p>Open <code>http://localhost:18000</code>, log in (default <code>admin@local</code> / <code>admin</code>), create a flag, grab an API key. Then in your app you add the SDK and evaluate:</p>
+                    <pre><code>if (client.isEnabled("my-feature")) {
+    // new behaviour
+} else {
+    // old behaviour
+}</code></pre>
+                    <p>For the full walkthrough, see the <a href="../quickstart.html">Quick Start</a> and the <a href="../docs.html">docs</a>. There are guides for configuration, deployment, SDKs, and the API.</p>
+
+                    <h2>Where it’s going</h2>
+                    <p>Right now it’s a side project. I’m building it for my own needs first, but I’d like it to grow into something others can rely on too — better docs, more integrations, maybe a managed option later. I’m not promising a fixed roadmap; I’m just sharing what exists and where I’d like to take it.</p>
+
+                    <p>If this resonates — you’re on Kotlin or Ktor, or you just want a simple self-hosted flag server — I’d really appreciate your support: try it, star the repo, open an issue or a discussion, or share how you’d use it. That feedback is what will shape the next steps.</p>
+
+                    <p>Thanks for reading. You can find the project on <a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a> and more in the <a href="../docs.html">documentation</a>.</p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Flagent</h4>
+                    <p class="footer-description">Open source feature flagging, A/B testing, and dynamic configuration. Kotlin/Ktor, Apache 2.0.</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Documentation</h4>
+                    <ul class="footer-links">
+                        <li><a href="../docs.html">Docs</a></li>
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="../quickstart.html">Quick Start</a></li>
+                        <li><a href="index.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a></li>
+                        <li><a href="https://github.com/sponsors/MaxLuxs" target="_blank" rel="noopener">Sponsor</a></li>
+                        <li><a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener">Issues</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Flagent. Open source under Apache 2.0</p>
+            </div>
+        </div>
+    </footer>
+    <script src="../script.js"></script>
+</body>
+</html>
