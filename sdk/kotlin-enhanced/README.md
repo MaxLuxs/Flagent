@@ -22,151 +22,151 @@ dependencies {
 
 **Note**: This library depends on the base Flagent Kotlin SDK (`com.flagent:kotlin-client`).
 
-## Quick Start Guide
+## Quick Start (recommended)
 
-### Option 1: Server-Side Evaluation (Traditional)
+Use **`Flagent.builder()`** as the single entry point. No need to deal with EvaluationApi, ExportApi, or FlagentManager vs OfflineFlagentManager.
 
-Best for: Real-time updates, server-controlled flags
-
-### Option 2: Client-Side Evaluation (Recommended) ⭐
-
-Best for: Low latency, offline support, reduced server load
-
-📖 **[Full Client-Side Evaluation Guide](CLIENT_SIDE_EVALUATION.md)**
+### Server-side (HTTP evaluation)
 
 ```kotlin
-import com.flagent.enhanced.manager.OfflineFlagentManager
-import com.flagent.enhanced.config.OfflineFlagentConfig
+import com.flagent.enhanced.entry.Flagent
+import com.flagent.enhanced.entry.FlagentClient
 
-// Setup (once on app start)
-val manager = OfflineFlagentManager(exportApi, flagApi, config)
-manager.bootstrap() // Loads snapshot
+val client: FlagentClient = Flagent.builder()
+    .baseUrl("https://api.example.com/api/v1")
+    .cache(true, ttlMs = 5 * 60 * 1000L)
+    .build()
 
-// Evaluate (local, < 1ms, no API call)
-val result = manager.evaluate(
-    flagKey = "new_feature",
-    entityID = "user123",
-    entityContext = mapOf("tier" to "premium")
-)
-
-if (result.isEnabled()) {
-    // Feature is enabled
+val result = client.evaluate(flagKey = "new_feature", entityID = "user123")
+if (client.isEnabled("new_feature", "user123")) {
+    // feature is on
 }
 ```
 
-**Benefits**:
-- 🚀 50-200x faster (< 1ms vs 50-200ms)
-- 📴 Works offline
-- 💰 90%+ server load reduction
-- 📦 Persistent caching
+### Offline / client-side (local snapshot evaluation)
+
+```kotlin
+import com.flagent.enhanced.entry.Flagent
+import com.flagent.enhanced.entry.FlagentMode
+
+val client = Flagent.builder()
+    .baseUrl("https://api.example.com/api/v1")
+    .mode(FlagentMode.OFFLINE)
+    .build()
+
+client.initialize() // load snapshot once
+val result = client.evaluate(flagKey = "new_feature", entityID = "user123")
+```
+
+📖 **[Full Client-Side Evaluation Guide](CLIENT_SIDE_EVALUATION.md)**
 
 ---
 
 ## Usage
 
-### Server-Side Evaluation (Traditional)
+### Builder options
 
-### Basic Setup
+| Method | Description |
+|--------|-------------|
+| `baseUrl(url)` | API base URL (required) |
+| `httpClientEngine(engine)` | Custom HTTP engine (optional) |
+| `auth { api -> api.setBearerToken("...") }` | Auth (optional) |
+| `cache(enable, ttlMs)` | Evaluation cache (default: on) |
+| `mode(FlagentMode.SERVER \| OFFLINE)` | Server or local evaluation |
+| `offlineConfig(config)` | Offline config (snapshot TTL, auto-refresh, etc.) |
 
-```kotlin
-import com.flagent.client.apis.EvaluationApi
-import com.flagent.enhanced.manager.FlagentManager
-import com.flagent.enhanced.config.FlagentConfig
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-
-// Create base API client
-val httpClient = HttpClient(CIO)
-val evaluationApi = EvaluationApi(
-    baseUrl = "https://api.example.com/api/v1",
-    httpClientEngine = httpClient.engine
-)
-
-// Create enhanced manager with caching
-val config = FlagentConfig(
-    cacheTtlMs = 5 * 60 * 1000L, // 5 minutes
-    enableCache = true
-)
-
-val manager = FlagentManager(evaluationApi, config)
-```
-
-### Evaluate a Flag
+### Evaluate and isEnabled
 
 ```kotlin
-// Single evaluation with caching
-val result = manager.evaluate(
+val result = client.evaluate(
     flagKey = "new_feature",
     entityID = "user123",
     entityType = "user",
-    entityContext = mapOf(
-        "region" to "US",
-        "tier" to "premium"
-    )
+    entityContext = mapOf("region" to "US", "tier" to "premium")
 )
-
 println("Variant: ${result.variantKey}")
+
+if (client.isEnabled("new_feature", "user123")) { ... }
 ```
 
-### Batch Evaluation
+### From Java (blocking API)
+
+Use `buildBlocking()` to get a blocking client (no coroutines):
+
+```java
+import com.flagent.enhanced.entry.Flagent;
+import com.flagent.enhanced.entry.FlagentClientBlocking;
+
+FlagentClientBlocking client = Flagent.INSTANCE.builder()
+    .baseUrl("https://api.example.com/api/v1")
+    .cache(true, 300_000L)
+    .buildBlocking();
+
+EvalResult result = client.evaluate("new_feature", null, "user123", null, null, false);
+boolean on = client.isEnabled("new_feature", "user123", null, null);
+```
+
+See [Java client README](../java/README.md) for dependency and Spring Boot option.
+
+### Batch evaluation
 
 ```kotlin
 import com.flagent.client.models.EvaluationEntity
 
 val entities = listOf(
-    EvaluationEntity(
-        entityID = "user123",
-        entityType = "user",
-        entityContext = mapOf("region" to "US")
-    ),
-    EvaluationEntity(
-        entityID = "user456",
-        entityType = "user",
-        entityContext = mapOf("region" to "EU")
-    )
+    EvaluationEntity(entityID = "user123", entityType = "user"),
+    EvaluationEntity(entityID = "user456", entityType = "user")
 )
-
-val results = manager.evaluateBatch(
+val results = client.evaluateBatch(
     flagKeys = listOf("feature_a", "feature_b"),
     entities = entities
 )
-
-results.forEach { result ->
-    println("${result.flagKey}: ${result.variantKey}")
-}
 ```
 
-### Cache Management
+---
+
+## Advanced: direct manager access
+
+For cache control, bootstrap, realtime, etc., you can still create managers manually.
+
+### Server-side (FlagentManager)
 
 ```kotlin
-// Clear all cached entries
-manager.clearCache()
+import com.flagent.client.apis.EvaluationApi
+import com.flagent.enhanced.manager.FlagentManager
+import com.flagent.enhanced.config.FlagentConfig
 
-// Evict expired entries
-manager.evictExpired()
+val evaluationApi = EvaluationApi(baseUrl = "https://api.example.com/api/v1")
+val manager = FlagentManager(evaluationApi, FlagentConfig(enableCache = true))
+val result = manager.evaluate(flagKey = "new_feature", entityID = "user123")
+manager.clearCache()
+```
+
+### Offline (OfflineFlagentManager)
+
+```kotlin
+import com.flagent.client.apis.ExportApi
+import com.flagent.client.apis.FlagApi
+import com.flagent.enhanced.manager.OfflineFlagentManager
+import com.flagent.enhanced.config.OfflineFlagentConfig
+
+val exportApi = ExportApi(baseUrl = baseUrl)
+val flagApi = FlagApi(baseUrl = baseUrl)
+val manager = OfflineFlagentManager(exportApi, flagApi, OfflineFlagentConfig())
+manager.bootstrap()
+val result = manager.evaluate(flagKey = "new_feature", entityID = "user123")
 ```
 
 ## Configuration
 
-```kotlin
-data class FlagentConfig(
-    // Cache TTL in milliseconds (default: 5 minutes)
-    val cacheTtlMs: Long = 5 * 60 * 1000L,
-    
-    // Enable caching (default: true)
-    val enableCache: Boolean = true,
-    
-    // Enable debug logging (default: false)
-    val enableDebugLogging: Boolean = false
-)
-```
+- **FlagentConfig** — cache (cacheTtlMs, enableCache) for server-side.
+- **OfflineFlagentConfig** — snapshot (snapshotTtlMs, autoRefresh, storagePath, etc.) for offline.
 
 ## Architecture
 
-- **FlagentManager**: Main entry point for enhanced SDK
-- **EvaluationCache**: Cache interface for evaluation results
-- **InMemoryEvaluationCache**: Thread-safe in-memory cache implementation
-- **FlagentConfig**: Configuration for enhanced SDK
+- **Flagent** + **FlagentClient** — recommended entry (builder → evaluate / isEnabled / evaluateBatch).
+- **FlagentManager** / **OfflineFlagentManager** — advanced (cache, bootstrap, realtime).
+- **EvaluationCache**, **FlagentConfig**, **OfflineFlagentConfig** — configuration and caches.
 
 ## Differences from Base SDK
 

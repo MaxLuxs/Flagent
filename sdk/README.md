@@ -9,6 +9,7 @@ Client libraries (SDK) for Flagent API - a feature flagging, A/B testing and dyn
 | Language | SDK | Status | Description |
 |----------|-----|--------|-------------|
 | Kotlin | [kotlin/](./kotlin/) | ✅ Available | Kotlin/JVM client library (Android, JVM) |
+| Java | [java/](./java/) | ✅ Available | From Java via Kotlin Enhanced (`buildBlocking()`) |
 | JavaScript/TypeScript | [javascript/](./javascript/) | ✅ Available | TypeScript/JavaScript client library |
 | Swift | [swift/](./swift/) | ✅ Available | Native Swift client library (iOS, macOS) |
 | Python | [python/](./python/) | ✅ Available | Python client library with async/await support |
@@ -48,6 +49,10 @@ See [Kotlin SDK README](./kotlin/README.md) for installation and usage.
 #### Enhanced Kotlin SDK
 
 See [Kotlin Enhanced SDK README](./kotlin-enhanced/README.md) for installation and usage with caching.
+
+#### Java (Kotlin SDK)
+
+See [Java SDK README](./java/README.md) — use Kotlin Enhanced with `buildBlocking()` for a blocking client.
 
 #### Swift SDK
 

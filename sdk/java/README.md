@@ -2,6 +2,47 @@
 
 Java client for the Flagent API (feature flags, evaluation, health). Generated from the OpenAPI spec; uses Java 11+ `HttpClient` and Jackson.
 
+## Unified entry point from Java (recommended)
+
+For a single entry point with caching and `evaluate` / `isEnabled` / `evaluateBatch`, use the **Kotlin Enhanced** SDK from Java. It runs on the JVM and exposes a blocking API:
+
+```java
+// Add dependency: com.flagent:kotlin-enhanced (same version as other Flagent libs)
+import com.flagent.enhanced.entry.Flagent;
+import com.flagent.enhanced.entry.FlagentClientBlocking;
+import com.flagent.client.models.EvalResult;
+
+FlagentClientBlocking client = Flagent.INSTANCE.builder()
+    .baseUrl("https://api.example.com/api/v1")
+    .cache(true, 300_000L)
+    .buildBlocking();
+
+EvalResult result = client.evaluate("new_feature", null, "user123", "user", null, false);
+boolean on = client.isEnabled("new_feature", "user123", null, null);
+```
+
+Gradle:
+
+```kotlin
+implementation("com.flagent:kotlin-enhanced:0.1.6")
+```
+
+Maven:
+
+```xml
+<dependency>
+  <groupId>com.flagent</groupId>
+  <artifactId>kotlin-enhanced</artifactId>
+  <version>0.1.6</version>
+</dependency>
+```
+
+For **Spring Boot**, use the [Flagent Spring Boot Starter](../spring-boot-starter) (auto-configuration and `FlagentEvaluationFacade`). For **standalone** Java without Spring, use `kotlin-enhanced` with `buildBlocking()` as above.
+
+## Low-level API (this library)
+
+This artifact (`flagent-java-client`) is the generated OpenAPI client. Use it when you need direct access to `EvaluationApi`, `FlagApi`, etc.
+
 ## Requirements
 
 - Java 17+
@@ -34,7 +75,7 @@ From this directory (after generation):
 cd ../.. && ./gradlew :java-client:build
 ```
 
-## Usage
+## Usage (low-level API)
 
 Add dependency (when published):
 

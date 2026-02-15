@@ -9,6 +9,7 @@ SDK для Flagent API — платформы feature flags, A/B тестиро�
 | Язык | SDK | Статус | Описание |
 |------|-----|--------|----------|
 | Kotlin | [`kotlin/`](./kotlin/) | Доступен | Kotlin/JVM клиент (Android, JVM) |
+| Java | [`java/`](./java/) | Доступен | Из Java через Kotlin Enhanced (`buildBlocking()`) |
 | JavaScript/TypeScript | [`javascript/`](./javascript/) | Доступен | TypeScript/JavaScript клиент |
 | Swift | [`swift/`](./swift/) | Доступен | Нативный Swift клиент (iOS, macOS) |
 | Python | [`python/`](./python/) | Доступен | Async Python SDK (async/await) |
@@ -41,18 +42,21 @@ Debug UI библиотеки дают визуальные инструмент
 
 ### Python (async)
 
+Рекомендуемая точка входа — `create_client()`:
+
 ```python
 import asyncio
-from flagent import FlagentClient
+from flagent import create_client
 
 async def main():
-    async with FlagentClient(base_url="http://localhost:18000/api/v1") as client:
-        result = await client.evaluate(
-            flag_key="new_payment_flow",
-            entity_id="user123",
-            entity_context={"tier": "premium", "region": "RU"}
-        )
-        print(result.is_enabled(), result.variant_key)
+    client = create_client("http://localhost:18000/api/v1")
+    result = await client.evaluate(
+        flag_key="new_payment_flow",
+        entity_id="user123",
+        entity_context={"tier": "premium", "region": "RU"}
+    )
+    print(result.is_enabled(), result.variant_key)
+    await client.close()
 
 asyncio.run(main())
 ```
