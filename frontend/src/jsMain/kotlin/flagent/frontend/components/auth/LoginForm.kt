@@ -123,14 +123,18 @@ fun LoginForm(
             }
         }) {}
 
-        // Login card
+        // Login card — two-column layout so content fits without scrolling
         Div({
             style {
                 position(Position.Relative)
                 width(100.percent)
-                maxWidth(420.px)
+                maxWidth(680.px)
                 margin(24.px)
-                padding(40.px)
+                padding(28.px)
+                display(DisplayStyle.Flex)
+                flexDirection(FlexDirection.Row)
+                flexWrap(FlexWrap.Wrap)
+                gap(32.px)
                 property("background", "rgba(255, 255, 255, 0.03)")
                 property("backdrop-filter", "blur(20px)")
                 property("-webkit-backdrop-filter", "blur(20px)")
@@ -141,55 +145,71 @@ fun LoginForm(
                 property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
             }
         }) {
-            // Logo / title area
+            // Left column: form
             Div({
                 style {
-                    textAlign("center")
-                    marginBottom(32.px)
+                    flex(1)
+                    property("min-width", "260px")
                 }
             }) {
+                // Logo / title area (compact)
                 Div({
                     style {
-                        width(56.px)
-                        height(56.px)
-                        property("margin", "0 auto 16px")
-                        borderRadius(14.px)
-                        property(
-                            "background",
-                            "linear-gradient(135deg, ${FlagentTheme.Primary} 0%, ${FlagentTheme.Secondary} 100%)"
-                        )
                         display(DisplayStyle.Flex)
                         alignItems(AlignItems.Center)
-                        justifyContent(JustifyContent.Center)
-                        property("box-shadow", "0 8px 24px rgba(14, 165, 233, 0.35)")
+                        gap(12.px)
+                        marginBottom(20.px)
                     }
                 }) {
-                    Icon("flag", size = 28.px, color = Color.white)
-                }
-                H1({
-                    style {
-                        fontSize(28.px)
-                        fontWeight(600)
-                        color(Color.white)
-                        margin(0.px)
-                        property("letter-spacing", "-0.02em")
+                    Div({
+                        style {
+                            width(44.px)
+                            height(44.px)
+                            flexShrink(0)
+                            borderRadius(12.px)
+                            property(
+                                "background",
+                                "linear-gradient(135deg, ${FlagentTheme.Primary} 0%, ${FlagentTheme.Secondary} 100%)"
+                            )
+                            display(DisplayStyle.Flex)
+                            alignItems(AlignItems.Center)
+                            justifyContent(JustifyContent.Center)
+                            property("box-shadow", "0 6px 16px rgba(14, 165, 233, 0.35)")
+                        }
+                    }) {
+                        Icon("flag", size = 22.px, color = Color.white)
                     }
-                }) {
-                    Text("Welcome to Flagent")
-                }
-                P({
-                    style {
-                        fontSize(14.px)
-                        color(Color("rgba(255,255,255,0.6)"))
-                        margin(8.px, 0.px, 0.px, 0.px)
+                    Div({
+                        style {
+                            flex(1)
+                            property("min-width", "0")
+                        }
+                    }) {
+                        H1({
+                            style {
+                                fontSize(20.px)
+                                fontWeight(600)
+                                color(Color.white)
+                                margin(0.px)
+                                property("letter-spacing", "-0.02em")
+                            }
+                        }) {
+                            Text(flagent.frontend.i18n.LocalizedStrings.welcomeToFlagent)
+                        }
+                        P({
+                            style {
+                                fontSize(13.px)
+                                color(Color("rgba(255,255,255,0.6)"))
+                                margin(4.px, 0.px, 0.px, 0.px)
+                            }
+                        }) {
+                            Text(flagent.frontend.i18n.LocalizedStrings.signInToManage)
+                        }
                     }
-                }) {
-                    Text("Sign in to manage your feature flags")
                 }
-            }
 
             // Email input
-            Div(attrs = { style { marginBottom(20.px) } }) {
+            Div(attrs = { style { marginBottom(14.px) } }) {
                 Label(attrs = {
                     style {
                         display(DisplayStyle.Block)
@@ -199,7 +219,7 @@ fun LoginForm(
                         marginBottom(8.px)
                     }
                 }) {
-                    Text("Email")
+                    Text(flagent.frontend.i18n.LocalizedStrings.emailLabel)
                 }
                 Input(InputType.Email) {
                     value(email.value)
@@ -228,7 +248,7 @@ fun LoginForm(
             }
 
             // Password input with visibility toggle
-            Div(attrs = { style { marginBottom(20.px) } }) {
+            Div(attrs = { style { marginBottom(14.px) } }) {
                 Label(attrs = {
                     style {
                         display(DisplayStyle.Block)
@@ -238,7 +258,7 @@ fun LoginForm(
                         marginBottom(8.px)
                     }
                 }) {
-                    Text("Password")
+                    Text(flagent.frontend.i18n.LocalizedStrings.passwordLabel)
                 }
                 Div(attrs = {
                     style {
@@ -302,7 +322,7 @@ fun LoginForm(
                 style {
                     display(DisplayStyle.Flex)
                     alignItems(AlignItems.Center)
-                    marginBottom(28.px)
+                    marginBottom(16.px)
                     gap(8.px)
                 }
             }) {
@@ -323,7 +343,7 @@ fun LoginForm(
                     }
                     onClick { rememberMe.value = !rememberMe.value }
                 }) {
-                    Text("Remember me")
+                    Text(flagent.frontend.i18n.LocalizedStrings.rememberMeLabel)
                 }
             }
 
@@ -365,14 +385,118 @@ fun LoginForm(
                     }
                 }
             }) {
-                Text(if (viewModel.isLoading) "Signing in..." else "Sign In")
+                Text(if (viewModel.isLoading) flagent.frontend.i18n.LocalizedStrings.signingIn else flagent.frontend.i18n.LocalizedStrings.signIn)
+            }
+
+            viewModel.error?.let { error ->
+                Div({
+                    style {
+                        marginTop(12.px)
+                        padding(12.px)
+                        backgroundColor(Color("rgba(239, 68, 68, 0.15)"))
+                        property("border", "1px solid rgba(239, 68, 68, 0.3)")
+                        borderRadius(8.px)
+                        color(Color("#FCA5A5"))
+                        fontSize(13.px)
+                    }
+                }) {
+                    Text(error)
+                }
+            }
+            }
+
+            // Right column: links and SSO (horizontal grouping)
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    flexDirection(FlexDirection.Column)
+                    gap(16.px)
+                    property("min-width", "180px")
+                }
+            }) {
+            // Links section: support, GitHub, documentation (compact)
+            Div({
+                style {
+                    paddingTop(4.px)
+                    property("border-left", "1px solid rgba(255,255,255,0.08)")
+                    paddingLeft(20.px)
+                    display(DisplayStyle.Flex)
+                    flexDirection(FlexDirection.Column)
+                    gap(10.px)
+                }
+            }) {
+                A(href = "mailto:${AppConfig.supportEmail}", attrs = {
+                    attr("target", "_blank")
+                    attr("rel", "noopener noreferrer")
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(8.px)
+                        color(Color("rgba(255,255,255,0.6)"))
+                        textDecoration("none")
+                        fontSize(13.px)
+                        property("transition", "color 0.2s ease")
+                    }
+                    onMouseEnter {
+                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.9)"
+                    }
+                    onMouseLeave {
+                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                    }
+                }) {
+                    Icon("mail", size = 18.px, color = Color("rgba(255,255,255,0.6)"))
+                    Text(flagent.frontend.i18n.LocalizedStrings.supportLink)
+                }
+                A(href = AppConfig.githubUrl, attrs = {
+                    attr("target", "_blank")
+                    attr("rel", "noopener noreferrer")
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(8.px)
+                        color(Color("rgba(255,255,255,0.6)"))
+                        textDecoration("none")
+                        fontSize(13.px)
+                        property("transition", "color 0.2s ease")
+                    }
+                    onMouseEnter {
+                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.9)"
+                    }
+                    onMouseLeave {
+                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                    }
+                }) {
+                    Icon("code", size = 18.px, color = Color("rgba(255,255,255,0.6)"))
+                    Text(flagent.frontend.i18n.LocalizedStrings.questionsAndGuides)
+                }
+                A(href = AppConfig.docsUrl, attrs = {
+                    attr("target", "_blank")
+                    attr("rel", "noopener noreferrer")
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(8.px)
+                        color(Color("rgba(255,255,255,0.6)"))
+                        textDecoration("none")
+                        fontSize(13.px)
+                        property("transition", "color 0.2s ease")
+                    }
+                    onMouseEnter {
+                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.9)"
+                    }
+                    onMouseLeave {
+                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                    }
+                }) {
+                    Icon("menu_book", size = 18.px, color = Color("rgba(255,255,255,0.6)"))
+                    Text(flagent.frontend.i18n.LocalizedStrings.documentation)
+                }
             }
 
             if (AppConfig.Features.enableSso) {
                 Div({
                     style {
-                        marginTop(24.px)
-                        paddingTop(24.px)
+                        paddingTop(12.px)
                         property("border-top", "1px solid rgba(255,255,255,0.08)")
                     }
                 }) {
@@ -385,7 +509,7 @@ fun LoginForm(
                             textAlign("center")
                         }
                     }) {
-                        Text("Or sign in with SSO")
+                        Text(flagent.frontend.i18n.LocalizedStrings.orSignInWithSso)
                     }
                     Button({
                         onClick {
@@ -422,25 +546,10 @@ fun LoginForm(
                         }
                     }) {
                         Icon("login", size = 18.px, color = FlagentTheme.PrimaryLight)
-                        Text("Login with SSO")
+                        Text(flagent.frontend.i18n.LocalizedStrings.loginWithSso)
                     }
                 }
             }
-
-            viewModel.error?.let { error ->
-                Div({
-                    style {
-                        marginTop(20.px)
-                        padding(14.px)
-                        backgroundColor(Color("rgba(239, 68, 68, 0.15)"))
-                        property("border", "1px solid rgba(239, 68, 68, 0.3)")
-                        borderRadius(10.px)
-                        color(Color("#FCA5A5"))
-                        fontSize(14.px)
-                    }
-                }) {
-                    Text(error)
-                }
             }
         }
     }

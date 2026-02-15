@@ -7,6 +7,7 @@ import kotlinx.browser.document
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 import flagent.frontend.config.AppConfig
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.components.Icon
@@ -276,8 +277,8 @@ private fun TopNavbar(
                         el.style.backgroundColor = "transparent"
                         el.style.color = "rgba(255,255,255,0.85)"
                     }
-                }) { Text("Blog") }
-                NavbarLink(AppConfig.githubUrl, "code", "GitHub", external = true)
+                }) { Text(flagent.frontend.i18n.LocalizedStrings.blog) }
+                NavbarLink(AppConfig.githubUrl, "code", flagent.frontend.i18n.LocalizedStrings.github, external = true)
                 Button({
                     onClick { ThemeState.toggle() }
                     style {
@@ -300,7 +301,7 @@ private fun TopNavbar(
                 if ((AppConfig.requiresAuth || BackendOnboardingState.allowTenantsAndLogin) && authViewModel != null) {
                     if (authViewModel.isAuthenticated) {
                         Span({ style { color(Color("rgba(255,255,255,0.9)")); fontSize(13.px); padding(0.px, 8.px) } }) {
-                            Text(authViewModel.currentUser?.name ?: authViewModel.currentUser?.email ?: "User")
+                            Text(authViewModel.currentUser?.name ?: authViewModel.currentUser?.email ?: flagent.frontend.i18n.LocalizedStrings.userFallback)
                         }
                         Button({
                             onClick {
@@ -331,7 +332,7 @@ private fun TopNavbar(
                                 el.style.backgroundColor = "transparent"
                                 el.style.borderColor = "rgba(255,255,255,0.4)"
                             }
-                        }) { Text("Logout") }
+                        }) { Text(flagent.frontend.i18n.LocalizedStrings.logoutButton) }
                     } else {
                         A(href = Route.Login.PATH, attrs = {
                             style {
@@ -350,7 +351,7 @@ private fun TopNavbar(
                             onMouseLeave { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent" }
                         }) {
                             Icon("login", size = 18.px, color = FlagentTheme.Background)
-                            Text("Login")
+                            Text(flagent.frontend.i18n.LocalizedStrings.loginButton)
                         }
                     }
                 }
@@ -403,7 +404,7 @@ private fun ShellFooter() {
                 }
                 onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Primary.toString() }
                 onMouseLeave { (it.target as org.w3c.dom.HTMLElement).style.color = linkColor }
-            }) { Text("Docs") }
+            }) { Text(flagent.frontend.i18n.LocalizedStrings.docs) }
             A(href = AppConfig.githubUrl, attrs = {
                 attr("target", "_blank")
                 attr("rel", "noopener noreferrer")
@@ -414,7 +415,7 @@ private fun ShellFooter() {
                 }
                 onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Primary.toString() }
                 onMouseLeave { (it.target as org.w3c.dom.HTMLElement).style.color = linkColor }
-            }) { Text("GitHub") }
+            }) { Text(flagent.frontend.i18n.LocalizedStrings.github) }
             Span(attrs = { style { color(Color(textColor)) } }) {
                 Text("© ${js("new Date().getFullYear()") as Int} Flagent")
             }
@@ -472,16 +473,17 @@ private fun Sidebar(anomalyViewModel: AnomalyViewModel?) {
             property("backdrop-filter", "blur(8px)")
         }
     }) {
-        SidebarLink(themeMode, "Dashboard", "dashboard", Route.Dashboard.PATH, route is Route.Dashboard)
-        SidebarLink(themeMode, "Flags", "flag", Route.FlagsList.PATH, route is Route.FlagsList)
-        SidebarLink(themeMode, "Experiments", "science", Route.Experiments.PATH, route is Route.Experiments)
-        SidebarLink(themeMode, "Analytics", "analytics", Route.Analytics.PATH, route is Route.Analytics)
+        SidebarLink(themeMode, LocalizedStrings.dashboardNav, "dashboard", Route.Dashboard.PATH, route is Route.Dashboard)
+        SidebarLink(themeMode, LocalizedStrings.flagsNav, "flag", Route.FlagsList.PATH, route is Route.FlagsList)
+        SidebarLink(themeMode, LocalizedStrings.experimentsNav, "science", Route.Experiments.PATH, route is Route.Experiments)
+        SidebarLink(themeMode, LocalizedStrings.segments, "segment", Route.Segments.PATH, route is Route.Segments)
+        SidebarLink(themeMode, LocalizedStrings.analyticsNav, "analytics", Route.Analytics.PATH, route is Route.Analytics)
         if (AppConfig.Features.enableCrashAnalytics) {
-            SidebarLink(themeMode, "Crash", "bug_report", Route.Crash.PATH, route is Route.Crash)
+            SidebarLink(themeMode, LocalizedStrings.crashNav, "bug_report", Route.Crash.PATH, route is Route.Crash)
         }
         if (AppConfig.Features.enableAnomalyDetection && anomalyViewModel != null) {
             Div({ style { position(Position.Relative) } }) {
-                SidebarLink(themeMode, "Alerts", "notifications", Route.Alerts.PATH, route is Route.Alerts)
+                SidebarLink(themeMode, LocalizedStrings.alertsNav, "notifications", Route.Alerts.PATH, route is Route.Alerts)
                 if (anomalyViewModel.alerts.isNotEmpty()) {
                     Span({
                         style {
@@ -510,9 +512,9 @@ private fun Sidebar(anomalyViewModel: AnomalyViewModel?) {
         }) {
             SidebarLink(themeMode, flagent.frontend.i18n.LocalizedStrings.debugConsole, "bug_report", "/debug", route is Route.DebugConsole)
             if (AppConfig.Features.enableMultiTenancy) {
-                SidebarLink(themeMode, "Tenants", "business", Route.Tenants.PATH, route is Route.Tenants)
+                SidebarLink(themeMode, flagent.frontend.i18n.LocalizedStrings.tenantsNav, "business", Route.Tenants.PATH, route is Route.Tenants)
             }
-            SidebarLink(themeMode, "Settings", "settings", Route.Settings.PATH, route is Route.Settings)
+            SidebarLink(themeMode, flagent.frontend.i18n.LocalizedStrings.settingsNav, "settings", Route.Settings.PATH, route is Route.Settings)
         }
     }
 }

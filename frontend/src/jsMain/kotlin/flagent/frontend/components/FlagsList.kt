@@ -12,7 +12,10 @@ import flagent.api.model.FlagResponse
 import flagent.api.model.TagResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.common.ConfirmDialog
+import flagent.frontend.components.common.FilterChip
+import flagent.frontend.components.common.PageHeader
 import flagent.frontend.components.common.Pagination
+import flagent.frontend.components.flags.CreateFlagModal
 import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
@@ -79,6 +82,7 @@ import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.Input
+import org.jetbrains.compose.web.dom.Label
 import org.jetbrains.compose.web.dom.Option
 import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Select
@@ -117,7 +121,8 @@ private fun FlagTableRow(
     rowIndex: Int,
     themeMode: ThemeMode,
     selectedIds: MutableList<Int>,
-    selectedTags: MutableList<String>
+    selectedTags: MutableList<String>,
+    onToggleEnabled: (Int, Boolean) -> Unit
 ) {
     Tr({
         attr("class", "flag-row-hover")
@@ -148,22 +153,37 @@ private fun FlagTableRow(
             Input(InputType.Checkbox) {
                 checked(flag.id in selectedIds)
                 onChange { event ->
-                    if ((event.target as org.w3c.dom.HTMLInputElement).checked) selectedIds.add(flag.id)
-                    else selectedIds.remove(flag.id)
+                    val input = (event.currentTarget as? org.w3c.dom.HTMLInputElement)
+                        ?: (event.target as? org.w3c.dom.HTMLInputElement)
+                    if (input != null) {
+                        if (input.checked) selectedIds.add(flag.id) else selectedIds.remove(flag.id)
+                    }
                 }
                 style { cursor("pointer") }
             }
         }
-        Td({ style { padding(14.px, 12.px); textAlign("left"); fontWeight("600"); color(FlagentTheme.Primary) } }) {
-            Span({ style { display(DisplayStyle.InlineBlock); padding(4.px, 8.px); backgroundColor(FlagentTheme.PrimaryLight); color(FlagentTheme.PrimaryDark); borderRadius(4.px); fontSize(12.px) } }) {
-                Text("#${flag.id}")
+        Td({ style { padding(14.px, 12.px); textAlign("left"); maxWidth(320.px) } }) {
+            Div({ style { fontWeight("600"); fontSize(15.px); color(FlagentTheme.Primary); marginBottom(2.px); property("overflow", "hidden"); property("text-overflow", "ellipsis") } }) {
+                Text(flag.key.ifBlank { "flag_${flag.id}" })
             }
-        }
-        Td({ style { padding(14.px, 12.px); maxWidth(300.px) } }) {
-            Div({ style { fontWeight("500"); color(FlagentTheme.Text); marginBottom(4.px) } }) { Text(flag.description) }
-            if (flag.key.isNotEmpty()) {
-                Div({ style { fontSize(12.px); color(FlagentTheme.textLight(themeMode)); fontFamily("monospace") } }) {
-                    Text(flag.key)
+            if (flag.description.isNotBlank()) {
+                Div({ style { fontSize(13.px); color(FlagentTheme.textLight(themeMode)); marginBottom(6.px); property("display", "-webkit-box"); property("-webkit-line-clamp", "2"); property("-webkit-box-orient", "vertical"); overflow("hidden") } }) {
+                    Text(flag.description)
+                }
+            }
+            Div({ style { display(DisplayStyle.Flex); flexWrap(FlexWrap.Wrap); gap(6.px); alignItems(AlignItems.Center) } }) {
+                Span({ style { display(DisplayStyle.InlineBlock); padding(2.px, 8.px); backgroundColor(FlagentTheme.PrimaryLight); color(FlagentTheme.PrimaryDark); borderRadius(4.px); fontSize(11.px); fontWeight("500") } }) {
+                    Text("#${flag.id}")
+                }
+                if (flag.variants.isNotEmpty()) {
+                    Span({ style { fontSize(11.px); color(FlagentTheme.textLight(themeMode)); display(DisplayStyle.InlineBlock) } }) {
+                        Text("${flag.variants.size} ${if (flag.variants.size == 1) "variant" else "variants"}")
+                    }
+                }
+                if (flag.segments.isNotEmpty()) {
+                    Span({ style { fontSize(11.px); color(FlagentTheme.textLight(themeMode)); display(DisplayStyle.InlineBlock) } }) {
+                        Text(" · ${flag.segments.size} ${if (flag.segments.size == 1) "segment" else "segments"}")
+                    }
                 }
             }
         }
@@ -200,27 +220,37 @@ private fun FlagTableRow(
         Td({ style { padding(14.px, 12.px); color(FlagentTheme.textLight(themeMode)); fontSize(13.px) } }) {
             Text(flag.updatedAt?.split(".")?.get(0) ?: "—")
         }
-        Td({ style { padding(14.px, 12.px); textAlign("center") } }) {
-            Span({
+        Td({
+            style { padding(14.px, 12.px); textAlign("center"); width(100.px) }
+            onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
+        }) {
+            Label(attrs = {
                 style {
-                    display(DisplayStyle.InlineBlock)
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    justifyContent(JustifyContent.Center)
+                    gap(6.px)
                     padding(6.px, 12.px)
                     borderRadius(16.px)
-                    fontSize(12.px)
+                    backgroundColor(if (flag.enabled) FlagentTheme.Success else FlagentTheme.NeutralLighter)
+                    color(if (flag.enabled) Color.white else FlagentTheme.textLight(themeMode))
+                    cursor("pointer")
                     fontWeight("600")
-                    backgroundColor(if (flag.enabled) FlagentTheme.Success else FlagentTheme.Error)
-                    color(Color.white)
+                    fontSize(12.px)
                     property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
                 }
             }) {
-                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
-                    Icon(
-                        name = if (flag.enabled) "check_circle" else "cancel",
-                        size = 14.px,
-                        color = FlagentTheme.cardBg(themeMode)
-                    )
-                    Text(if (flag.enabled) "ON" else "OFF")
+                Input(InputType.Checkbox) {
+                    checked(flag.enabled)
+                    onChange { event ->
+                        // currentTarget = input (listener target); event.target can be Label when clicking "ON"/"OFF" text
+                        val input = (event.currentTarget as? org.w3c.dom.HTMLInputElement)
+                            ?: (event.target as? org.w3c.dom.HTMLInputElement)
+                        if (input != null) onToggleEnabled(flag.id, input.checked)
+                    }
+                    style { cursor("pointer"); width(14.px); margin(0.px) }
                 }
+                Text(if (flag.enabled) "ON" else "OFF")
             }
         }
     }
@@ -231,7 +261,8 @@ private fun GroupedFlagsTableBody(
     groupedByTag: Map<String, List<FlagResponse>>,
     themeMode: ThemeMode,
     selectedIds: MutableList<Int>,
-    selectedTags: MutableList<String>
+    selectedTags: MutableList<String>,
+    onToggleEnabled: (Int, Boolean) -> Unit
 ) {
     val noTagsKey = "\u0000"
     groupedByTag.entries.forEach { entry ->
@@ -249,7 +280,7 @@ private fun GroupedFlagsTableBody(
                     padding(12.px, 16.px)
                     fontWeight("600")
                     fontSize(13.px)
-                    color(FlagentTheme.Text)
+                    color(FlagentTheme.text(themeMode))
                 }
             }) {
                 Span({
@@ -270,7 +301,8 @@ private fun GroupedFlagsTableBody(
                 rowIndex = idx,
                 themeMode = themeMode,
                 selectedIds = selectedIds,
-                selectedTags = selectedTags
+                selectedTags = selectedTags,
+                onToggleEnabled = onToggleEnabled
             )
         }
     }
@@ -307,6 +339,7 @@ fun FlagsList() {
     val quickFilterExperiments = remember { mutableStateOf(false) }
     val quickFilterWithSegments = remember { mutableStateOf(false) }
     val groupByTag = remember { mutableStateOf(false) }
+    val showCreateFlagModal = remember { mutableStateOf(false) }
     val allFlagsForClientFilter = remember { mutableStateListOf<FlagResponse>() }
     val lastFetchFilterKey = remember { mutableStateOf("") }
 
@@ -530,6 +563,24 @@ fun FlagsList() {
         }
     }
 
+    fun permanentDeleteFlag(flag: FlagResponse) {
+        if (!kotlinx.browser.window.confirm(LocalizedStrings.confirmPermanentDeleteFlag)) return
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                ApiClient.permanentDeleteFlag(flag.id)
+                deletedFlags.removeAll { it.id == flag.id }
+            } catch (e: Exception) {
+                error.value = buildString {
+                    append(LocalizedStrings.failedToPermanentDeleteFlag)
+                    e.message?.let {
+                        append(": ")
+                        append(it)
+                    }
+                }
+            }
+        }
+    }
+
     fun createFlag(template: String? = null) {
         if (newFlagDescription.value.isBlank()) return
 
@@ -583,6 +634,18 @@ fun FlagsList() {
                 error.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
             } finally {
                 loading.value = false
+            }
+        }
+    }
+
+    val onToggleEnabled: (Int, Boolean) -> Unit = { flagId, enabled ->
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val updated = ApiClient.setFlagEnabled(flagId, enabled)
+                val idx = flags.indexOfFirst { it.id == flagId }
+                if (idx >= 0) flags[idx] = updated
+            } catch (e: Exception) {
+                error.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
             }
         }
     }
@@ -656,6 +719,27 @@ fun FlagsList() {
             padding(0.px)
         }
     }) {
+        PageHeader(
+            title = LocalizedStrings.featureFlags,
+            subtitle = LocalizedStrings.featureFlagsSubtitle
+        )
+
+        if (!loading.value && error.value == null && totalCount.value > 0) {
+            Div({
+                style {
+                    fontSize(13.px)
+                    color(FlagentTheme.textLight(themeMode))
+                    marginBottom(12.px)
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    gap(8.px)
+                }
+            }) {
+                Icon("insights", size = 18.px, color = FlagentTheme.textLight(themeMode))
+                Text("${totalCount.value} ${LocalizedStrings.featureFlags.lowercase()}")
+            }
+        }
+
         // Create Flag Section
         Div({
             style {
@@ -698,7 +782,7 @@ fun FlagsList() {
                 H3({
                     style {
                         margin(0.px)
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.text(themeMode))
                         fontSize(18.px)
                         fontWeight("600")
                     }
@@ -798,33 +882,46 @@ fun FlagsList() {
                     )
                     Text(if (creatingFlag.value) LocalizedStrings.creating else LocalizedStrings.createFlag)
                 }
-                Select({
-                    onChange { event ->
-                        val selected = event.target.value
-                        when (selected) {
-                            "simple_boolean_flag" -> createFlag("simple_boolean_flag")
-                            "" -> Router.navigateTo(Route.CreateFlag)
-                        }
-                        // Reset select to default value after selection
-                        event.target.value = ""
-                    }
+                Button({
+                    onClick { showCreateFlagModal.value = true }
                     style {
                         padding(12.px, 16.px)
+                        property("background-color", "transparent")
+                        color(FlagentTheme.text(themeMode))
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
                             color(FlagentTheme.cardBorder(themeMode))
                         }
-                        borderRadius(6.px)
+                        borderRadius(8.px)
                         fontSize(14.px)
-                        backgroundColor(FlagentTheme.cardBg(themeMode))
                         cursor("pointer")
+                        property("transition", "all 0.2s")
+                    }
+                    onMouseEnter {
+                        val el = it.target as org.w3c.dom.HTMLElement
+                        el.style.borderColor = FlagentTheme.Primary.toString()
+                        el.style.color = FlagentTheme.Primary.toString()
+                    }
+                    onMouseLeave {
+                        val el = it.target as org.w3c.dom.HTMLElement
+                        el.style.borderColor = FlagentTheme.cardBorder(themeMode).toString()
+                        el.style.color = FlagentTheme.text(themeMode).toString()
                     }
                 }) {
-                    Option(value = "") { Text(LocalizedStrings.moreOptions) }
-                    Option(value = "simple_boolean_flag") { Text(LocalizedStrings.createSimpleBooleanFlag) }
+                    Icon(name = "expand_more", size = 18.px, color = FlagentTheme.textLight(themeMode))
+                    Text(LocalizedStrings.moreOptions)
                 }
             }
+        }
+        if (showCreateFlagModal.value) {
+            CreateFlagModal(
+                onClose = { showCreateFlagModal.value = false },
+                onSelectTemplate = { template ->
+                    if (newFlagDescription.value.isNotBlank()) createFlag(template)
+                },
+                onSelectFullForm = { Router.navigateTo(Route.CreateFlag) }
+            )
         }
 
         // Search and Filter Section
@@ -864,6 +961,7 @@ fun FlagsList() {
                     }
                     borderRadius(6.px)
                     fontSize(14.px)
+                    color(FlagentTheme.text(themeMode))
                     property("transition", "border-color 0.2s")
                 }
                 onFocus {
@@ -876,11 +974,11 @@ fun FlagsList() {
                 }
             }
             Input(InputType.Text) {
-                attr("placeholder", "Key (exact)")
+                attr("placeholder", LocalizedStrings.keyExactPlaceholder)
                 value(keyFilter.value)
                 onInput { event -> keyFilter.value = event.value }
                 style {
-                    minWidth(120.px)
+                    minWidth(140.px)
                     padding(12.px, 16.px)
                     border {
                         width(1.px)
@@ -889,6 +987,7 @@ fun FlagsList() {
                     }
                     borderRadius(6.px)
                     fontSize(14.px)
+                    color(FlagentTheme.text(themeMode))
                     property("transition", "border-color 0.2s")
                 }
                 onFocus {
@@ -919,6 +1018,7 @@ fun FlagsList() {
                     borderRadius(6.px)
                     fontSize(14.px)
                     backgroundColor(FlagentTheme.cardBg(themeMode))
+                    color(FlagentTheme.text(themeMode))
                     cursor("pointer")
                     minWidth(140.px)
                 }
@@ -932,49 +1032,60 @@ fun FlagsList() {
                     display(DisplayStyle.Flex)
                     alignItems(AlignItems.Center)
                     gap(6.px)
+                    flexWrap(FlexWrap.Wrap)
                 }
             }) {
-                Span({
-                    style {
-                        padding(6.px, 12.px)
-                        backgroundColor(if (quickFilterExperiments.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
-                        color(if (quickFilterExperiments.value) Color.white else FlagentTheme.Text)
-                        border { width(1.px); style(LineStyle.Solid); color(if (quickFilterExperiments.value) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode)) }
-                        borderRadius(16.px)
-                        fontSize(12.px)
-                        cursor("pointer")
+                FilterChip(
+                    themeMode = themeMode,
+                    label = LocalizedStrings.quickFilterExperiments,
+                    active = quickFilterExperiments.value,
+                    onClick = { quickFilterExperiments.value = !quickFilterExperiments.value }
+                )
+                FilterChip(
+                    themeMode = themeMode,
+                    label = LocalizedStrings.quickFilterWithSegments,
+                    active = quickFilterWithSegments.value,
+                    onClick = { quickFilterWithSegments.value = !quickFilterWithSegments.value }
+                )
+                FilterChip(
+                    themeMode = themeMode,
+                    label = LocalizedStrings.groupByTags,
+                    active = groupByTag.value,
+                    onClick = { groupByTag.value = !groupByTag.value }
+                )
+                val hasActiveFilters = searchQuery.value.isNotBlank() || keyFilter.value.isNotBlank() ||
+                    statusFilter.value != null || selectedTags.isNotEmpty() ||
+                    quickFilterExperiments.value || quickFilterWithSegments.value
+                if (hasActiveFilters) {
+                    Button({
+                        onClick {
+                            searchQuery.value = ""
+                            keyFilter.value = ""
+                            statusFilter.value = null
+                            selectedTags.clear()
+                            quickFilterExperiments.value = false
+                            quickFilterWithSegments.value = false
+                            groupByTag.value = false
+                            loadFlags()
+                        }
+                        style {
+                            padding(6.px, 12.px)
+                            fontSize(12.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
+                            border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
+                            borderRadius(16.px)
+                            cursor("pointer")
+                        }
+                        onMouseEnter {
+                            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.cardBorder(themeMode).toString()
+                        }
+                        onMouseLeave {
+                            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.inputBg(themeMode).toString()
+                        }
+                    }) {
+                        Text(LocalizedStrings.clearFilters)
                     }
-                    onClick { quickFilterExperiments.value = !quickFilterExperiments.value }
-                }) {
-                    Text(LocalizedStrings.quickFilterExperiments)
-                }
-                Span({
-                    style {
-                        padding(6.px, 12.px)
-                        backgroundColor(if (quickFilterWithSegments.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
-                        color(if (quickFilterWithSegments.value) Color.white else FlagentTheme.Text)
-                        border { width(1.px); style(LineStyle.Solid); color(if (quickFilterWithSegments.value) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode)) }
-                        borderRadius(16.px)
-                        fontSize(12.px)
-                        cursor("pointer")
-                    }
-                    onClick { quickFilterWithSegments.value = !quickFilterWithSegments.value }
-                }) {
-                    Text(LocalizedStrings.quickFilterWithSegments)
-                }
-                Span({
-                    style {
-                        padding(6.px, 12.px)
-                        backgroundColor(if (groupByTag.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
-                        color(if (groupByTag.value) Color.white else FlagentTheme.Text)
-                        border { width(1.px); style(LineStyle.Solid); color(if (groupByTag.value) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode)) }
-                        borderRadius(16.px)
-                        fontSize(12.px)
-                        cursor("pointer")
-                    }
-                    onClick { groupByTag.value = !groupByTag.value }
-                }) {
-                    Text(LocalizedStrings.groupByTags)
                 }
             }
             Div({
@@ -1020,6 +1131,7 @@ fun FlagsList() {
                         borderRadius(6.px)
                         fontSize(13.px)
                         backgroundColor(FlagentTheme.cardBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
                         cursor("pointer")
                         minWidth(120.px)
                     }
@@ -1033,8 +1145,9 @@ fun FlagsList() {
                     onClick { showSaveViewDialog.value = true }
                     style {
                         padding(8.px, 12.px)
+                        minWidth(120.px)
                         backgroundColor(FlagentTheme.inputBg(themeMode))
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.text(themeMode))
                         border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
                         borderRadius(6.px)
                         cursor("pointer")
@@ -1049,7 +1162,7 @@ fun FlagsList() {
                             display(DisplayStyle.InlineBlock)
                             padding(6.px, 10.px)
                             backgroundColor(FlagentTheme.inputBg(themeMode))
-                            color(FlagentTheme.Text)
+                            color(FlagentTheme.text(themeMode))
                             border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
                             borderRadius(16.px)
                             fontSize(12.px)
@@ -1140,7 +1253,7 @@ fun FlagsList() {
                     style {
                         padding(8.px, 16.px)
                         backgroundColor(FlagentTheme.cardBg(themeMode))
-                        color(FlagentTheme.Text)
+                        color(FlagentTheme.text(themeMode))
                         border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                         borderRadius(6.px)
                         cursor("pointer")
@@ -1210,7 +1323,7 @@ fun FlagsList() {
                             style {
                                 padding(8.px, 14.px)
                                 backgroundColor(FlagentTheme.inputBg(themeMode))
-                                color(FlagentTheme.Text)
+                                color(FlagentTheme.text(themeMode))
                                 border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
                                 borderRadius(6.px)
                                 cursor("pointer")
@@ -1228,7 +1341,7 @@ fun FlagsList() {
                             style {
                                 padding(8.px, 14.px)
                                 backgroundColor(FlagentTheme.inputBg(themeMode))
-                                color(FlagentTheme.Text)
+                                color(FlagentTheme.text(themeMode))
                                 border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
                                 borderRadius(6.px)
                                 cursor("pointer")
@@ -1292,7 +1405,7 @@ fun FlagsList() {
                             }
                             onClick { Router.navigateToTenantsWithCreate() }
                         }) {
-                            Text("Create first tenant →")
+                            Text(flagent.frontend.i18n.LocalizedStrings.createFirstTenant)
                         }
                         Button({
                             style {
@@ -1307,7 +1420,7 @@ fun FlagsList() {
                             }
                             onClick { Router.navigateTo(Route.Login) }
                         }) {
-                            Text("Log in (admin) →")
+                            Text(flagent.frontend.i18n.LocalizedStrings.logInAdmin)
                         }
                     }
                 }
@@ -1397,6 +1510,7 @@ fun FlagsList() {
                     }
                 }) {
                     Table({
+                        attr("class", "flagent-flags-table")
                         style {
                             width(100.percent)
                             property("border-collapse", "collapse")
@@ -1408,6 +1522,7 @@ fun FlagsList() {
                                 style {
                                     backgroundColor(FlagentTheme.inputBg(themeMode))
                                     property("border-bottom", "2px solid ${FlagentTheme.cardBorder(themeMode)}")
+                                    color(FlagentTheme.text(themeMode))
                                 }
                             }) {
                                 Th({
@@ -1415,6 +1530,7 @@ fun FlagsList() {
                                         padding(10.px, 12.px)
                                         width(40.px)
                                         textAlign("center")
+                                        color(FlagentTheme.text(themeMode))
                                     }
                                 }) {
                                     Input(InputType.Checkbox) {
@@ -1431,52 +1547,6 @@ fun FlagsList() {
                                     }
                                 }
                                 Th({
-                                    onClick { sortFlags("id") }
-                                    style {
-                                        padding(10.px, 12.px)
-                                        cursor("pointer")
-                                        property("user-select", "none")
-                                        fontWeight("600")
-                                        fontSize(13.px)
-                                        color(FlagentTheme.Text)
-                                        textAlign("left")
-                                        property("transition", "background-color 0.2s")
-                                    }
-                                    onMouseEnter {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.inputBg(themeMode).toString()
-                                    }
-                                    onMouseLeave {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
-                                            FlagentTheme.inputBg(themeMode).toString()
-                                    }
-                                }) {
-                                    Span({
-                                        style {
-                                            display(DisplayStyle.Flex)
-                                            alignItems(AlignItems.Center)
-                                            gap(6.px)
-                                        }
-                                    }) {
-                                        Icon(
-                                            name = "tag",
-                                            size = 16.px,
-                                            color = FlagentTheme.Text
-                                        )
-                                        Text(LocalizedStrings.flagId)
-                                        if (sortColumn.value == "id") {
-                                            Span({
-                                                style {
-                                                    fontSize(12.px)
-                                                    color(FlagentTheme.Primary)
-                                                }
-                                            }) {
-                                                Text(if (sortAscending.value) "↑" else "↓")
-                                            }
-                                        }
-                                    }
-                                }
-                                Th({
                                     onClick { sortFlags("description") }
                                     style {
                                         padding(10.px, 12.px)
@@ -1484,7 +1554,7 @@ fun FlagsList() {
                                         property("user-select", "none")
                                         fontWeight("600")
                                         fontSize(13.px)
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.text(themeMode))
                                         textAlign("left")
                                         property("transition", "background-color 0.2s")
                                     }
@@ -1493,7 +1563,8 @@ fun FlagsList() {
                                             FlagentTheme.inputBg(themeMode).toString()
                                     }
                                     onMouseLeave {
-                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = ""
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.inputBg(themeMode).toString()
                                     }
                                 }) {
                                     Span({
@@ -1504,11 +1575,11 @@ fun FlagsList() {
                                         }
                                     }) {
                                         Icon(
-                                            name = "description",
+                                            name = "label",
                                             size = 16.px,
-                                            color = FlagentTheme.Text
+                                            color = FlagentTheme.text(themeMode)
                                         )
-                                        Text(LocalizedStrings.description)
+                                        Text("Name")
                                         if (sortColumn.value == "description") {
                                             Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
                                                 Text(if (sortAscending.value) "↑" else "↓")
@@ -1521,7 +1592,7 @@ fun FlagsList() {
                                         padding(10.px, 12.px)
                                         fontWeight("600")
                                         fontSize(13.px)
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.text(themeMode))
                                         textAlign("left")
                                     }
                                 }) {
@@ -1535,7 +1606,7 @@ fun FlagsList() {
                                         Icon(
                                             name = "local_offer",
                                             size = 16.px,
-                                            color = FlagentTheme.Text
+                                            color = FlagentTheme.text(themeMode)
                                         )
                                         Text(LocalizedStrings.tags)
                                     }
@@ -1548,7 +1619,7 @@ fun FlagsList() {
                                         property("user-select", "none")
                                         fontWeight("600")
                                         fontSize(13.px)
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.text(themeMode))
                                         textAlign("left")
                                         property("transition", "background-color 0.2s")
                                     }
@@ -1571,7 +1642,7 @@ fun FlagsList() {
                                         Icon(
                                             name = "person",
                                             size = 16.px,
-                                            color = FlagentTheme.Text
+                                            color = FlagentTheme.text(themeMode)
                                         )
                                         Text(LocalizedStrings.lastUpdatedBy)
                                         if (sortColumn.value == "updatedBy") {
@@ -1594,7 +1665,7 @@ fun FlagsList() {
                                         property("user-select", "none")
                                         fontWeight("600")
                                         fontSize(13.px)
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.text(themeMode))
                                         textAlign("left")
                                         property("transition", "background-color 0.2s")
                                     }
@@ -1617,7 +1688,7 @@ fun FlagsList() {
                                         Icon(
                                             name = "schedule",
                                             size = 16.px,
-                                            color = FlagentTheme.Text
+                                            color = FlagentTheme.text(themeMode)
                                         )
                                         Text(LocalizedStrings.updatedAt)
                                         if (sortColumn.value == "updatedAt") {
@@ -1638,7 +1709,7 @@ fun FlagsList() {
                                         textAlign("center")
                                         fontWeight("600")
                                         fontSize(13.px)
-                                        color(FlagentTheme.Text)
+                                        color(FlagentTheme.text(themeMode))
                                     }
                                 }) {
                                     Span({
@@ -1652,7 +1723,7 @@ fun FlagsList() {
                                         Icon(
                                             name = "power_settings_new",
                                             size = 16.px,
-                                            color = FlagentTheme.Text
+                                            color = FlagentTheme.text(themeMode)
                                         )
                                         Text(LocalizedStrings.status)
                                     }
@@ -1665,7 +1736,8 @@ fun FlagsList() {
                                     groupedByTag = groupedByTag,
                                     themeMode = themeMode,
                                     selectedIds = selectedIds,
-                                    selectedTags = selectedTags
+                                    selectedTags = selectedTags,
+                                    onToggleEnabled = onToggleEnabled
                                 )
                             } else {
                                 sortedFlags.forEachIndexed { index, flag ->
@@ -1674,7 +1746,8 @@ fun FlagsList() {
                                         rowIndex = index,
                                         themeMode = themeMode,
                                         selectedIds = selectedIds,
-                                        selectedTags = selectedTags
+                                        selectedTags = selectedTags,
+                                        onToggleEnabled = onToggleEnabled
                                     )
                                 }
                             }
@@ -1973,6 +2046,10 @@ fun FlagsList() {
                                                 style {
                                                     padding(14.px, 12.px)
                                                     textAlign("center")
+                                                    display(DisplayStyle.Flex)
+                                                    gap(8.px)
+                                                    justifyContent(JustifyContent.Center)
+                                                    flexWrap(FlexWrap.Wrap)
                                                 }
                                             }) {
                                                 Button({
@@ -2020,6 +2097,52 @@ fun FlagsList() {
                                                         color = FlagentTheme.cardBg(themeMode)
                                                     )
                                                     Text(LocalizedStrings.restore)
+                                                }
+                                                Button({
+                                                    onClick { permanentDeleteFlag(flag) }
+                                                    style {
+                                                        padding(8.px, 16.px)
+                                                        backgroundColor(FlagentTheme.Error)
+                                                        color(Color.white)
+                                                        border {
+                                                            width(0.px)
+                                                            style(LineStyle.None)
+                                                        }
+                                                        borderRadius(6.px)
+                                                        cursor("pointer")
+                                                        fontWeight("600")
+                                                        fontSize(13.px)
+                                                        property("transition", "all 0.2s")
+                                                        property(
+                                                            "box-shadow",
+                                                            "0 2px 4px ${FlagentTheme.Shadow}"
+                                                        )
+                                                    }
+                                                    onMouseEnter {
+                                                        val element =
+                                                            it.target as org.w3c.dom.HTMLElement
+                                                        element.style.transform = "translateY(-1px)"
+                                                        element.style.setProperty(
+                                                            "box-shadow",
+                                                            "0 4px 6px ${FlagentTheme.ShadowHover}"
+                                                        )
+                                                    }
+                                                    onMouseLeave {
+                                                        val element =
+                                                            it.target as org.w3c.dom.HTMLElement
+                                                        element.style.transform = "translateY(0)"
+                                                        element.style.setProperty(
+                                                            "box-shadow",
+                                                            "0 2px 4px ${FlagentTheme.Shadow}"
+                                                        )
+                                                    }
+                                                }) {
+                                                    Icon(
+                                                        name = "delete_forever",
+                                                        size = 18.px,
+                                                        color = Color.white
+                                                    )
+                                                    Text(LocalizedStrings.permanentDeleteFlag)
                                                 }
                                             }
                                         }

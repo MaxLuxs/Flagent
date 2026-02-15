@@ -62,3 +62,31 @@ data class AssignRoleRequest(
     val roleKey: String? = null,
     val customRoleId: Long? = null
 )
+
+/** Request to create an API key (admin: POST /admin/tenants/{id}/api-keys; tenant: POST /tenants/me/api-keys). */
+@Serializable
+data class CreateApiKeyRequest(
+    val name: String = "Recovery",
+    val scopes: List<String> = emptyList(),
+    val environmentId: Long? = null,
+    val expiresAt: String? = null
+)
+
+@Serializable
+data class TenantApiKeyInfo(
+    val id: Long,
+    val tenantId: Long,
+    val environmentId: Long? = null,
+    val name: String,
+    val keyHash: String,
+    val scopes: List<String>,
+    val expiresAt: String? = null,
+    val createdAt: String,
+    val lastUsedAt: String? = null
+)
+
+@Serializable
+data class CreateApiKeyResponse(
+    val apiKey: String,
+    val apiKeyInfo: TenantApiKeyInfo
+)

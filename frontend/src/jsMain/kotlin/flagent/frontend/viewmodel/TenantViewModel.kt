@@ -132,6 +132,9 @@ class TenantViewModel {
     private fun getApiKeyForTenant(tenantId: String): String? =
         parseTenantApiKeys(localStorage[TENANT_API_KEYS_KEY])[tenantId]
 
+    /** True if we have a stored API key for this tenant (e.g. created in this browser). */
+    fun hasApiKeyForTenant(tenantId: String): Boolean = getApiKeyForTenant(tenantId) != null
+
     private fun parseTenantApiKeys(raw: String?): Map<String, String> {
         if (raw.isNullOrBlank()) return emptyMap()
         return runCatching {
@@ -150,6 +153,11 @@ class TenantViewModel {
     
     fun clearError() {
         error = null
+    }
+
+    /** Set error message from UI (e.g. "API key not available" when switching tenant). */
+    fun setError(message: String?) {
+        error = message
     }
 }
 

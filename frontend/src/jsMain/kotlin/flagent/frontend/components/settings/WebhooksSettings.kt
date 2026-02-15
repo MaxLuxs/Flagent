@@ -35,6 +35,8 @@ fun WebhooksSettings() {
     var showAddDialog by remember { mutableStateOf(false) }
     var editingWebhook by remember { mutableStateOf<WebhookResponse?>(null) }
     var deleteConfirm by remember { mutableStateOf<WebhookResponse?>(null) }
+    val dialogError = remember { mutableStateOf<String?>(null) }
+    val deleteError = remember { mutableStateOf<String?>(null) }
 
     fun loadWebhooks() {
         scope.launch {
@@ -192,18 +194,21 @@ fun WebhooksSettings() {
 
     if (showAddDialog) {
         WebhookEditDialog(
+            saveError = dialogError.value,
+            onClearError = { dialogError.value = null },
             onSave = { url, events, secret, enabled ->
                 scope.launch {
+                    dialogError.value = null
                     try {
                         ApiClient.createWebhook(CreateWebhookRequest(url, events, secret.ifBlank { null }, enabled))
                         showAddDialog = false
                         loadWebhooks()
                     } catch (e: Exception) {
-                        error.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                        dialogError.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
                     }
                 }
             },
-            onCancel = { showAddDialog = false }
+            onCancel = { showAddDialog = false; dialogError.value = null }
         )
     }
     editingWebhook?.let { wh ->
@@ -212,18 +217,21 @@ fun WebhooksSettings() {
             initialEvents = wh.events,
             initialSecret = wh.secret ?: "",
             initialEnabled = wh.enabled,
+            saveError = dialogError.value,
+            onClearError = { dialogError.value = null },
             onSave = { url, events, secret, enabled ->
                 scope.launch {
+                    dialogError.value = null
                     try {
                         ApiClient.updateWebhook(wh.id, PutWebhookRequest(url, events, secret.ifBlank { null }, enabled))
                         editingWebhook = null
                         loadWebhooks()
                     } catch (e: Exception) {
-                        error.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                        dialogError.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
                     }
                 }
             },
-            onCancel = { editingWebhook = null }
+            onCancel = { editingWebhook = null; dialogError.value = null }
         )
     }
     deleteConfirm?.let { wh ->
@@ -233,18 +241,20 @@ fun WebhooksSettings() {
             message = "Delete webhook to ${wh.url}?",
             confirmLabel = "Delete",
             isDangerous = true,
+            errorMessage = deleteError.value,
             onConfirm = {
                 scope.launch {
+                    deleteError.value = null
                     try {
                         ApiClient.deleteWebhook(wh.id)
                         deleteConfirm = null
                         loadWebhooks()
                     } catch (e: Exception) {
-                        error.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                        deleteError.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
                     }
                 }
             },
-            onCancel = { deleteConfirm = null }
+            onCancel = { deleteConfirm = null; deleteError.value = null }
         )
     }
 }
@@ -255,6 +265,8 @@ private fun WebhookEditDialog(
     initialEvents: List<String> = emptyList(),
     initialSecret: String = "",
     initialEnabled: Boolean = true,
+    saveError: String? = null,
+    onClearError: () -> Unit = {},
     onSave: (url: String, events: List<String>, secret: String, enabled: Boolean) -> Unit,
     onCancel: () -> Unit
 ) {
@@ -296,6 +308,20 @@ private fun WebhookEditDialog(
                     color(FlagentTheme.text(themeMode))
                 }
             }) { Text(if (initialUrl.isEmpty()) "Add Webhook" else "Edit Webhook") }
+            saveError?.let { err ->
+                Div({
+                    style {
+                        padding(12.px)
+                        marginBottom(12.px)
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
+                        borderRadius(6.px)
+                        color(FlagentTheme.errorText(themeMode))
+                        fontSize(14.px)
+                    }
+                }) {
+                    Text(err)
+                }
+            }
             Div({ style { marginBottom(12.px) } }) {
                 Span({
                     style {
@@ -307,7 +333,7 @@ private fun WebhookEditDialog(
                 }) { Text("URL") }
                 Input(InputType.Text) {
                     value(url)
-                    onInput { url = it.value }
+                    onInput { url = it.value; onClearError() }
                     style {
                         width(100.percent)
                         padding(10.px)
@@ -339,6 +365,7 @@ private fun WebhookEditDialog(
                             val isSelected = ev in selectedEvents
                             onClick {
                                 selectedEvents = if (isSelected) selectedEvents - ev else selectedEvents + ev
+                                onClearError()
                             }
                             style {
                                 padding(6.px, 12.px)
@@ -364,7 +391,7 @@ private fun WebhookEditDialog(
                 }) { Text("Secret (optional, for HMAC)") }
                 Input(InputType.Password) {
                     value(secret)
-                    onInput { secret = it.value }
+                    onInput { secret = it.value; onClearError() }
                     style {
                         width(100.percent)
                         padding(10.px)

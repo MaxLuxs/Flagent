@@ -24,6 +24,8 @@ import flagent.frontend.util.Validation
 import flagent.frontend.util.ValidationResult
 import flagent.frontend.util.createSortable
 import flagent.frontend.util.SortableInstance
+import flagent.frontend.util.triggerDownloadFromString
+import kotlinx.serialization.json.Json
 import kotlinx.browser.document
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -148,11 +150,127 @@ fun FlagEditor(flagId: Int?) {
             CreateFlagForm()
         } else if (flag.value != null) {
             // Edit existing flag - tabs interface
+            val f = flag.value!!
             Div({
                 style {
                     width(100.percent)
                 }
             }) {
+                // Hero: flag name, description, big toggle (Unleash-style)
+                Div({
+                    style {
+                        padding(24.px)
+                        marginBottom(24.px)
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        border {
+                            width(1.px)
+                            style(LineStyle.Solid)
+                            color(FlagentTheme.cardBorder(themeMode))
+                        }
+                        borderRadius(12.px)
+                        property("box-shadow", "0 4px 12px ${FlagentTheme.Shadow}")
+                    }
+                }) {
+                    Div({
+                        style {
+                            display(DisplayStyle.Flex)
+                            justifyContent(JustifyContent.SpaceBetween)
+                            alignItems(AlignItems.FlexStart)
+                            flexWrap(FlexWrap.Wrap)
+                            gap(16.px)
+                        }
+                    }) {
+                        Div({
+                            style {
+                                flex(1)
+                                property("min-width", "0")
+                            }
+                        }) {
+                            H1({
+                                style {
+                                    margin(0.px)
+                                    fontSize(22.px)
+                                    fontWeight("700")
+                                    color(FlagentTheme.Primary)
+                                    property("letter-spacing", "-0.02em")
+                                    property("overflow", "hidden")
+                                    property("text-overflow", "ellipsis")
+                                }
+                            }) {
+                                Text(f.key.ifBlank { "flag_${f.id}" })
+                            }
+                            if (f.description.isNotBlank()) {
+                                P({
+                                    style {
+                                        margin(6.px, 0.px, 0.px, 0.px)
+                                        fontSize(14.px)
+                                        color(FlagentTheme.textLight(themeMode))
+                                        property("display", "-webkit-box")
+                                        property("-webkit-line-clamp", "2")
+                                        property("-webkit-box-orient", "vertical")
+                                        overflow("hidden")
+                                    }
+                                }) {
+                                    Text(f.description)
+                                }
+                            }
+                            Span({
+                                style {
+                                    fontSize(12.px)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    marginTop(8.px)
+                                    display(DisplayStyle.InlineBlock)
+                                }
+                            }) {
+                                Text(f.updatedAt?.split(".")?.get(0)?.let { "Updated $it" } ?: "")
+                            }
+                        }
+                        Div({
+                            style {
+                                display(DisplayStyle.Flex)
+                                alignItems(AlignItems.Center)
+                                gap(12.px)
+                                padding(10.px, 18.px)
+                                backgroundColor(if (f.enabled) FlagentTheme.Success else FlagentTheme.Error)
+                                borderRadius(24.px)
+                                property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+                            }
+                        }) {
+                            Label(attrs = {
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    alignItems(AlignItems.Center)
+                                    gap(10.px)
+                                    cursor("pointer")
+                                    color(Color.white)
+                                    fontWeight("600")
+                                    fontSize(15.px)
+                                }
+                            }) {
+                                Input(InputType.Checkbox) {
+                                    checked(f.enabled)
+                                    onChange { event ->
+                                        val checked = (event.target as org.w3c.dom.HTMLInputElement).checked
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            try {
+                                                val updated = ApiClient.setFlagEnabled(flagId!!, checked)
+                                                flag.value = updated
+                                            } catch (_: Exception) { }
+                                        }
+                                    }
+                                    style { width(20.px); height(20.px); cursor("pointer") }
+                                }
+                                Icon(
+                                    name = if (f.enabled) "check_circle" else "cancel",
+                                    size = 22.px,
+                                    color = Color.white
+                                )
+                                Text(if (f.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled)
+                            }
+                        }
+                    }
+                }
+
                 // Tabs navigation
                 Div({
                     style {
@@ -514,6 +632,9 @@ private fun FlagSettingsCard(
     val dataRecordsEnabled = remember { mutableStateOf(flag.dataRecordsEnabled) }
     val entityType = remember { mutableStateOf(flag.entityType ?: "") }
     val notes = remember { mutableStateOf(flag.notes ?: "") }
+    val dependsOn = remember { mutableStateOf(flag.dependsOn) }
+    val dependsOnInput = remember { mutableStateOf(flag.dependsOn.joinToString(", ")) }
+    val dependedByKeys = remember { mutableStateOf<List<String>>(emptyList()) }
     val saving = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
     
@@ -524,6 +645,20 @@ private fun FlagSettingsCard(
         dataRecordsEnabled.value = flag.dataRecordsEnabled
         entityType.value = flag.entityType ?: ""
         notes.value = flag.notes ?: ""
+        dependsOn.value = flag.dependsOn
+        dependsOnInput.value = flag.dependsOn.joinToString(", ")
+    }
+    
+    // Load flags that depend on this one (for "Depended by" display)
+    LaunchedEffect(flag.key) {
+        try {
+            val (allFlags, _) = ApiClient.getFlags(limit = 1000)
+            dependedByKeys.value = allFlags
+                .filter { it.id != flag.id && it.dependsOn?.contains(flag.key) == true }
+                .map { it.key }
+        } catch (_: Exception) {
+            dependedByKeys.value = emptyList()
+        }
     }
     
     fun saveFlag() {
@@ -532,6 +667,7 @@ private fun FlagSettingsCard(
         
         CoroutineScope(Dispatchers.Main).launch {
             try {
+                val depKeys = dependsOnInput.value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                 ApiClient.updateFlagFull(
                     flagId,
                     PutFlagRequest(
@@ -539,7 +675,8 @@ private fun FlagSettingsCard(
                         description = description.value.takeIf { it.isNotEmpty() },
                         dataRecordsEnabled = dataRecordsEnabled.value,
                         entityType = entityType.value.takeIf { it.isNotEmpty() },
-                        notes = notes.value.takeIf { it.isNotEmpty() }
+                        notes = notes.value.takeIf { it.isNotEmpty() },
+                        dependsOn = depKeys.ifEmpty { null }
                     )
                 )
                 onFlagUpdated()
@@ -554,6 +691,13 @@ private fun FlagSettingsCard(
     fun setEnabled(enabled: Boolean) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
+                if (!enabled) {
+                    val (allFlags, _) = ApiClient.getFlags(limit = 1000)
+                    val dependents = allFlags.filter { it.id != flag.id && it.dependsOn?.contains(flag.key) == true }
+                    if (dependents.isNotEmpty() && !kotlinx.browser.window.confirm("${dependents.size} flag(s) depend on this one. Disable anyway?")) {
+                        return@launch
+                    }
+                }
                 ApiClient.setFlagEnabled(flagId, enabled)
                 onFlagUpdated()
             } catch (e: Exception) {
@@ -1000,6 +1144,56 @@ private fun FlagSettingsCard(
                             }
                         }
                     }
+                }
+            }
+        }
+        
+        // Dependencies (Depends on)
+        Div({
+            style {
+                marginBottom(15.px)
+            }
+        }) {
+            H5({
+                style {
+                    margin(0.px, 0.px, 10.px, 0.px)
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    gap(6.px)
+                    color(FlagentTheme.text(themeMode))
+                }
+            }) {
+                Text("Depends on")
+                InfoTooltip(
+                    title = "Depends on",
+                    description = "Flag keys this flag depends on. If any dependency is disabled or returns no variant, this flag evaluates to no variant (e.g. for kill-switch).",
+                    details = "Comma-separated list of flag keys."
+                )
+            }
+            Input(InputType.Text) {
+                attr("placeholder", "e.g. payment_enabled, cart_v2")
+                value(dependsOnInput.value)
+                onInput { event -> dependsOnInput.value = event.value }
+                style {
+                    width(100.percent)
+                    padding(10.px, 14.px)
+                    backgroundColor(FlagentTheme.inputBg(themeMode))
+                    color(FlagentTheme.text(themeMode))
+                    border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                    borderRadius(6.px)
+                    fontSize(14.px)
+                }
+            }
+            if (dependedByKeys.value.isNotEmpty()) {
+                Span({
+                    style {
+                        display(DisplayStyle.Block)
+                        marginTop(8.px)
+                        fontSize(13.px)
+                        color(FlagentTheme.textLight(themeMode))
+                    }
+                }) {
+                    Text("Depended by: ${dependedByKeys.value.joinToString(", ")}")
                 }
             }
         }
@@ -2075,6 +2269,7 @@ private fun SegmentCard(
     val rolloutPercent = remember { mutableStateOf(segment.rolloutPercent) }
     val saving = remember { mutableStateOf(false) }
     val deleting = remember { mutableStateOf(false) }
+    val duplicating = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf<String?>(null) }
     val showDistributionDialog = remember { mutableStateOf(false) }
     
@@ -2124,6 +2319,58 @@ private fun SegmentCard(
                 deleting.value = false
             }
         }
+    }
+    
+    fun duplicateSegment() {
+        duplicating.value = true
+        error.value = null
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val newSeg = ApiClient.createSegment(
+                    flagId,
+                    flagent.api.model.CreateSegmentRequest(
+                        description = segment.description ?: "",
+                        rolloutPercent = segment.rolloutPercent
+                    )
+                )
+                segment.constraints.forEach { c ->
+                    ApiClient.createConstraint(
+                        flagId,
+                        newSeg.id,
+                        flagent.api.model.CreateConstraintRequest(
+                            property = c.property,
+                            operator = c.operator,
+                            value = c.value
+                        )
+                    )
+                }
+                if (segment.distributions.isNotEmpty()) {
+                    ApiClient.updateDistributions(
+                        flagId,
+                        newSeg.id,
+                        flagent.api.model.PutDistributionsRequest(
+                            distributions = segment.distributions.map {
+                                flagent.api.model.DistributionRequest(
+                                    variantID = it.variantID,
+                                    variantKey = it.variantKey,
+                                    percent = it.percent
+                                )
+                            }
+                        )
+                    )
+                }
+                onUpdate()
+            } catch (e: Exception) {
+                error.value = e.message ?: LocalizedStrings.failedToDuplicateSegment
+            } finally {
+                duplicating.value = false
+            }
+        }
+    }
+    
+    fun exportSegment() {
+        val json = Json.encodeToString(flagent.api.model.SegmentResponse.serializer(), segment)
+        triggerDownloadFromString(json, "segment-${segment.id}.json", "application/json")
     }
     
     Div({
@@ -2206,6 +2453,37 @@ private fun SegmentCard(
                     }
                 }) {
                     Text(if (saving.value) LocalizedStrings.saving else LocalizedStrings.saveSegmentSetting)
+                }
+                Button({
+                    onClick { duplicateSegment() }
+                    if (duplicating.value) {
+                        attr("disabled", "true")
+                    }
+                    style {
+                        padding(5.px, 10.px)
+                        backgroundColor(if (duplicating.value) FlagentTheme.NeutralLighter else FlagentTheme.Primary)
+                        color(Color.white)
+                        border { width(0.px); style(LineStyle.None) }
+                        borderRadius(3.px)
+                        cursor(if (duplicating.value) "not-allowed" else "pointer")
+                        fontSize(12.px)
+                    }
+                }) {
+                    Text(if (duplicating.value) LocalizedStrings.saving else LocalizedStrings.duplicateSegment)
+                }
+                Button({
+                    onClick { exportSegment() }
+                    style {
+                        padding(5.px, 10.px)
+                        backgroundColor(FlagentTheme.Primary)
+                        color(Color.white)
+                        border { width(0.px); style(LineStyle.None) }
+                        borderRadius(3.px)
+                        cursor("pointer")
+                        fontSize(12.px)
+                    }
+                }) {
+                    Text(LocalizedStrings.exportSegment)
                 }
                 Button({
                     onClick { deleteSegment() }

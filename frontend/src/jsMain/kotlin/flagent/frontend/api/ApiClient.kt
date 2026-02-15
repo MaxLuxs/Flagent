@@ -142,7 +142,10 @@ object ApiClient {
         descriptionLike: String? = null,
         key: String? = null,
         tags: String? = null,
-        preload: Boolean = false
+        preload: Boolean = false,
+        includeArchived: Boolean = false,
+        environmentId: Long? = null,
+        projectId: Long? = null
     ): Pair<List<FlagResponse>, Long> {
         val response = client.get(getApiPath("/flags")) {
             limit?.let { parameter("limit", it) }
@@ -152,6 +155,9 @@ object ApiClient {
             key?.takeIf { it.isNotBlank() }?.let { parameter("key", it) }
             tags?.takeIf { it.isNotBlank() }?.let { parameter("tags", it) }
             parameter("preload", preload)
+            if (includeArchived) parameter("includeArchived", true)
+            environmentId?.let { parameter("environmentId", it) }
+            projectId?.let { parameter("projectId", it) }
         }
         val total = response.headers["X-Total-Count"]?.toLongOrNull() ?: 0L
         return response.body<List<FlagResponse>>() to total
@@ -319,13 +325,19 @@ object ApiClient {
         return client.get(url).body()
     }
     
-    // Deleted Flags
-    suspend fun getDeletedFlags(): List<FlagResponse> {
-        return client.get(getApiPath("/flags?deleted=true")).body()
+    // Deleted / Archived Flags
+    suspend fun getDeletedFlags(limit: Int = 500): List<FlagResponse> {
+        val (list, _) = getFlags(limit = limit, includeArchived = true)
+        return list
     }
     
     suspend fun restoreFlag(flagId: Int): FlagResponse {
         return client.put(getApiPath("/flags/$flagId/restore")).body()
+    }
+    
+    /** Permanently delete flag (and cascade). Use after archive. Cannot be undone. */
+    suspend fun permanentDeleteFlag(flagId: Int) {
+        client.delete(getApiPath("/flags/$flagId/permanent"))
     }
     
     // Tags
@@ -410,6 +422,15 @@ object ApiClient {
             if (getAuthToken() == null) getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
         }.body()
     }
+
+    /**
+     * Get current tenant info when request is made with X-API-Key (tenant context).
+     * Used when user pastes an API key from another device to resolve and store the tenant.
+     * Enterprise: GET /tenants/me. Requires valid X-API-Key in localStorage (set before calling).
+     */
+    suspend fun getTenantMe(): TenantResponse {
+        return client.get(getAuthPath("/tenants/me")).body()
+    }
     
     suspend fun createTenant(request: CreateTenantRequest): CreateTenantResponse {
         return client.post(getAdminPath("/tenants")) {
@@ -425,7 +446,51 @@ object ApiClient {
             if (getAuthToken() == null) getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
         }
     }
+
+    /**
+     * Create a new API key for a tenant (admin only). Use when a user lost their key — the old key cannot be restored, but this issues a new one.
+     * Enterprise: POST /admin/tenants/{id}/api-keys. Returns the new key once; store it securely.
+     */
+    suspend fun createTenantApiKey(tenantId: Long, request: CreateApiKeyRequest = CreateApiKeyRequest(name = "Recovery", scopes = emptyList())): CreateApiKeyResponse {
+        return client.post(getAdminPath("/tenants/$tenantId/api-keys")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+            if (getAuthToken() == null) getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
+        }.body()
+    }
+
+    // ========== Projects / Applications / Instances (Enterprise) ==========
     
+    suspend fun getProjects(): List<ProjectResponse> =
+        client.get(getApiPath("/projects")).body()
+    
+    suspend fun getProject(projectId: Long): ProjectResponse =
+        client.get(getApiPath("/projects/$projectId")).body()
+    
+    suspend fun createProject(name: String, key: String): ProjectResponse =
+        client.post(getApiPath("/projects")) {
+            contentType(ContentType.Application.Json)
+            setBody(ProjectCreateRequest(name = name, key = key))
+        }.body()
+    
+    suspend fun getApplications(projectId: Long): List<ApplicationResponse> =
+        client.get(getApiPath("/projects/$projectId/applications")).body()
+    
+    suspend fun createApplication(projectId: Long, name: String, key: String, platform: String = "web"): ApplicationResponse =
+        client.post(getApiPath("/projects/$projectId/applications")) {
+            contentType(ContentType.Application.Json)
+            setBody(ApplicationCreateRequest(name = name, key = key, platform = platform))
+        }.body()
+    
+    suspend fun getInstances(projectId: Long, appId: Long): List<InstanceResponse> =
+        client.get(getApiPath("/projects/$projectId/applications/$appId/instances")).body()
+    
+    suspend fun createInstance(projectId: Long, appId: Long, environmentId: Long, name: String): InstanceResponse =
+        client.post(getApiPath("/projects/$projectId/applications/$appId/instances")) {
+            contentType(ContentType.Application.Json)
+            setBody(InstanceCreateRequest(environmentId = environmentId, name = name))
+        }.body()
+
     // ========== Billing (Enterprise, requires auth) ==========
     
     internal fun getBillingPath(path: String): String {
@@ -581,6 +646,50 @@ object ApiClient {
         }
     }
 
+    // ========== Admin users (UI login management) ==========
+
+    /**
+     * Get admin users list with pagination. Returns (list, totalCount) from X-Total-Count header.
+     */
+    suspend fun getAdminUsers(limit: Int = 50, offset: Int = 0): Pair<List<AdminUserResponse>, Long> {
+        val response = client.get(getAdminPath("/users")) {
+            parameter("limit", limit)
+            parameter("offset", offset)
+        }
+        val total = response.headers["X-Total-Count"]?.toLongOrNull() ?: 0L
+        return response.body<List<AdminUserResponse>>() to total
+    }
+
+    suspend fun createAdminUser(email: String, password: String, name: String? = null): AdminUserResponse {
+        return client.post(getAdminPath("/users")) {
+            contentType(ContentType.Application.Json)
+            setBody(CreateAdminUserRequest(email = email, password = password, name = name))
+        }.body()
+    }
+
+    suspend fun getAdminUser(id: Int): AdminUserResponse {
+        return client.get(getAdminPath("/users/$id")).body()
+    }
+
+    suspend fun updateAdminUser(id: Int, name: String? = null, password: String? = null): AdminUserResponse {
+        return client.put(getAdminPath("/users/$id")) {
+            contentType(ContentType.Application.Json)
+            setBody(UpdateAdminUserRequest(name = name, password = password))
+        }.body()
+    }
+
+    suspend fun deleteAdminUser(id: Int) {
+        client.delete(getAdminPath("/users/$id"))
+    }
+
+    suspend fun blockAdminUser(id: Int): AdminUserResponse {
+        return client.post(getAdminPath("/users/$id/block")).body()
+    }
+
+    suspend fun unblockAdminUser(id: Int): AdminUserResponse {
+        return client.post(getAdminPath("/users/$id/unblock")).body()
+    }
+
     // ========== Metrics overview (global aggregates) ==========
 
     /**
@@ -665,6 +774,21 @@ object ApiClient {
         }
         return client.get(url).body()
     }
+
+    /**
+     * Get per-flag usage by client (OSS): who evaluated this flag (X-Client-Id).
+     */
+    suspend fun getFlagUsage(
+        flagId: Int,
+        startTime: Long,
+        endTime: Long
+    ): FlagUsageByClientResponse {
+        val url = buildString {
+            append(getApiPath("/flags/$flagId/usage"))
+            append("?start=$startTime&end=$endTime")
+        }
+        return client.get(url).body()
+    }
 }
 
 @Serializable
@@ -713,3 +837,21 @@ data class ImportResult(
     val updated: Int = 0,
     val errors: List<String> = emptyList()
 )
+
+@Serializable
+data class ProjectResponse(val id: Long, val tenantId: Long, val name: String, val key: String)
+
+@Serializable
+data class ApplicationResponse(val id: Long, val projectId: Long, val name: String, val key: String, val platform: String = "web")
+
+@Serializable
+data class InstanceResponse(val id: Long, val applicationId: Long, val environmentId: Long, val name: String)
+
+@Serializable
+data class ProjectCreateRequest(val name: String, val key: String)
+
+@Serializable
+data class ApplicationCreateRequest(val name: String, val key: String, val platform: String = "web")
+
+@Serializable
+data class InstanceCreateRequest(val environmentId: Long, val name: String)

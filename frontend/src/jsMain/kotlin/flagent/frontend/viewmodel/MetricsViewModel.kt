@@ -32,6 +32,10 @@ class MetricsViewModel(private val flagId: Int) {
     /** OSS only: evaluation stats from Core (API evaluation count). */
     var coreStats by mutableStateOf<FlagEvaluationStatsResponse?>(null)
         private set
+
+    /** OSS only: usage by client (who evaluated this flag, from X-Client-Id). */
+    var usageByClient by mutableStateOf<FlagUsageByClientResponse?>(null)
+        private set
     
     var isLoading by mutableStateOf(false)
         private set
@@ -75,6 +79,7 @@ class MetricsViewModel(private val flagId: Int) {
                     AppLogger.info(TAG, "Loading core stats for flag: $flagId")
                     coreStats = ApiClient.getFlagEvaluationStats(flagId, startTime, endTime)
                     AppLogger.info(TAG, "Loaded core stats: ${coreStats?.evaluationCount} evaluations")
+                    usageByClient = ApiClient.getFlagUsage(flagId, startTime, endTime)
                 },
                 onError = { err ->
                     error = ErrorHandler.getUserMessage(err)

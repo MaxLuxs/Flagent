@@ -128,6 +128,12 @@ object AppConfig {
     /** Documentation URL (GitHub Pages, Docsify). */
     val docsUrl: String get() = "https://maxluxs.github.io/Flagent/docs.html"
 
+    /** Support email for login page and help. */
+    val supportEmail: String by lazy {
+        (js("window.ENV_SUPPORT_EMAIL") as? String)?.takeIf { it.isNotBlank() }
+            ?: "support@flagent.io"
+    }
+
     /** SaaS URL for Flagent Cloud. null until SaaS is ready; use for "Try Flagent Cloud" CTA. */
     val saasUrl: String? by lazy {
         (js("window.ENV_SAAS_URL") as? String)?.takeIf { it.isNotBlank() }

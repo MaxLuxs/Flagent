@@ -18,54 +18,113 @@ import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
 import flagent.frontend.util.flexShrink
+import flagent.frontend.util.triggerDownloadFromString
+import kotlinx.serialization.json.Json
+import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
+private fun timeRangeToMs(range: String): Long = when (range) {
+    "24h" -> 86400_000L
+    "7d" -> 7 * 86400_000L
+    "30d" -> 30 * 86400_000L
+    else -> 86400_000L
+}
+
 /**
- * Analytics page: tabs Overview (when metrics enabled) / By flags. Compact layout.
+ * Analytics page: tabs Overview (when metrics enabled) / Events / By flags. Time filters, export, period comparison.
  */
 @Composable
 fun AnalyticsPage() {
     val themeMode = LocalThemeMode.current
     var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
     var overview by remember { mutableStateOf<GlobalMetricsOverviewResponse?>(null) }
+    var overviewPrevious by remember { mutableStateOf<GlobalMetricsOverviewResponse?>(null) }
     var analyticsOverview by remember { mutableStateOf<AnalyticsOverviewResponse?>(null) }
+    var analyticsOverviewPrevious by remember { mutableStateOf<AnalyticsOverviewResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var activeTab by remember { mutableStateOf("overview") }
+    var timeRange by remember { mutableStateOf("24h") }
+    var compareWithPrevious by remember { mutableStateOf(false) }
 
     var isLoadingEvents by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        isLoading = true
-        error = null
-        ErrorHandler.withErrorHandling(
-            block = {
-                flags = ApiClient.getFlags().first
-                if (AppConfig.Features.enableMetrics) {
-                    try {
-                        overview = ApiClient.getMetricsOverview(topLimit = 10, timeBucketMs = 3600_000)
-                    } catch (_: Throwable) {
-                        overview = null
-                    }
-                }
-            },
-            onError = { err ->
-                error = ErrorHandler.getUserMessage(err)
-            }
-        )
-        isLoading = false
+    val endTime = remember(timeRange) { (kotlin.js.Date().getTime() as Number).toLong() }
+    val startTime = remember(timeRange) { endTime - timeRangeToMs(timeRange) }
+    val bucketMs = when (timeRange) {
+        "24h" -> 3600_000L
+        "7d" -> 86400_000L
+        "30d" -> 86400_000L
+        else -> 3600_000L
     }
 
-    LaunchedEffect(activeTab) {
-        if (activeTab == "events") {
-            isLoadingEvents = true
-            try {
-                analyticsOverview = ApiClient.getAnalyticsOverview(topLimit = 20, timeBucketMs = 3600_000)
-            } catch (_: Throwable) {
-                analyticsOverview = null
+    LaunchedEffect(Unit) {
+        ErrorHandler.withErrorHandling(
+            block = { flags = ApiClient.getFlags().first },
+            onError = { err -> error = ErrorHandler.getUserMessage(err) }
+        )
+    }
+
+    LaunchedEffect(activeTab, timeRange, compareWithPrevious) {
+        when (activeTab) {
+            "overview" -> {
+                if (AppConfig.Features.enableMetrics) {
+                    isLoading = true
+                    error = null
+                    ErrorHandler.withErrorHandling(
+                        block = {
+                            overview = ApiClient.getMetricsOverview(
+                                startTime = startTime,
+                                endTime = endTime,
+                                topLimit = 10,
+                                timeBucketMs = bucketMs
+                            )
+                            if (compareWithPrevious) {
+                                val prevEnd = startTime
+                                val prevStart = prevEnd - timeRangeToMs(timeRange)
+                                overviewPrevious = ApiClient.getMetricsOverview(
+                                    startTime = prevStart,
+                                    endTime = prevEnd,
+                                    topLimit = 10,
+                                    timeBucketMs = bucketMs
+                                )
+                            } else {
+                                overviewPrevious = null
+                            }
+                        },
+                        onError = { err -> error = ErrorHandler.getUserMessage(err) }
+                    )
+                    isLoading = false
+                }
             }
-            isLoadingEvents = false
+            "events" -> {
+                isLoadingEvents = true
+                try {
+                    analyticsOverview = ApiClient.getAnalyticsOverview(
+                        startTime = startTime,
+                        endTime = endTime,
+                        topLimit = 20,
+                        timeBucketMs = bucketMs
+                    )
+                    if (compareWithPrevious) {
+                        val prevEnd = startTime
+                        val prevStart = prevEnd - timeRangeToMs(timeRange)
+                        analyticsOverviewPrevious = ApiClient.getAnalyticsOverview(
+                            startTime = prevStart,
+                            endTime = prevEnd,
+                            topLimit = 20,
+                            timeBucketMs = bucketMs
+                        )
+                    } else {
+                        analyticsOverviewPrevious = null
+                    }
+                } catch (_: Throwable) {
+                    analyticsOverview = null
+                    analyticsOverviewPrevious = null
+                }
+                isLoadingEvents = false
+            }
         }
     }
 
@@ -89,10 +148,81 @@ fun AnalyticsPage() {
                 property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             }
         }) {
-            TabButton(themeMode, "Overview", activeTab == "overview") { activeTab = "overview" }
-            TabButton(themeMode, "Events", activeTab == "events") { activeTab = "events" }
+            TabButton(themeMode, LocalizedStrings.overviewTab, activeTab == "overview") { activeTab = "overview" }
+            TabButton(themeMode, LocalizedStrings.eventsTab, activeTab == "events") { activeTab = "events" }
             if (hasOverview) {
-                TabButton(themeMode, "By flags", activeTab == "flags") { activeTab = "flags" }
+                TabButton(themeMode, LocalizedStrings.byFlagsTab, activeTab == "flags") { activeTab = "flags" }
+            }
+        }
+
+        // Time range and actions (Overview / Events)
+        if (activeTab == "overview" || activeTab == "events") {
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    flexWrap(FlexWrap.Wrap)
+                    alignItems(AlignItems.Center)
+                    gap(12.px)
+                    marginBottom(16.px)
+                }
+            }) {
+                Span({
+                    style {
+                        fontSize(13.px)
+                        color(FlagentTheme.textLight(themeMode))
+                        marginRight(4.px)
+                    }
+                }) {
+                    Text(LocalizedStrings.filterByTime)
+                }
+                listOf("24h" to LocalizedStrings.today, "7d" to LocalizedStrings.week, "30d" to LocalizedStrings.month).forEach { (value, label) ->
+                    Button({
+                        style {
+                            padding(8.px, 14.px)
+                            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontSize(13.px)
+                            backgroundColor(if (timeRange == value) FlagentTheme.Primary else Color.transparent)
+                            color(if (timeRange == value) Color.white else FlagentTheme.text(themeMode))
+                        }
+                        onClick { timeRange = value }
+                    }) {
+                        Text(label)
+                    }
+                }
+                Div({
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(8.px)
+                        marginLeft(8.px)
+                        paddingLeft(8.px)
+                        property("border-left", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                    }
+                }) {
+                    Input(InputType.Checkbox) {
+                        id("analytics-compare")
+                        checked(compareWithPrevious)
+                        onInput { compareWithPrevious = (it.target as? org.w3c.dom.HTMLInputElement)?.checked ?: false }
+                    }
+                    Label(attrs = {
+                        attr("for", "analytics-compare")
+                        style {
+                            fontSize(13.px)
+                            color(FlagentTheme.text(themeMode))
+                            cursor("pointer")
+                        }
+                    }) {
+                        Text(LocalizedStrings.compareWithPreviousPeriod)
+                    }
+                }
+                if (activeTab == "overview" && overview != null) {
+                    AnalyticsExportButtons(themeMode, overview!!, overviewPrevious, timeRange)
+                }
+                if (activeTab == "events" && analyticsOverview != null) {
+                    AnalyticsEventsExportButtons(themeMode, analyticsOverview!!, analyticsOverviewPrevious)
+                }
             }
         }
 
@@ -131,8 +261,17 @@ fun AnalyticsPage() {
                         gap(16.px)
                     }
                 }) {
-                    AnalyticsOverviewCard(themeMode, "Total evaluations", overview!!.totalEvaluations.toString())
-                    AnalyticsOverviewCard(themeMode, "Unique flags", overview!!.uniqueFlags.toString())
+                    val prev = overviewPrevious
+                    val totalComp = if (prev != null && prev.totalEvaluations > 0) {
+                        val pct = ((overview!!.totalEvaluations - prev.totalEvaluations).toDouble() / prev.totalEvaluations * 100).toInt()
+                        if (pct >= 0) "↑ $pct% vs prev." else "↓ ${-pct}% vs prev."
+                    } else null
+                    val uniqueComp = if (prev != null && prev.uniqueFlags > 0) {
+                        val delta = overview!!.uniqueFlags - prev.uniqueFlags
+                        if (delta >= 0) "↑ $delta vs prev." else "↓ ${-delta} vs prev."
+                    } else null
+                    AnalyticsOverviewCard(themeMode, LocalizedStrings.totalEvaluationsLabel, overview!!.totalEvaluations.toString(), totalComp)
+                    AnalyticsOverviewCard(themeMode, LocalizedStrings.uniqueFlagsLabel, overview!!.uniqueFlags.toString(), uniqueComp)
                 }
                 if (overview!!.timeSeries.isNotEmpty()) {
                     Div({
@@ -268,8 +407,8 @@ fun AnalyticsPage() {
                                 gap(16.px)
                             }
                         }) {
-                            AnalyticsOverviewCard(themeMode, "Total events", data.totalEvents.toString())
-                            AnalyticsOverviewCard(themeMode, "Unique users", data.uniqueUsers.toString())
+                            AnalyticsOverviewCard(themeMode, LocalizedStrings.totalEventsLabel, data.totalEvents.toString())
+                            AnalyticsOverviewCard(themeMode, LocalizedStrings.uniqueUsersLabel, data.uniqueUsers.toString())
                         }
                         if (data.timeSeries.isNotEmpty()) {
                             Div({
@@ -280,7 +419,7 @@ fun AnalyticsPage() {
                                     property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
                                 }
                             }) {
-                                OverviewChart(data.timeSeries, "Events over time")
+                                OverviewChart(data.timeSeries, LocalizedStrings.eventsOverTime)
                             }
                         }
                         if (data.dauByDay.isNotEmpty()) {
@@ -300,11 +439,11 @@ fun AnalyticsPage() {
                                         color(FlagentTheme.text(themeMode))
                                     }
                                 }) {
-                                    Text("DAU by day")
+                                    Text(LocalizedStrings.dauByDay)
                                 }
                                 OverviewChart(
                                     data.dauByDay.map { TimeSeriesEntryResponse(it.timestamp, it.dau) },
-                                    "Daily active users"
+                                    LocalizedStrings.dailyActiveUsers
                                 )
                             }
                         }
@@ -325,7 +464,7 @@ fun AnalyticsPage() {
                                         color(FlagentTheme.text(themeMode))
                                     }
                                 }) {
-                                    Text("Top events")
+                                    Text(LocalizedStrings.topEvents)
                                 }
                                 Div({
                                     style {
@@ -386,7 +525,7 @@ fun AnalyticsPage() {
                                 fontSize(16.px)
                             }
                         }) {
-                            Text("No analytics events yet. Use SDK logEvent() to send events.")
+                            Text(LocalizedStrings.noAnalyticsEventsYet)
                         }
                     }
                 }
@@ -621,7 +760,7 @@ private fun TabButton(themeMode: ThemeMode, label: String, isActive: Boolean, on
 }
 
 @Composable
-private fun AnalyticsOverviewCard(themeMode: ThemeMode, label: String, value: String) {
+private fun AnalyticsOverviewCard(themeMode: ThemeMode, label: String, value: String, comparisonText: String? = null) {
     Div({
         style {
             backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -649,6 +788,137 @@ private fun AnalyticsOverviewCard(themeMode: ThemeMode, label: String, value: St
             }
         }) {
             Text(value)
+        }
+        if (comparisonText != null) {
+            P({
+                style {
+                    fontSize(12.px)
+                    color(FlagentTheme.textLight(themeMode))
+                    margin(0.px)
+                    marginTop(4.px)
+                }
+            }) {
+                Text(comparisonText)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsExportButtons(
+    themeMode: ThemeMode,
+    overview: GlobalMetricsOverviewResponse,
+    overviewPrevious: GlobalMetricsOverviewResponse?,
+    timeRange: String
+) {
+    val suffix = when (timeRange) {
+        "24h" -> "today"
+        "7d" -> "week"
+        "30d" -> "month"
+        else -> "export"
+    }
+    Div({
+        style {
+            display(DisplayStyle.Flex)
+            gap(8.px)
+            marginLeft(8.px)
+            paddingLeft(8.px)
+            property("border-left", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+        }
+    }) {
+        Button({
+            style {
+                padding(8.px, 14.px)
+                border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                borderRadius(6.px)
+                cursor("pointer")
+                fontSize(13.px)
+                backgroundColor(Color.transparent)
+                color(FlagentTheme.text(themeMode))
+            }
+            onClick {
+                val header = "timestamp,count"
+                val rows = overview.timeSeries.sortedBy { it.timestamp }.joinToString("\n") { "${it.timestamp},${it.count}" }
+                val topHeader = "flagId,flagKey,evaluationCount"
+                val topRows = overview.topFlags.joinToString("\n") { "${it.flagId},${it.flagKey},${it.evaluationCount}" }
+                val csv = listOf(header, rows, "", topHeader, topRows).joinToString("\n")
+                triggerDownloadFromString(csv, "analytics-overview-$suffix.csv", "text/csv;charset=utf-8")
+            }
+        }) {
+            Text(LocalizedStrings.exportCsv)
+        }
+        Button({
+            style {
+                padding(8.px, 14.px)
+                border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                borderRadius(6.px)
+                cursor("pointer")
+                fontSize(13.px)
+                backgroundColor(Color.transparent)
+                color(FlagentTheme.text(themeMode))
+            }
+            onClick {
+                val json = Json.encodeToString(overview)
+                triggerDownloadFromString(json, "analytics-overview-$suffix.json", "application/json")
+            }
+        }) {
+            Text(LocalizedStrings.exportJson)
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsEventsExportButtons(
+    themeMode: ThemeMode,
+    data: AnalyticsOverviewResponse,
+    dataPrevious: AnalyticsOverviewResponse?
+) {
+    Div({
+        style {
+            display(DisplayStyle.Flex)
+            gap(8.px)
+            marginLeft(8.px)
+            paddingLeft(8.px)
+            property("border-left", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+        }
+    }) {
+        Button({
+            style {
+                padding(8.px, 14.px)
+                border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                borderRadius(6.px)
+                cursor("pointer")
+                fontSize(13.px)
+                backgroundColor(Color.transparent)
+                color(FlagentTheme.text(themeMode))
+            }
+            onClick {
+                val header = "timestamp,count"
+                val rows = data.timeSeries.sortedBy { it.timestamp }.joinToString("\n") { "${it.timestamp},${it.count}" }
+                val eventHeader = "eventName,count"
+                val eventRows = data.topEvents.joinToString("\n") { "${it.eventName},${it.count}" }
+                val csv = listOf(header, rows, "", eventHeader, eventRows).joinToString("\n")
+                triggerDownloadFromString(csv, "analytics-events.csv", "text/csv;charset=utf-8")
+            }
+        }) {
+            Text(LocalizedStrings.exportCsv)
+        }
+        Button({
+            style {
+                padding(8.px, 14.px)
+                border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                borderRadius(6.px)
+                cursor("pointer")
+                fontSize(13.px)
+                backgroundColor(Color.transparent)
+                color(FlagentTheme.text(themeMode))
+            }
+            onClick {
+                val json = Json.encodeToString(data)
+                triggerDownloadFromString(json, "analytics-events.json", "application/json")
+            }
+        }) {
+            Text(LocalizedStrings.exportJson)
         }
     }
 }

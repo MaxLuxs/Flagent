@@ -117,9 +117,19 @@ fun BlogPage() {
                         fontSize(15.px)
                         fontWeight(600)
                     }
-                    onClick { /* placeholder - no backend yet */ }
+                    // Newsletter: Coming soon — see internal/docs/tasks/TODO-plan.md
+                    onClick { /* Coming soon — no backend yet */ }
                 }) {
                     Text("Subscribe")
+                }
+                Span(attrs = {
+                    style {
+                        marginLeft(8.px)
+                        fontSize(13.px)
+                        color(Color("rgba(255,255,255,0.6)"))
+                    }
+                }) {
+                    Text("(Coming soon)")
                 }
             }
             A(href = AppConfig.blogUrl, attrs = {

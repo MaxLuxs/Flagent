@@ -15,6 +15,7 @@ fun ConfirmDialog(
     confirmLabel: String = "Confirm",
     cancelLabel: String = "Cancel",
     isDangerous: Boolean = false,
+    errorMessage: String? = null,
     onConfirm: () -> Unit,
     onCancel: () -> Unit
 ) {
@@ -40,6 +41,22 @@ fun ConfirmDialog(
                 }
             }) {
                 Text(title)
+            }
+
+            // Optional error (e.g. delete failed)
+            errorMessage?.let { err ->
+                Div({
+                    style {
+                        padding(12.px)
+                        marginBottom(16.px)
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
+                        borderRadius(6.px)
+                        color(FlagentTheme.errorText(themeMode))
+                        fontSize(14.px)
+                    }
+                }) {
+                    Text(err)
+                }
             }
             
             // Message

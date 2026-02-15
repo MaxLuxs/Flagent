@@ -109,6 +109,8 @@ data class CrashReportResponse(
     val deviceInfo: String? = null,
     val breadcrumbs: String? = null,
     val customKeys: String? = null,
+    /** Keys of flags that were active when the crash occurred. */
+    val activeFlagKeys: List<String>? = null,
     val timestamp: Long,
     val tenantId: String? = null
 )
@@ -125,6 +127,22 @@ data class FlagEvaluationStatsResponse(
     val flagId: Int,
     val evaluationCount: Long,
     val timeSeries: List<TimeSeriesEntryResponse>
+)
+
+/** Per-flag usage by client (OSS). Clients send X-Client-Id header with evaluation requests. */
+@Serializable
+data class FlagUsageByClientResponse(
+    val flagId: Int,
+    val startMs: Long,
+    val endMs: Long,
+    val totalEvaluationCount: Long,
+    val clients: List<ClientUsageEntryResponse>
+)
+
+@Serializable
+data class ClientUsageEntryResponse(
+    val clientId: String,
+    val evaluationCount: Long
 )
 
 /** @deprecated Use TimeSeriesEntryResponse */

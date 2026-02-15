@@ -60,16 +60,16 @@ fun App() {
     val allowTenantsAndLogin = BackendOnboardingState.allowTenantsAndLogin
     LaunchedEffect(route, allowTenantsAndLogin) {
         val routeNeedsTenant = route is Route.Dashboard || route is Route.FlagsList || route is Route.Experiments ||
-            route is Route.Analytics || route is Route.CreateFlag || route is Route.FlagDetail || route is Route.DebugConsole ||
+            route is Route.Segments || route is Route.Analytics || route is Route.CreateFlag || route is Route.FlagDetail || route is Route.DebugConsole ||
             route is Route.FlagHistory || route is Route.FlagMetrics || route is Route.FlagRollout || route is Route.FlagAnomalies ||
-            route is Route.Alerts || route is Route.Crash
+            route is Route.Alerts || route is Route.Crash || route is Route.Projects || route is Route.ProjectDetail || route is Route.ApplicationDetail
         if (!routeNeedsTenant) return@LaunchedEffect
         val token = localStorage.getItem(AUTH_TOKEN_KEY)?.takeIf { it.isNotBlank() }
         val apiKeyFromStorage = localStorage.getItem(API_KEY_STORAGE_KEY)?.takeIf { it.isNotBlank() }
         val apiKeyFromEnv = (js("window.ENV_API_KEY") as? String)?.takeIf { it.isNotBlank() }
         val hasNoApiKey = apiKeyFromStorage == null && apiKeyFromEnv == null
         val shouldRedirect = token != null && (AppConfig.Features.enableMultiTenancy || allowTenantsAndLogin) && hasNoApiKey
-        if (shouldRedirect) Router.navigateToTenantsWithCreate()
+        if (shouldRedirect) Router.navigateTo(Route.Tenants)
     }
 
     // Redirect authenticated users from landing (/) to dashboard (only when NOT showMarketingLanding)
@@ -95,6 +95,7 @@ fun App() {
             is Route.FlagsList -> Route.FlagsList.PATH
             is Route.Dashboard -> Route.Dashboard.PATH
             is Route.Experiments -> Route.Experiments.PATH
+            is Route.Segments -> Route.Segments.PATH
             is Route.Analytics -> Route.Analytics.PATH
             is Route.CreateFlag -> Route.CreateFlag.PATH
             is Route.FlagDetail -> r.path()
@@ -107,6 +108,9 @@ fun App() {
             is Route.Crash -> Route.Crash.PATH
             is Route.Settings -> Route.Settings.PATH
             is Route.Tenants -> Route.Tenants.PATH
+            is Route.Projects -> Route.Projects.PATH
+            is Route.ProjectDetail -> (route as Route.ProjectDetail).path()
+            is Route.ApplicationDetail -> (route as Route.ApplicationDetail).path()
             is Route.Login -> Route.Home.PATH
         }
         sessionStorage.setItem(AUTH_RETURN_URL_KEY, returnPath)
@@ -183,6 +187,7 @@ private fun AppShell(
                 is Route.FlagsList -> FlagsList()
                 is Route.Dashboard -> Dashboard()
                 is Route.Experiments -> flagent.frontend.components.experiments.ExperimentsPage()
+                is Route.Segments -> flagent.frontend.components.segments.SegmentsPage()
                 is Route.Analytics -> flagent.frontend.components.analytics.AnalyticsPage()
                 is Route.FlagDetail -> FlagEditor(r.flagId)
                 is Route.CreateFlag -> FlagEditor(null)
@@ -195,6 +200,7 @@ private fun AppShell(
                 is Route.Crash -> flagent.frontend.components.metrics.CrashDashboard()
                 is Route.Settings -> flagent.frontend.components.settings.SettingsPage()
                 is Route.Tenants -> flagent.frontend.components.tenants.TenantsList(tenantViewModel = vm)
+                is Route.Projects, is Route.ProjectDetail, is Route.ApplicationDetail -> flagent.frontend.components.projects.ProjectsPage()
                 is Route.Login, is Route.Pricing, is Route.Blog -> {}
             }
         }

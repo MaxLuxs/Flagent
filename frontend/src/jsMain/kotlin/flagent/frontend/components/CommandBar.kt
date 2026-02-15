@@ -71,20 +71,21 @@ fun CommandBar(
 
     val navItems = remember {
         buildList {
-            add(CommandBarItem.Nav("Dashboard", "dashboard", Route.Dashboard))
-            add(CommandBarItem.Nav("Flags", "flag", Route.FlagsList))
+            add(CommandBarItem.Nav(LocalizedStrings.dashboardNav, "dashboard", Route.Dashboard))
+            add(CommandBarItem.Nav(LocalizedStrings.flagsNav, "flag", Route.FlagsList))
             add(CommandBarItem.Nav(LocalizedStrings.experimentsTitle, "science", Route.Experiments))
+            add(CommandBarItem.Nav(LocalizedStrings.segmentsTitle, "segment", Route.Segments))
             add(CommandBarItem.Nav(LocalizedStrings.analyticsTitle, "analytics", Route.Analytics))
             if (AppConfig.Features.enableCrashAnalytics) {
-                add(CommandBarItem.Nav("Crash", "bug_report", Route.Crash))
+                add(CommandBarItem.Nav(LocalizedStrings.crashNav, "bug_report", Route.Crash))
             }
             if (AppConfig.Features.enableAnomalyDetection) {
-                add(CommandBarItem.Nav("Alerts", "notifications", Route.Alerts))
+                add(CommandBarItem.Nav(LocalizedStrings.alertsNav, "notifications", Route.Alerts))
             }
             if (AppConfig.Features.enableMultiTenancy) {
-                add(CommandBarItem.Nav("Tenants", "business", Route.Tenants))
+                add(CommandBarItem.Nav(LocalizedStrings.tenantsNav, "business", Route.Tenants))
             }
-            add(CommandBarItem.Nav("Settings", "settings", Route.Settings))
+            add(CommandBarItem.Nav(LocalizedStrings.settingsNav, "settings", Route.Settings))
         }
     }
 

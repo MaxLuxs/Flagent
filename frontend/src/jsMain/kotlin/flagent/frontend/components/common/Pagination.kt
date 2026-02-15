@@ -1,6 +1,7 @@
 package flagent.frontend.components.common
 
 import androidx.compose.runtime.Composable
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
@@ -40,7 +41,7 @@ fun Pagination(
                 fontWeight(500)
             }
         }) {
-            Text("Previous")
+            Text(LocalizedStrings.previous)
         }
         
         // Page numbers
@@ -89,7 +90,7 @@ fun Pagination(
                 fontWeight(500)
             }
         }) {
-            Text("Next")
+            Text(LocalizedStrings.next)
         }
     }
 }

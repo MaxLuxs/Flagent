@@ -231,7 +231,7 @@ fun LandingPage() {
                         }) {
                             Icon("login", size = 20.px, color = Color.white)
                             Text(" ")
-                            Text("Sign in")
+                            Text(flagent.frontend.i18n.LocalizedStrings.signInShort)
                         }
                     }
                     Button({
@@ -258,7 +258,7 @@ fun LandingPage() {
                         }
                         onClick { Router.navigateTo(Route.Dashboard) }
                     }) {
-                        Text("Dashboard")
+                        Text(flagent.frontend.i18n.LocalizedStrings.dashboardNav)
                     }
                     Button({
                         style {
@@ -281,7 +281,7 @@ fun LandingPage() {
                         }
                         onClick { Router.navigateTo(Route.FlagsList) }
                     }) {
-                        Text("Flags")
+                        Text(flagent.frontend.i18n.LocalizedStrings.flagsNav)
                     }
                     if (AppConfig.Features.enableMultiTenancy && !AppConfig.requiresAuth) {
                         Button({
@@ -297,7 +297,7 @@ fun LandingPage() {
                             }
                             onClick { Router.navigateTo(Route.Tenants) }
                         }) {
-                            Text("Tenants")
+                            Text(flagent.frontend.i18n.LocalizedStrings.tenantsNav)
                         }
                     }
                 }
@@ -361,7 +361,7 @@ fun LandingPage() {
                             color(Color("rgba(255,255,255,0.7)"))
                         }
                     }) {
-                        Text("No tenant yet? ")
+                        Text(flagent.frontend.i18n.LocalizedStrings.noTenantYet)
                         Button({
                             style {
                                 color(FlagentTheme.PrimaryLight)
@@ -375,9 +375,9 @@ fun LandingPage() {
                             }
                             onClick { Router.navigateToTenantsWithCreate() }
                         }) {
-                            Text("Create your first tenant")
+                            Text(flagent.frontend.i18n.LocalizedStrings.createYourFirstTenant)
                         }
-                        Text(" to get started.")
+                        Text(flagent.frontend.i18n.LocalizedStrings.toGetStarted)
                     }
                 }
             }

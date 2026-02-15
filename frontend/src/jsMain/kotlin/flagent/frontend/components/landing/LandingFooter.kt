@@ -178,9 +178,19 @@ fun LandingFooter() {
                                 fontSize(14.px)
                                 fontWeight(500)
                             }
-                            onClick { /* placeholder - no backend yet */ }
+                            // Newsletter: Coming soon — wire to backend or Mailchimp/SendGrid when ready; see internal/docs/tasks/TODO-plan.md
+                            onClick { /* Coming soon — no backend yet */ }
                         }) {
                             Text("Subscribe")
+                        }
+                        Span(attrs = {
+                            style {
+                                marginLeft(8.px)
+                                fontSize(12.px)
+                                color(Color("rgba(255,255,255,0.6)"))
+                            }
+                        }) {
+                            Text("(Coming soon)")
                         }
                     }
                 }

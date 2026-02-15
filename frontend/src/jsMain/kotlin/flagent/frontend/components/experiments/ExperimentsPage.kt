@@ -15,8 +15,11 @@ import flagent.frontend.util.ErrorHandler
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
+/** Status filter for experiments list */
+private enum class ExperimentStatusFilter { All, Enabled, Disabled }
+
 /**
- * Experiments (A/B) page: flags with 2+ variants. Compact table layout.
+ * Experiments (A/B) page: flags with 2+ variants. Card grid or table layout with status filter.
  */
 @Composable
 fun ExperimentsPage() {
@@ -24,6 +27,8 @@ fun ExperimentsPage() {
     var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
+    var statusFilter by remember { mutableStateOf(ExperimentStatusFilter.All) }
+    var viewCards by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -38,6 +43,14 @@ fun ExperimentsPage() {
             }
         )
         isLoading = false
+    }
+
+    val filteredFlags = remember(flags, statusFilter) {
+        when (statusFilter) {
+            ExperimentStatusFilter.All -> flags
+            ExperimentStatusFilter.Enabled -> flags.filter { it.enabled }
+            ExperimentStatusFilter.Disabled -> flags.filter { !it.enabled }
+        }
     }
 
     Div({
@@ -93,7 +106,7 @@ fun ExperimentsPage() {
                             }
                             onClick { Router.navigateToTenantsWithCreate() }
                         }) {
-                            Text("Create first tenant →")
+                            Text(flagent.frontend.i18n.LocalizedStrings.createFirstTenant)
                         }
                         Button({
                             style {
@@ -108,57 +121,147 @@ fun ExperimentsPage() {
                             }
                             onClick { Router.navigateTo(Route.Login) }
                         }) {
-                            Text("Log in (admin) →")
+                            Text(flagent.frontend.i18n.LocalizedStrings.logInAdmin)
                         }
                     }
                 }
             }
-        } else if (flags.isEmpty()) {
+        } else {
+            // Always show filter bar when not loading/error so user can change filter when result is empty
             Div({
                 style {
-                    backgroundColor(FlagentTheme.cardBg(themeMode))
-                    borderRadius(8.px)
-                    padding(40.px)
-                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
-                    textAlign("center")
+                    display(DisplayStyle.Flex)
+                    flexWrap(FlexWrap.Wrap)
+                    alignItems(AlignItems.Center)
+                    gap(12.px)
+                    marginBottom(16.px)
                 }
             }) {
-                Icon("science", size = 48.px, color = FlagentTheme.textLight(themeMode))
-                P({
-                    style {
-                        marginTop(16.px)
-                        color(FlagentTheme.text(themeMode))
-                        fontSize(16.px)
+                listOf(
+                    ExperimentStatusFilter.All to LocalizedStrings.filterAll,
+                    ExperimentStatusFilter.Enabled to LocalizedStrings.enabled,
+                    ExperimentStatusFilter.Disabled to LocalizedStrings.disabled
+                ).forEach { (filter, label) ->
+                    Button({
+                        style {
+                            padding(6.px, 12.px)
+                            fontSize(13.px)
+                            borderRadius(6.px)
+                            border(1.px, LineStyle.Solid, if (statusFilter == filter) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode))
+                            backgroundColor(if (statusFilter == filter) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                            color(if (statusFilter == filter) Color.white else FlagentTheme.text(themeMode))
+                            cursor("pointer")
+                        }
+                        onClick { statusFilter = filter }
+                    }) {
+                        Text(label)
                     }
-                }) {
-                    Text(LocalizedStrings.noExperiments)
                 }
-                P({
+                Span({ style { marginLeft(8.px); color(FlagentTheme.textLight(themeMode)); fontSize(13.px) } }) { Text("•") }
+                Button({
                     style {
-                        color(FlagentTheme.textLight(themeMode))
-                        fontSize(14.px)
-                        marginTop(8.px)
+                        padding(6.px, 12.px)
+                        fontSize(13.px)
+                        borderRadius(6.px)
+                        border(1.px, LineStyle.Solid, if (viewCards) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode))
+                        backgroundColor(if (viewCards) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                        color(if (viewCards) Color.white else FlagentTheme.text(themeMode))
+                        cursor("pointer")
                     }
+                    onClick { viewCards = true }
                 }) {
-                    Text(LocalizedStrings.noExperimentsHint)
+                    Icon("grid_view", size = 16.px)
+                    Text(" ${LocalizedStrings.cardsView}")
                 }
                 Button({
                     style {
-                        marginTop(20.px)
-                        padding(12.px, 24.px)
-                        backgroundColor(FlagentTheme.Primary)
-                        color(Color.white)
-                        border(0.px)
+                        padding(6.px, 12.px)
+                        fontSize(13.px)
                         borderRadius(6.px)
+                        border(1.px, LineStyle.Solid, if (!viewCards) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode))
+                        backgroundColor(if (!viewCards) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                        color(if (!viewCards) Color.white else FlagentTheme.text(themeMode))
                         cursor("pointer")
+                    }
+                    onClick { viewCards = false }
+                }) {
+                    Icon("table_rows", size = 16.px)
+                    Text(" ${LocalizedStrings.tableView}")
+                }
+                Span({
+                    style {
+                        marginLeft(8.px)
+                        color(FlagentTheme.textLight(themeMode))
                         fontSize(14.px)
                     }
-                    onClick { Router.navigateTo(Route.FlagsList) }
                 }) {
-                    Text(LocalizedStrings.viewFlags)
+                    Text("${filteredFlags.size} ${LocalizedStrings.experimentsCount}")
                 }
             }
-        } else {
+            if (filteredFlags.isEmpty()) {
+                Div({
+                    style {
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        borderRadius(8.px)
+                        padding(40.px)
+                        property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                        textAlign("center")
+                    }
+                }) {
+                    Icon("science", size = 48.px, color = FlagentTheme.textLight(themeMode))
+                    P({
+                        style {
+                            marginTop(16.px)
+                            color(FlagentTheme.text(themeMode))
+                            fontSize(16.px)
+                        }
+                    }) {
+                        Text(
+                            if (flags.isEmpty()) LocalizedStrings.noExperiments
+                            else LocalizedStrings.noExperimentsMatchFilter
+                        )
+                    }
+                    P({
+                        style {
+                            color(FlagentTheme.textLight(themeMode))
+                            fontSize(14.px)
+                            marginTop(8.px)
+                        }
+                    }) {
+                        Text(
+                            if (flags.isEmpty()) LocalizedStrings.noExperimentsHint
+                            else LocalizedStrings.noExperimentsChangeFilterHint
+                        )
+                    }
+                    Button({
+                        style {
+                            marginTop(20.px)
+                            padding(12.px, 24.px)
+                            backgroundColor(FlagentTheme.Primary)
+                            color(Color.white)
+                            border(0.px)
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontSize(14.px)
+                        }
+                        onClick { Router.navigateTo(Route.FlagsList) }
+                    }) {
+                        Text(LocalizedStrings.viewFlags)
+                    }
+                }
+            } else if (viewCards) {
+                Div({
+                    style {
+                        display(DisplayStyle.Grid)
+                        property("grid-template-columns", "repeat(auto-fill, minmax(280px, 1fr))")
+                        gap(16.px)
+                    }
+                }) {
+                    filteredFlags.forEach { flag ->
+                        ExperimentCard(flag = flag)
+                    }
+                }
+            } else {
             Div({
                 style {
                     backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -195,7 +298,7 @@ fun ExperimentsPage() {
                         }
                     }
                     Tbody {
-                        flags.forEach { flag ->
+                        filteredFlags.forEach { flag ->
                             Tr({
                                 style {
                                     property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
@@ -280,6 +383,7 @@ fun ExperimentsPage() {
                         }
                     }
                 }
+            }
             }
         }
     }

@@ -9,6 +9,8 @@ import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
+import flagent.frontend.util.borderBottom
+import flagent.frontend.util.borderCollapse
 import flagent.frontend.util.currentTimeMillis
 import flagent.frontend.util.format
 import flagent.frontend.util.textTransform
@@ -178,6 +180,66 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                             timeSeries = stats.timeSeries,
                             title = LocalizedStrings.evaluationsOverTime
                         )
+                    }
+                }
+            }
+            viewModel.usageByClient?.let { usage ->
+                if (usage.clients.isNotEmpty()) {
+                    Div({
+                        style {
+                            marginBottom(24.px)
+                            padding(20.px)
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
+                            borderRadius(8.px)
+                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                        }
+                    }) {
+                        H3({
+                            style {
+                                margin(0.px, 0.px, 12.px, 0.px)
+                                fontSize(16.px)
+                                fontWeight(600)
+                                color(FlagentTheme.text(themeMode))
+                            }
+                        }) { Text("Usage by client") }
+                        Span({
+                            style {
+                                display(DisplayStyle.Block)
+                                fontSize(13.px)
+                                color(FlagentTheme.textLight(themeMode))
+                                marginBottom(12.px)
+                            }
+                        }) { Text("Clients that sent X-Client-Id with evaluation requests. Total: ${usage.totalEvaluationCount} evaluations.") }
+                        Table({
+                            style {
+                                width(100.percent)
+                                borderCollapse("collapse")
+                                fontSize(14.px)
+                            }
+                        }) {
+                            Thead({}) {
+                                Tr({
+                                    style {
+                                        borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    }
+                                }) {
+                                    Th({ style { padding(10.px, 12.px); textAlign("left"); color(FlagentTheme.text(themeMode)) } }) { Text("Client ID") }
+                                    Th({ style { padding(10.px, 12.px); textAlign("right"); color(FlagentTheme.text(themeMode)) } }) { Text("Evaluations") }
+                                }
+                            }
+                            Tbody({}) {
+                                for (entry in usage.clients) {
+                                    Tr({
+                                        style {
+                                            borderBottom(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                        }
+                                    }) {
+                                        Td({ style { padding(10.px, 12.px); color(FlagentTheme.text(themeMode)) } }) { Text(entry.clientId) }
+                                        Td({ style { padding(10.px, 12.px); textAlign("right"); color(FlagentTheme.text(themeMode)) } }) { Text(entry.evaluationCount.toString()) }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

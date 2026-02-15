@@ -42,6 +42,10 @@ sealed class Route {
         const val PATH = "/experiments"
     }
 
+    object Segments : Route() {
+        const val PATH = "/segments"
+    }
+
     object Analytics : Route() {
         const val PATH = "/analytics"
     }
@@ -91,6 +95,18 @@ sealed class Route {
     
     object Tenants : Route() {
         const val PATH = "/tenants"
+    }
+
+    object Projects : Route() {
+        const val PATH = "/projects"
+    }
+
+    data class ProjectDetail(val projectId: Long) : Route() {
+        fun path() = "/projects/$projectId"
+    }
+
+    data class ApplicationDetail(val projectId: Long, val appId: Long) : Route() {
+        fun path() = "/projects/$projectId/applications/$appId"
     }
 
     object Login : Route() {
@@ -175,12 +191,24 @@ object Router {
             p == Route.FlagsList.PATH -> Route.FlagsList
             p == Route.Dashboard.PATH -> Route.Dashboard
             p == Route.Experiments.PATH -> Route.Experiments
+            p == Route.Segments.PATH -> Route.Segments
             p == Route.Analytics.PATH -> Route.Analytics
             p == Route.CreateFlag.PATH -> Route.CreateFlag
             p == Route.Alerts.PATH -> Route.Alerts
             p == Route.Crash.PATH -> Route.Crash
             p == Route.Settings.PATH -> Route.Settings
             p == Route.Tenants.PATH -> Route.Tenants
+            p == Route.Projects.PATH -> Route.Projects
+            p.startsWith("/projects/") && !p.contains("/applications/") -> {
+                val id = p.removePrefix("/projects/").trimEnd('/').toLongOrNull()
+                if (id != null) Route.ProjectDetail(id) else Route.Projects
+            }
+            p.contains("/projects/") && p.contains("/applications/") -> {
+                val parts = p.removePrefix("/projects/").split("/")
+                val projectId = parts.getOrNull(0)?.toLongOrNull()
+                val appId = parts.getOrNull(2)?.toLongOrNull()
+                if (projectId != null && appId != null) Route.ApplicationDetail(projectId, appId) else Route.Projects
+            }
             p == Route.Login.PATH -> Route.Login
             p == Route.Pricing.PATH -> Route.Pricing
             p == Route.Blog.PATH -> Route.Blog
@@ -232,6 +260,7 @@ object Router {
             is Route.FlagsList -> Route.FlagsList.PATH
             is Route.Dashboard -> Route.Dashboard.PATH
             is Route.Experiments -> Route.Experiments.PATH
+            is Route.Segments -> Route.Segments.PATH
             is Route.Analytics -> Route.Analytics.PATH
             is Route.CreateFlag -> Route.CreateFlag.PATH
             is Route.FlagDetail -> this.path()
@@ -244,6 +273,9 @@ object Router {
             is Route.Crash -> Route.Crash.PATH
             is Route.Settings -> Route.Settings.PATH
             is Route.Tenants -> Route.Tenants.PATH
+            is Route.Projects -> Route.Projects.PATH
+            is Route.ProjectDetail -> this.path()
+            is Route.ApplicationDetail -> this.path()
             is Route.Login -> Route.Login.PATH
             is Route.Pricing -> Route.Pricing.PATH
             is Route.Blog -> Route.Blog.PATH

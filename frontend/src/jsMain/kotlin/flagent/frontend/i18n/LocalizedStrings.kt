@@ -49,6 +49,11 @@ object LocalizedStrings {
         "ru" -> "Создайте флаг, введя описание. Система автоматически сгенерирует уникальный ключ. Вы можете включать/выключать флаги, создавать сегменты для таргетинга и настраивать распределения для постепенных rollout."
         else -> "Create a flag by entering a description. The system will generate a unique key automatically. You can enable/disable flags, create segments for targeting, and set up distributions for gradual rollouts."
     }
+
+    val featureFlagsSubtitle: String get() = when (currentLocale) {
+        "ru" -> "Создавайте и управляйте feature flags для контроля выкатки и A/B тестов"
+        else -> "Create and manage feature flags to control rollouts and A/B tests"
+    }
     
     val flagDescription: String get() = when (currentLocale) {
         "ru" -> "Описание флага"
@@ -95,6 +100,55 @@ object LocalizedStrings {
         else -> "Create Simple Boolean Flag"
     }
 
+    val createFlagModalTitle: String get() = when (currentLocale) {
+        "ru" -> "Выберите тип флага"
+        else -> "Choose flag type"
+    }
+
+    val createFlagTypeBooleanTitle: String get() = when (currentLocale) {
+        "ru" -> "Булевый флаг"
+        else -> "Boolean flag"
+    }
+
+    val createFlagTypeBooleanDescription: String get() = when (currentLocale) {
+        "ru" -> "Включено/выключено. Подходит для kill switch и простых фич."
+        else -> "On/off. Best for kill switches and simple feature toggles."
+    }
+
+    val createFlagTypeFullFormTitle: String get() = when (currentLocale) {
+        "ru" -> "Полная форма"
+        else -> "Full form"
+    }
+
+    val createFlagTypeFullFormDescription: String get() = when (currentLocale) {
+        "ru" -> "Описание и ключ вручную, затем настройка вариантов и сегментов."
+        else -> "Enter description and key manually, then configure variants and segments."
+    }
+    val createFlagTypeAbTestTitle: String get() = when (currentLocale) {
+        "ru" -> "A/B тест"
+        else -> "A/B test"
+    }
+    val createFlagTypeAbTestDescription: String get() = when (currentLocale) {
+        "ru" -> "Два и более варианта с распределением трафика. Для экспериментов."
+        else -> "Two or more variants with traffic split. For experiments."
+    }
+    val createFlagTypeNumericTitle: String get() = when (currentLocale) {
+        "ru" -> "Числовой флаг"
+        else -> "Numeric flag"
+    }
+    val createFlagTypeNumericDescription: String get() = when (currentLocale) {
+        "ru" -> "Значение — число. Лимиты, пороги, настройки."
+        else -> "Value is a number. Limits, thresholds, config."
+    }
+    val createFlagTypeStringJsonTitle: String get() = when (currentLocale) {
+        "ru" -> "Строка / JSON"
+        else -> "String / JSON"
+    }
+    val createFlagTypeStringJsonDescription: String get() = when (currentLocale) {
+        "ru" -> "Текстовое или JSON-значение. Конфиги, payload."
+        else -> "Text or JSON value. Configs, payload."
+    }
+
     val createFromTemplate: String get() = when (currentLocale) {
         "ru" -> "Создать из шаблона"
         else -> "Create from Template"
@@ -123,6 +177,11 @@ object LocalizedStrings {
     val searchFlagsDetailedPlaceholder: String get() = when (currentLocale) {
         "ru" -> "Поиск по описанию..."
         else -> "Search by description..."
+    }
+
+    val keyExactPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Ключ (точное совпадение)"
+        else -> "Key (exact)"
     }
 
     val allStatus: String get() = when (currentLocale) {
@@ -246,18 +305,18 @@ object LocalizedStrings {
     }
     
     val showDeletedFlags: String get() = when (currentLocale) {
-        "ru" -> "Показать удаленные флаги"
-        else -> "Show Deleted Flags"
+        "ru" -> "Показать архивные флаги"
+        else -> "Show archived flags"
     }
     
     val hideDeletedFlags: String get() = when (currentLocale) {
-        "ru" -> "Скрыть удаленные флаги"
-        else -> "Hide Deleted Flags"
+        "ru" -> "Скрыть архивные флаги"
+        else -> "Hide archived flags"
     }
     
     val deletedFlags: String get() = when (currentLocale) {
-        "ru" -> "Удаленные флаги"
-        else -> "Deleted Flags"
+        "ru" -> "Архивные флаги"
+        else -> "Archived flags"
     }
     
     val restore: String get() = when (currentLocale) {
@@ -281,8 +340,8 @@ object LocalizedStrings {
     }
     
     val noDeletedFlags: String get() = when (currentLocale) {
-        "ru" -> "Удаленных флагов нет"
-        else -> "No deleted flags"
+        "ru" -> "Архивных флагов нет"
+        else -> "No archived flags"
     }
 
     val noTags: String get() = when (currentLocale) {
@@ -511,6 +570,10 @@ object LocalizedStrings {
         "ru" -> "Для этого флага еще не создано сегментов"
         else -> "No segments created for this feature flag yet"
     }
+    val noSegmentsInProject: String get() = when (currentLocale) {
+        "ru" -> "В проекте пока нет сегментов. Создайте флаг и добавьте сегменты в его настройках."
+        else -> "No segments in project yet. Create a flag and add segments in its settings."
+    }
 
     val dragToReorder: String get() = when (currentLocale) {
         "ru" -> "Перетащите для изменения порядка"
@@ -592,6 +655,14 @@ object LocalizedStrings {
         else -> "Save Variant"
     }
 
+    val duplicateSegment: String get() = when (currentLocale) {
+        "ru" -> "Дублировать"
+        else -> "Duplicate"
+    }
+    val exportSegment: String get() = when (currentLocale) {
+        "ru" -> "Экспорт"
+        else -> "Export"
+    }
     val saveSegmentSetting: String get() = when (currentLocale) {
         "ru" -> "Сохранить настройки сегмента"
         else -> "Save Segment Setting"
@@ -904,6 +975,16 @@ object LocalizedStrings {
         else -> "Create Segment"
     }
 
+    val searchSegmentsPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Поиск по флагу, описанию, ID…"
+        else -> "Search by flag, description, ID…"
+    }
+
+    val noSegmentsMatchSearch: String get() = when (currentLocale) {
+        "ru" -> "Нет сегментов по запросу"
+        else -> "No segments match your search"
+    }
+
     val distributionsSavedSuccessfully: String get() = when (currentLocale) {
         "ru" -> "Распределения успешно сохранены!"
         else -> "Distributions saved successfully!"
@@ -933,6 +1014,21 @@ object LocalizedStrings {
     val failedToRestoreFlag: String get() = when (currentLocale) {
         "ru" -> "Не удалось восстановить флаг"
         else -> "Failed to restore flag"
+    }
+
+    val permanentDeleteFlag: String get() = when (currentLocale) {
+        "ru" -> "Удалить навсегда"
+        else -> "Permanent delete"
+    }
+
+    val confirmPermanentDeleteFlag: String get() = when (currentLocale) {
+        "ru" -> "Удалить флаг навсегда? Это действие нельзя отменить."
+        else -> "Permanently delete this flag? This cannot be undone."
+    }
+
+    val failedToPermanentDeleteFlag: String get() = when (currentLocale) {
+        "ru" -> "Не удалось удалить флаг навсегда"
+        else -> "Failed to permanently delete flag"
     }
 
     val failedToCreateFlag: String get() = when (currentLocale) {
@@ -1055,6 +1151,10 @@ object LocalizedStrings {
         else -> "Failed to create segment"
     }
 
+    val failedToDuplicateSegment: String get() = when (currentLocale) {
+        "ru" -> "Не удалось дублировать сегмент"
+        else -> "Failed to duplicate segment"
+    }
     val failedToDeleteSegment: String get() = when (currentLocale) {
         "ru" -> "Не удалось удалить сегмент"
         else -> "Failed to delete segment"
@@ -1216,6 +1316,22 @@ object LocalizedStrings {
         "ru" -> "Включённые функции"
         else -> "Enabled Features"
     }
+    val mcpSectionTitle: String get() = when (currentLocale) {
+        "ru" -> "MCP (AI-ассистенты)"
+        else -> "MCP (AI Assistants)"
+    }
+    val mcpSectionDescription: String get() = when (currentLocale) {
+        "ru" -> "Подключите Cursor, Claude или другой MCP-клиент к этому URL для управления флагами через AI."
+        else -> "Connect Cursor, Claude, or another MCP client to this URL to manage flags via AI."
+    }
+    val mcpCopyUrl: String get() = when (currentLocale) {
+        "ru" -> "Копировать URL"
+        else -> "Copy URL"
+    }
+    val mcpDocsLinkText: String get() = when (currentLocale) {
+        "ru" -> "Документация MCP"
+        else -> "MCP documentation"
+    }
     val billingTitle: String get() = when (currentLocale) {
         "ru" -> "Биллинг и подписка"
         else -> "Billing & Subscription"
@@ -1322,6 +1438,14 @@ object LocalizedStrings {
         "ru" -> "Флаги с двумя и более вариантами для A/B тестов и постепенного rollout"
         else -> "Flags with two or more variants for A/B testing and gradual rollout"
     }
+    val segmentsTitle: String get() = when (currentLocale) {
+        "ru" -> "Сегменты"
+        else -> "Segments"
+    }
+    val segmentsSubtitle: String get() = when (currentLocale) {
+        "ru" -> "Группы сущностей с правилами таргетинга и распределением вариантов по флагам"
+        else -> "Entity groups with targeting rules and variant distribution per flag"
+    }
     val noExperiments: String get() = when (currentLocale) {
         "ru" -> "Нет экспериментов"
         else -> "No experiments"
@@ -1402,6 +1526,38 @@ object LocalizedStrings {
         "ru" -> "Оценки за период"
         else -> "Evaluations over time"
     }
+    val totalEvaluationsLabel: String get() = when (currentLocale) {
+        "ru" -> "Всего оценок"
+        else -> "Total evaluations"
+    }
+    val uniqueFlagsLabel: String get() = when (currentLocale) {
+        "ru" -> "Уникальных флагов"
+        else -> "Unique flags"
+    }
+    val byFlagsTab: String get() = when (currentLocale) {
+        "ru" -> "По флагам"
+        else -> "By flags"
+    }
+    val totalEventsLabel: String get() = when (currentLocale) {
+        "ru" -> "Всего событий"
+        else -> "Total events"
+    }
+    val uniqueUsersLabel: String get() = when (currentLocale) {
+        "ru" -> "Уникальных пользователей"
+        else -> "Unique users"
+    }
+    val overviewTab: String get() = when (currentLocale) {
+        "ru" -> "Обзор"
+        else -> "Overview"
+    }
+    val eventsTab: String get() = when (currentLocale) {
+        "ru" -> "События"
+        else -> "Events"
+    }
+    val eventsOverTime: String get() = when (currentLocale) {
+        "ru" -> "События за период"
+        else -> "Events over time"
+    }
     val topFlagsByEvaluations: String get() = when (currentLocale) {
         "ru" -> "Топ флагов по оценкам"
         else -> "Top flags by evaluations"
@@ -1409,5 +1565,773 @@ object LocalizedStrings {
     val noMetricsData: String get() = when (currentLocale) {
         "ru" -> "Нет данных метрик за выбранный период"
         else -> "No metrics data for the selected period"
+    }
+    val activityTimeline: String get() = when (currentLocale) {
+        "ru" -> "Хронология изменений"
+        else -> "Activity Timeline"
+    }
+    val topFlags: String get() = when (currentLocale) {
+        "ru" -> "Топ флагов"
+        else -> "Top Flags"
+    }
+    val healthStatus: String get() = when (currentLocale) {
+        "ru" -> "Статус системы"
+        else -> "Health Status"
+    }
+    val healthStatusOk: String get() = when (currentLocale) {
+        "ru" -> "Система работает нормально"
+        else -> "System operational"
+    }
+    val flagActivityOverPeriod: String get() = when (currentLocale) {
+        "ru" -> "Активность флагов за период"
+        else -> "Flag activity over period"
+    }
+    val statusDistribution: String get() = when (currentLocale) {
+        "ru" -> "Распределение по статусам"
+        else -> "Status distribution"
+    }
+    val evaluationsTrend: String get() = when (currentLocale) {
+        "ru" -> "Тренд оценок"
+        else -> "Evaluations trend"
+    }
+    val today: String get() = when (currentLocale) {
+        "ru" -> "Сегодня"
+        else -> "Today"
+    }
+    val week: String get() = when (currentLocale) {
+        "ru" -> "Неделя"
+        else -> "Week"
+    }
+    val month: String get() = when (currentLocale) {
+        "ru" -> "Месяц"
+        else -> "Month"
+    }
+    val exportCsv: String get() = when (currentLocale) {
+        "ru" -> "Экспорт CSV"
+        else -> "Export CSV"
+    }
+    val exportJson: String get() = when (currentLocale) {
+        "ru" -> "Экспорт JSON"
+        else -> "Export JSON"
+    }
+    val compareWithPreviousPeriod: String get() = when (currentLocale) {
+        "ru" -> "Сравнить с предыдущим периодом"
+        else -> "Compare with previous period"
+    }
+    val evaluations: String get() = when (currentLocale) {
+        "ru" -> "оценок"
+        else -> "evaluations"
+    }
+    val crashReportsCount: String get() = when (currentLocale) {
+        "ru" -> "Отчётов о крашах"
+        else -> "Crash reports"
+    }
+    val filterByTime: String get() = when (currentLocale) {
+        "ru" -> "Период"
+        else -> "Time range"
+    }
+    val stackTrace: String get() = when (currentLocale) {
+        "ru" -> "Стек вызовов"
+        else -> "Stack trace"
+    }
+    val groupByType: String get() = when (currentLocale) {
+        "ru" -> "Группировать по типу"
+        else -> "Group by type"
+    }
+    val noMessage: String get() = when (currentLocale) {
+        "ru" -> "Нет сообщения"
+        else -> "No message"
+    }
+    val other: String get() = when (currentLocale) {
+        "ru" -> "Другое"
+        else -> "Other"
+    }
+    val activeFlags: String get() = when (currentLocale) {
+        "ru" -> "Активные флаги"
+        else -> "Active flags"
+    }
+    val cardsView: String get() = when (currentLocale) {
+        "ru" -> "Карточки"
+        else -> "Cards"
+    }
+    val tableView: String get() = when (currentLocale) {
+        "ru" -> "Таблица"
+        else -> "Table"
+    }
+    val experimentsCount: String get() = when (currentLocale) {
+        "ru" -> "экспериментов"
+        else -> "experiments"
+    }
+    val noExperimentsMatchFilter: String get() = when (currentLocale) {
+        "ru" -> "Нет экспериментов по выбранному фильтру"
+        else -> "No experiments match the selected filter"
+    }
+    val noExperimentsChangeFilterHint: String get() = when (currentLocale) {
+        "ru" -> "Выберите другой фильтр выше (Все / Включённые / Выключенные)"
+        else -> "Select a different filter above (All / Enabled / Disabled)"
+    }
+    val filterAll: String get() = when (currentLocale) {
+        "ru" -> "Все"
+        else -> "All"
+    }
+    val clearSearch: String get() = when (currentLocale) {
+        "ru" -> "Сбросить поиск"
+        else -> "Clear search"
+    }
+    val statusWithSegments: String get() = when (currentLocale) {
+        "ru" -> "С сегментами"
+        else -> "With segments"
+    }
+    val statusExperiments: String get() = when (currentLocale) {
+        "ru" -> "Эксперименты"
+        else -> "Experiments"
+    }
+    val statusEnabledLabel: String get() = when (currentLocale) {
+        "ru" -> "Включены"
+        else -> "Enabled"
+    }
+    val statusDisabledLabel: String get() = when (currentLocale) {
+        "ru" -> "Выключены"
+        else -> "Disabled"
+    }
+    val noFlagsDescription: String get() = when (currentLocale) {
+        "ru" -> "Создайте флаги для отслеживания крашей"
+        else -> "Create flags to track crash rates"
+    }
+
+    // Navigation labels (sidebar/navbar)
+    val dashboardNav: String get() = when (currentLocale) {
+        "ru" -> "Дашборд"
+        else -> "Dashboard"
+    }
+    val flagsNav: String get() = when (currentLocale) {
+        "ru" -> "Флаги"
+        else -> "Flags"
+    }
+    val experimentsNav: String get() = when (currentLocale) {
+        "ru" -> "Эксперименты"
+        else -> "Experiments"
+    }
+    val analyticsNav: String get() = when (currentLocale) {
+        "ru" -> "Аналитика"
+        else -> "Analytics"
+    }
+    val crashNav: String get() = when (currentLocale) {
+        "ru" -> "Краши"
+        else -> "Crash"
+    }
+    val alertsNav: String get() = when (currentLocale) {
+        "ru" -> "Оповещения"
+        else -> "Alerts"
+    }
+    val tenantsNav: String get() = when (currentLocale) {
+        "ru" -> "Тенанты"
+        else -> "Tenants"
+    }
+    val settingsNav: String get() = when (currentLocale) {
+        "ru" -> "Настройки"
+        else -> "Settings"
+    }
+    val loginButton: String get() = when (currentLocale) {
+        "ru" -> "Войти"
+        else -> "Login"
+    }
+    val logoutButton: String get() = when (currentLocale) {
+        "ru" -> "Выйти"
+        else -> "Logout"
+    }
+    val userFallback: String get() = when (currentLocale) {
+        "ru" -> "Пользователь"
+        else -> "User"
+    }
+    val blog: String get() = when (currentLocale) {
+        "ru" -> "Блог"
+        else -> "Blog"
+    }
+    val github: String get() = when (currentLocale) {
+        "ru" -> "GitHub"
+        else -> "GitHub"
+    }
+
+    // Dashboard stats
+    val totalFlagsStat: String get() = when (currentLocale) {
+        "ru" -> "Всего флагов"
+        else -> "Total Flags"
+    }
+    val withSegmentsStat: String get() = when (currentLocale) {
+        "ru" -> "С сегментами"
+        else -> "With Segments"
+    }
+    val unresolvedAlerts: String get() = when (currentLocale) {
+        "ru" -> "Неразрешённые оповещения"
+        else -> "Unresolved Alerts"
+    }
+    val viewAll: String get() = when (currentLocale) {
+        "ru" -> "Смотреть все"
+        else -> "View All"
+    }
+    val createFirstTenant: String get() = when (currentLocale) {
+        "ru" -> "Создать первого тенанта →"
+        else -> "Create first tenant →"
+    }
+    val logInAdmin: String get() = when (currentLocale) {
+        "ru" -> "Войти (админ) →"
+        else -> "Log in (admin) →"
+    }
+
+    // Auth / Login
+    val signIn: String get() = when (currentLocale) {
+        "ru" -> "Войти"
+        else -> "Sign In"
+    }
+    val signingIn: String get() = when (currentLocale) {
+        "ru" -> "Вход..."
+        else -> "Signing in..."
+    }
+    val welcomeToFlagent: String get() = when (currentLocale) {
+        "ru" -> "Добро пожаловать в Flagent"
+        else -> "Welcome to Flagent"
+    }
+    val signInToManage: String get() = when (currentLocale) {
+        "ru" -> "Войдите для управления feature flags"
+        else -> "Sign in to manage your feature flags"
+    }
+    val emailLabel: String get() = when (currentLocale) {
+        "ru" -> "Email"
+        else -> "Email"
+    }
+    val passwordLabel: String get() = when (currentLocale) {
+        "ru" -> "Пароль"
+        else -> "Password"
+    }
+    val rememberMeLabel: String get() = when (currentLocale) {
+        "ru" -> "Запомнить меня"
+        else -> "Remember me"
+    }
+    val orSignInWithSso: String get() = when (currentLocale) {
+        "ru" -> "Или войдите через SSO"
+        else -> "Or sign in with SSO"
+    }
+    val loginWithSso: String get() = when (currentLocale) {
+        "ru" -> "Войти через SSO"
+        else -> "Login with SSO"
+    }
+    val supportLink: String get() = when (currentLocale) {
+        "ru" -> "Поддержка"
+        else -> "Support"
+    }
+    val questionsAndGuides: String get() = when (currentLocale) {
+        "ru" -> "Вопросы и гайды"
+        else -> "Questions & Guides"
+    }
+    val documentation: String get() = when (currentLocale) {
+        "ru" -> "Документация"
+        else -> "Documentation"
+    }
+
+    // Tenants
+    val createTenant: String get() = when (currentLocale) {
+        "ru" -> "Создать тенанта"
+        else -> "Create Tenant"
+    }
+    val keyUniqueIdentifier: String get() = when (currentLocale) {
+        "ru" -> "Ключ (уникальный идентификатор)"
+        else -> "Key (unique identifier)"
+    }
+    val nameLabel: String get() = when (currentLocale) {
+        "ru" -> "Название"
+        else -> "Name"
+    }
+    val ownerEmail: String get() = when (currentLocale) {
+        "ru" -> "Email владельца"
+        else -> "Owner Email"
+    }
+    val switchTenant: String get() = when (currentLocale) {
+        "ru" -> "Переключить"
+        else -> "Switch"
+    }
+    val allPlans: String get() = when (currentLocale) {
+        "ru" -> "Все планы"
+        else -> "All plans"
+    }
+    val allStatuses: String get() = when (currentLocale) {
+        "ru" -> "Все статусы"
+        else -> "All statuses"
+    }
+    val noGrouping: String get() = when (currentLocale) {
+        "ru" -> "Без группировки"
+        else -> "No grouping"
+    }
+    val groupByPlan: String get() = when (currentLocale) {
+        "ru" -> "По плану"
+        else -> "Group by plan"
+    }
+    val groupByStatus: String get() = when (currentLocale) {
+        "ru" -> "По статусу"
+        else -> "Group by status"
+    }
+    val actionsLabel: String get() = when (currentLocale) {
+        "ru" -> "Действия"
+        else -> "Actions"
+    }
+
+    // Pagination (override if different from previous/next)
+    val previousLabel: String get() = when (currentLocale) {
+        "ru" -> "Назад"
+        else -> "Previous"
+    }
+    val nextLabel: String get() = when (currentLocale) {
+        "ru" -> "Вперёд"
+        else -> "Next"
+    }
+
+    // Crash / Analytics / Alerts / Experiments
+    val crashAnalytics: String get() = when (currentLocale) {
+        "ru" -> "Аналитика крашей"
+        else -> "Crash Analytics"
+    }
+    val crashAnalyticsDescription: String get() = when (currentLocale) {
+        "ru" -> "Отчёты о крашах из SDK и частота крашей по флагам. Интеграция с обнаружением аномалий и Smart Rollout."
+        else -> "Track crash reports from SDK and crash rate per flag. Integrates with Anomaly Detection and Smart Rollout."
+    }
+    val crashReports: String get() = when (currentLocale) {
+        "ru" -> "Отчёты о крашах"
+        else -> "Crash reports"
+    }
+    val byFlagsCrashRate: String get() = when (currentLocale) {
+        "ru" -> "По флагам (CRASH_RATE)"
+        else -> "By flags (CRASH_RATE)"
+    }
+    val ensureApiKeySet: String get() = when (currentLocale) {
+        "ru" -> "Убедитесь, что задан X-API-Key (Настройки или после создания тенанта)."
+        else -> "Ensure X-API-Key is set (Settings or after creating a tenant)."
+    }
+    val retry: String get() = when (currentLocale) {
+        "ru" -> "Повторить"
+        else -> "Retry"
+    }
+    val viewCrashRate: String get() = when (currentLocale) {
+        "ru" -> "Смотреть CRASH_RATE →"
+        else -> "View CRASH_RATE →"
+    }
+    val copyLabel: String get() = when (currentLocale) {
+        "ru" -> "Копировать"
+        else -> "Copy"
+    }
+    val anomalyAlerts: String get() = when (currentLocale) {
+        "ru" -> "Оповещения об аномалиях"
+        else -> "Anomaly Alerts"
+    }
+    val resolved: String get() = when (currentLocale) {
+        "ru" -> "Разрешено"
+        else -> "Resolved"
+    }
+    val resolve: String get() = when (currentLocale) {
+        "ru" -> "Разрешить"
+        else -> "Resolve"
+    }
+    val abStatistics: String get() = when (currentLocale) {
+        "ru" -> "A/B статистика"
+        else -> "A/B Statistics"
+    }
+    val noConversionData: String get() = when (currentLocale) {
+        "ru" -> "Нет данных конверсии. Отправьте метрики CONVERSION_RATE с variantId для отображения A/B статистики."
+        else -> "No conversion data. Send CONVERSION_RATE metrics with variantId to see A/B stats."
+    }
+    val variantLabel: String get() = when (currentLocale) {
+        "ru" -> "Вариант"
+        else -> "Variant"
+    }
+    val sample: String get() = when (currentLocale) {
+        "ru" -> "Выборка"
+        else -> "Sample"
+    }
+    val conversions: String get() = when (currentLocale) {
+        "ru" -> "Конверсии"
+        else -> "Conversions"
+    }
+    val rate: String get() = when (currentLocale) {
+        "ru" -> "Доля"
+        else -> "Rate"
+    }
+    val dauByDay: String get() = when (currentLocale) {
+        "ru" -> "DAU по дням"
+        else -> "DAU by day"
+    }
+    val dailyActiveUsers: String get() = when (currentLocale) {
+        "ru" -> "Активные пользователи по дням"
+        else -> "Daily active users"
+    }
+    val topEvents: String get() = when (currentLocale) {
+        "ru" -> "Топ событий"
+        else -> "Top events"
+    }
+    val noAnalyticsEventsYet: String get() = when (currentLocale) {
+        "ru" -> "Событий аналитики пока нет. Используйте logEvent() в SDK для отправки событий."
+        else -> "No analytics events yet. Use SDK logEvent() to send events."
+    }
+    val allMetrics: String get() = when (currentLocale) {
+        "ru" -> "Все метрики"
+        else -> "All Metrics"
+    }
+    val lastHour: String get() = when (currentLocale) {
+        "ru" -> "Последний час"
+        else -> "Last Hour"
+    }
+    val last24Hours: String get() = when (currentLocale) {
+        "ru" -> "Последние 24 часа"
+        else -> "Last 24 Hours"
+    }
+    val anomalyDetectionNotEnabled: String get() = when (currentLocale) {
+        "ru" -> "Функция обнаружения аномалий не включена"
+        else -> "Anomaly Detection feature is not enabled"
+    }
+    val monitorAndResolveAlerts: String get() = when (currentLocale) {
+        "ru" -> "Мониторинг и разрешение оповещений по всем флагам"
+        else -> "Monitor and resolve anomaly alerts across all flags"
+    }
+    val noUnresolvedAlerts: String get() = when (currentLocale) {
+        "ru" -> "Нет неразрешённых оповещений"
+        else -> "No unresolved alerts"
+    }
+    val allAnomaliesResolved: String get() = when (currentLocale) {
+        "ru" -> "Все аномалии разрешены"
+        else -> "All anomalies have been resolved"
+    }
+    fun metricDetected(metricType: String, detectedAt: String): String = when (currentLocale) {
+        "ru" -> "Метрика: $metricType • Обнаружено: $detectedAt"
+        else -> "Metric: $metricType • Detected: $detectedAt"
+    }
+    val importFlags: String get() = when (currentLocale) {
+        "ru" -> "Импорт флагов"
+        else -> "Import Flags"
+    }
+    val importFlagsPasteHint: String get() = when (currentLocale) {
+        "ru" -> "Вставьте YAML или JSON в формате GitOps (из Экспорта). Существующие флаги с совпадающими ключами будут обновлены."
+        else -> "Paste YAML or JSON in GitOps format (from Export). Existing flags with matching keys will be updated."
+    }
+    val formatLabel: String get() = when (currentLocale) {
+        "ru" -> "Формат:"
+        else -> "Format:"
+    }
+    val importComplete: String get() = when (currentLocale) {
+        "ru" -> "Импорт завершён"
+        else -> "Import complete"
+    }
+    fun importCreatedUpdated(created: Int, updated: Int): String = when (currentLocale) {
+        "ru" -> "Создано: $created, Обновлено: $updated"
+        else -> "Created: $created, Updated: $updated"
+    }
+    val errorsLabel: String get() = when (currentLocale) {
+        "ru" -> "Ошибки:"
+        else -> "Errors:"
+    }
+    val webhooks: String get() = when (currentLocale) {
+        "ru" -> "Webhooks"
+        else -> "Webhooks"
+    }
+    val webhooksDescription: String get() = when (currentLocale) {
+        "ru" -> "Уведомление внешних систем при изменении флагов. Настройте URL для получения событий (flag.created, flag.updated и т.д.) с опциональной HMAC подписью."
+        else -> "Notify external systems when flags change. Configure URLs to receive events (flag.created, flag.updated, etc.) with optional HMAC signature."
+    }
+    val noWebhooksConfigured: String get() = when (currentLocale) {
+        "ru" -> "Webhooks не настроены. Добавьте URL для получения уведомлений об изменениях флагов."
+        else -> "No webhooks configured. Add one to receive flag change notifications."
+    }
+    val urlLabel: String get() = when (currentLocale) {
+        "ru" -> "URL"
+        else -> "URL"
+    }
+    val eventsLabel: String get() = when (currentLocale) {
+        "ru" -> "События"
+        else -> "Events"
+    }
+    val secretOptionalHmac: String get() = when (currentLocale) {
+        "ru" -> "Секрет (опционально, для HMAC)"
+        else -> "Secret (optional, for HMAC)"
+    }
+    val rolesAndPermissions: String get() = when (currentLocale) {
+        "ru" -> "Роли и права"
+        else -> "Roles & Permissions"
+    }
+    val manageRolesDescription: String get() = when (currentLocale) {
+        "ru" -> "Управление ролями и назначение прав пользователям."
+        else -> "Manage roles and assign permissions to users."
+    }
+    val availableRoles: String get() = when (currentLocale) {
+        "ru" -> "Доступные роли"
+        else -> "Available Roles"
+    }
+    val builtIn: String get() = when (currentLocale) {
+        "ru" -> "Встроенная"
+        else -> "Built-in"
+    }
+    val usersLabel: String get() = when (currentLocale) {
+        "ru" -> "Пользователи"
+        else -> "Users"
+    }
+    fun roleLabel(role: String): String = when (currentLocale) {
+        "ru" -> "Роль: $role"
+        else -> "Role: $role"
+    }
+    val adminUsersTab: String get() = when (currentLocale) {
+        "ru" -> "Пользователи"
+        else -> "Users"
+    }
+    val adminUsersDescription: String get() = when (currentLocale) {
+        "ru" -> "Управление учётными записями администраторов (вход в UI)."
+        else -> "Manage admin user accounts (UI login)."
+    }
+    val addUser: String get() = when (currentLocale) {
+        "ru" -> "Добавить пользователя"
+        else -> "Add user"
+    }
+    val editUser: String get() = when (currentLocale) {
+        "ru" -> "Редактировать"
+        else -> "Edit"
+    }
+    val blockUser: String get() = when (currentLocale) {
+        "ru" -> "Заблокировать"
+        else -> "Block"
+    }
+    val unblockUser: String get() = when (currentLocale) {
+        "ru" -> "Разблокировать"
+        else -> "Unblock"
+    }
+    val deleteUser: String get() = when (currentLocale) {
+        "ru" -> "Удалить"
+        else -> "Delete"
+    }
+    val confirmBlockUserTitle: String get() = when (currentLocale) {
+        "ru" -> "Заблокировать пользователя?"
+        else -> "Block user?"
+    }
+    val confirmBlockUserMessage: String get() = when (currentLocale) {
+        "ru" -> "Пользователь не сможет войти в систему до разблокировки."
+        else -> "The user will not be able to log in until unblocked."
+    }
+    val confirmUnblockUserTitle: String get() = when (currentLocale) {
+        "ru" -> "Разблокировать пользователя?"
+        else -> "Unblock user?"
+    }
+    val confirmDeleteUserTitle: String get() = when (currentLocale) {
+        "ru" -> "Удалить пользователя?"
+        else -> "Delete user?"
+    }
+    val confirmDeleteUserMessage: String get() = when (currentLocale) {
+        "ru" -> "Учётная запись будет удалена. Восстановление невозможно."
+        else -> "The account will be removed. This cannot be undone."
+    }
+    val userStatusActive: String get() = when (currentLocale) {
+        "ru" -> "Активен"
+        else -> "Active"
+    }
+    val userStatusBlocked: String get() = when (currentLocale) {
+        "ru" -> "Заблокирован"
+        else -> "Blocked"
+    }
+    val emailPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Email"
+        else -> "Email"
+    }
+    val passwordPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Пароль"
+        else -> "Password"
+    }
+    val namePlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Имя (опционально)"
+        else -> "Name (optional)"
+    }
+    val newPasswordPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Новый пароль (оставьте пустым, чтобы не менять)"
+        else -> "New password (leave blank to keep)"
+    }
+    val exportData: String get() = when (currentLocale) {
+        "ru" -> "Экспорт данных"
+        else -> "Export Data"
+    }
+    val excludeSnapshots: String get() = when (currentLocale) {
+        "ru" -> "Исключить снапшоты (уменьшить размер файла)"
+        else -> "Exclude snapshots (reduce file size)"
+    }
+    val subscription: String get() = when (currentLocale) {
+        "ru" -> "Подписка"
+        else -> "Subscription"
+    }
+    val smartRolloutAi: String get() = when (currentLocale) {
+        "ru" -> "Smart Rollout (на базе ИИ)"
+        else -> "Smart Rollout (AI-Powered)"
+    }
+    fun segmentIdLabel(id: Int): String = when (currentLocale) {
+        "ru" -> "Сегмент #$id"
+        else -> "Segment #$id"
+    }
+    fun targetCurrentRollout(target: Int, current: Int): String = when (currentLocale) {
+        "ru" -> "Цель: ${target}% | Текущий: ${current}%"
+        else -> "Target: ${target}% | Current: ${current}%"
+    }
+    val executeRolloutStep: String get() = when (currentLocale) {
+        "ru" -> "Выполнить шаг rollout"
+        else -> "Execute Rollout Step"
+    }
+    val comingSoon: String get() = when (currentLocale) {
+        "ru" -> "Скоро. Следите за новостями Flagent, гайдами и лучшими практиками."
+        else -> "Coming soon. Stay updated with Flagent news, tutorials, and best practices."
+    }
+    val goToGitHubDiscussions: String get() = when (currentLocale) {
+        "ru" -> "Перейти в GitHub Discussions"
+        else -> "Go to GitHub Discussions"
+    }
+    val backToHome: String get() = when (currentLocale) {
+        "ru" -> "На главную"
+        else -> "Back to Home"
+    }
+    val ssoProviders: String get() = when (currentLocale) {
+        "ru" -> "SSO провайдеры"
+        else -> "SSO Providers"
+    }
+    val signInShort: String get() = when (currentLocale) {
+        "ru" -> "Войти"
+        else -> "Sign in"
+    }
+    val getStarted: String get() = when (currentLocale) {
+        "ru" -> "Начать"
+        else -> "Get Started"
+    }
+    val subscribe: String get() = when (currentLocale) {
+        "ru" -> "Подписаться"
+        else -> "Subscribe"
+    }
+    val newsletter: String get() = when (currentLocale) {
+        "ru" -> "Рассылка"
+        else -> "Newsletter"
+    }
+    val poweredByOpenSource: String get() = when (currentLocale) {
+        "ru" -> "На базе открытого кода"
+        else -> "Powered by open source"
+    }
+    val noTenantYet: String get() = when (currentLocale) {
+        "ru" -> "Тенанта ещё нет? "
+        else -> "No tenant yet? "
+    }
+    val createYourFirstTenant: String get() = when (currentLocale) {
+        "ru" -> "Создать первого тенанта"
+        else -> "Create your first tenant"
+    }
+    val toGetStarted: String get() = when (currentLocale) {
+        "ru" -> " чтобы начать."
+        else -> " to get started."
+    }
+    val metricsTab: String get() = when (currentLocale) {
+        "ru" -> "Метрики"
+        else -> "Metrics"
+    }
+    val noTenants: String get() = when (currentLocale) {
+        "ru" -> "Нет тенантов"
+        else -> "No tenants"
+    }
+    val createFirstTenantDescription: String get() = when (currentLocale) {
+        "ru" -> "Создайте первого тенанта для начала работы"
+        else -> "Create your first tenant to get started"
+    }
+    val selectTenantToContinue: String get() = when (currentLocale) {
+        "ru" -> "Выберите тенанта ниже, чтобы продолжить, или создайте нового."
+        else -> "Select a tenant below to continue, or create a new one."
+    }
+    val tenantApiKeyOnlyInThisBrowser: String get() = when (currentLocale) {
+        "ru" -> "API‑ключ сохраняется только для тенантов, созданных в этом браузере."
+        else -> "Only tenants created in this browser have an API key saved."
+    }
+    val apiKeyNotAvailableForTenant: String get() = when (currentLocale) {
+        "ru" -> "API‑ключ этого тенанта не сохранён в этом браузере. Создайте нового тенанта или выберите тенанта, созданного здесь."
+        else -> "API key for this tenant is not stored in this browser. Create a new tenant or use one you created here."
+    }
+    val useApiKeyFromAnotherDevice: String get() = when (currentLocale) {
+        "ru" -> "Войти по API‑ключу с другого устройства"
+        else -> "Use API key from another device"
+    }
+    val useApiKeyFromAnotherDeviceDescription: String get() = when (currentLocale) {
+        "ru" -> "Если вы создали тенанта в другом браузере или сохранили ключ — вставьте его ниже."
+        else -> "If you created a tenant in another browser or have the API key saved — paste it below."
+    }
+    val useThisKey: String get() = when (currentLocale) {
+        "ru" -> "Использовать этот ключ"
+        else -> "Use this key"
+    }
+    val apiKeyPastePlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Вставьте API‑ключ тенанта"
+        else -> "Paste tenant API key"
+    }
+    val invalidApiKeyOrNotEnterprise: String get() = when (currentLocale) {
+        "ru" -> "Неверный ключ или функция недоступна (нужен Flagent Enterprise)."
+        else -> "Invalid API key or feature not available (Flagent Enterprise required)."
+    }
+    val tenantCreatedSaveKey: String get() = when (currentLocale) {
+        "ru" -> "Тенант создан. Сохраните API‑ключ сейчас — позже он не будет показан снова."
+        else -> "Tenant created. Save your API key now — it won't be shown again."
+    }
+    val apiKeyUseHint: String get() = when (currentLocale) {
+        "ru" -> "Используйте ключ в приложении (заголовок X-API-Key) или вставьте его на странице «Тенанты» в другом браузере."
+        else -> "Use this key in your app (X-API-Key header) or paste it on the Tenants page in another browser."
+    }
+    val copyApiKey: String get() = when (currentLocale) {
+        "ru" -> "Копировать ключ"
+        else -> "Copy key"
+    }
+    val copiedToClipboard: String get() = when (currentLocale) {
+        "ru" -> "Скопировано"
+        else -> "Copied!"
+    }
+    val continueToDashboard: String get() = when (currentLocale) {
+        "ru" -> "Перейти в дашборд"
+        else -> "Continue to Dashboard"
+    }
+    val afterCreateYouWillGetApiKey: String get() = when (currentLocale) {
+        "ru" -> "После создания вы получите API‑ключ. Сохраните его — он понадобится для SDK и входа с другого устройства."
+        else -> "After creation you'll get an API key. Save it — you'll need it for SDK config and to sign in from another device."
+    }
+    val createApiKey: String get() = when (currentLocale) {
+        "ru" -> "Выдать ключ"
+        else -> "Create API key"
+    }
+    val createApiKeyForTenant: String get() = when (currentLocale) {
+        "ru" -> "Новый API‑ключ для тенанта"
+        else -> "New API key for tenant"
+    }
+    val createApiKeyNamePlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Например: Recovery, Production"
+        else -> "e.g. Recovery, Production"
+    }
+    val newKeyCreatedSaveNow: String get() = when (currentLocale) {
+        "ru" -> "Новый ключ создан. Сохраните его — он больше не будет показан."
+        else -> "New key created. Save it now — it won't be shown again."
+    }
+    val useThisKeyInThisBrowser: String get() = when (currentLocale) {
+        "ru" -> "Использовать в этом браузере"
+        else -> "Use in this browser"
+    }
+    val closeButton: String get() = when (currentLocale) {
+        "ru" -> "Закрыть"
+        else -> "Close"
+    }
+    val noTenantsMatchFilters: String get() = when (currentLocale) {
+        "ru" -> "Нет тенантов по фильтрам"
+        else -> "No tenants match filters"
+    }
+    val tryAdjustingFilters: String get() = when (currentLocale) {
+        "ru" -> "Измените поиск или фильтры"
+        else -> "Try adjusting search or filters"
+    }
+    val clearFilters: String get() = when (currentLocale) {
+        "ru" -> "Сбросить фильтры"
+        else -> "Clear filters"
+    }
+    val searchByNameOrKey: String get() = when (currentLocale) {
+        "ru" -> "Поиск по названию или ключу"
+        else -> "Search by name or key"
+    }
+    val keyColumn: String get() = when (currentLocale) {
+        "ru" -> "Ключ"
+        else -> "Key"
     }
 }

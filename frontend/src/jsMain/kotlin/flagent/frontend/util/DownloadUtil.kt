@@ -4,6 +4,13 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 
 /**
+ * Triggers browser download of text content (e.g. CSV, JSON).
+ */
+fun triggerDownloadFromString(content: String, filename: String, mimeType: String) {
+    triggerDownload(content.encodeToByteArray(), filename, mimeType)
+}
+
+/**
  * Triggers browser download of bytes as a file with auth-compatible flow.
  */
 fun triggerDownload(bytes: ByteArray, filename: String, mimeType: String) {

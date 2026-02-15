@@ -91,6 +91,7 @@ fun SettingsPage() {
             SettingsTab(themeMode, "Webhooks", "webhook", activeTab == "webhooks") { activeTab = "webhooks" }
             SettingsTab(themeMode, "Export", "download", activeTab == "export") { activeTab = "export" }
             SettingsTab(themeMode, "Import", "upload", activeTab == "import") { activeTab = "import" }
+            SettingsTab(themeMode, LocalizedStrings.adminUsersTab, "person", activeTab == "users") { activeTab = "users" }
             if (AppConfig.Features.enableRbac) {
                 SettingsTab(themeMode, "Roles", "security", activeTab == "roles") { activeTab = "roles" }
             }
@@ -111,6 +112,7 @@ fun SettingsPage() {
             "webhooks" -> WebhooksSettings()
             "export" -> ExportPanel()
             "import" -> ImportPanel()
+            "users" -> AdminUsersSettings(themeMode)
             "roles" -> if (AppConfig.Features.enableRbac) RolesSettings(themeMode)
         }
         }
@@ -209,6 +211,98 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                 }) {
                     Icon("business", size = 18.px, color = FlagentTheme.Primary)
                     Text(LocalizedStrings.manageTenantsLink)
+                }
+            }
+        }
+
+        // MCP (AI Assistants)
+        Div({
+            style {
+                marginTop(24.px)
+                paddingTop(20.px)
+                property("border-top", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+            }
+        }) {
+            H3({
+                style {
+                    fontSize(16.px)
+                    fontWeight("600")
+                    marginBottom(8.px)
+                    color(FlagentTheme.text(themeMode))
+                }
+            }) {
+                Text(LocalizedStrings.mcpSectionTitle)
+            }
+            P({
+                style {
+                    fontSize(14.px)
+                    color(FlagentTheme.textLight(themeMode))
+                    marginBottom(12.px)
+                }
+            }) {
+                Text(LocalizedStrings.mcpSectionDescription)
+            }
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    flexWrap(FlexWrap.Wrap)
+                    alignItems(AlignItems.Center)
+                    gap(12.px)
+                }
+            }) {
+                Code({
+                    style {
+                        display(DisplayStyle.Block)
+                        padding(8.px, 12.px)
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
+                        borderRadius(4.px)
+                        fontSize(13.px)
+                        fontFamily("'Monaco', 'Courier New', monospace")
+                    }
+                }) {
+                    Text("${AppConfig.apiBaseUrl.trimEnd('/')}/mcp")
+                }
+                Button({
+                    onClick {
+                        val url = "${AppConfig.apiBaseUrl.trimEnd('/')}/mcp"
+                        try {
+                            val clip = js("navigator.clipboard")
+                            if (clip != null && clip != js("undefined")) {
+                                clip.writeText(url)
+                            }
+                        } catch (_: Throwable) { }
+                    }
+                    style {
+                        padding(8.px, 14.px)
+                        backgroundColor(FlagentTheme.Primary)
+                        color(Color.white)
+                        border(0.px)
+                        borderRadius(6.px)
+                        cursor("pointer")
+                        fontSize(13.px)
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(6.px)
+                    }
+                }) {
+                    Icon("content_copy", size = 16.px, color = Color.white)
+                    Text(LocalizedStrings.mcpCopyUrl)
+                }
+                A(href = "${AppConfig.docsUrl}#/guides/mcp.md", attrs = {
+                    attr("target", "_blank")
+                    attr("rel", "noopener noreferrer")
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(6.px)
+                        color(FlagentTheme.Primary)
+                        textDecoration("none")
+                        fontSize(14.px)
+                    }
+                }) {
+                    Icon("menu_book", size = 16.px, color = FlagentTheme.Primary)
+                    Text(LocalizedStrings.mcpDocsLinkText)
                 }
             }
         }

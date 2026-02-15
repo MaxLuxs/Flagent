@@ -5,6 +5,7 @@ import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
 import flagent.frontend.components.tenants.TenantSwitcher
 import flagent.frontend.config.AppConfig
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.state.BackendOnboardingState
@@ -46,12 +47,13 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
     }
     Div({
         style {
-            property("background", "linear-gradient(135deg, ${FlagentTheme.Primary} 0%, ${FlagentTheme.PrimaryDark} 100%)")
+            property("background", "rgba(15, 23, 42, 0.7)")
+            property("backdrop-filter", "blur(12px)")
+            property("-webkit-backdrop-filter", "blur(12px)")
+            property("border-bottom", "1px solid rgba(255,255,255,0.06)")
             color(Color.white)
             padding(18.px, 20.px)
-            property("border-bottom", "2px solid ${FlagentTheme.PrimaryDark.toString()}")
-            property("box-shadow", "0 4px 12px rgba(14, 165, 233, 0.3)")
-            property("transition", "box-shadow 0.3s ease")
+            property("transition", "background 0.2s ease")
         }
     }) {
         Div({
@@ -126,12 +128,16 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                     alignItems(AlignItems.Center)
                 }
             }) {
-                NavLink("Dashboard", "dashboard", Route.Dashboard.PATH)
-                NavLink("Flags", "flag", Route.FlagsList.PATH)
-                NavLink("Experiments", "science", Route.Experiments.PATH)
-                NavLink("Analytics", "analytics", Route.Analytics.PATH)
+                NavLink(LocalizedStrings.dashboardNav, "dashboard", Route.Dashboard.PATH)
+                NavLink(LocalizedStrings.flagsNav, "flag", Route.FlagsList.PATH)
+                NavLink(LocalizedStrings.experimentsNav, "science", Route.Experiments.PATH)
+                NavLink(LocalizedStrings.segments, "segment", Route.Segments.PATH)
+                NavLink(LocalizedStrings.analyticsNav, "analytics", Route.Analytics.PATH)
+                if (AppConfig.Features.enableMultiTenancy) {
+                    NavLink("Projects", "folder", Route.Projects.PATH)
+                }
                 if (AppConfig.Features.enableCrashAnalytics) {
-                    NavLink("Crash", "bug_report", Route.Crash.PATH)
+                    NavLink(LocalizedStrings.crashNav, "bug_report", Route.Crash.PATH)
                 }
                 // Alerts with badge
                 if (AppConfig.Features.enableAnomalyDetection && anomalyViewModel != null) {
@@ -165,7 +171,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                             }
                         }) {
                             Icon("notifications", size = 18.px, color = FlagentTheme.Background)
-                            Text("Alerts")
+                            Text(LocalizedStrings.alertsNav)
                         }
                         
                         // Badge with count
@@ -195,7 +201,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                     TenantSwitcher(viewModel = tenantViewModel)
                 }
 
-                NavLink("Settings", "settings", Route.Settings.PATH)
+                NavLink(LocalizedStrings.settingsNav, "settings", Route.Settings.PATH)
 
                 if ((AppConfig.requiresAuth || BackendOnboardingState.allowTenantsAndLogin) && authViewModel != null) {
                     if (authViewModel.isAuthenticated) {
@@ -206,7 +212,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                                 padding(0.px, 8.px)
                             }
                         }) {
-                            Text(authViewModel.currentUser?.name ?: authViewModel.currentUser?.email ?: "User")
+                            Text(authViewModel.currentUser?.name ?: authViewModel.currentUser?.email ?: LocalizedStrings.userFallback)
                         }
                         Button({
                             onClick {
@@ -227,7 +233,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                                 fontWeight("600")
                             }
                         }) {
-                            Text("Logout")
+                            Text(LocalizedStrings.logoutButton)
                         }
                     } else {
                         A(href = Route.Login.PATH, attrs = {
@@ -255,7 +261,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                             }
                         }) {
                             Icon("login", size = 18.px, color = FlagentTheme.Background)
-                            Text("Login")
+                            Text(LocalizedStrings.loginButton)
                         }
                     }
                 }
