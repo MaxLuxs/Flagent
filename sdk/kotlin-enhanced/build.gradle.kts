@@ -10,6 +10,7 @@ plugins {
 
 group = "com.flagent"
 // version inherited from root (VERSION file)
+// Fallback when not building from source: com.flagent:kotlin-client:0.1.6
 
 repositories {
     mavenCentral()
