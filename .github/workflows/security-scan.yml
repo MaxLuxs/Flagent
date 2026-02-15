@@ -79,6 +79,7 @@ jobs:
           path: ./
           base: ${{ steps.resolve_base.outputs.base }}
           head: ${{ github.sha }}
+          extra_args: --only-verified
 
   container-scan:
     name: Container Image Scan
