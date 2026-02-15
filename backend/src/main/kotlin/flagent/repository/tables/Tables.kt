@@ -22,6 +22,8 @@ object Flags : IntIdTable("flags") {
     val dataRecordsEnabled = bool("data_records_enabled").default(false)
     val entityType = varchar("entity_type", 255).nullable()
     val environmentId = long("environment_id").nullable().index("idx_flag_environment")
+    val projectId = long("project_id").nullable().index("idx_flag_project")
+    val dependsOn = text("depends_on").nullable() // JSON array of flag keys
     val createdAt = datetime("created_at")
     val updatedAt = datetime("updated_at").nullable()
     val deletedAt = datetime("deleted_at").nullable()
@@ -138,10 +140,12 @@ object Webhooks : IntIdTable("webhooks") {
 
 /**
  * Evaluation events table - lightweight records for API evaluation count (core metrics).
+ * client_id: optional, from X-Client-Id header for "who uses this flag" analytics.
  */
 object EvaluationEvents : LongIdTable("evaluation_events") {
     val flagId = integer("flag_id").index("idx_eval_events_flag")
     val timestampMs = long("timestamp_ms").index("idx_eval_events_timestamp")
+    val clientId = varchar("client_id", 255).nullable().index("idx_eval_events_client_id")
     init {
         index(false, flagId, timestampMs)
     }
@@ -176,6 +180,7 @@ object CrashReports : LongIdTable("crash_reports") {
     val deviceInfo = text("device_info").nullable()
     val breadcrumbs = text("breadcrumbs").nullable()
     val customKeys = text("custom_keys").nullable()
+    val activeFlagKeys = text("active_flag_keys").nullable()
     val timestamp = long("timestamp").index("idx_crash_timestamp")
     val tenantId = varchar("tenant_id", 255).nullable().index("idx_crash_tenant")
     val createdAt = datetime("created_at")
@@ -185,11 +190,14 @@ object CrashReports : LongIdTable("crash_reports") {
 }
 
 /**
- * Users table
+ * Users table (admin users for UI login).
  */
 object Users : IntIdTable("users") {
     val email = text("email").nullable()
+    val name = varchar("name", 255).nullable()
+    val passwordHash = text("password_hash").nullable()
     val createdAt = datetime("created_at")
     val updatedAt = datetime("updated_at").nullable()
     val deletedAt = datetime("deleted_at").nullable()
+    val blockedAt = datetime("blocked_at").nullable()
 }

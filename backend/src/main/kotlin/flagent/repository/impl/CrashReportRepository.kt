@@ -5,6 +5,8 @@ import flagent.repository.Database
 import flagent.repository.tables.CrashReports
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.*
@@ -29,6 +31,7 @@ class CrashReportRepository {
             it[deviceInfo] = crash.deviceInfo
             it[breadcrumbs] = crash.breadcrumbs
             it[customKeys] = crash.customKeys
+            it[activeFlagKeys] = crash.activeFlagKeys?.let { Json.encodeToString(it) }
             it[timestamp] = crash.timestamp
             it[tenantId] = crash.tenantId
             it[createdAt] = LocalDateTime.now()
@@ -46,6 +49,7 @@ class CrashReportRepository {
                 it[deviceInfo] = c.deviceInfo
                 it[breadcrumbs] = c.breadcrumbs
                 it[customKeys] = c.customKeys
+                it[activeFlagKeys] = c.activeFlagKeys?.let { Json.encodeToString(it) }
                 it[timestamp] = c.timestamp
                 it[tenantId] = c.tenantId
                 it[createdAt] = LocalDateTime.now()
@@ -85,16 +89,27 @@ class CrashReportRepository {
         CrashReports.select(CrashReports.id).where { whereOp }.count().toLong()
     }
 
-    private fun ResultRow.toCrashReport() = CrashReport(
-        id = this[CrashReports.id].value,
-        stackTrace = this[CrashReports.stackTrace],
-        message = this[CrashReports.message],
-        platform = this[CrashReports.platform],
-        appVersion = this[CrashReports.appVersion],
-        deviceInfo = this[CrashReports.deviceInfo],
-        breadcrumbs = this[CrashReports.breadcrumbs],
-        customKeys = this[CrashReports.customKeys],
-        timestamp = this[CrashReports.timestamp],
-        tenantId = this[CrashReports.tenantId]
-    )
+    private fun ResultRow.toCrashReport(): CrashReport {
+        val activeFlagKeysRaw = this[CrashReports.activeFlagKeys]
+        val activeFlagKeys = activeFlagKeysRaw?.let {
+            try {
+                Json.decodeFromString<List<String>>(it)
+            } catch (_: Exception) {
+                emptyList<String>()
+            }
+        }
+        return CrashReport(
+            id = this[CrashReports.id].value,
+            stackTrace = this[CrashReports.stackTrace],
+            message = this[CrashReports.message],
+            platform = this[CrashReports.platform],
+            appVersion = this[CrashReports.appVersion],
+            deviceInfo = this[CrashReports.deviceInfo],
+            breadcrumbs = this[CrashReports.breadcrumbs],
+            customKeys = this[CrashReports.customKeys],
+            activeFlagKeys = activeFlagKeys,
+            timestamp = this[CrashReports.timestamp],
+            tenantId = this[CrashReports.tenantId]
+        )
+    }
 }

@@ -12,16 +12,18 @@ import org.jetbrains.exposed.v1.jdbc.*
 
 /**
  * Core metrics: evaluation events for API evaluation count.
+ * Events may include optional clientId (from X-Client-Id) for "who uses this flag" analytics.
  */
 class EvaluationEventRepository {
 
-    suspend fun saveBatch(events: List<Pair<Int, Long>>): Unit = withContext(Dispatchers.IO) {
+    suspend fun saveBatch(events: List<EvaluationEventRecord>): Unit = withContext(Dispatchers.IO) {
         if (events.isEmpty()) return@withContext
         Database.transaction {
-            events.forEach { (flagId, timestampMs) ->
+            events.forEach { ev ->
                 EvaluationEvents.insert {
-                    it[EvaluationEvents.flagId] = flagId
-                    it[EvaluationEvents.timestampMs] = timestampMs
+                    it[EvaluationEvents.flagId] = ev.flagId
+                    it[EvaluationEvents.timestampMs] = ev.timestampMs
+                    ev.clientId?.let { cid -> it[EvaluationEvents.clientId] = cid.take(255) }
                 }
             }
         }
@@ -118,7 +120,66 @@ class EvaluationEventRepository {
             )
         }
     }
+
+    /**
+     * Returns usage by client (clientId -> evaluation count) for a flag in the time window.
+     * Only events with non-null client_id are grouped; total includes all events.
+     */
+    suspend fun getUsageByClient(
+        flagId: Int,
+        startMs: Long,
+        endMs: Long
+    ): FlagUsageByClientResult = withContext(Dispatchers.IO) {
+        Database.transaction {
+            val rows = EvaluationEvents
+                .select(EvaluationEvents.clientId, EvaluationEvents.timestampMs)
+                .where {
+                    (EvaluationEvents.flagId eq flagId) and
+                        (EvaluationEvents.timestampMs greaterEq startMs) and
+                        (EvaluationEvents.timestampMs lessEq endMs)
+                }
+                .map { it[EvaluationEvents.clientId] to it[EvaluationEvents.timestampMs] }
+
+            val totalCount = rows.size.toLong()
+            val byClient = rows
+                .filter { (clientId, _) -> !clientId.isNullOrBlank() }
+                .groupBy { (clientId, _) -> clientId!! }
+                .mapValues { (_, list) -> list.size.toLong() }
+                .toList()
+                .sortedByDescending { it.second }
+                .map { (clientId, count) -> ClientUsageEntry(clientId, count) }
+
+            FlagUsageByClientResult(
+                flagId = flagId,
+                startMs = startMs,
+                endMs = endMs,
+                totalEvaluationCount = totalCount,
+                clients = byClient
+            )
+        }
+    }
 }
+
+data class EvaluationEventRecord(
+    val flagId: Int,
+    val timestampMs: Long,
+    val clientId: String? = null
+)
+
+@Serializable
+data class ClientUsageEntry(
+    val clientId: String,
+    val evaluationCount: Long
+)
+
+@Serializable
+data class FlagUsageByClientResult(
+    val flagId: Int,
+    val startMs: Long,
+    val endMs: Long,
+    val totalEvaluationCount: Long,
+    val clients: List<ClientUsageEntry>
+)
 
 @Serializable
 data class FlagEvaluationStatsResult(

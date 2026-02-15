@@ -11,7 +11,9 @@ data class CreateFlagRequest(
     val description: String,
     val key: String? = null,
     val template: String? = null,
-    val environmentId: Long? = null
+    val environmentId: Long? = null,
+    val projectId: Long? = null,
+    val dependsOn: List<String>? = null
 )
 
 @Serializable
@@ -21,7 +23,9 @@ data class PutFlagRequest(
     val dataRecordsEnabled: Boolean? = null,
     val entityType: String? = null,
     val notes: String? = null,
-    val environmentId: Long? = null
+    val environmentId: Long? = null,
+    val projectId: Long? = null,
+    val dependsOn: List<String>? = null
 )
 
 @Serializable
@@ -37,10 +41,14 @@ data class FlagResponse(
     val dataRecordsEnabled: Boolean,
     val entityType: String? = null,
     val environmentId: Long? = null,
+    val projectId: Long? = null,
+    val dependsOn: List<String> = emptyList(),
     val segments: List<SegmentResponse> = emptyList(),
     val variants: List<VariantResponse> = emptyList(),
     val tags: List<TagResponse> = emptyList(),
-    val updatedAt: String? = null
+    val updatedAt: String? = null,
+    /** True when flag is archived (soft-deleted). Use restore to revive or permanent delete to remove. */
+    val archived: Boolean = false
 )
 
 @Serializable

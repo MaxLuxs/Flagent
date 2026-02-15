@@ -31,6 +31,15 @@ class FlagRepository : IFlagRepository {
         }
     }
 
+    override suspend fun findByIdIncludeDeleted(id: Int): Flag? = withContext(Dispatchers.IO) {
+        Database.transaction {
+            Flags.selectAll()
+                .where { Flags.id eq id }
+                .firstOrNull()
+                ?.let { row -> mapRowToFlag(row) }
+        }
+    }
+
     override suspend fun findByKey(key: String): Flag? = withContext(Dispatchers.IO) {
         Database.transaction {
             Flags.selectAll()
@@ -49,7 +58,9 @@ class FlagRepository : IFlagRepository {
         descriptionLike: String?,
         preload: Boolean,
         deleted: Boolean,
-        tags: String?
+        tags: String?,
+        environmentId: Long?,
+        projectId: Long?
     ): List<Flag> = withContext(Dispatchers.IO) {
         Database.transaction {
             // Use selectAll() - Exposed doesn't automatically filter deleted records
@@ -84,6 +95,17 @@ class FlagRepository : IFlagRepository {
                 query = query.andWhere { Flags.deletedAt.isNotNull() }
             } else {
                 query = query.andWhere { Flags.deletedAt.isNull() }
+            }
+            
+            // Filter by environment: when set, return flags for that env or global (environmentId null)
+            environmentId?.let { eid ->
+                query = query.andWhere {
+                    (Flags.environmentId eq eid) or (Flags.environmentId.isNull())
+                }
+            }
+            // Filter by project (Enterprise)
+            projectId?.let { pid ->
+                query = query.andWhere { Flags.projectId eq pid }
             }
             
             // Order by id
@@ -175,10 +197,14 @@ class FlagRepository : IFlagRepository {
             notes = row[Flags.notes],
             dataRecordsEnabled = row[Flags.dataRecordsEnabled],
             entityType = row[Flags.entityType],
+            environmentId = row[Flags.environmentId],
+            projectId = row[Flags.projectId],
+            dependsOn = parseDependsOn(row[Flags.dependsOn]),
             segments = emptyList(), // Not preloaded
             variants = emptyList(), // Not preloaded
             tags = tags,
-            updatedAt = row[Flags.updatedAt]?.toString()
+            updatedAt = row[Flags.updatedAt]?.toString(),
+            deletedAt = row[Flags.deletedAt]?.toString()
         )
     }
     
@@ -188,7 +214,9 @@ class FlagRepository : IFlagRepository {
         key: String?,
         descriptionLike: String?,
         deleted: Boolean,
-        tags: String?
+        tags: String?,
+        environmentId: Long?,
+        projectId: Long?
     ): Long = withContext(Dispatchers.IO) {
         Database.transaction {
             var query = Flags.selectAll()
@@ -203,6 +231,14 @@ class FlagRepository : IFlagRepository {
                 query = query.andWhere { Flags.deletedAt.isNotNull() }
             } else {
                 query = query.andWhere { Flags.deletedAt.isNull() }
+            }
+            environmentId?.let { eid ->
+                query = query.andWhere {
+                    (Flags.environmentId eq eid) or (Flags.environmentId.isNull())
+                }
+            }
+            projectId?.let { pid ->
+                query = query.andWhere { Flags.projectId eq pid }
             }
             val flagIds = if (tags != null) {
                 val tagValues = tags.split(",").map { it.trim() }
@@ -245,6 +281,8 @@ class FlagRepository : IFlagRepository {
                 it[dataRecordsEnabled] = flag.dataRecordsEnabled
                 it[entityType] = flag.entityType
                 flag.environmentId?.let { eid -> it[environmentId] = eid }
+                flag.projectId?.let { pid -> it[projectId] = pid }
+                it[dependsOn] = serializeDependsOn(flag.dependsOn)
                 it[createdAt] = java.time.LocalDateTime.now()
             }[Flags.id].value
             
@@ -264,6 +302,8 @@ class FlagRepository : IFlagRepository {
                 it[dataRecordsEnabled] = flag.dataRecordsEnabled
                 it[entityType] = flag.entityType
                 it[environmentId] = flag.environmentId
+                it[projectId] = flag.projectId
+                it[dependsOn] = serializeDependsOn(flag.dependsOn)
                 it[updatedAt] = java.time.LocalDateTime.now()
             }
             
@@ -287,6 +327,13 @@ class FlagRepository : IFlagRepository {
             }
             findById(id)
         }
+    }
+    
+    override suspend fun permanentDelete(id: Int): Unit = withContext(Dispatchers.IO) {
+        Database.transaction {
+            Flags.deleteWhere { Flags.id eq id }
+        }
+        Unit
     }
     
     private fun mapRowToFlag(row: ResultRow): Flag {
@@ -327,11 +374,29 @@ class FlagRepository : IFlagRepository {
             dataRecordsEnabled = row[Flags.dataRecordsEnabled],
             entityType = row[Flags.entityType],
             environmentId = row[Flags.environmentId],
+            projectId = row[Flags.projectId],
+            dependsOn = parseDependsOn(row[Flags.dependsOn]),
             segments = segments,
             variants = variants,
             tags = tags,
-            updatedAt = row[Flags.updatedAt]?.toString()
+            updatedAt = row[Flags.updatedAt]?.toString(),
+            deletedAt = row[Flags.deletedAt]?.toString()
         )
+    }
+
+    private fun parseDependsOn(jsonStr: String?): List<String> {
+        if (jsonStr.isNullOrBlank()) return emptyList()
+        return try {
+            val arr = json.parseToJsonElement(jsonStr).jsonArray
+            arr.map { it.jsonPrimitive.content }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun serializeDependsOn(keys: List<String>): String? {
+        if (keys.isEmpty()) return null
+        return buildJsonArray { keys.forEach { add(it) } }.toString()
     }
     
     private fun mapRowToSegment(row: ResultRow): Segment {

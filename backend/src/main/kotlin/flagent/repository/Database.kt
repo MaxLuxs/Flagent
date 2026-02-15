@@ -3,6 +3,7 @@ package flagent.repository
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import flagent.config.AppConfig
+import flagent.config.DatabaseConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
@@ -37,11 +38,51 @@ object Database {
     private var exposedDatabase: Database? = null
 
     /**
+     * Initialize database for tests with an explicit JDBC URL (e.g. from Testcontainers).
+     * Runs Flyway for PostgreSQL; uses SchemaUtils for other drivers.
+     * Safe to call multiple times: closes existing connection first.
+     */
+    fun initForTests(jdbcUrl: String, driverClassName: String = "org.postgresql.Driver") {
+        close()
+        val config = HikariConfig().apply {
+            this.driverClassName = driverClassName
+            this.jdbcUrl = jdbcUrl
+            maximumPoolSize = 2
+            minimumIdle = 1
+            connectionTimeout = 30000
+        }
+        dataSource = HikariDataSource(config)
+        exposedDatabase = Database.connect(dataSource!!)
+        logger.info { "Test database connected: $driverClassName" }
+        val isPostgres = driverClassName.contains("postgresql", ignoreCase = true)
+        if (isPostgres) {
+            val flyway = Flyway.configure()
+                .dataSource(dataSource!!)
+                .locations("classpath:db/migration")
+                .baselineOnMigrate(true)
+                .baselineVersion("1")
+                .load()
+            flyway.migrate()
+            logger.info { "Flyway test migrations completed" }
+        } else {
+            transaction(exposedDatabase!!) {
+                if (AppConfig.dbConnectionDebug) addLogger(StdOutSqlLogger)
+                SchemaUtils.createMissingTablesAndColumns(
+                    Flags, Segments, Variants, Constraints, Distributions,
+                    Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Webhooks,
+                    Users, EvaluationEvents, AnalyticsEvents, CrashReports
+                )
+            }
+        }
+    }
+
+    /**
      * Initialize database connection
      * Supports PostgreSQL, MySQL, and SQLite
-     * Safe to call multiple times (e.g. in tests): closes existing connection first
+     * Safe to call multiple times (e.g. in tests): if already initialised (e.g. by [initForTests]), no-op.
      */
     fun init() {
+        if (exposedDatabase != null) return
         close()
         val dbDriver = when (AppConfig.dbDriver) {
             "postgres", "postgresql" -> "postgres"
@@ -61,18 +102,22 @@ object Database {
                 if (AppConfig.dbConnectionStr == ":memory:") {
                     "jdbc:sqlite::memory:"
                 } else {
-                    "jdbc:sqlite:${AppConfig.dbConnectionStr}"
+                    // busy_timeout: wait up to 30s on lock instead of immediate SQLITE_BUSY
+                    val base = "jdbc:sqlite:${AppConfig.dbConnectionStr}"
+                    val sep = if (AppConfig.dbConnectionStr.contains("?")) "&" else "?"
+                    "$base${sep}busy_timeout=30000"
                 }
             }
             else -> throw IllegalArgumentException("Unsupported database driver: ${AppConfig.dbDriver}")
         }
 
-        val useMemoryDb = dbDriver == "sqlite3" && AppConfig.dbConnectionStr == ":memory:"
+        // SQLite uses file-level locking: only one writer. Pool must be 1 for file DB.
+        val useSqlite = dbDriver == "sqlite3"
         val config = HikariConfig().apply {
             this.driverClassName = driver
             this.jdbcUrl = jdbcUrl
-            maximumPoolSize = if (useMemoryDb) 1 else 10
-            minimumIdle = if (useMemoryDb) 1 else 2
+            maximumPoolSize = if (useSqlite) 1 else DatabaseConfig.getPoolSize()
+            minimumIdle = if (useSqlite) 1 else (DatabaseConfig.hikariConfig["minimumIdle"] as? Int ?: 10)
             connectionTimeout = 30000
             idleTimeout = 600000
             maxLifetime = 1800000
