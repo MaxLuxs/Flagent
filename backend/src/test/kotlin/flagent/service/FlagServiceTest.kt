@@ -212,6 +212,18 @@ class FlagServiceTest {
     }
     
     @Test
+    fun testPermanentDeleteFlag() = runBlocking {
+        val flag = Flag(id = 1, key = "test-flag", description = "Test")
+        coEvery { flagRepository.findByIdIncludeDeleted(1) } returns flag
+        coEvery { flagRepository.permanentDelete(1) } just Runs
+        
+        flagService.permanentDeleteFlag(1)
+        
+        coVerify { flagRepository.findByIdIncludeDeleted(1) }
+        coVerify { flagRepository.permanentDelete(1) }
+    }
+    
+    @Test
     fun testSetFlagEnabled() = runBlocking {
         val flag = Flag(id = 1, key = "test-flag", description = "Test", enabled = false)
         val enabledFlag = flag.copy(enabled = true)

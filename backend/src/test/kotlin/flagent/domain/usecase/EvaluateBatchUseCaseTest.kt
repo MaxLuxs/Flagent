@@ -5,6 +5,7 @@ import flagent.domain.value.EntityID
 import flagent.domain.value.EvaluationContext
 import io.mockk.*
 import kotlin.test.*
+import kotlinx.coroutines.runBlocking
 
 class EvaluateBatchUseCaseTest {
     private lateinit var evaluateFlagUseCase: EvaluateFlagUseCase
@@ -92,7 +93,7 @@ class EvaluateBatchUseCaseTest {
             segmentID = 2
         )
         
-        every {
+        coEvery {
             evaluateFlagUseCase.invoke(
                 flag = flag1,
                 context = match {
@@ -104,7 +105,7 @@ class EvaluateBatchUseCaseTest {
             )
         } returns result1
         
-        every {
+        coEvery {
             evaluateFlagUseCase.invoke(
                 flag = flag2,
                 context = match {
@@ -116,13 +117,15 @@ class EvaluateBatchUseCaseTest {
             )
         } returns result2
         
-        val results = evaluateBatchUseCase.invoke(
-            flags = listOf(flag1, flag2),
-            entityID = EntityID("user123"),
-            entityType = "user",
-            entityContext = null,
-            enableDebug = false
-        )
+        val results = runBlocking {
+            evaluateBatchUseCase.invoke(
+                flags = listOf(flag1, flag2),
+                entityID = EntityID("user123"),
+                entityType = "user",
+                entityContext = null,
+                enableDebug = false
+            )
+        }
         
         assertEquals(2, results.size)
         assertEquals(1, results[0].flagID)
@@ -132,7 +135,7 @@ class EvaluateBatchUseCaseTest {
         assertEquals("flag2", results[1].flagKey)
         assertEquals(2, results[1].result.variantID)
         
-        verify {
+        coVerify {
             evaluateFlagUseCase.invoke(
                 flag1,
                 match {
@@ -156,16 +159,17 @@ class EvaluateBatchUseCaseTest {
     
     @Test
     fun testInvoke_ReturnsEmptyList_WhenNoFlagsProvided() {
-        val results = evaluateBatchUseCase.invoke(
+        val results = runBlocking { evaluateBatchUseCase.invoke(
             flags = emptyList(),
             entityID = EntityID("user123"),
             entityType = "user",
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertTrue(results.isEmpty())
-        verify(exactly = 0) { evaluateFlagUseCase.invoke(any(), any(), any()) }
+        coVerify(exactly = 0) { evaluateFlagUseCase.invoke(any(), any(), any()) }
     }
     
     @Test
@@ -182,7 +186,7 @@ class EvaluateBatchUseCaseTest {
             segmentID = null
         )
         
-        every {
+        coEvery {
             evaluateFlagUseCase.invoke(
                 flag = flag,
                 context = match {
@@ -194,19 +198,20 @@ class EvaluateBatchUseCaseTest {
             )
         } returns result
         
-        val results = evaluateBatchUseCase.invoke(
+        val results = runBlocking { evaluateBatchUseCase.invoke(
             flags = listOf(flag),
             entityID = EntityID("user123"),
             entityType = "user",
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, results.size)
         assertEquals(1, results[0].flagID)
         assertNull(results[0].result.variantID)
         
-        verify {
+        coVerify {
             evaluateFlagUseCase.invoke(
                 flag,
                 match {
@@ -234,7 +239,7 @@ class EvaluateBatchUseCaseTest {
             segmentID = null
         )
         
-        every {
+        coEvery {
             evaluateFlagUseCase.invoke(
                 flag = flag,
                 context = match {
@@ -246,19 +251,20 @@ class EvaluateBatchUseCaseTest {
             )
         } returns result
         
-        val results = evaluateBatchUseCase.invoke(
+        val results = runBlocking { evaluateBatchUseCase.invoke(
             flags = listOf(flag),
             entityID = EntityID("user123"),
             entityType = "user",
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, results.size)
         assertEquals(1, results[0].flagID)
         assertNull(results[0].result.variantID)
         
-        verify {
+        coVerify {
             evaluateFlagUseCase.invoke(
                 flag,
                 match {
@@ -312,7 +318,7 @@ class EvaluateBatchUseCaseTest {
             segmentID = 1
         )
         
-        every {
+        coEvery {
             evaluateFlagUseCase.invoke(
                 flag = flag,
                 context = match {
@@ -324,16 +330,17 @@ class EvaluateBatchUseCaseTest {
             )
         } returns result
         
-        val results = evaluateBatchUseCase.invoke(
+        val results = runBlocking { evaluateBatchUseCase.invoke(
             flags = listOf(flag),
             entityID = EntityID("user123"),
             entityType = "user",
             entityContext = entityContext,
             enableDebug = false
         )
+        }
         
         assertEquals(1, results.size)
-        verify {
+        coVerify {
             evaluateFlagUseCase.invoke(
                 flag = flag,
                 context = match { 
@@ -385,7 +392,7 @@ class EvaluateBatchUseCaseTest {
             segmentID = 1
         )
         
-        every {
+        coEvery {
             evaluateFlagUseCase.invoke(
                 flag = flag,
                 context = match {
@@ -397,16 +404,17 @@ class EvaluateBatchUseCaseTest {
             )
         } returns result
         
-        val results = evaluateBatchUseCase.invoke(
+        val results = runBlocking { evaluateBatchUseCase.invoke(
             flags = listOf(flag),
             entityID = EntityID("user123"),
             entityType = null,
             entityContext = null,
             enableDebug = true
         )
+        }
         
         assertEquals(1, results.size)
-        verify {
+        coVerify {
             evaluateFlagUseCase.invoke(
                 flag,
                 match {

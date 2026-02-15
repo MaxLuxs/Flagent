@@ -1,7 +1,9 @@
 package flagent.route
 
+import flagent.repository.impl.ClientUsageEntry
 import flagent.repository.impl.EvaluationEventRepository
 import flagent.repository.impl.FlagEvaluationStatsResult
+import flagent.repository.impl.FlagUsageByClientResult
 import flagent.repository.impl.MetricsOverviewResult
 import flagent.repository.impl.TimeSeriesEntry
 import flagent.repository.impl.TopFlagEntry
@@ -204,5 +206,109 @@ class CoreMetricsRoutesTest {
         assertEquals(1, body.flagId)
         assertEquals(42L, body.evaluationCount)
         assertEquals(2, body.timeSeries.size)
+    }
+
+    @Test
+    fun getFlagUsage_returns200WithClientsAndTotal_ossEndpoint() = testApplication {
+        val usage = FlagUsageByClientResult(
+            flagId = 1,
+            startMs = 1_700_000_000_000L,
+            endMs = 1_700_001_000_000L,
+            totalEvaluationCount = 100L,
+            clients = listOf(
+                ClientUsageEntry("mobile-app", 60L),
+                ClientUsageEntry("web-dashboard", 40L)
+            )
+        )
+        val repo = mockk<EvaluationEventRepository>()
+        coEvery { repo.getUsageByClient(1, any(), any()) } returns usage
+        val service = CoreMetricsService(repo)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureCoreMetricsRoutes(service, null)
+            }
+        }
+
+        val response = client.get("/api/v1/flags/1/usage") {
+            parameter("start", 1_700_000_000_000L)
+            parameter("end", 1_700_001_000_000L)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = Json.decodeFromString<FlagUsageByClientResult>(response.bodyAsText())
+        assertEquals(1, body.flagId)
+        assertEquals(100L, body.totalEvaluationCount)
+        assertEquals(2, body.clients.size)
+        assertEquals("mobile-app", body.clients[0].clientId)
+        assertEquals(60L, body.clients[0].evaluationCount)
+    }
+
+    @Test
+    fun getFlagUsage_missingStart_returns400() = testApplication {
+        val repo = mockk<EvaluationEventRepository>()
+        val service = CoreMetricsService(repo)
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            routing { configureCoreMetricsRoutes(service, null) }
+        }
+        val response = client.get("/api/v1/flags/1/usage") { parameter("end", 1_700_001_000_000L) }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun getFlagUsage_missingEnd_returns400() = testApplication {
+        val repo = mockk<EvaluationEventRepository>()
+        val service = CoreMetricsService(repo)
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            routing { configureCoreMetricsRoutes(service, null) }
+        }
+        val response = client.get("/api/v1/flags/1/usage") { parameter("start", 1_700_000_000_000L) }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun getFlagUsage_emptyClients_returns200() = testApplication {
+        val usage = FlagUsageByClientResult(
+            flagId = 1,
+            startMs = 1_700_000_000_000L,
+            endMs = 1_700_001_000_000L,
+            totalEvaluationCount = 10L,
+            clients = emptyList()
+        )
+        val repo = mockk<EvaluationEventRepository>()
+        coEvery { repo.getUsageByClient(1, any(), any()) } returns usage
+        val service = CoreMetricsService(repo)
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            routing { configureCoreMetricsRoutes(service, null) }
+        }
+        val response = client.get("/api/v1/flags/1/usage") {
+            parameter("start", 1_700_000_000_000L)
+            parameter("end", 1_700_001_000_000L)
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = Json.decodeFromString<FlagUsageByClientResult>(response.bodyAsText())
+        assertEquals(10L, body.totalEvaluationCount)
+        assertTrue(body.clients.isEmpty())
+    }
+
+    @Test
+    fun getFlagUsage_invalidFlagId_returns400() = testApplication {
+        val repo = mockk<EvaluationEventRepository>()
+        val service = CoreMetricsService(repo)
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            routing { configureCoreMetricsRoutes(service, null) }
+        }
+        val response = client.get("/api/v1/flags/not-a-number/usage") {
+            parameter("start", 1_700_000_000_000L)
+            parameter("end", 1_700_001_000_000L)
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Invalid flagId") || response.bodyAsText().contains("error"))
     }
 }

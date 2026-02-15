@@ -10,6 +10,7 @@ import flagent.integration.firebase.FirebaseAnalyticsReporter
 import flagent.service.adapter.SharedFlagEvaluatorAdapter
 import io.mockk.*
 import kotlin.test.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 
 class EvaluationServiceTest {
@@ -17,7 +18,7 @@ class EvaluationServiceTest {
     private lateinit var dataRecordingService: DataRecordingService
     private lateinit var evaluationService: EvaluationService
 
-    private val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+    private val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter(), null)
 
     @BeforeTest
     fun setup() {
@@ -27,7 +28,7 @@ class EvaluationServiceTest {
     }
     
     @Test
-    fun testEvaluateFlag_ReturnsResult_WhenFlagFoundByID() {
+    fun testEvaluateFlag_ReturnsResult_WhenFlagFoundByID() = runBlocking {
         val variant = Variant(
             id = 1,
             flagId = 1,
@@ -62,7 +63,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -70,6 +71,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         assertEquals("test_flag", result.flagKey)
@@ -80,7 +82,7 @@ class EvaluationServiceTest {
     }
 
     @Test
-    fun testEvaluateFlag_callsEvaluationEventRecorder_WhenProvided() {
+    fun testEvaluateFlag_callsEvaluationEventRecorder_WhenProvided() = runBlocking {
         val evaluationEventRecorder = mockk<EvaluationEventRecorder>(relaxed = true)
         val serviceWithRecorder = EvaluationService(
             evalCache, evaluateFlagUseCase, dataRecordingService,
@@ -101,17 +103,18 @@ class EvaluationServiceTest {
 
         every { evalCache.getByFlagKeyOrID(1) } returns flag
 
-        val result = serviceWithRecorder.evaluateFlag(
+        val result = runBlocking { serviceWithRecorder.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123",
             entityType = "user", entityContext = null, enableDebug = false
         )
+        }
 
         assertEquals(1, result.flagID)
         verify(exactly = 1) { evaluationEventRecorder.record(1, result.timestamp) }
     }
     
     @Test
-    fun testEvaluateFlag_ReturnsResult_WhenFlagFoundByKey() {
+    fun testEvaluateFlag_ReturnsResult_WhenFlagFoundByKey() = runBlocking {
         val variant = Variant(
             id = 1,
             flagId = 1,
@@ -146,7 +149,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID("test_flag") } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = null,
             flagKey = "test_flag",
             entityID = "user123",
@@ -154,6 +157,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         assertEquals("test_flag", result.flagKey)
@@ -165,7 +169,7 @@ class EvaluationServiceTest {
     fun testEvaluateFlag_ReturnsBlankResult_WhenFlagNotFound() {
         every { evalCache.getByFlagKeyOrID(999) } returns null
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 999,
             flagKey = null,
             entityID = "user123",
@@ -173,6 +177,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(999, result.flagID)
         assertNull(result.variantID)
@@ -193,7 +198,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -201,6 +206,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         assertNull(result.variantID)
@@ -221,7 +227,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -229,6 +235,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         assertNull(result.variantID)
@@ -273,7 +280,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = null,
@@ -281,6 +288,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertNotNull(result.evalContext.entityID)
         assertTrue(result.evalContext.entityID!!.startsWith("randomly_generated_"))
@@ -331,7 +339,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -339,6 +347,7 @@ class EvaluationServiceTest {
             entityContext = mapOf("region" to "US"),
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         assertNotNull(result.variantID)
@@ -389,7 +398,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -397,6 +406,7 @@ class EvaluationServiceTest {
             entityContext = mapOf("region" to "EU"),
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         // Should not match because constraint doesn't match
@@ -448,7 +458,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -456,6 +466,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         // Should not match because entityContext is null but constraints are present
@@ -503,7 +514,7 @@ class EvaluationServiceTest {
         mockkObject(AppConfig)
         every { AppConfig.evalDebugEnabled } returns true
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -511,6 +522,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = true
         )
+        }
         
         assertNotNull(result.evalDebugLog)
         assertNotNull(result.evalDebugLog!!.segmentDebugLogs)
@@ -561,7 +573,7 @@ class EvaluationServiceTest {
         every { AppConfig.recorderEnabled } returns true
         every { AppConfig.evalLoggingEnabled } returns true
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -569,6 +581,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         verify(exactly = 1) { dataRecordingService.recordAsync(result) }
         verify { evalCache.getByFlagKeyOrID(1) }
@@ -597,14 +610,16 @@ class EvaluationServiceTest {
         mockkObject(AppConfig)
         every { AppConfig.firebaseAnalyticsEnabled } returns true
 
-        serviceWithFirebase.evaluateFlag(
-            flagID = 1,
-            flagKey = null,
-            entityID = "user123",
-            entityType = "user",
-            entityContext = mapOf("client_id" to "web-456"),
-            enableDebug = false
-        )
+        runBlocking {
+            serviceWithFirebase.evaluateFlag(
+                flagID = 1,
+                flagKey = null,
+                entityID = "user123",
+                entityType = "user",
+                entityContext = mapOf("client_id" to "web-456"),
+                enableDebug = false
+            )
+        }
 
         verify(exactly = 1) { firebaseReporter.recordAsync(match { it.flagKey == "test_flag" }) }
         unmockkObject(AppConfig)
@@ -652,7 +667,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByTags(listOf("test_tag"), null) } returns listOf(flag)
         
-        val results = evaluationService.evaluateFlagsByTags(
+        val results = runBlocking { evaluationService.evaluateFlagsByTags(
             tags = listOf("test_tag"),
             operator = null,
             entityID = "user123",
@@ -660,6 +675,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, results.size)
         assertEquals(1, results[0].flagID)
@@ -671,7 +687,7 @@ class EvaluationServiceTest {
     fun testEvaluateFlagsByTags_ReturnsEmptyList_WhenNoFlagsFound() {
         every { evalCache.getByTags(listOf("non_existent_tag"), null) } returns emptyList()
         
-        val results = evaluationService.evaluateFlagsByTags(
+        val results = runBlocking { evaluationService.evaluateFlagsByTags(
             tags = listOf("non_existent_tag"),
             operator = null,
             entityID = "user123",
@@ -679,6 +695,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertTrue(results.isEmpty())
         verify { evalCache.getByTags(listOf("non_existent_tag"), null) }
@@ -726,7 +743,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByTags(listOf("test_tag"), "ALL") } returns listOf(flag)
         
-        val results = evaluationService.evaluateFlagsByTags(
+        val results = runBlocking { evaluationService.evaluateFlagsByTags(
             tags = listOf("test_tag"),
             operator = "ALL",
             entityID = "user123",
@@ -734,6 +751,7 @@ class EvaluationServiceTest {
             entityContext = null,
             enableDebug = false
         )
+        }
         
         assertEquals(1, results.size)
         verify { evalCache.getByTags(listOf("test_tag"), "ALL") }
@@ -806,7 +824,7 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -814,6 +832,7 @@ class EvaluationServiceTest {
             entityContext = mapOf("region" to "EU"), // Doesn't match first segment
             enableDebug = false
         )
+        }
         
         assertEquals(1, result.flagID)
         // Should match second segment
@@ -838,10 +857,11 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123", entityType = null,
             entityContext = null, enableDebug = false
         )
+        }
         
         assertEquals("default_type", result.evalContext.entityType)
     }
@@ -861,10 +881,11 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123", entityType = "user",
             entityContext = null, enableDebug = false
         )
+        }
         
         // With rolloutPercent = 0, should not match
         assertNull(result.variantID)
@@ -888,10 +909,11 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123", entityType = "user",
             entityContext = null, enableDebug = false
         )
+        }
         
         // Should match one of the variants
         assertNotNull(result.variantID)
@@ -913,10 +935,11 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123", entityType = "user",
             entityContext = null, enableDebug = true
         )
+        }
         
         assertNotNull(result.evalDebugLog)
         assertNotNull(result.evalDebugLog!!.segmentDebugLogs)
@@ -944,10 +967,11 @@ class EvaluationServiceTest {
             "premium" to true
         )
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123", entityType = "user",
             entityContext = entityContext, enableDebug = false
         )
+        }
         
         assertNotNull(result.evalContext.entityContext)
         val jsonObj = result.evalContext.entityContext!!
@@ -956,10 +980,11 @@ class EvaluationServiceTest {
     
     @Test
     fun testEvaluateFlag_NeitherFlagIDNorKeyProvided() {
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = null, flagKey = null, entityID = "user123", entityType = "user",
             entityContext = null, enableDebug = false
         )
+        }
         
         assertEquals(0, result.flagID)
         assertEquals("", result.flagKey)
@@ -972,10 +997,11 @@ class EvaluationServiceTest {
     fun testEvaluateFlagsByTags_WithEmptyTagsList() {
         every { evalCache.getByTags(emptyList(), null) } returns emptyList()
         
-        val results = evaluationService.evaluateFlagsByTags(
+        val results = runBlocking { evaluationService.evaluateFlagsByTags(
             tags = emptyList(), operator = null, entityID = "user123",
             entityType = "user", entityContext = null, enableDebug = false
         )
+        }
         
         assertTrue(results.isEmpty())
     }
@@ -995,7 +1021,7 @@ class EvaluationServiceTest {
         )
         every { evalCache.getByFlagKeyOrID(1) } returns flag
 
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -1004,6 +1030,7 @@ class EvaluationServiceTest {
             enableDebug = false,
             environmentId = 5L
         )
+        }
 
         assertEquals(1, result.flagID)
         assertNotNull(result.variantID)
@@ -1025,7 +1052,7 @@ class EvaluationServiceTest {
         )
         every { evalCache.getByFlagKeyOrID(1) } returns flag
 
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -1034,6 +1061,7 @@ class EvaluationServiceTest {
             enableDebug = false,
             environmentId = 10L
         )
+        }
 
         assertEquals(1, result.flagID)
         assertNull(result.variantID)
@@ -1056,7 +1084,7 @@ class EvaluationServiceTest {
         )
         every { evalCache.getByFlagKeyOrID(1) } returns flag
 
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -1065,6 +1093,7 @@ class EvaluationServiceTest {
             enableDebug = false,
             environmentId = 5L
         )
+        }
 
         assertEquals(1, result.flagID)
         assertNotNull(result.variantID)
@@ -1085,7 +1114,7 @@ class EvaluationServiceTest {
         )
         every { evalCache.getByFlagKeyOrID(1) } returns flag
 
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1,
             flagKey = null,
             entityID = "user123",
@@ -1094,6 +1123,7 @@ class EvaluationServiceTest {
             enableDebug = false,
             environmentId = null
         )
+        }
 
         assertEquals(1, result.flagID)
         assertNotNull(result.variantID)
@@ -1120,7 +1150,7 @@ class EvaluationServiceTest {
         )
         every { evalCache.getByTags(listOf("test_tag"), null) } returns listOf(flagEnv5, flagEnv10)
 
-        val results = evaluationService.evaluateFlagsByTags(
+        val results = runBlocking { evaluationService.evaluateFlagsByTags(
             tags = listOf("test_tag"),
             operator = null,
             entityID = "user123",
@@ -1129,6 +1159,7 @@ class EvaluationServiceTest {
             enableDebug = false,
             environmentId = 5L
         )
+        }
 
         assertEquals(2, results.size)
         assertEquals(1, results[0].flagID)
@@ -1154,10 +1185,11 @@ class EvaluationServiceTest {
         
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123", entityType = "user",
             entityContext = null, enableDebug = false
         )
+        }
         
         assertEquals(2, result.flagTags.size)
         assertTrue(result.flagTags.contains("production"))
@@ -1180,10 +1212,11 @@ class EvaluationServiceTest {
         every { evalCache.getByFlagKeyOrID(1) } returns flag
         
         // Test multiple times with same entityID to ensure consistent hashing
-        val result = evaluationService.evaluateFlag(
+        val result = runBlocking { evaluationService.evaluateFlag(
             flagID = 1, flagKey = null, entityID = "user123", entityType = "user",
             entityContext = null, enableDebug = false
         )
+        }
         
         // Result depends on consistent hashing - could be null or variant
         // Just verify it doesn't crash

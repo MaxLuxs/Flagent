@@ -1,7 +1,7 @@
 package flagent.test.e2e
 
 import flagent.application.module
-import flagent.repository.Database
+import flagent.test.PostgresTestcontainerExtension
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -20,11 +20,16 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.*
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.extension.ExtendWith
 
 /**
  * E2E tests for full flow
- * Tests complete workflow: create flag -> segment -> constraint -> variant -> distribution -> evaluation
+ * Tests complete workflow: create flag -> segment -> constraint -> variant -> distribution -> evaluation.
+ * Excluded by default (tag "e2e"); run with -PincludeE2E and FLAGENT_RECORDER_ENABLED=false to avoid Kafka.
  */
+@Tag("e2e")
+@ExtendWith(PostgresTestcontainerExtension::class)
 class E2ETest {
 
     private suspend fun HttpResponse.bodyJsonObject() = Json.parseToJsonElement(bodyAsText()).jsonObject
@@ -63,11 +68,6 @@ class E2ETest {
         val obj = response.bodyJsonObject()
         return obj["id"]?.jsonPrimitive?.content?.toIntOrNull()
             ?: error("Create tag response missing 'id'. Keys: ${obj.keys}")
-    }
-
-    @AfterTest
-    fun afterTest() {
-        Database.close()
     }
 
     /**

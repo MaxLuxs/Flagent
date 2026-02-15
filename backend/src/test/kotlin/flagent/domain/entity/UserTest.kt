@@ -2,18 +2,24 @@ package flagent.domain.entity
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class UserTest {
     @Test
     fun `create User with all fields`() {
         val user = User(
             id = 1,
-            email = "user@example.com"
+            email = "user@example.com",
+            name = "Test User"
         )
         
         assertEquals(1, user.id)
         assertEquals("user@example.com", user.email)
+        assertEquals("Test User", user.name)
+        assertFalse(user.isBlocked)
+        assertFalse(user.isDeleted)
     }
     
     @Test
@@ -22,6 +28,7 @@ class UserTest {
         
         assertEquals(0, user.id)
         assertNull(user.email)
+        assertNull(user.name)
     }
     
     @Test
@@ -30,6 +37,12 @@ class UserTest {
         
         assertEquals(1, user.id)
         assertNull(user.email)
+    }
+    
+    @Test
+    fun `User isBlocked when blockedAt set`() {
+        val user = User(id = 1, email = "a@b.com", blockedAt = java.time.LocalDateTime.now())
+        assertTrue(user.isBlocked)
     }
     
     @Test

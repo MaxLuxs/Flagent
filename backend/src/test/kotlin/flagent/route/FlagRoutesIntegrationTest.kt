@@ -409,4 +409,97 @@ class FlagRoutesIntegrationTest {
             client.close()
         }
     }
+
+    /** OSS: Archive (soft delete) then permanent delete removes flag; GET returns 404. */
+    @Test
+    fun testPermanentDelete_afterArchive_removesFlagPermanently_oss() = testApplication {
+        application {
+            module()
+        }
+        val client = createAuthenticatedClient()
+        try {
+            val ts = System.currentTimeMillis()
+            val createResp = client.post("/api/v1/flags") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("description", "To be permanently deleted")
+                    put("key", "perm_del_$ts")
+                }.toString())
+            }
+            assertEquals(HttpStatusCode.OK, createResp.status)
+            val flagId = createResp.bodyJsonObject().intOrNull("id") ?: error("Missing id")
+            client.delete("/api/v1/flags/$flagId")
+            val permResp = client.delete("/api/v1/flags/$flagId/permanent")
+            assertEquals(HttpStatusCode.OK, permResp.status)
+            val getResp = client.get("/api/v1/flags/$flagId")
+            assertEquals(HttpStatusCode.NotFound, getResp.status)
+        } finally {
+            client.close()
+        }
+    }
+
+    /** OSS: GET /flags?environmentId= returns only flags for that env or global (environmentId null). */
+    @Test
+    fun testGetFlags_environmentIdFilter_oss() = testApplication {
+        application {
+            module()
+        }
+        val client = createAuthenticatedClient()
+        try {
+            val ts = System.currentTimeMillis()
+            val withEnv = client.post("/api/v1/flags") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("description", "Flag for env 1")
+                    put("key", "env1_flag_$ts")
+                    put("environmentId", 1)
+                }.toString())
+            }.bodyJsonObject()
+            val globalKey = "global_flag_$ts"
+            client.post("/api/v1/flags") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("description", "Global flag")
+                    put("key", globalKey)
+                }.toString())
+            }
+            val listEnv1 = client.get("/api/v1/flags?environmentId=1").bodyJsonArray()
+            val ids = listEnv1.mapNotNull { (it as? JsonObject)?.intOrNull("id") }
+            assertTrue(ids.contains(withEnv.intOrNull("id")), "Filter envId=1 should include flag with environmentId=1")
+            val keys = listEnv1.mapNotNull { (it as? JsonObject)?.stringOrNull("key") }
+            assertTrue(keys.contains(globalKey), "Filter envId=1 should include global flags (env null)")
+        } finally {
+            client.close()
+        }
+    }
+
+    /** OSS: includeArchived shows soft-deleted flags; restore brings them back. */
+    @Test
+    fun testArchiveAndRestore_includeArchived_oss() = testApplication {
+        application {
+            module()
+        }
+        val client = createAuthenticatedClient()
+        try {
+            val ts = System.currentTimeMillis()
+            val createResp = client.post("/api/v1/flags") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("description", "Archive restore test")
+                    put("key", "arch_restore_$ts")
+                }.toString())
+            }
+            assertEquals(HttpStatusCode.OK, createResp.status)
+            val flagId = createResp.bodyJsonObject().intOrNull("id") ?: error("Missing id")
+            client.delete("/api/v1/flags/$flagId")
+            val listArchived = client.get("/api/v1/flags?includeArchived=true").bodyJsonArray()
+            assertTrue(listArchived.any { (it as? JsonObject)?.intOrNull("id") == flagId })
+            val restoreResp = client.put("/api/v1/flags/$flagId/restore")
+            assertEquals(HttpStatusCode.OK, restoreResp.status)
+            val getResp = client.get("/api/v1/flags/$flagId")
+            assertEquals(HttpStatusCode.OK, getResp.status)
+        } finally {
+            client.close()
+        }
+    }
 }

@@ -36,6 +36,17 @@ class EvaluationEventRecorderTest {
     }
 
     @Test
+    fun record_withClientId_passesClientIdToBatch_oss() = runBlocking {
+        recorder.record(1, 1_700_000_000_000L, "e2e-mobile-client")
+        delay(2500)
+        coVerify(atLeast = 1) {
+            repository.saveBatch(match { batch ->
+                batch.any { it.clientId == "e2e-mobile-client" }
+            })
+        }
+    }
+
+    @Test
     fun stop_doesNotThrow() {
         recorder.record(1, System.currentTimeMillis())
         recorder.stop()

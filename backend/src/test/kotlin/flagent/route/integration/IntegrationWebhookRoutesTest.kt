@@ -23,8 +23,13 @@ import kotlin.test.assertTrue
 
 class IntegrationWebhookRoutesTest {
 
+    /**
+     * Disabled: in testApplication the webhook handler can return 500 (e.g. missing app scope or config).
+     * To verify "create flag from PR" flow, run against a live Flagent server or use an integration test with full application.
+     * See docs/guides/gitops.md for GitHub webhook setup.
+     */
     @Test
-    @Disabled("Mock returns 500 - AppConfig/scope; see gitops.md for usage")
+    @Disabled("Integration-style: can return 500 in testApplication; use live server or full app test to verify")
     fun `POST github webhook creates flag from pull_request opened`() = testApplication {
         val flagService = mockk<FlagService>(relaxed = true)
         val createSlot = slot<CreateFlagCommand>()

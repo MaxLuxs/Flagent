@@ -1,6 +1,8 @@
 package flagent.route
 
 import flagent.config.AppConfig
+import flagent.domain.repository.IUserRepository
+import flagent.service.UserService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -11,8 +13,17 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlin.test.*
+import org.mindrot.jbcrypt.BCrypt
+import io.mockk.coEvery
+import io.mockk.mockk
 
 class AuthRoutesTest {
+
+    private fun createUserServiceReturningNullFromValidate(): UserService {
+        val repo = mockk<IUserRepository>()
+        coEvery { repo.findByEmail(any()) } returns null
+        return UserService(repo)
+    }
 
     @Test
     fun `POST auth login returns 501 when admin auth disabled`() = testApplication {
@@ -22,7 +33,7 @@ class AuthRoutesTest {
                 json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
             }
             routing {
-                configureAuthRoutes()
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
             }
         }
         val response = client.post("/auth/login") {
@@ -40,7 +51,7 @@ class AuthRoutesTest {
                 json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
             }
             routing {
-                configureAuthRoutes()
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
             }
         }
         val response = client.post("/auth/login") {
@@ -62,7 +73,7 @@ class AuthRoutesTest {
                 json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
             }
             routing {
-                configureAuthRoutes()
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
             }
         }
         val response = client.post("/auth/login") {
@@ -84,7 +95,7 @@ class AuthRoutesTest {
                 json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
             }
             routing {
-                configureAuthRoutes()
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
             }
         }
         val response = client.post("/auth/login") {
@@ -103,7 +114,7 @@ class AuthRoutesTest {
                 json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
             }
             routing {
-                configureAuthRoutes()
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
             }
         }
         val response = client.post("/auth/login") {
@@ -122,7 +133,7 @@ class AuthRoutesTest {
                 json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
             }
             routing {
-                configureAuthRoutes()
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
             }
         }
         val response = client.post("/auth/login") {
@@ -141,7 +152,7 @@ class AuthRoutesTest {
                 json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
             }
             routing {
-                configureAuthRoutes()
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
             }
         }
         val response = client.post("/auth/login") {
@@ -150,5 +161,34 @@ class AuthRoutesTest {
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertTrue(response.bodyAsText().contains("Email and password are required"))
+    }
+
+    @Test
+    fun `BCrypt checkpw verifies password against hash`() {
+        val salt = "\$2a\$10\$AAAAAAAAAAAAAAAAAAAAAA"
+        val hash = BCrypt.hashpw("secret123", salt)
+        assertTrue(BCrypt.checkpw("secret123", hash))
+        assertFalse(BCrypt.checkpw("wrong", hash))
+    }
+
+    @Test
+    fun `POST auth login returns 201 with password matching FLAGENT_ADMIN_PASSWORD_HASH when hash configured`() = testApplication {
+        val hashEnv = System.getenv("FLAGENT_ADMIN_PASSWORD_HASH")
+        if (hashEnv.isNullOrBlank()) return@testApplication
+        if (!AppConfig.adminAuthEnabled) return@testApplication
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
+            }
+            routing {
+                configureAuthRoutes(createUserServiceReturningNullFromValidate())
+            }
+        }
+        val response = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"${AppConfig.adminEmail}","password":"secret123"}""")
+        }
+        assertEquals(HttpStatusCode.Created, response.status)
+        assertTrue(response.bodyAsText().contains("token"))
     }
 }

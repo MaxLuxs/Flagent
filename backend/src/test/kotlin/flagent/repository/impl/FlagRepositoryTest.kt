@@ -2,42 +2,40 @@ package flagent.repository.impl
 
 import flagent.domain.entity.Flag
 import flagent.repository.Database
+import flagent.repository.tables.*
+import flagent.test.PostgresTestcontainerExtension
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.test.*
 
+@ExtendWith(PostgresTestcontainerExtension::class)
 class FlagRepositoryTest {
     private lateinit var repository: FlagRepository
 
     @BeforeTest
     fun setup() {
-        Database.init()
+        transaction(Database.getDatabase()) {
+            SchemaUtils.createMissingTablesAndColumns(
+                Flags, Segments, Variants, Constraints, Distributions,
+                Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Webhooks,
+                Users, EvaluationEvents, AnalyticsEvents, CrashReports
+            )
+        }
         repository = FlagRepository()
     }
-    
+
     @AfterTest
     fun cleanup() {
-        // Clean up database
         try {
             transaction(Database.getDatabase()) {
                 SchemaUtils.drop(
-                    flagent.repository.tables.Flags,
-                    flagent.repository.tables.Segments,
-                    flagent.repository.tables.Variants,
-                    flagent.repository.tables.Constraints,
-                    flagent.repository.tables.Distributions,
-                    flagent.repository.tables.Tags,
-                    flagent.repository.tables.FlagsTags,
-                    flagent.repository.tables.FlagSnapshots,
-                    flagent.repository.tables.FlagEntityTypes,
-                    flagent.repository.tables.Users
+                    Flags, Segments, Variants, Constraints, Distributions,
+                    Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Users
                 )
             }
-        } catch (e: Exception) {
-            // Ignore cleanup errors
-        }
-        Database.close()
+        } catch (_: Exception) { }
     }
     
     @Test
@@ -412,6 +410,31 @@ class FlagRepositoryTest {
         assertNotNull(afterRestore)
         assertEquals(created.id, afterRestore.id)
         assertEquals("test_flag", afterRestore.key)
+    }
+    
+    @Test
+    fun testFindByIdIncludeDeleted_ReturnsArchivedFlag() = runBlocking {
+        val flag = Flag(key = "archived_flag", description = "Archived", enabled = true)
+        val created = repository.create(flag)
+        repository.delete(created.id)
+        
+        assertNull(repository.findById(created.id))
+        val included = repository.findByIdIncludeDeleted(created.id)
+        assertNotNull(included)
+        assertEquals(created.id, included?.id)
+        assertEquals("archived_flag", included?.key)
+    }
+    
+    @Test
+    fun testPermanentDelete_RemovesRow() = runBlocking {
+        val flag = Flag(key = "to_remove", description = "To remove", enabled = true)
+        val created = repository.create(flag)
+        repository.delete(created.id)
+        
+        repository.permanentDelete(created.id)
+        
+        assertNull(repository.findById(created.id))
+        assertNull(repository.findByIdIncludeDeleted(created.id))
     }
     
     @Test

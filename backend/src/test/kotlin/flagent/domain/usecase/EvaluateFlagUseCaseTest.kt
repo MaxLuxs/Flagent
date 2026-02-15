@@ -4,6 +4,9 @@ import flagent.domain.entity.*
 import flagent.domain.value.EntityID
 import flagent.domain.value.EvaluationContext
 import flagent.service.adapter.SharedFlagEvaluatorAdapter
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -11,10 +14,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EvaluateFlagUseCaseTest {
-    private val useCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
+    private val useCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter(), null)
     
     @Test
-    fun `invoke returns null variant for disabled flag`() {
+    fun `invoke returns null variant for disabled flag`() = runBlocking {
         val flag = Flag(
             id = 1,
             key = "test_flag",
@@ -32,7 +35,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke returns null variant for flag with no segments`() {
+    fun `invoke returns null variant for flag with no segments`() = runBlocking {
         val flag = Flag(
             id = 1,
             key = "test_flag",
@@ -51,7 +54,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke returns variant ID when segment matches and rollout succeeds`() {
+    fun `invoke returns variant ID when segment matches and rollout succeeds`() = runBlocking {
         val variant = Variant(
             id = 1,
             flagId = 1,
@@ -96,7 +99,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke skips segment when constraints do not match`() {
+    fun `invoke skips segment when constraints do not match`() = runBlocking {
         val constraint = Constraint(
             id = 1,
             segmentId = 1,
@@ -141,7 +144,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke evaluates segments in rank order`() {
+    fun `invoke evaluates segments in rank order`() = runBlocking {
         val variant1 = Variant(id = 1, flagId = 1, key = "variant1")
         val variant2 = Variant(id = 2, flagId = 1, key = "variant2")
         
@@ -201,7 +204,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke includes debug logs when enableDebug is true`() {
+    fun `invoke includes debug logs when enableDebug is true`() = runBlocking {
         val flag = Flag(
             id = 1,
             key = "test_flag",
@@ -221,7 +224,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke does not include debug logs when enableDebug is false`() {
+    fun `invoke does not include debug logs when enableDebug is false`() = runBlocking {
         val flag = Flag(
             id = 1,
             key = "test_flag",
@@ -239,7 +242,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke skips segment when rollout percent is 0`() {
+    fun `invoke skips segment when rollout percent is 0`() = runBlocking {
         val variant1 = Variant(id = 1, flagId = 1, key = "variant1")
         val variant2 = Variant(id = 2, flagId = 1, key = "variant2")
         
@@ -299,7 +302,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke returns null when all segments have rollout 0`() {
+    fun `invoke returns null when all segments have rollout 0`() = runBlocking {
         val variant = Variant(id = 1, flagId = 1, key = "variant1")
         
         val distribution = Distribution(
@@ -338,7 +341,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke continues to next segment when rollout does not match`() {
+    fun `invoke continues to next segment when rollout does not match`() = runBlocking {
         val variant1 = Variant(id = 1, flagId = 1, key = "variant1")
         val variant2 = Variant(id = 2, flagId = 1, key = "variant2")
         
@@ -403,7 +406,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke returns last segmentID when no variant matches`() {
+    fun `invoke returns last segmentID when no variant matches`() = runBlocking {
         val variant = Variant(id = 1, flagId = 1, key = "variant1")
         
         val distribution = Distribution(
@@ -454,7 +457,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke handles segment with partial rollout 50 percent`() {
+    fun `invoke handles segment with partial rollout 50 percent`() = runBlocking {
         val variant = Variant(id = 1, flagId = 1, key = "variant1")
         
         val distribution = Distribution(
@@ -496,7 +499,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke handles multiple segments where none pass rollout`() {
+    fun `invoke handles multiple segments where none pass rollout`() = runBlocking {
         val variant = Variant(id = 1, flagId = 1, key = "variant1")
         
         val distribution = Distribution(
@@ -547,7 +550,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke handles segment without distributions`() {
+    fun `invoke handles segment without distributions`() = runBlocking {
         val segment = Segment(
             id = 1,
             flagId = 1,
@@ -579,7 +582,7 @@ class EvaluateFlagUseCaseTest {
     }
     
     @Test
-    fun `invoke with enableDebug returns debug logs for multiple segments`() {
+    fun `invoke with enableDebug returns debug logs for multiple segments`() = runBlocking {
         val variant1 = Variant(id = 1, flagId = 1, key = "variant1")
         val variant2 = Variant(id = 2, flagId = 1, key = "variant2")
         
@@ -653,5 +656,105 @@ class EvaluateFlagUseCaseTest {
         assertNotNull(result.variantID)
         assertEquals(2, result.variantID)
         assertEquals(2, result.segmentID)
+    }
+
+    @Test
+    fun `invoke returns null variant when dependency is disabled`() = runBlocking {
+        val depVariant = Variant(id = 10, flagId = 2, key = "on")
+        val depDistribution = Distribution(id = 10, segmentId = 10, variantId = 10, percent = 100)
+        val depSegment = Segment(
+            id = 10,
+            flagId = 2,
+            description = "Dep segment",
+            rank = 1,
+            rolloutPercent = 100,
+            constraints = emptyList(),
+            distributions = listOf(depDistribution)
+        )
+        val depFlag = Flag(
+            id = 2,
+            key = "dep_flag",
+            description = "Dependency",
+            enabled = false, // disabled
+            segments = listOf(depSegment),
+            variants = listOf(depVariant)
+        )
+        val mainVariant = Variant(id = 1, flagId = 1, key = "main")
+        val mainDistribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val mainSegment = Segment(
+            id = 1,
+            flagId = 1,
+            description = "Main",
+            rank = 1,
+            rolloutPercent = 100,
+            constraints = emptyList(),
+            distributions = listOf(mainDistribution)
+        )
+        val mainFlag = Flag(
+            id = 1,
+            key = "main_flag",
+            description = "Main",
+            enabled = true,
+            dependsOn = listOf("dep_flag"),
+            segments = listOf(mainSegment),
+            variants = listOf(mainVariant)
+        )
+        val repo = mockk<flagent.domain.repository.IFlagRepository>()
+        coEvery { repo.findByKey("dep_flag") } returns depFlag
+        val useCaseWithRepo = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter(), repo)
+        val context = EvaluationContext(entityID = EntityID("user123"))
+        val result = useCaseWithRepo.invoke(mainFlag, context)
+        assertNull(result.variantID)
+        assertTrue(result.debugLogs.any { it.message.contains("dep_flag") && it.message.contains("disabled") })
+    }
+
+    @Test
+    fun `invoke returns variant when all dependencies evaluate to variant`() = runBlocking {
+        val depVariant = Variant(id = 10, flagId = 2, key = "on")
+        val depDistribution = Distribution(id = 10, segmentId = 10, variantId = 10, percent = 100)
+        val depSegment = Segment(
+            id = 10,
+            flagId = 2,
+            description = "Dep segment",
+            rank = 1,
+            rolloutPercent = 100,
+            constraints = emptyList(),
+            distributions = listOf(depDistribution)
+        )
+        val depFlag = Flag(
+            id = 2,
+            key = "dep_flag",
+            description = "Dependency",
+            enabled = true,
+            segments = listOf(depSegment),
+            variants = listOf(depVariant)
+        )
+        val mainVariant = Variant(id = 1, flagId = 1, key = "main")
+        val mainDistribution = Distribution(id = 1, segmentId = 1, variantId = 1, percent = 100)
+        val mainSegment = Segment(
+            id = 1,
+            flagId = 1,
+            description = "Main",
+            rank = 1,
+            rolloutPercent = 100,
+            constraints = emptyList(),
+            distributions = listOf(mainDistribution)
+        )
+        val mainFlag = Flag(
+            id = 1,
+            key = "main_flag",
+            description = "Main",
+            enabled = true,
+            dependsOn = listOf("dep_flag"),
+            segments = listOf(mainSegment),
+            variants = listOf(mainVariant)
+        )
+        val repo = mockk<flagent.domain.repository.IFlagRepository>()
+        coEvery { repo.findByKey("dep_flag") } returns depFlag
+        val useCaseWithRepo = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter(), repo)
+        val context = EvaluationContext(entityID = EntityID("user123"))
+        val result = useCaseWithRepo.invoke(mainFlag, context)
+        assertNotNull(result.variantID)
+        assertEquals(1, result.variantID)
     }
 }

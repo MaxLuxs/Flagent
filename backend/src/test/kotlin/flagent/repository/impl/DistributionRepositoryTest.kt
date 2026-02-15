@@ -5,11 +5,15 @@ import flagent.domain.entity.Flag
 import flagent.domain.entity.Segment
 import flagent.domain.entity.Variant
 import flagent.repository.Database
+import flagent.repository.tables.*
+import flagent.test.PostgresTestcontainerExtension
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.test.*
 
+@ExtendWith(PostgresTestcontainerExtension::class)
 class DistributionRepositoryTest {
     private lateinit var flagRepository: FlagRepository
     private lateinit var segmentRepository: SegmentRepository
@@ -18,34 +22,29 @@ class DistributionRepositoryTest {
 
     @BeforeTest
     fun setup() {
-        Database.init()
+        transaction(Database.getDatabase()) {
+            SchemaUtils.createMissingTablesAndColumns(
+                Flags, Segments, Variants, Constraints, Distributions,
+                Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Webhooks,
+                Users, EvaluationEvents, AnalyticsEvents, CrashReports
+            )
+        }
         flagRepository = FlagRepository()
         segmentRepository = SegmentRepository()
         variantRepository = VariantRepository()
         repository = DistributionRepository()
     }
-    
+
     @AfterTest
     fun cleanup() {
         try {
             transaction(Database.getDatabase()) {
                 SchemaUtils.drop(
-                    flagent.repository.tables.Flags,
-                    flagent.repository.tables.Segments,
-                    flagent.repository.tables.Variants,
-                    flagent.repository.tables.Constraints,
-                    flagent.repository.tables.Distributions,
-                    flagent.repository.tables.Tags,
-                    flagent.repository.tables.FlagsTags,
-                    flagent.repository.tables.FlagSnapshots,
-                    flagent.repository.tables.FlagEntityTypes,
-                    flagent.repository.tables.Users
+                    Flags, Segments, Variants, Constraints, Distributions,
+                    Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Users
                 )
             }
-        } catch (e: Exception) {
-            // Ignore cleanup errors
-        }
-        Database.close()
+        } catch (_: Exception) { }
     }
     
     @Test

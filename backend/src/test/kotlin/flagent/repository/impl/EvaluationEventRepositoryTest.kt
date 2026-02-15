@@ -2,20 +2,28 @@ package flagent.repository.impl
 
 import flagent.domain.entity.Flag
 import flagent.repository.Database
-import flagent.repository.tables.EvaluationEvents
-import flagent.repository.tables.Flags
+import flagent.repository.tables.*
+import flagent.test.PostgresTestcontainerExtension
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.test.*
 
+@ExtendWith(PostgresTestcontainerExtension::class)
 class EvaluationEventRepositoryTest {
     private lateinit var eventRepo: EvaluationEventRepository
     private lateinit var flagRepo: FlagRepository
 
     @BeforeTest
     fun setup() {
-        Database.init()
+        transaction(Database.getDatabase()) {
+            SchemaUtils.createMissingTablesAndColumns(
+                Flags, Segments, Variants, Constraints, Distributions,
+                Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Webhooks,
+                Users, EvaluationEvents, AnalyticsEvents, CrashReports
+            )
+        }
         eventRepo = EvaluationEventRepository()
         flagRepo = FlagRepository()
     }
@@ -25,23 +33,11 @@ class EvaluationEventRepositoryTest {
         try {
             transaction(Database.getDatabase()) {
                 SchemaUtils.drop(
-                    EvaluationEvents,
-                    Flags,
-                    flagent.repository.tables.Segments,
-                    flagent.repository.tables.Variants,
-                    flagent.repository.tables.Constraints,
-                    flagent.repository.tables.Distributions,
-                    flagent.repository.tables.Tags,
-                    flagent.repository.tables.FlagsTags,
-                    flagent.repository.tables.FlagSnapshots,
-                    flagent.repository.tables.FlagEntityTypes,
-                    flagent.repository.tables.Users
+                    EvaluationEvents, Flags, Segments, Variants, Constraints,
+                    Distributions, Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Users
                 )
             }
-        } catch (e: Exception) {
-            // Ignore cleanup errors
-        }
-        Database.close()
+        } catch (_: Exception) { }
     }
 
     @Test
@@ -55,8 +51,8 @@ class EvaluationEventRepositoryTest {
         val flag = flagRepo.create(Flag(key = "test_flag", description = "Test", enabled = true))
         val now = System.currentTimeMillis()
         val events = listOf(
-            Pair(flag.id, now),
-            Pair(flag.id, now + 1000)
+            EvaluationEventRecord(flag.id, now),
+            EvaluationEventRecord(flag.id, now + 1000)
         )
         eventRepo.saveBatch(events)
 
@@ -78,9 +74,9 @@ class EvaluationEventRepositoryTest {
         val base = 1_700_000_000_000L // fixed timestamp
         eventRepo.saveBatch(
             listOf(
-                Pair(flag.id, base),
-                Pair(flag.id, base + 1000),
-                Pair(flag.id, base + 100_000) // outside range
+                EvaluationEventRecord(flag.id, base),
+                EvaluationEventRecord(flag.id, base + 1000),
+                EvaluationEventRecord(flag.id, base + 100_000) // outside range
             )
         )
 
@@ -96,10 +92,10 @@ class EvaluationEventRepositoryTest {
         val base = System.currentTimeMillis() - 60_000
         eventRepo.saveBatch(
             listOf(
-                Pair(f1.id, base),
-                Pair(f1.id, base + 1),
-                Pair(f2.id, base + 2),
-                Pair(f3.id, base + 3)
+                EvaluationEventRecord(f1.id, base),
+                EvaluationEventRecord(f1.id, base + 1),
+                EvaluationEventRecord(f2.id, base + 2),
+                EvaluationEventRecord(f3.id, base + 3)
             )
         )
 
@@ -117,9 +113,9 @@ class EvaluationEventRepositoryTest {
         val base = (System.currentTimeMillis() / bucketMs) * bucketMs
         eventRepo.saveBatch(
             listOf(
-                Pair(flag.id, base),
-                Pair(flag.id, base + 1000),
-                Pair(flag.id, base + 2 * bucketMs)
+                EvaluationEventRecord(flag.id, base),
+                EvaluationEventRecord(flag.id, base + 1000),
+                EvaluationEventRecord(flag.id, base + 2 * bucketMs)
             )
         )
 
@@ -150,9 +146,9 @@ class EvaluationEventRepositoryTest {
 
         eventRepo.saveBatch(
             listOf(
-                Pair(flag.id, oldTs),
-                Pair(flag.id, oldTs + 1000),
-                Pair(flag.id, recentTs)
+                EvaluationEventRecord(flag.id, oldTs),
+                EvaluationEventRecord(flag.id, oldTs + 1000),
+                EvaluationEventRecord(flag.id, recentTs)
             )
         )
 
@@ -163,5 +159,25 @@ class EvaluationEventRepositoryTest {
 
         val overview = eventRepo.getOverview(now - 30L * 24 * 60 * 60 * 1000, now + 1000, 10, 3600_000)
         assertEquals(1L, overview.totalEvaluations)
+    }
+
+    @Test
+    fun getUsageByClient_returnsClientsAndTotal() = runBlocking {
+        val flag = flagRepo.create(Flag(key = "usage_flag", description = "Usage test", enabled = true))
+        val base = System.currentTimeMillis() - 60_000
+        eventRepo.saveBatch(
+            listOf(
+                EvaluationEventRecord(flag.id, base, "client-a"),
+                EvaluationEventRecord(flag.id, base + 1, "client-a"),
+                EvaluationEventRecord(flag.id, base + 2, "client-b"),
+                EvaluationEventRecord(flag.id, base + 3, null)
+            )
+        )
+        val usage = eventRepo.getUsageByClient(flag.id, base - 1000, base + 10_000)
+        assertEquals(4L, usage.totalEvaluationCount)
+        assertEquals(2, usage.clients.size)
+        val byClient = usage.clients.associate { it.clientId to it.evaluationCount }
+        assertEquals(2L, byClient["client-a"])
+        assertEquals(1L, byClient["client-b"])
     }
 }
