@@ -121,7 +121,7 @@ fun AlertsPage() {
                     borderRadius(8.px)
                 }
             }) {
-                Icon("check_circle", size = 48.px, color = Color("#10B981"))
+                Icon("check_circle", size = 48.px, color = FlagentTheme.Success)
                 P({
                     style {
                         fontSize(18.px)
@@ -155,7 +155,7 @@ fun AlertsPage() {
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                             property("transition", "transform 0.2s")
                         }
                         onMouseEnter {
@@ -183,10 +183,10 @@ fun AlertsPage() {
                                         fontWeight("600")
                                         marginBottom(10.px)
                                         val severityColor = when (alert.severity) {
-                                            flagent.frontend.api.AlertSeverity.CRITICAL -> Color("#DC2626")
-                                            flagent.frontend.api.AlertSeverity.HIGH -> Color("#EA580C")
-                                            flagent.frontend.api.AlertSeverity.MEDIUM -> Color("#F59E0B")
-                                            flagent.frontend.api.AlertSeverity.LOW -> Color("#10B981")
+                                            flagent.frontend.api.AlertSeverity.CRITICAL -> FlagentTheme.Error
+                                            flagent.frontend.api.AlertSeverity.HIGH -> FlagentTheme.Error
+                                            flagent.frontend.api.AlertSeverity.MEDIUM -> FlagentTheme.Warning
+                                            flagent.frontend.api.AlertSeverity.LOW -> FlagentTheme.Success
                                         }
                                         backgroundColor(severityColor)
                                         color(Color.white)
@@ -236,7 +236,7 @@ fun AlertsPage() {
                             Button({
                                 style {
                                     padding(8.px, 16.px)
-                                    backgroundColor(Color("#10B981"))
+                                    backgroundColor(FlagentTheme.Success)
                                     color(Color.white)
                                     border(0.px)
                                     borderRadius(6.px)

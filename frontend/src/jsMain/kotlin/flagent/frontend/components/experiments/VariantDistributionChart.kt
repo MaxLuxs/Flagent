@@ -33,10 +33,10 @@ fun VariantDistributionChart(
     val equalPct = 100.0 / variants.size.coerceAtLeast(1)
     val colors = listOf(
         FlagentTheme.Primary,
-        Color("#6366f1"),
-        Color("#22c55e"),
-        Color("#f59e0b"),
-        Color("#ec4899")
+        FlagentTheme.Info,
+        FlagentTheme.Success,
+        FlagentTheme.Warning,
+        FlagentTheme.Secondary
     )
     Div({
         style {

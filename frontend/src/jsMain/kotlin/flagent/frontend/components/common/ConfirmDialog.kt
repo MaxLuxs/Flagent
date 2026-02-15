@@ -100,7 +100,7 @@ fun ConfirmDialog(
                     onClick { onConfirm() }
                     style {
                         padding(10.px, 20.px)
-                        backgroundColor(if (isDangerous) Color("#EF4444") else FlagentTheme.Primary)
+                        backgroundColor(if (isDangerous) FlagentTheme.Error else FlagentTheme.Primary)
                         color(Color.white)
                         border(0.px)
                         borderRadius(6.px)

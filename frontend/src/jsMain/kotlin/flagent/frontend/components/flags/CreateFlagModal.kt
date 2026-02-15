@@ -29,7 +29,7 @@ fun CreateFlagModal(
             left(0.px)
             right(0.px)
             bottom(0.px)
-            property("background-color", "rgba(0,0,0,0.5)")
+            backgroundColor(FlagentTheme.Overlay)
             property("backdrop-filter", "blur(8px)")
             property("-webkit-backdrop-filter", "blur(8px)")
             display(DisplayStyle.Flex)
@@ -51,7 +51,7 @@ fun CreateFlagModal(
                 width(100.percent)
                 property("max-width", "520px")
                 border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
-                property("box-shadow", "0 10px 25px rgba(0, 0, 0, 0.3)")
+                property("box-shadow", FlagentTheme.ShadowModal)
             }
             onClick { it.stopPropagation() }
         }) {
@@ -170,11 +170,11 @@ private fun CreateFlagTypeCard(
 ) {
     // In dark mode use a bit more opaque card background so text stays readable (like command bar search)
     val cardBg = when (themeMode) {
-        ThemeMode.Dark -> Color("rgba(255,255,255,0.12)")
+        ThemeMode.Dark -> FlagentTheme.badgeBg(ThemeMode.Dark)
         ThemeMode.Light -> FlagentTheme.inputBg(themeMode)
     }
     val descriptionColor = when (themeMode) {
-        ThemeMode.Dark -> Color("rgba(255,255,255,0.88)")
+        ThemeMode.Dark -> FlagentTheme.WorkspaceText
         ThemeMode.Light -> FlagentTheme.textLight(themeMode)
     }
     Div({

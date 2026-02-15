@@ -186,7 +186,7 @@ fun CommandBar(
             left(0.px)
             right(0.px)
             bottom(0.px)
-            property("background-color", "rgba(0,0,0,0.5)")
+            backgroundColor(FlagentTheme.Overlay)
             property("backdrop-filter", "blur(4px)")
             display(DisplayStyle.Flex)
             justifyContent(JustifyContent.Center)

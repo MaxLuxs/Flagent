@@ -44,6 +44,14 @@ kotlin {
     }
 }
 
+// Ensure design tokens CSS is copied to resources before frontend build/run
+tasks.named("jsBrowserDevelopmentWebpack").configure {
+    dependsOn(":flagent-design-tokens:copyCssToFrontend")
+}
+tasks.named("jsBrowserProductionWebpack").configure {
+    dependsOn(":flagent-design-tokens:copyCssToFrontend")
+}
+
 tasks.register("run") {
     group = "application"
     description = "Run frontend dev server (webpack dev server at http://localhost:8080)"

@@ -24,15 +24,20 @@ fun TrendChart(
     var chartInstance by remember { mutableStateOf<dynamic>(null) }
 
     LaunchedEffect(timeSeries, themeMode) {
-        chartInstance?.destroy()
         val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+        if (canvas != null) destroyChartOnCanvas(canvas)
+        chartInstance = null
         if (canvas != null && timeSeries.isNotEmpty()) {
             chartInstance = createTrendChart(canvas, timeSeries, title, themeMode)
         }
     }
 
     DisposableEffect(canvasId) {
-        onDispose { chartInstance?.destroy() }
+        onDispose {
+            val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+            if (canvas != null) destroyChartOnCanvas(canvas)
+            chartInstance = null
+        }
     }
 
     Div({
@@ -47,6 +52,12 @@ fun TrendChart(
             style { width(100.percent); height(100.percent) }
         })
     }
+}
+
+private fun destroyChartOnCanvas(canvas: HTMLCanvasElement) {
+    val Chart = js("window.Chart")
+    val existing = Chart.getChart(canvas)
+    if (existing != null) existing.destroy()
 }
 
 private fun createTrendChart(

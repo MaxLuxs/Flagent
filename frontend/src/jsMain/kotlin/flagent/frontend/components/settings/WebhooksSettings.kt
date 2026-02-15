@@ -59,7 +59,7 @@ fun WebhooksSettings() {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         H2({
@@ -283,7 +283,7 @@ private fun WebhookEditDialog(
             left(0.px)
             right(0.px)
             bottom(0.px)
-            backgroundColor(Color("rgba(0,0,0,0.5)"))
+            backgroundColor(FlagentTheme.Overlay)
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)
             justifyContent(JustifyContent.Center)

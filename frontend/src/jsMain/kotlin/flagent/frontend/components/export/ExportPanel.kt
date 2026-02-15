@@ -29,7 +29,7 @@ fun ExportPanel() {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+            property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
         }
     }) {
         H2({

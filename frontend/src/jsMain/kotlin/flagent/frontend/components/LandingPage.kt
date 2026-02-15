@@ -22,7 +22,7 @@ fun LandingPage() {
             overflow("hidden")
             property(
                 "background",
-                "linear-gradient(135deg, #0f172a 0%, #1e293b 20%, #0f172a 40%, #1e3a5f 60%, #0f172a 80%, #1e293b 100%)"
+                FlagentTheme.GradientHero
             )
             property("background-size", "400% 400%")
             property("animation", "morphGradient 20s ease infinite")

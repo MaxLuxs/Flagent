@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Material+Icons&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="flagent-tokens.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
@@ -68,22 +69,23 @@
             box-sizing: border-box;
         }
         
+        /* Body/input vars alias token vars (flagent-tokens.css loaded above) */
         :root, [data-theme="light"] {
-            --body-bg: #f8fafc;
-            --body-text: #0f172a;
-            --input-bg: #ffffff;
-            --input-border: #e2e8f0;
-            --input-text: #0f172a;
-            --scrollbar-track: #e2e8f0;
-            --scrollbar-thumb: #94a3b8;
+            --body-bg: var(--flagent-color-light-backgroundAlt);
+            --body-text: var(--flagent-color-light-text);
+            --input-bg: var(--flagent-color-light-inputBg);
+            --input-border: var(--flagent-color-light-inputBorder);
+            --input-text: var(--flagent-color-light-text);
+            --scrollbar-track: var(--flagent-color-light-border);
+            --scrollbar-thumb: var(--flagent-color-light-textLighter);
         }
         [data-theme="dark"] {
-            --body-bg: #0f172a;
-            --body-text: #ffffff;
-            --input-bg: rgba(255,255,255,0.06);
-            --input-border: rgba(255,255,255,0.12);
-            --input-text: #ffffff;
-            --scrollbar-track: #1e293b;
+            --body-bg: var(--flagent-color-dark-background);
+            --body-text: var(--flagent-color-dark-text);
+            --input-bg: var(--flagent-color-dark-inputBg);
+            --input-border: var(--flagent-color-dark-inputBorder);
+            --input-text: var(--flagent-color-dark-text);
+            --scrollbar-track: var(--flagent-color-dark-sidebarBg);
             --scrollbar-thumb: rgba(255,255,255,0.2);
         }
         
@@ -129,7 +131,7 @@
         
         /* Better focus styles */
         *:focus {
-            outline: 2px solid #0EA5E9;
+            outline: 2px solid var(--flagent-color-primary);
             outline-offset: 2px;
         }
         
@@ -237,7 +239,7 @@
         
         /* Better text selection */
         ::selection {
-            background-color: #0EA5E9;
+            background-color: var(--flagent-color-primary);
             color: white;
         }
         
@@ -360,7 +362,7 @@
         input:focus-visible,
         select:focus-visible,
         textarea:focus-visible {
-            outline: 2px solid #0EA5E9;
+            outline: 2px solid var(--flagent-color-primary);
             outline-offset: 2px;
         }
         
@@ -370,13 +372,13 @@
             transition: transform 0.2s ease;
         }
         
-        /* Subtle gradient backgrounds */
+        /* Subtle gradient backgrounds (from design tokens) */
         .gradient-primary {
-            background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+            background: var(--flagent-gradient-primary);
         }
         
         .gradient-secondary {
-            background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+            background: var(--flagent-gradient-secondary);
         }
         
         /* Glass morphism effect */
@@ -533,27 +535,23 @@
             mo.observe(document.getElementById('root'), { childList: true, subtree: true });
         })();
     </script>
-    <!-- Load dependencies: dev (separate kotlin modules) or prod (single frontend.js bundle) -->
+    <!-- Single bundle (avoids 404/MIME when kotlin/ is served as HTML by SPA fallback). Use ?kotlin_modules=1 to try separate kotlin/ modules. -->
     <script>
         (function() {
             function loadProd() {
                 var s = document.createElement('script');
-                s.src = 'frontend.js';
+                s.src = '/frontend.js';
                 document.body.appendChild(s);
+            }
+            if (window.location.search.indexOf('kotlin_modules=1') === -1) {
+                loadProd();
+                return;
             }
             var test = document.createElement('script');
             test.src = 'kotlin/kotlin-kotlin-stdlib.js';
             test.onerror = function() { loadProd(); };
             test.onload = function() {
-                var modules = [
-                    'kotlin/ktor-ktor-io.js', 'kotlin/ktor-ktor-utils.js', 'kotlin/ktor-ktor-http.js',
-                    'kotlin/ktor-ktor-serialization.js', 'kotlin/ktor-ktor-client-core.js',
-                    'kotlin/ktor-ktor-client-content-negotiation.js',
-                    'kotlin/kotlinx-serialization-kotlinx-serialization-json.js',
-                    'kotlin/ktor-ktor-serialization-kotlinx-json.js', 'kotlin/kotlinx-coroutines-core.js',
-                    'kotlin/flagent-shared.js', 'kotlin/compose-multiplatform-core-compose-runtime-runtime.js',
-                    'kotlin/html-internal-html-core-runtime.js', 'kotlin/html-html-core.js'
-                ];
+                var modules = ['kotlin/ktor-ktor-io.js', 'kotlin/ktor-ktor-utils.js', 'kotlin/ktor-ktor-http.js', 'kotlin/ktor-ktor-serialization.js', 'kotlin/ktor-ktor-client-core.js', 'kotlin/ktor-ktor-client-content-negotiation.js', 'kotlin/kotlinx-serialization-kotlinx-serialization-json.js', 'kotlin/ktor-ktor-serialization-kotlinx-json.js', 'kotlin/kotlinx-coroutines-core.js', 'kotlin/flagent-shared.js', 'kotlin/compose-multiplatform-core-compose-runtime-runtime.js', 'kotlin/html-internal-html-core-runtime.js', 'kotlin/html-html-core.js'];
                 var i = 0;
                 function next() {
                     if (i >= modules.length) { loadProd(); return; }

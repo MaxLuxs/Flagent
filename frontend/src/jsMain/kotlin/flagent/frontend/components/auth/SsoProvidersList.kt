@@ -44,7 +44,7 @@ fun SsoProvidersList() {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+            property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
         }
     }) {
         Div({
@@ -142,8 +142,8 @@ private fun SsoProviderCard(themeMode: ThemeMode, provider: SsoProvider) {
             Span({
                 style {
                     padding(4.px, 8.px)
-                    backgroundColor(if (provider.enabled) Color("#DCFCE7") else FlagentTheme.errorBg(themeMode))
-                    color(if (provider.enabled) Color("#166534") else FlagentTheme.errorText(themeMode))
+                    backgroundColor(if (provider.enabled) FlagentTheme.successBg(themeMode) else FlagentTheme.errorBg(themeMode))
+                    color(if (provider.enabled) FlagentTheme.Success else FlagentTheme.errorText(themeMode))
                     borderRadius(4.px)
                     fontSize(12.px)
                     fontWeight(500)

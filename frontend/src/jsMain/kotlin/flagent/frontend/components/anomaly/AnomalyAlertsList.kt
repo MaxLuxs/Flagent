@@ -30,7 +30,7 @@ fun AnomalyAlertsList(flagId: Int? = null) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+            property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
         }
     }) {
         H2({
@@ -126,7 +126,7 @@ private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewMode
                         Span({
                             style {
                                 padding(4.px, 8.px)
-                                backgroundColor(Color("#10B981"))
+                                backgroundColor(FlagentTheme.Success)
                                 color(Color.white)
                                 borderRadius(4.px)
                                 fontSize(12.px)
@@ -183,26 +183,26 @@ private fun AlertCard(alert: flagent.frontend.api.AnomalyAlertResponse, viewMode
 
 private fun getSeverityColor(severity: AlertSeverity, themeMode: ThemeMode): CSSColorValue {
     return when (severity) {
-        AlertSeverity.LOW -> if (themeMode == ThemeMode.Dark) Color("#60A5FA") else Color("#3B82F6")
-        AlertSeverity.MEDIUM -> Color("#F59E0B")
-        AlertSeverity.HIGH -> Color("#EF4444")
-        AlertSeverity.CRITICAL -> if (themeMode == ThemeMode.Dark) Color("#FCA5A5") else Color("#991B1B")
+        AlertSeverity.LOW -> FlagentTheme.Info
+        AlertSeverity.MEDIUM -> FlagentTheme.Warning
+        AlertSeverity.HIGH -> FlagentTheme.Error
+        AlertSeverity.CRITICAL -> FlagentTheme.errorText(themeMode)
     }
 }
 
 private fun getSeverityBgColor(severity: AlertSeverity, themeMode: ThemeMode): CSSColorValue {
     return when (themeMode) {
         ThemeMode.Dark -> when (severity) {
-            AlertSeverity.LOW -> Color("rgba(59, 130, 246, 0.2)")
-            AlertSeverity.MEDIUM -> Color("rgba(245, 158, 11, 0.2)")
-            AlertSeverity.HIGH -> Color("rgba(239, 68, 68, 0.2)")
-            AlertSeverity.CRITICAL -> Color("rgba(239, 68, 68, 0.25)")
+            AlertSeverity.LOW -> FlagentTheme.badgeBg(themeMode)
+            AlertSeverity.MEDIUM -> FlagentTheme.warningBg(themeMode)
+            AlertSeverity.HIGH -> FlagentTheme.errorBg(themeMode)
+            AlertSeverity.CRITICAL -> FlagentTheme.errorBg(themeMode)
         }
         ThemeMode.Light -> when (severity) {
-            AlertSeverity.LOW -> Color("#DBEAFE")
-            AlertSeverity.MEDIUM -> Color("#FEF3C7")
-            AlertSeverity.HIGH -> Color("#FEE2E2")
-            AlertSeverity.CRITICAL -> Color("#FEE2E2")
+            AlertSeverity.LOW -> FlagentTheme.badgeBg(themeMode)
+            AlertSeverity.MEDIUM -> FlagentTheme.warningBg(themeMode)
+            AlertSeverity.HIGH -> FlagentTheme.errorBg(themeMode)
+            AlertSeverity.CRITICAL -> FlagentTheme.errorBg(themeMode)
         }
     }
 }

@@ -8,7 +8,6 @@ import flagent.frontend.api.GlobalMetricsOverviewResponse
 import flagent.frontend.components.dashboard.ActivityChart
 import flagent.frontend.components.dashboard.StatusDistributionChart
 import flagent.frontend.components.dashboard.StatusSlice
-import flagent.frontend.components.dashboard.TrendChart
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.state.BackendOnboardingState
@@ -18,11 +17,17 @@ import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.AppLogger
 import flagent.frontend.util.ErrorHandler
 import flagent.frontend.viewmodel.AnomalyViewModel
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+
+/** Period for metrics charts: range and bucket size. */
+private enum class MetricsPeriod(val rangeMs: Long, val bucketMs: Long) {
+    P1H(3600_000, 300_000),
+    P24H(86400_000, 3600_000),
+    P7D(7 * 86400_000, 6 * 3600_000)
+}
 
 /**
  * Dashboard - главная страница с общей статистикой
@@ -30,14 +35,14 @@ import org.jetbrains.compose.web.dom.*
 @Composable
 fun Dashboard() {
     val themeMode = LocalThemeMode.current
-    val scope = rememberCoroutineScope()
     var stats by remember { mutableStateOf<DashboardStats?>(null) }
     var flags by remember { mutableStateOf<List<FlagResponse>>(emptyList()) }
     var metricsOverview by remember { mutableStateOf<GlobalMetricsOverviewResponse?>(null) }
+    var metricsLoadError by remember { mutableStateOf<String?>(null) }
+    var metricsPeriod by remember { mutableStateOf(MetricsPeriod.P24H) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    // Load anomaly alerts if feature enabled
     val anomalyViewModel = if (AppConfig.Features.enableAnomalyDetection) {
         remember { AnomalyViewModel() }
     } else null
@@ -45,39 +50,52 @@ fun Dashboard() {
     LaunchedEffect(Unit) {
         isLoading = true
         error = null
-
+        metricsLoadError = null
         ErrorHandler.withErrorHandling(
             block = {
-                // Load dashboard stats
-                val (loadedFlags, _) = ApiClient.getFlags()
-                flags = loadedFlags
-                stats = DashboardStats(
-                    totalFlags = loadedFlags.size,
-                    enabledFlags = loadedFlags.count { it.enabled },
-                    disabledFlags = loadedFlags.count { !it.enabled },
-                    flagsWithSegments = loadedFlags.count { it.segments.isNotEmpty() },
-                    flagsWithVariants = loadedFlags.count { it.variants.isNotEmpty() }
-                )
-                // Load metrics overview when metrics enabled
-                if (AppConfig.Features.enableMetrics) {
-                    try {
-                        metricsOverview = ApiClient.getMetricsOverview(topLimit = 10, timeBucketMs = 3600_000)
-                    } catch (_: Throwable) {
-                        metricsOverview = null
+                coroutineScope {
+                    val flagsDeferred = async {
+                        val (loadedFlags, _) = ApiClient.getFlags()
+                        loadedFlags
                     }
-                } else {
-                    metricsOverview = null
+                    val alertsDeferred = anomalyViewModel?.let { vm -> async { vm.loadUnresolvedAlerts() } }
+
+                    val loadedFlags = flagsDeferred.await()
+                    flags = loadedFlags
+                    stats = DashboardStats(
+                        totalFlags = loadedFlags.size,
+                        enabledFlags = loadedFlags.count { it.enabled },
+                        disabledFlags = loadedFlags.count { !it.enabled },
+                        flagsWithSegments = loadedFlags.count { it.segments.isNotEmpty() },
+                        flagsWithVariants = loadedFlags.count { it.variants.isNotEmpty() }
+                    )
+                    alertsDeferred?.await()
                 }
-                // Load unresolved alerts
-                anomalyViewModel?.loadUnresolvedAlerts()
             },
             onError = { err ->
                 error = ErrorHandler.getUserMessage(err)
                 AppLogger.error("Dashboard", "Failed to load dashboard", err.cause)
             }
         )
-
         isLoading = false
+    }
+
+    LaunchedEffect(metricsPeriod) {
+        if (!AppConfig.Features.enableMetrics) return@LaunchedEffect
+        metricsLoadError = null
+        try {
+            val end = kotlin.js.Date().getTime().toLong()
+            val start = end - metricsPeriod.rangeMs
+            metricsOverview = ApiClient.getMetricsOverview(
+                startTime = start,
+                endTime = end,
+                topLimit = 10,
+                timeBucketMs = metricsPeriod.bucketMs
+            )
+        } catch (e: Throwable) {
+            metricsLoadError = ErrorHandler.getUserMessage(ErrorHandler.handle(e, null))
+            metricsOverview = null
+        }
     }
     
     Div({
@@ -179,6 +197,42 @@ fun Dashboard() {
                 }
             }
         } else if (stats != null) {
+            if (stats!!.totalFlags == 0) {
+                Div({
+                    style {
+                        textAlign("center")
+                        padding(48.px, 24.px)
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        borderRadius(8.px)
+                        property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                    }
+                }) {
+                    P({
+                        style {
+                            fontSize(18.px)
+                            color(FlagentTheme.text(themeMode))
+                            marginBottom(16.px)
+                        }
+                    }) {
+                        Text(flagent.frontend.i18n.LocalizedStrings.createFirstFlag)
+                    }
+                    Button({
+                        style {
+                            padding(12.px, 24.px)
+                            backgroundColor(FlagentTheme.Primary)
+                            color(Color.white)
+                            border(0.px)
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontSize(14.px)
+                            fontWeight("600")
+                        }
+                        onClick { Router.navigateTo(Route.CreateFlag) }
+                    }) {
+                        Text(flagent.frontend.i18n.LocalizedStrings.createFlag)
+                    }
+                }
+            } else {
             // Stats Cards
             Div({
                 style {
@@ -189,8 +243,8 @@ fun Dashboard() {
                 }
             }) {
                 StatCard(themeMode, flagent.frontend.i18n.LocalizedStrings.totalFlagsStat, stats!!.totalFlags.toString(), "flag", FlagentTheme.Primary)
-                StatCard(themeMode, flagent.frontend.i18n.LocalizedStrings.enabled, stats!!.enabledFlags.toString(), "check_circle", Color("#10B981"))
-                StatCard(themeMode, flagent.frontend.i18n.LocalizedStrings.disabled, stats!!.disabledFlags.toString(), "cancel", Color("#EF4444"))
+                StatCard(themeMode, flagent.frontend.i18n.LocalizedStrings.enabled, stats!!.enabledFlags.toString(), "check_circle", FlagentTheme.Success)
+                StatCard(themeMode, flagent.frontend.i18n.LocalizedStrings.disabled, stats!!.disabledFlags.toString(), "cancel", FlagentTheme.Error)
                 StatCard(themeMode, flagent.frontend.i18n.LocalizedStrings.withSegmentsStat, stats!!.flagsWithSegments.toString(), "dashboard", FlagentTheme.Secondary)
                 StatCard(themeMode, flagent.frontend.i18n.LocalizedStrings.experimentsTitle, stats!!.flagsWithVariants.toString(), "science", FlagentTheme.Secondary)
             }
@@ -231,48 +285,81 @@ fun Dashboard() {
                 )
             }
 
-            // Charts row (when metrics enabled)
-            if (AppConfig.Features.enableMetrics && metricsOverview != null) {
+            // Metrics section: error message or charts
+            if (AppConfig.Features.enableMetrics) {
+                if (metricsLoadError != null && metricsOverview == null) {
+                    Div({
+                        style {
+                            padding(16.px)
+                            backgroundColor(FlagentTheme.warningBg(themeMode))
+                            borderRadius(8.px)
+                            marginBottom(16.px)
+                            property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                        }
+                    }) {
+                        Text(flagent.frontend.i18n.LocalizedStrings.metricsUnavailable + ": " + metricsLoadError)
+                    }
+                } else if (metricsOverview != null) {
                 val overview = metricsOverview!!
                 if (overview.timeSeries.isNotEmpty()) {
                     Div({
                         style {
-                            display(DisplayStyle.Grid)
-                            property("grid-template-columns", "repeat(auto-fit, minmax(320px, 1fr))")
-                            gap(16.px)
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
+                            borderRadius(8.px)
+                            padding(16.px)
+                            property("box-shadow", FlagentTheme.ShadowCard)
+                            property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                             marginBottom(20.px)
                         }
                     }) {
                         Div({
                             style {
-                                backgroundColor(FlagentTheme.cardBg(themeMode))
-                                borderRadius(8.px)
-                                padding(16.px)
-                                property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
-                                property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                                display(DisplayStyle.Flex)
+                                justifyContent(JustifyContent.SpaceBetween)
+                                alignItems(AlignItems.Center)
+                                marginBottom(12.px)
+                                flexWrap(org.jetbrains.compose.web.css.FlexWrap.Wrap)
+                                gap(8.px)
                             }
                         }) {
-                            ActivityChart(
-                                overview.timeSeries,
-                                flagent.frontend.i18n.LocalizedStrings.flagActivityOverPeriod,
-                                themeMode
-                            )
-                        }
-                        Div({
-                            style {
-                                backgroundColor(FlagentTheme.cardBg(themeMode))
-                                borderRadius(8.px)
-                                padding(16.px)
-                                property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
-                                property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                            Span({
+                                style {
+                                    fontSize(14.px)
+                                    color(FlagentTheme.textLight(themeMode))
+                                }
+                            }) {
+                                Text("${flagent.frontend.i18n.LocalizedStrings.totalEvaluationsLabel}: ${overview.totalEvaluations} · ${flagent.frontend.i18n.LocalizedStrings.uniqueFlagsLabel}: ${overview.uniqueFlags}")
                             }
-                        }) {
-                            TrendChart(
-                                overview.timeSeries,
-                                flagent.frontend.i18n.LocalizedStrings.evaluationsTrend,
-                                themeMode
-                            )
+                            Div({
+                                style { display(DisplayStyle.Flex); gap(8.px) }
+                            }) {
+                                listOf(
+                                    MetricsPeriod.P1H to flagent.frontend.i18n.LocalizedStrings.period1h,
+                                    MetricsPeriod.P24H to flagent.frontend.i18n.LocalizedStrings.period24h,
+                                    MetricsPeriod.P7D to flagent.frontend.i18n.LocalizedStrings.period7d
+                                ).forEach { (period, label) ->
+                                    Button({
+                                        style {
+                                            padding(6.px, 12.px)
+                                            fontSize(12.px)
+                                            borderRadius(6.px)
+                                            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                            backgroundColor(if (metricsPeriod == period) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                                            color(if (metricsPeriod == period) Color.white else FlagentTheme.text(themeMode))
+                                            cursor("pointer")
+                                        }
+                                        onClick { metricsPeriod = period }
+                                    }) {
+                                        Text(label)
+                                    }
+                                }
+                            }
                         }
+                        ActivityChart(
+                            overview.timeSeries,
+                            flagent.frontend.i18n.LocalizedStrings.evaluationsOverTime,
+                            themeMode
+                        )
                     }
                 }
                 // Status distribution (from current flags stats)
@@ -288,7 +375,7 @@ fun Dashboard() {
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(16.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                             property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                             marginBottom(20.px)
                             property("max-width", "400px")
@@ -300,6 +387,7 @@ fun Dashboard() {
                             themeMode
                         )
                     }
+                }
                 }
             }
 
@@ -333,6 +421,7 @@ fun Dashboard() {
                         }
                     }) {
                         topFlagsList.forEach { tf ->
+                            val flagEnabled = flags.find { it.id == tf.flagId }?.enabled
                             Div({
                                 style {
                                     display(DisplayStyle.Flex)
@@ -344,14 +433,32 @@ fun Dashboard() {
                                     cursor("pointer")
                                 }
                                 onClick { Router.navigateTo(Route.FlagDetail(tf.flagId)) }
+                                attr("aria-label", "${tf.flagKey.ifBlank { "Flag #${tf.flagId}" }}: ${tf.evaluationCount} evaluations, ${if (flagEnabled == true) "enabled" else "disabled"}")
                             }) {
                                 Span({
                                     style {
-                                        color(FlagentTheme.Primary)
-                                        fontWeight("500")
+                                        display(DisplayStyle.Flex)
+                                        alignItems(AlignItems.Center)
+                                        gap(8.px)
                                     }
                                 }) {
-                                    Text(tf.flagKey.ifBlank { "Flag #${tf.flagId}" })
+                                    Span({
+                                        style {
+                                            width(8.px)
+                                            height(8.px)
+                                            borderRadius(50.percent)
+                                            backgroundColor(if (flagEnabled == true) FlagentTheme.Success else FlagentTheme.textLight(themeMode))
+                                            property("flex-shrink", "0")
+                                        }
+                                    }) {}
+                                    Span({
+                                        style {
+                                            color(FlagentTheme.Primary)
+                                            fontWeight("500")
+                                        }
+                                    }) {
+                                        Text(tf.flagKey.ifBlank { "Flag #${tf.flagId}" })
+                                    }
                                 }
                                 Span({
                                     style {
@@ -421,7 +528,7 @@ fun Dashboard() {
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                             marginBottom(20.px)
                         }
                     }) {
@@ -492,7 +599,7 @@ fun Dashboard() {
                 }
             }
             
-            // Activity Timeline (recent flag changes)
+            // Recently updated flags
             if (flags.isNotEmpty()) {
                 val recentFlags = flags.sortedByDescending { it.updatedAt ?: "" }.take(5)
                 Div({
@@ -504,15 +611,38 @@ fun Dashboard() {
                         marginBottom(16.px)
                     }
                 }) {
-                    H2({
+                    Div({
                         style {
-                            fontSize(18.px)
-                            fontWeight("600")
+                            display(DisplayStyle.Flex)
+                            justifyContent(JustifyContent.SpaceBetween)
+                            alignItems(AlignItems.Center)
                             marginBottom(12.px)
-                            color(FlagentTheme.text(themeMode))
                         }
                     }) {
-                        Text(flagent.frontend.i18n.LocalizedStrings.activityTimeline)
+                        H2({
+                            style {
+                                fontSize(18.px)
+                                fontWeight("600")
+                                margin(0.px)
+                                color(FlagentTheme.text(themeMode))
+                            }
+                        }) {
+                            Text(flagent.frontend.i18n.LocalizedStrings.recentlyUpdatedFlags)
+                        }
+                        Button({
+                            style {
+                                padding(4.px, 8.px)
+                                fontSize(12.px)
+                                color(FlagentTheme.Primary)
+                                backgroundColor(Color.transparent)
+                                border(0.px)
+                                cursor("pointer")
+                                textDecoration("underline")
+                            }
+                            onClick { Router.navigateTo(Route.FlagsList) }
+                        }) {
+                            Text(flagent.frontend.i18n.LocalizedStrings.viewAllFlags)
+                        }
                     }
                     Table({
                         style {
@@ -573,7 +703,7 @@ fun Dashboard() {
                     backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     padding(16.px)
-                    property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
+                    property("box-shadow", FlagentTheme.ShadowCard)
                 }
             }) {
                 H2({
@@ -619,6 +749,7 @@ fun Dashboard() {
                     }
                 }
             }
+            }
         }
     }
 }
@@ -630,16 +761,19 @@ private fun StatCard(themeMode: ThemeMode, title: String, value: String, icon: S
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(16.px)
-            property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
+            property("box-shadow", FlagentTheme.ShadowCard)
             property("transition", "transform 0.2s, box-shadow 0.2s")
         }
+        attr("aria-label", "$title: $value")
         onMouseEnter {
-            (it.target as org.w3c.dom.HTMLElement).style.transform = "translateY(-4px)"
-            (it.target as org.w3c.dom.HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)"
+            val el = it.target as org.w3c.dom.HTMLElement
+            el.style.transform = "translateY(-4px)"
+            el.style.setProperty("box-shadow", "0 4px 16px $FlagentTheme.ShadowHover")
         }
         onMouseLeave {
-            (it.target as org.w3c.dom.HTMLElement).style.transform = "translateY(0)"
-            (it.target as org.w3c.dom.HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)"
+            val el = it.target as org.w3c.dom.HTMLElement
+            el.style.transform = "translateY(0)"
+            el.style.setProperty("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         Div({
@@ -690,18 +824,21 @@ private fun QuickLinkCard(
             border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
             borderRadius(8.px)
             padding(16.px)
-            property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
+            property("box-shadow", FlagentTheme.ShadowCard)
             property("transition", "transform 0.2s, box-shadow 0.2s")
             cursor("pointer")
             width(100.percent)
         }
+        attr("aria-label", "$title: $value")
         onMouseEnter {
-            (it.target as org.w3c.dom.HTMLElement).style.transform = "translateY(-2px)"
-            (it.target as org.w3c.dom.HTMLElement).style.boxShadow = "0 4px 12px rgba(0,0,0,0.12)"
+            val el = it.target as org.w3c.dom.HTMLElement
+            el.style.transform = "translateY(-2px)"
+            el.style.setProperty("box-shadow", "0 4px 12px $FlagentTheme.ShadowHover")
         }
         onMouseLeave {
-            (it.target as org.w3c.dom.HTMLElement).style.transform = "translateY(0)"
-            (it.target as org.w3c.dom.HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)"
+            val el = it.target as org.w3c.dom.HTMLElement
+            el.style.transform = "translateY(0)"
+            el.style.setProperty("box-shadow", FlagentTheme.ShadowCard)
         }
         onClick { onClick() }
     }) {
@@ -740,6 +877,7 @@ private fun QuickLinkCard(
 private fun QuickActionButton(themeMode: ThemeMode, label: String, icon: String, onClick: () -> Unit) {
     val textColor = FlagentTheme.text(themeMode)
     Button({
+        attr("aria-label", label)
         style {
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)

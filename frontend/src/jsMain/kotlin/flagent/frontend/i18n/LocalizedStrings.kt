@@ -69,6 +69,10 @@ object LocalizedStrings {
         "ru" -> "Создать флаг"
         else -> "Create Flag"
     }
+    val createFirstFlag: String get() = when (currentLocale) {
+        "ru" -> "Создать первый флаг"
+        else -> "Create your first flag"
+    }
     
     val creating: String get() = when (currentLocale) {
         "ru" -> "Создание..."
@@ -1566,9 +1570,17 @@ object LocalizedStrings {
         "ru" -> "Нет данных метрик за выбранный период"
         else -> "No metrics data for the selected period"
     }
+    val metricsUnavailable: String get() = when (currentLocale) {
+        "ru" -> "Метрики временно недоступны"
+        else -> "Metrics temporarily unavailable"
+    }
     val activityTimeline: String get() = when (currentLocale) {
         "ru" -> "Хронология изменений"
         else -> "Activity Timeline"
+    }
+    val recentlyUpdatedFlags: String get() = when (currentLocale) {
+        "ru" -> "Недавно изменённые флаги"
+        else -> "Recently updated flags"
     }
     val topFlags: String get() = when (currentLocale) {
         "ru" -> "Топ флагов"
@@ -1601,6 +1613,18 @@ object LocalizedStrings {
     val week: String get() = when (currentLocale) {
         "ru" -> "Неделя"
         else -> "Week"
+    }
+    val period1h: String get() = when (currentLocale) {
+        "ru" -> "1 ч"
+        else -> "1h"
+    }
+    val period24h: String get() = when (currentLocale) {
+        "ru" -> "24 ч"
+        else -> "24h"
+    }
+    val period7d: String get() = when (currentLocale) {
+        "ru" -> "7 дн."
+        else -> "7d"
     }
     val month: String get() = when (currentLocale) {
         "ru" -> "Месяц"
@@ -1769,6 +1793,10 @@ object LocalizedStrings {
     val viewAll: String get() = when (currentLocale) {
         "ru" -> "Смотреть все"
         else -> "View All"
+    }
+    val viewAllFlags: String get() = when (currentLocale) {
+        "ru" -> "Все флаги"
+        else -> "All flags"
     }
     val createFirstTenant: String get() = when (currentLocale) {
         "ru" -> "Создать первого тенанта →"

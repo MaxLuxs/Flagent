@@ -24,15 +24,20 @@ fun ActivityChart(
     var chartInstance by remember { mutableStateOf<dynamic>(null) }
 
     LaunchedEffect(timeSeries, themeMode) {
-        chartInstance?.destroy()
         val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+        if (canvas != null) destroyChartOnCanvas(canvas)
+        chartInstance = null
         if (canvas != null && timeSeries.isNotEmpty()) {
             chartInstance = createActivityChart(canvas, timeSeries, title, themeMode)
         }
     }
 
     DisposableEffect(canvasId) {
-        onDispose { chartInstance?.destroy() }
+        onDispose {
+            val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+            if (canvas != null) destroyChartOnCanvas(canvas)
+            chartInstance = null
+        }
     }
 
     Div({
@@ -47,6 +52,12 @@ fun ActivityChart(
             style { width(100.percent); height(100.percent) }
         })
     }
+}
+
+private fun destroyChartOnCanvas(canvas: HTMLCanvasElement) {
+    val Chart = js("window.Chart")
+    val existing = Chart.getChart(canvas)
+    if (existing != null) existing.destroy()
 }
 
 private fun createActivityChart(
@@ -64,7 +75,7 @@ private fun createActivityChart(
     val tickColor = if (isDark) "rgba(255,255,255,0.7)" else "rgba(0,0,0,0.6)"
     val titleColor = if (isDark) "rgba(255,255,255,0.9)" else "rgba(0,0,0,0.85)"
     val borderColor = FlagentTheme.Primary.toString()
-    val fillColor = "rgba(14, 165, 233, 0.15)"
+    val fillColor = FlagentTheme.PrimaryGlow.toString()
 
     val config = js("""({
         type: 'line',

@@ -22,10 +22,11 @@ fun MetricsChart(
     var chartInstance by remember { mutableStateOf<dynamic>(null) }
     
     LaunchedEffect(metrics, metricType) {
-        // Destroy previous chart instance
-        chartInstance?.destroy()
-        
         val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+        if (canvas != null) {
+            destroyChartOnCanvas(canvas)
+        }
+        chartInstance = null
         if (canvas != null && metrics.isNotEmpty()) {
             chartInstance = createChart(canvas, metrics, metricType, title)
         }
@@ -33,7 +34,9 @@ fun MetricsChart(
     
     DisposableEffect(canvasId) {
         onDispose {
-            chartInstance?.destroy()
+            val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+            if (canvas != null) destroyChartOnCanvas(canvas)
+            chartInstance = null
         }
     }
     
@@ -52,6 +55,13 @@ fun MetricsChart(
             }
         })
     }
+}
+
+/** Destroy any Chart.js instance on this canvas to avoid "Canvas is already in use". */
+private fun destroyChartOnCanvas(canvas: HTMLCanvasElement) {
+    val Chart = js("window.Chart")
+    val existing = Chart.getChart(canvas)
+    if (existing != null) existing.destroy()
 }
 
 /**
@@ -178,15 +188,20 @@ fun OverviewChart(
     var chartInstance by remember { mutableStateOf<dynamic>(null) }
 
     LaunchedEffect(timeSeries) {
-        chartInstance?.destroy()
         val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+        if (canvas != null) destroyChartOnCanvas(canvas)
+        chartInstance = null
         if (canvas != null && timeSeries.isNotEmpty()) {
             chartInstance = createOverviewChart(canvas, timeSeries, title)
         }
     }
 
     DisposableEffect(canvasId) {
-        onDispose { chartInstance?.destroy() }
+        onDispose {
+            val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+            if (canvas != null) destroyChartOnCanvas(canvas)
+            chartInstance = null
+        }
     }
 
     Div({

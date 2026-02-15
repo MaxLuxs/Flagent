@@ -75,7 +75,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                 style {
                     color(FlagentTheme.Error)
                     padding(10.px)
-                    property("background-color", "rgba(239, 68, 68, 0.1)")
+                    backgroundColor(FlagentTheme.errorBg(themeMode))
                     borderRadius(5.px)
                 }
             }) {
@@ -109,7 +109,7 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                     style {
                         color(FlagentTheme.Error)
                         padding(10.px)
-                        property("background-color", "rgba(239, 68, 68, 0.1)")
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
                         borderRadius(5.px)
                         marginBottom(10.px)
                     }
@@ -123,13 +123,13 @@ fun DistributionEditor(flagId: Int, segmentId: Int, variants: List<VariantRespon
                     style {
                         color(FlagentTheme.Success)
                         padding(10.px)
-                        property("background-color", "rgba(16, 185, 129, 0.1)")
+                        backgroundColor(FlagentTheme.successBg(themeMode))
                         borderRadius(5.px)
                         marginBottom(10.px)
                         border {
                             width(1.px)
                             style(LineStyle.Solid)
-                            color(Color("rgba(16, 185, 129, 0.2)"))
+                            color(FlagentTheme.Success)
                         }
                     }
                 }) {

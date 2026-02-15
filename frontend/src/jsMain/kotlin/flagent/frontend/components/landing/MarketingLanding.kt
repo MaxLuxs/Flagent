@@ -25,7 +25,7 @@ fun MarketingLanding() {
             paddingTop(80.px)
             property(
                 "background",
-                "linear-gradient(135deg, #0f172a 0%, #1e293b 20%, #0f172a 40%, #1e3a5f 60%, #0f172a 80%, #1e293b 100%)"
+                FlagentTheme.GradientHero
             )
             property("background-size", "400% 400%")
             property("animation", "morphGradient 20s ease infinite")
@@ -323,9 +323,9 @@ private fun HeroSection() {
                     gap(8.px)
                 }
             }) {
-                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(Color("#EF4444")) } }) {}
-                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(Color("#F59E0B")) } }) {}
-                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(Color("#10B981")) } }) {}
+                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(FlagentTheme.Error) } }) {}
+                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(FlagentTheme.Warning) } }) {}
+                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(FlagentTheme.Success) } }) {}
                 Span(attrs = { style { marginLeft(16.px); fontSize(12.px); color(Color("rgba(255,255,255,0.5)")) } }) { Text("Flagent Dashboard") }
             }
             Div(attrs = {

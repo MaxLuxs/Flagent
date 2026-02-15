@@ -181,7 +181,7 @@ fun Navbar(authViewModel: AuthViewModel? = null, tenantViewModel: TenantViewMode
                                     position(Position.Absolute)
                                     property("top", "-4px")
                                     property("right", "-4px")
-                                    backgroundColor(Color("#EF4444"))
+                                    backgroundColor(FlagentTheme.Error)
                                     color(Color.white)
                                     fontSize(11.px)
                                     fontWeight("bold")

@@ -233,7 +233,7 @@ fun FlagEditor(flagId: Int?) {
                                 padding(10.px, 18.px)
                                 backgroundColor(if (f.enabled) FlagentTheme.Success else FlagentTheme.Error)
                                 borderRadius(24.px)
-                                property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+                                property("box-shadow", FlagentTheme.ShadowCard)
                             }
                         }) {
                             Label(attrs = {
@@ -742,7 +742,7 @@ private fun FlagSettingsCard(
             }
             borderRadius(10.px)
             backgroundColor(FlagentTheme.cardBg(themeMode))
-            property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         // Header with Enable/Disable switch
@@ -1465,7 +1465,7 @@ private fun VariantsSection(
             }
             borderRadius(10.px)
             backgroundColor(FlagentTheme.cardBg(themeMode))
-            property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         Div({
@@ -2021,7 +2021,7 @@ private fun SegmentsSection(
             }
             borderRadius(10.px)
             backgroundColor(FlagentTheme.cardBg(themeMode))
-            property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         // Header

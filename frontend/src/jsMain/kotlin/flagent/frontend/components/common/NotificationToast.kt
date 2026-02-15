@@ -60,12 +60,12 @@ private fun NotificationItem(
     Div({
         classes("scale-in")
         style {
-            backgroundColor(Color("rgba(255,255,255,0.08)"))
+            backgroundColor(FlagentTheme.WorkspaceCardBorder)
             borderRadius(8.px)
             padding(16.px)
             property("backdrop-filter", "blur(12px)")
-            property("border", "1px solid rgba(255,255,255,0.12)")
-            property("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.3)")
+            property("border", "1px solid ${FlagentTheme.cssVar("color-dark-inputBorder")}")
+            property("box-shadow", "0 4px 12px ${FlagentTheme.ShadowHover}")
             display(DisplayStyle.Flex)
             alignItems(AlignItems.FlexStart)
             gap(12.px)
@@ -86,7 +86,7 @@ private fun NotificationItem(
             style {
                 flex(1)
                 fontSize(14.px)
-                color(Color("#1E293B"))
+                color(FlagentTheme.CodeBackground)
             }
         }) {
             Text(notification.message)
@@ -120,9 +120,9 @@ private fun getNotificationIcon(type: NotificationType): String {
 
 private fun getNotificationColor(type: NotificationType): CSSColorValue {
     return when (type) {
-        NotificationType.SUCCESS -> Color("#10B981")
-        NotificationType.ERROR -> Color("#EF4444")
-        NotificationType.WARNING -> Color("#F59E0B")
-        NotificationType.INFO -> Color("#3B82F6")
+        NotificationType.SUCCESS -> FlagentTheme.Success
+        NotificationType.ERROR -> FlagentTheme.Error
+        NotificationType.WARNING -> FlagentTheme.Warning
+        NotificationType.INFO -> FlagentTheme.Info
     }
 }

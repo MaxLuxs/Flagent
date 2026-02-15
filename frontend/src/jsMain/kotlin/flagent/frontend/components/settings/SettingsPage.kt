@@ -43,7 +43,7 @@ fun SettingsPage() {
                 backgroundColor(FlagentTheme.cardBg(themeMode))
                 borderRadius(8.px)
                 padding(8.px)
-                property("box-shadow", "0 1px 3px rgba(0,0,0,0.08)")
+                property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
                 property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             }
         }) {
@@ -71,7 +71,7 @@ fun SettingsPage() {
                         fontSize(11.px)
                         fontWeight("600")
                         marginTop(6.px)
-                        backgroundColor(if (AppConfig.isEnterprise) Color("#F59E0B") else FlagentTheme.Primary)
+                        backgroundColor(if (AppConfig.isEnterprise) FlagentTheme.Warning else FlagentTheme.Primary)
                         color(Color.white)
                     }
                 }) {
@@ -153,7 +153,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         H2({
@@ -413,7 +413,7 @@ private fun FeatureBadge(themeMode: flagent.frontend.state.ThemeMode, name: Stri
                 style {
                     fontSize(10.px)
                     padding(2.px, 6.px)
-                    backgroundColor(Color("#F59E0B"))
+                    backgroundColor(FlagentTheme.Warning)
                     color(Color.white)
                     borderRadius(4.px)
                     fontWeight("600")
@@ -425,7 +425,7 @@ private fun FeatureBadge(themeMode: flagent.frontend.state.ThemeMode, name: Stri
         Icon(
             if (enabled) "check_circle" else "cancel",
             size = 14.px,
-            color = if (enabled) Color("#10B981") else Color("#EF4444")
+            color = if (enabled) FlagentTheme.Success else FlagentTheme.Error
         )
         Span({ style { color(FlagentTheme.text(themeMode)) } }) { Text(name) }
     }
@@ -444,7 +444,7 @@ private fun SsoSettings(themeMode: flagent.frontend.state.ThemeMode) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         H2({
@@ -561,7 +561,7 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         H2({
@@ -693,7 +693,7 @@ private fun BillingSettings(themeMode: flagent.frontend.state.ThemeMode) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         H2({

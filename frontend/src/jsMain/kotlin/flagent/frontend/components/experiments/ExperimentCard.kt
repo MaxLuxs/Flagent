@@ -24,7 +24,7 @@ fun ExperimentCard(flag: FlagResponse) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(16.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.08)")
+            property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
             property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             property("transition", "box-shadow 0.2s, border-color 0.2s")
         }

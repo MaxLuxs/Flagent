@@ -42,7 +42,7 @@ fun DebugConsole(initialFlagKey: String? = null) {
                 }
             borderRadius(10.px)
             backgroundColor(FlagentTheme.cardBg(themeMode))
-            property("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         Div({

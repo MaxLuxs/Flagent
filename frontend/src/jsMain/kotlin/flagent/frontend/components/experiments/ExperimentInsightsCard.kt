@@ -23,7 +23,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
             borderRadius(8.px)
             padding(20.px)
             marginBottom(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         H3({
@@ -115,13 +115,13 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                         for (stat in insights.variantStats) {
                             Tr({
                                 style {
-                                    borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
+                                    borderBottom(1.px, LineStyle.Solid, FlagentTheme.BackgroundDark)
                                 }
                             }) {
                                 Td({
                                     style {
                                         padding(8.px)
-                                        borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
+                                        borderBottom(1.px, LineStyle.Solid, FlagentTheme.BackgroundDark)
                                         color(FlagentTheme.text(themeMode))
                                     }
                                 }) {
@@ -148,7 +148,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 Td({
                                     style {
                                         padding(8.px)
-                                        borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
+                                        borderBottom(1.px, LineStyle.Solid, FlagentTheme.BackgroundDark)
                                         textAlign("right")
                                         color(FlagentTheme.text(themeMode))
                                     }
@@ -156,7 +156,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 Td({
                                     style {
                                         padding(8.px)
-                                        borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
+                                        borderBottom(1.px, LineStyle.Solid, FlagentTheme.BackgroundDark)
                                         textAlign("right")
                                         color(FlagentTheme.text(themeMode))
                                     }
@@ -164,7 +164,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 Td({
                                     style {
                                         padding(8.px)
-                                        borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
+                                        borderBottom(1.px, LineStyle.Solid, FlagentTheme.BackgroundDark)
                                         textAlign("right")
                                         color(FlagentTheme.text(themeMode))
                                     }
@@ -172,7 +172,7 @@ fun ExperimentInsightsCard(insights: ExperimentInsightsResponse?) {
                                 Td({
                                     style {
                                         padding(8.px)
-                                        borderBottom(1.px, LineStyle.Solid, Color("#f1f5f9"))
+                                        borderBottom(1.px, LineStyle.Solid, FlagentTheme.BackgroundDark)
                                         color(FlagentTheme.textLight(themeMode))
                                         fontSize(13.px)
                                     }

@@ -86,7 +86,7 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                 }
                 style {
                     padding(10.px, 16.px)
-                    border(1.px, LineStyle.Solid, Color("#E2E8F0"))
+                    border(1.px, LineStyle.Solid, FlagentTheme.Border)
                     borderRadius(6.px)
                     fontSize(14.px)
                 }
@@ -173,7 +173,7 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                             padding(20.px)
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                         }
                     }) {
                         OverviewChart(
@@ -191,7 +191,7 @@ fun MetricsDashboard(flagId: Int, initialMetricType: String? = null) {
                             padding(20.px)
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                         }
                     }) {
                         H3({

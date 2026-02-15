@@ -5,6 +5,7 @@ import flagent.frontend.api.*
 import flagent.frontend.util.AppLogger
 import flagent.frontend.util.ErrorHandler
 import io.ktor.client.call.*
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
@@ -31,19 +32,20 @@ class SmartRolloutViewModel(private val flagId: Int) {
         scope.launch {
             isLoading = true
             error = null
-            
-            ErrorHandler.withErrorHandling(
-                block = {
-                    AppLogger.info(TAG, "Loading rollout configs for flag: $flagId")
-                    val client = ApiClient.client
-                    configs = client.get(ApiClient.getApiPath("/smart-rollout/flag/$flagId")).body()
-                    AppLogger.info(TAG, "Loaded ${configs.size} rollout configs")
-                },
-                onError = { err ->
-                    error = ErrorHandler.getUserMessage(err)
+            try {
+                AppLogger.info(TAG, "Loading rollout configs for flag: $flagId")
+                val client = ApiClient.client
+                configs = client.get(ApiClient.getApiPath("/smart-rollout/flag/$flagId")).body()
+                AppLogger.info(TAG, "Loaded ${configs.size} rollout configs")
+            } catch (e: Throwable) {
+                val status = (e as? ResponseException)?.response?.status
+                if (status == HttpStatusCode.NotFound) {
+                    // OSS backend has no smart-rollout; treat as empty
+                    configs = emptyList()
+                } else {
+                    error = ErrorHandler.getUserMessage(ErrorHandler.handle(e, null))
                 }
-            )
-            
+            }
             isLoading = false
         }
     }

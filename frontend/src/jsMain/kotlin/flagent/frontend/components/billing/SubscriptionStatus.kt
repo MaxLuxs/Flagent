@@ -20,7 +20,7 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+            property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
         }
     }) {
         H2({
@@ -105,7 +105,7 @@ private fun PlanCard(
             padding(24.px)
             border(2.px, LineStyle.Solid, if (isCurrent) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode))
             borderRadius(8.px)
-            backgroundColor(if (isCurrent) Color("#F0F9FF") else FlagentTheme.cardBg(themeMode))
+            backgroundColor(if (isCurrent) FlagentTheme.infoBg(themeMode) else FlagentTheme.cardBg(themeMode))
         }
     }) {
         H3({

@@ -3,6 +3,7 @@ package flagent.frontend.components.auth
 import androidx.compose.runtime.*
 import flagent.frontend.components.Icon
 import flagent.frontend.config.AppConfig
+import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.AuthViewModel
 import kotlinx.browser.window
@@ -18,6 +19,7 @@ fun LoginForm(
     viewModel: AuthViewModel,
     onSuccess: () -> Unit
 ) {
+    val themeMode = LocalThemeMode.current
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val passwordVisible = remember { mutableStateOf(false) }
@@ -34,7 +36,7 @@ fun LoginForm(
             overflow("hidden")
             property(
                 "background",
-                "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1e3a5f 75%, #0f172a 100%)"
+                FlagentTheme.GradientHero
             )
             property("background-size", "400% 400%")
             property("animation", "morphGradient 15s ease infinite")
@@ -393,10 +395,10 @@ fun LoginForm(
                     style {
                         marginTop(12.px)
                         padding(12.px)
-                        backgroundColor(Color("rgba(239, 68, 68, 0.15)"))
-                        property("border", "1px solid rgba(239, 68, 68, 0.3)")
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
+                        property("border", "1px solid var(--flagent-color-error)")
                         borderRadius(8.px)
-                        color(Color("#FCA5A5"))
+                        color(FlagentTheme.errorText(themeMode))
                         fontSize(13.px)
                     }
                 }) {

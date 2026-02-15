@@ -47,7 +47,7 @@ fun ImportPanel() {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(20.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         H2({

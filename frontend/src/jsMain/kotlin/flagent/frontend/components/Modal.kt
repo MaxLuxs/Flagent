@@ -53,7 +53,7 @@ fun Modal(
             left(0.px)
             right(0.px)
             bottom(0.px)
-            property("background-color", "rgba(0,0,0,0.5)")
+            backgroundColor(FlagentTheme.Overlay)
             display(DisplayStyle.Flex)
             justifyContent(JustifyContent.Center)
             alignItems(AlignItems.Center)
@@ -77,7 +77,7 @@ fun Modal(
                 overflow("auto")
                 border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                 property("backdrop-filter", "blur(12px)")
-                property("box-shadow", "0 10px 25px rgba(0, 0, 0, 0.3)")
+                property("box-shadow", FlagentTheme.ShadowModal)
             }
             onClick { event ->
                 // Prevent closing when clicking inside modal

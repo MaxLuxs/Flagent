@@ -279,7 +279,7 @@ fun AnalyticsPage() {
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                         }
                     }) {
                         OverviewChart(overview!!.timeSeries, LocalizedStrings.evaluationsOverTime)
@@ -291,7 +291,7 @@ fun AnalyticsPage() {
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(20.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                         }
                     }) {
                         H3({
@@ -317,7 +317,7 @@ fun AnalyticsPage() {
                                         backgroundColor(FlagentTheme.inputBg(themeMode))
                                         borderRadius(8.px)
                                         padding(16.px)
-                                        property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                        property("box-shadow", FlagentTheme.ShadowCard)
                                     }
                                 }) {
                                     Div({
@@ -416,7 +416,7 @@ fun AnalyticsPage() {
                                     backgroundColor(FlagentTheme.cardBg(themeMode))
                                     borderRadius(8.px)
                                     padding(20.px)
-                                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                    property("box-shadow", FlagentTheme.ShadowCard)
                                 }
                             }) {
                                 OverviewChart(data.timeSeries, LocalizedStrings.eventsOverTime)
@@ -428,7 +428,7 @@ fun AnalyticsPage() {
                                     backgroundColor(FlagentTheme.cardBg(themeMode))
                                     borderRadius(8.px)
                                     padding(20.px)
-                                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                    property("box-shadow", FlagentTheme.ShadowCard)
                                 }
                             }) {
                                 H3({
@@ -453,7 +453,7 @@ fun AnalyticsPage() {
                                     backgroundColor(FlagentTheme.cardBg(themeMode))
                                     borderRadius(8.px)
                                     padding(20.px)
-                                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                    property("box-shadow", FlagentTheme.ShadowCard)
                                 }
                             }) {
                                 H3({
@@ -479,7 +479,7 @@ fun AnalyticsPage() {
                                                 backgroundColor(FlagentTheme.inputBg(themeMode))
                                                 borderRadius(8.px)
                                                 padding(16.px)
-                                                property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                                                property("box-shadow", FlagentTheme.ShadowCard)
                                             }
                                         }) {
                                             Span({
@@ -513,7 +513,7 @@ fun AnalyticsPage() {
                             backgroundColor(FlagentTheme.cardBg(themeMode))
                             borderRadius(8.px)
                             padding(40.px)
-                            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                            property("box-shadow", FlagentTheme.ShadowCard)
                             textAlign("center")
                         }
                     }) {
@@ -536,7 +536,7 @@ fun AnalyticsPage() {
                     backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     padding(40.px)
-                    property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                    property("box-shadow", FlagentTheme.ShadowCard)
                     textAlign("center")
                 }
             }) {
@@ -577,7 +577,7 @@ fun AnalyticsPage() {
                     borderRadius(8.px)
                     overflow("hidden")
                     overflowX("auto")
-                    property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.08)")
+                    property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
                 }
             }) {
                 Table({
@@ -766,7 +766,7 @@ private fun AnalyticsOverviewCard(themeMode: ThemeMode, label: String, value: St
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(16.px)
-            property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            property("box-shadow", FlagentTheme.ShadowCard)
         }
     }) {
         P({

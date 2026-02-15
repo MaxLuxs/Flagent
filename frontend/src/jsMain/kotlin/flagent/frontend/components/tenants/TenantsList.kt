@@ -577,7 +577,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 padding(12.px)
                                 fontSize(12.px)
                                 fontWeight(600)
-                                color(Color("#64748B"))
+                                color(FlagentTheme.TextLight)
                                 textTransform("uppercase")
                             }
                         }) {
@@ -589,7 +589,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 padding(12.px)
                                 fontSize(12.px)
                                 fontWeight(600)
-                                color(Color("#64748B"))
+                                color(FlagentTheme.TextLight)
                                 textTransform("uppercase")
                             }
                         }) {
@@ -601,7 +601,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 padding(12.px)
                                 fontSize(12.px)
                                 fontWeight(600)
-                                color(Color("#64748B"))
+                                color(FlagentTheme.TextLight)
                                 textTransform("uppercase")
                             }
                         }) {
@@ -613,7 +613,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 padding(12.px)
                                 fontSize(12.px)
                                 fontWeight(600)
-                                color(Color("#64748B"))
+                                color(FlagentTheme.TextLight)
                                 textTransform("uppercase")
                             }
                         }) {
@@ -849,7 +849,7 @@ private fun CreateTenantModal(
                         }
                         style {
                             padding(10.px, 16.px)
-                            backgroundColor(if (copyFeedback.value) Color("#10B981") else FlagentTheme.Primary)
+                            backgroundColor(if (copyFeedback.value) FlagentTheme.Success else FlagentTheme.Primary)
                             color(Color.white)
                             border(0.px)
                             borderRadius(6.px)
@@ -1084,7 +1084,7 @@ private fun CreateApiKeyModal(
                         }
                         style {
                             padding(10.px, 16.px)
-                            backgroundColor(if (copyFeedback.value) Color("#10B981") else FlagentTheme.Primary)
+                            backgroundColor(if (copyFeedback.value) FlagentTheme.Success else FlagentTheme.Primary)
                             color(Color.white)
                             border(0.px)
                             borderRadius(6.px)

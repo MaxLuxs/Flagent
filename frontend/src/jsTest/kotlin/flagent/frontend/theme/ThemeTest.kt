@@ -1,87 +1,48 @@
 package flagent.frontend.theme
 
+import flagent.frontend.state.ThemeMode
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /**
- * Tests for FlagentTheme
+ * Tests for FlagentTheme. Theme values are CSS variables (design-system tokens).
  */
 class ThemeTest {
     @Test
-    fun testPrimaryColors() {
+    fun testPrimaryColorsAreTokenRefs() {
         assertNotNull(FlagentTheme.Primary)
         assertNotNull(FlagentTheme.PrimaryDark)
         assertNotNull(FlagentTheme.PrimaryLight)
-        
-        assertEquals("#0EA5E9", FlagentTheme.Primary.toString())
-        assertEquals("#0284C7", FlagentTheme.PrimaryDark.toString())
-        assertEquals("#38BDF8", FlagentTheme.PrimaryLight.toString())
+        assertTrue(FlagentTheme.Primary.toString().contains("flagent-color-primary"))
     }
-    
+
     @Test
-    fun testSecondaryColors() {
+    fun testSecondaryColorsAreTokenRefs() {
         assertNotNull(FlagentTheme.Secondary)
         assertNotNull(FlagentTheme.SecondaryDark)
         assertNotNull(FlagentTheme.SecondaryLight)
-        
-        assertEquals("#14B8A6", FlagentTheme.Secondary.toString())
-        assertEquals("#0D9488", FlagentTheme.SecondaryDark.toString())
-        assertEquals("#5EEAD4", FlagentTheme.SecondaryLight.toString())
+        assertTrue(FlagentTheme.Secondary.toString().contains("flagent-color-secondary"))
     }
-    
+
     @Test
-    fun testBackgroundColors() {
-        assertNotNull(FlagentTheme.Background)
-        assertNotNull(FlagentTheme.BackgroundAlt)
-        assertNotNull(FlagentTheme.BackgroundDark)
-        
-        assertEquals("#FFFFFF", FlagentTheme.Background.toString())
-        assertEquals("#F8FAFC", FlagentTheme.BackgroundAlt.toString())
-        assertEquals("#F1F5F9", FlagentTheme.BackgroundDark.toString())
+    fun testThemeAwareCardBg() {
+        assertNotNull(FlagentTheme.cardBg(ThemeMode.Light))
+        assertNotNull(FlagentTheme.cardBg(ThemeMode.Dark))
+        assertTrue(FlagentTheme.cardBg(ThemeMode.Light).toString().contains("cardBg"))
+        assertTrue(FlagentTheme.cardBg(ThemeMode.Dark).toString().contains("cardBg"))
     }
-    
+
     @Test
-    fun testTextColors() {
-        assertNotNull(FlagentTheme.Text)
-        assertNotNull(FlagentTheme.TextLight)
-        assertNotNull(FlagentTheme.TextLighter)
-        
-        assertEquals("#0F172A", FlagentTheme.Text.toString())
-        assertEquals("#64748B", FlagentTheme.TextLight.toString())
-        assertEquals("#94A3B8", FlagentTheme.TextLighter.toString())
+    fun testThemeAwareText() {
+        assertNotNull(FlagentTheme.text(ThemeMode.Light))
+        assertNotNull(FlagentTheme.text(ThemeMode.Dark))
     }
-    
+
     @Test
-    fun testStatusColors() {
-        assertNotNull(FlagentTheme.Success)
-        assertNotNull(FlagentTheme.Error)
-        assertNotNull(FlagentTheme.Warning)
-        assertNotNull(FlagentTheme.Info)
-        
-        assertEquals("#10B981", FlagentTheme.Success.toString())
-        assertEquals("#EF4444", FlagentTheme.Error.toString())
-        assertEquals("#F59E0B", FlagentTheme.Warning.toString())
-        assertEquals("#3B82F6", FlagentTheme.Info.toString())
-    }
-    
-    @Test
-    fun testNeutralColors() {
-        assertNotNull(FlagentTheme.Neutral)
-        assertNotNull(FlagentTheme.NeutralLight)
-        assertNotNull(FlagentTheme.NeutralLighter)
-        
-        assertEquals("#6B7280", FlagentTheme.Neutral.toString())
-        assertEquals("#9CA3AF", FlagentTheme.NeutralLight.toString())
-        assertEquals("#D1D5DB", FlagentTheme.NeutralLighter.toString())
-    }
-    
-    @Test
-    fun testShadowValues() {
+    fun testShadowValuesAreTokenRefs() {
         assertNotNull(FlagentTheme.Shadow)
         assertNotNull(FlagentTheme.ShadowHover)
-        
-        assertEquals("rgba(0, 0, 0, 0.08)", FlagentTheme.Shadow)
-        assertEquals("rgba(0, 0, 0, 0.15)", FlagentTheme.ShadowHover)
+        assertTrue(FlagentTheme.Shadow.contains("flagent-shadow"))
     }
 }

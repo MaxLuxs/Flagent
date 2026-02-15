@@ -204,7 +204,7 @@ fun ExperimentsPage() {
                         backgroundColor(FlagentTheme.cardBg(themeMode))
                         borderRadius(8.px)
                         padding(40.px)
-                        property("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+                        property("box-shadow", FlagentTheme.ShadowCard)
                         textAlign("center")
                     }
                 }) {
@@ -267,7 +267,7 @@ fun ExperimentsPage() {
                     backgroundColor(FlagentTheme.cardBg(themeMode))
                     borderRadius(8.px)
                     overflow("hidden")
-                    property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.08)")
+                    property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
                 }
             }) {
                 Table({

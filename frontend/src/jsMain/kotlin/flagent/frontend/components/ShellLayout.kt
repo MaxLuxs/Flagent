@@ -371,7 +371,7 @@ private fun ShellFooter() {
         } catch (_: Exception) { /* fallback */ }
     }
     val borderColor = if (themeMode == ThemeMode.Dark) "rgba(255,255,255,0.06)" else "rgba(0,0,0,0.08)"
-    val textColor = if (themeMode == ThemeMode.Dark) "rgba(255,255,255,0.5)" else "rgba(0,0,0,0.5)"
+    val textColor = if (themeMode == ThemeMode.Dark) FlagentTheme.WorkspaceTextMuted else FlagentTheme.TextLight
     val linkColor = if (themeMode == ThemeMode.Dark) "rgba(255,255,255,0.65)" else "rgba(0,0,0,0.6)"
     Div(attrs = {
         style {
@@ -386,7 +386,7 @@ private fun ShellFooter() {
             property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
         }
     }) {
-        Span(attrs = { style { color(Color(textColor)) } }) { Text("Flagent ${version.value}") }
+        Span(attrs = { style { color(textColor) } }) { Text("Flagent ${version.value}") }
         Div(attrs = {
             style {
                 display(DisplayStyle.Flex)
@@ -416,7 +416,7 @@ private fun ShellFooter() {
                 onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Primary.toString() }
                 onMouseLeave { (it.target as org.w3c.dom.HTMLElement).style.color = linkColor }
             }) { Text(flagent.frontend.i18n.LocalizedStrings.github) }
-            Span(attrs = { style { color(Color(textColor)) } }) {
+            Span(attrs = { style { color(textColor) } }) {
                 Text("© ${js("new Date().getFullYear()") as Int} Flagent")
             }
         }
@@ -490,7 +490,7 @@ private fun Sidebar(anomalyViewModel: AnomalyViewModel?) {
                             position(Position.Absolute)
                             property("top", "8px")
                             property("right", "12px")
-                            backgroundColor(Color("#EF4444"))
+                            backgroundColor(FlagentTheme.Error)
                             color(Color.white)
                             fontSize(10.px)
                             fontWeight("bold")

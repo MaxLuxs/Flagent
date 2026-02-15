@@ -135,7 +135,7 @@ private fun FlagTableRow(
         onMouseEnter {
             val element = it.target as org.w3c.dom.HTMLElement
             element.style.backgroundColor = FlagentTheme.inputBg(themeMode).toString()
-            element.style.setProperty("box-shadow", "0 2px 8px ${FlagentTheme.Shadow}")
+            element.style.setProperty("box-shadow", FlagentTheme.ShadowCard)
             element.style.transform = "translateY(-1px)"
         }
         onMouseLeave {
@@ -752,7 +752,7 @@ fun FlagsList() {
                     color(FlagentTheme.cardBorder(themeMode))
                 }
                 borderRadius(12.px)
-                property("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.08)")
+                property("box-shadow", "0 4px 12px ${FlagentTheme.Shadow}")
                 property("transition", "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)")
             }
             onMouseEnter {
@@ -1505,7 +1505,7 @@ fun FlagsList() {
                         borderRadius(12.px)
                         overflow("hidden")
                         overflowX("auto")
-                        property("box-shadow", "0 4px 16px rgba(0, 0, 0, 0.08)")
+                        property("box-shadow", "0 4px 16px ${FlagentTheme.Shadow}")
                         property("transition", "box-shadow 0.3s ease")
                     }
                 }) {

@@ -14,6 +14,9 @@ import org.w3c.dom.HTMLCanvasElement
  */
 data class StatusSlice(val label: String, val count: Int, val color: String)
 
+/** Hex palette for Chart.js (does not resolve CSS vars). Matches design-system tokens: success, error, primary, secondary. */
+private val CHART_PALETTE = arrayOf("#10B981", "#EF4444", "#0EA5E9", "#14B8A6")
+
 /**
  * Pie/doughnut chart for flag status distribution (enabled, disabled, with segments, experiments).
  */
@@ -27,15 +30,20 @@ fun StatusDistributionChart(
     var chartInstance by remember { mutableStateOf<dynamic>(null) }
 
     LaunchedEffect(slices, themeMode) {
-        chartInstance?.destroy()
         val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+        if (canvas != null) destroyChartOnCanvas(canvas)
+        chartInstance = null
         if (canvas != null && slices.isNotEmpty() && slices.any { it.count > 0 }) {
             chartInstance = createPieChart(canvas, slices, title, themeMode)
         }
     }
 
     DisposableEffect(canvasId) {
-        onDispose { chartInstance?.destroy() }
+        onDispose {
+            val canvas = document.getElementById(canvasId) as? HTMLCanvasElement
+            if (canvas != null) destroyChartOnCanvas(canvas)
+            chartInstance = null
+        }
     }
 
     Div({
@@ -52,6 +60,12 @@ fun StatusDistributionChart(
     }
 }
 
+private fun destroyChartOnCanvas(canvas: HTMLCanvasElement) {
+    val Chart = js("window.Chart")
+    val existing = Chart.getChart(canvas)
+    if (existing != null) existing.destroy()
+}
+
 private fun createPieChart(
     canvas: HTMLCanvasElement,
     slices: List<StatusSlice>,
@@ -60,7 +74,10 @@ private fun createPieChart(
 ): dynamic {
     val labels = slices.map { it.label }.toTypedArray()
     val data = slices.map { it.count }.toTypedArray()
-    val colors = slices.map { it.color }.toTypedArray()
+    // Chart.js does not resolve CSS variables (var(--flagent-*)); use hex palette by index
+    val colors = slices.mapIndexed { i, s ->
+        if (s.color.startsWith("var(")) CHART_PALETTE[i % CHART_PALETTE.size] else s.color
+    }.toTypedArray()
     val Chart = js("window.Chart")
     val isDark = themeMode == ThemeMode.Dark
     val titleColor = if (isDark) "rgba(255,255,255,0.9)" else "rgba(0,0,0,0.85)"

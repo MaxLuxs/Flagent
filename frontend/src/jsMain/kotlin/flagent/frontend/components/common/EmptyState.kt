@@ -24,7 +24,7 @@ fun EmptyState(
             property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
             property("backdrop-filter", "blur(12px)")
             borderRadius(16.px)
-            property("box-shadow", "0 4px 24px rgba(0,0,0,0.08)")
+            property("box-shadow", "0 4px 24px ${FlagentTheme.Shadow}")
             property("transition", "all 0.3s ease")
             maxWidth(420.px)
             property("margin", "0 auto")

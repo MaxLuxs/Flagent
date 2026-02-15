@@ -29,7 +29,7 @@ fun SmartRolloutConfig(flagId: Int) {
             backgroundColor(FlagentTheme.cardBg(themeMode))
             borderRadius(8.px)
             padding(24.px)
-            property("box-shadow", "0 1px 3px rgba(0, 0, 0, 0.1)")
+            property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
         }
     }) {
         // Header
@@ -149,8 +149,8 @@ private fun RolloutConfigCard(config: flagent.frontend.api.SmartRolloutConfigRes
             Span({
                 style {
                     padding(4.px, 8.px)
-                    backgroundColor(if (config.enabled) Color("#DCFCE7") else FlagentTheme.errorBg(themeMode))
-                    color(if (config.enabled) Color("#166534") else FlagentTheme.errorText(themeMode))
+                    backgroundColor(if (config.enabled) FlagentTheme.successBg(themeMode) else FlagentTheme.errorBg(themeMode))
+                    color(if (config.enabled) FlagentTheme.Success else FlagentTheme.errorText(themeMode))
                     borderRadius(4.px)
                     fontSize(12.px)
                     fontWeight(500)
