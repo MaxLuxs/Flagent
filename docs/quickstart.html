@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,14 +19,15 @@
                     <a href="index.html" style="text-decoration: none;"><span class="logo-text">Flagent</span></a>
                 </div>
                 <div class="nav-links">
-                    <a href="index.html" data-i18n="nav.home">Главная</a>
+                    <a href="index.html" data-i18n="nav.home">Home</a>
                     <a href="quickstart.html" data-i18n="nav.quickstart">Quick Start</a>
                     <a href="sdk.html" data-i18n="nav.sdk">SDKs</a>
                     <a href="api-docs.html" data-i18n="nav.api">API</a>
                     <a href="docs.html" data-i18n="nav.docs">Docs</a>
+                    <a href="blog/index.html">Blog</a>
                     <div class="lang-switcher">
-                        <button class="lang-btn active" data-lang="ru">RU</button>
-                        <button class="lang-btn" data-lang="en">EN</button>
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="ru">RU</button>
                     </div>
                     <a href="https://github.com/MaxLuxs/Flagent" class="nav-github" target="_blank" rel="noopener">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -44,7 +45,7 @@
         <div class="container">
             <h1 class="page-title" data-i18n="quickstart.header.title">Quick Start Guide</h1>
             <p class="page-subtitle" data-i18n="quickstart.header.subtitle">
-                Запустите Flagent за 5 минут и начните использовать feature flags в вашем приложении
+                Get Flagent running in 5 minutes and start using feature flags in your app
             </p>
         </div>
     </section>
@@ -399,7 +400,7 @@ docker run -it -p 18001:18001 -e PORT=18001 ghcr.io/maxluxs/flagent</code></pre>
                         <li><a href="index.html" data-i18n="footer.home">Главная</a></li>
                         <li><a href="quickstart.html" data-i18n="footer.quickstart">Quick Start</a></li>
                         <li><a href="sdk.html" data-i18n="footer.sdk">SDKs</a></li>
-                        <li><a href="https://github.com/MaxLuxs/Flagent/blob/main/docs/guides/deployment.md" target="_blank" rel="noopener" data-i18n="footer.deployment">Развертывание</a></li>
+                        <li><a href="docs.html#/guides/deployment.md" data-i18n="footer.deployment">Развертывание</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -408,7 +409,7 @@ docker run -it -p 18001:18001 -e PORT=18001 ghcr.io/maxluxs/flagent</code></pre>
                         <li><a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a></li>
                         <li><a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener" data-i18n="footer.issues">Issues</a></li>
                         <li><a href="api/openapi.yaml" data-i18n="footer.openapi">OpenAPI Spec</a></li>
-                        <li><a href="http://localhost:18000/docs" target="_blank" rel="noopener" data-i18n="footer.swagger">Swagger UI</a></li>
+                        <li><a href="api-docs.html" data-i18n="footer.swagger">API Reference (Swagger)</a></li>
                     </ul>
                 </div>
             </div>
