@@ -18,30 +18,24 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Info
-
 class InfoTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Info
-        //val modelInstance = Info()
+        val modelInstance = Info(
+            version = "1.0.0",
+            buildTime = "2024-01-01T00:00:00Z",
+            gitCommit = "abc123"
+        )
 
-        // to test the property `version` - Application version
         should("test version") {
-            // uncomment below to test the property
-            //modelInstance.version shouldBe ("TODO")
+            modelInstance.version shouldBe "1.0.0"
         }
 
-        // to test the property `buildTime` - Build timestamp
         should("test buildTime") {
-            // uncomment below to test the property
-            //modelInstance.buildTime shouldBe ("TODO")
+            modelInstance.buildTime shouldBe "2024-01-01T00:00:00Z"
         }
 
-        // to test the property `gitCommit` - Git commit hash
         should("test gitCommit") {
-            // uncomment below to test the property
-            //modelInstance.gitCommit shouldBe ("TODO")
+            modelInstance.gitCommit shouldBe "abc123"
         }
-
     }
 }

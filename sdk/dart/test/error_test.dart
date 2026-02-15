@@ -3,15 +3,11 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for Error
 void main() {
-  final instance = ErrorBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = Error((b) => b..message = 'Something went wrong');
 
   group(Error, () {
-    // Error message describing what went wrong
-    // String message
     test('to test the property `message`', () async {
-      // TODO
+      expect(instance.message, equals('Something went wrong'));
     });
-
   });
 }

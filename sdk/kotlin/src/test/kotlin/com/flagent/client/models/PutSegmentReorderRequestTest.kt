@@ -18,18 +18,12 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.PutSegmentReorderRequest
-
 class PutSegmentReorderRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of PutSegmentReorderRequest
-        //val modelInstance = PutSegmentReorderRequest()
+        val modelInstance = PutSegmentReorderRequest(segmentIDs = listOf(1L, 2L, 3L))
 
-        // to test the property `segmentIDs`
         should("test segmentIDs") {
-            // uncomment below to test the property
-            //modelInstance.segmentIDs shouldBe ("TODO")
+            modelInstance.segmentIDs shouldBe listOf(1L, 2L, 3L)
         }
-
     }
 }

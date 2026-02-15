@@ -17,30 +17,49 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.HealthApi
-import com.flagent.client.models.Error
-import com.flagent.client.models.Health
-import com.flagent.client.models.Info
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 
 class HealthApiTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of HealthApi
-        //val apiInstance = HealthApi()
-
-        // to test getHealth
         should("test getHealth") {
-            // uncomment below to test getHealth
-            //val result : Health = apiInstance.getHealth()
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(
+                        content = ByteReadChannel("""{"status":"UP"}"""),
+                        status = HttpStatusCode.OK,
+                        headers = io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json")
+                    )
+                }
+                val apiInstance = HealthApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = apiInstance.getHealth()
+                response.status shouldBe 200
+                val body = response.body()
+                body.status shouldBe "UP"
+            }
         }
 
-        // to test getInfo
         should("test getInfo") {
-            // uncomment below to test getInfo
-            //val result : Info = apiInstance.getInfo()
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(
+                        content = ByteReadChannel("""{"version":"1.0.0","buildTime":"2024-01-01","gitCommit":"abc123"}"""),
+                        status = HttpStatusCode.OK,
+                        headers = io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json")
+                    )
+                }
+                val apiInstance = HealthApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = apiInstance.getInfo()
+                response.status shouldBe 200
+                val body = response.body()
+                body.version shouldBe "1.0.0"
+                body.buildTime shouldBe "2024-01-01"
+                body.gitCommit shouldBe "abc123"
+            }
         }
-
     }
 }

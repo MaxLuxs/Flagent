@@ -18,42 +18,34 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Constraint
-
 class ConstraintTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Constraint
-        //val modelInstance = Constraint()
+        val modelInstance = Constraint(
+            id = 1L,
+            segmentID = 10L,
+            `property` = "region",
+            `operator` = Constraint.`Operator`.EQ,
+            `value` = "EU"
+        )
 
-        // to test the property `id`
         should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
+            modelInstance.id shouldBe 1L
         }
 
-        // to test the property `segmentID`
         should("test segmentID") {
-            // uncomment below to test the property
-            //modelInstance.segmentID shouldBe ("TODO")
+            modelInstance.segmentID shouldBe 10L
         }
 
-        // to test the property ``property``
-        should("test `property`") {
-            // uncomment below to test the property
-            //modelInstance.`property` shouldBe ("TODO")
+        should("test property") {
+            modelInstance.`property` shouldBe "region"
         }
 
-        // to test the property ``operator``
-        should("test `operator`") {
-            // uncomment below to test the property
-            //modelInstance.`operator` shouldBe ("TODO")
+        should("test operator") {
+            modelInstance.`operator` shouldBe Constraint.`Operator`.EQ
         }
 
-        // to test the property ``value``
-        should("test `value`") {
-            // uncomment below to test the property
-            //modelInstance.`value` shouldBe ("TODO")
+        should("test value") {
+            modelInstance.`value` shouldBe "EU"
         }
-
     }
 }

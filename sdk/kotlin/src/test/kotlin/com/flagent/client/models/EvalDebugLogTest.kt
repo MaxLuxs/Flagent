@@ -18,25 +18,23 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.EvalDebugLog
-import com.flagent.client.models.SegmentDebugLog
-
 class EvalDebugLogTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of EvalDebugLog
-        //val modelInstance = EvalDebugLog()
+        val segmentDebugLogs = listOf(
+            SegmentDebugLog(segmentID = 1L, msg = "Matched")
+        )
+        val modelInstance = EvalDebugLog(
+            msg = "Evaluation debug",
+            segmentDebugLogs = segmentDebugLogs
+        )
 
-        // to test the property `msg`
         should("test msg") {
-            // uncomment below to test the property
-            //modelInstance.msg shouldBe ("TODO")
+            modelInstance.msg shouldBe "Evaluation debug"
         }
 
-        // to test the property `segmentDebugLogs`
         should("test segmentDebugLogs") {
-            // uncomment below to test the property
-            //modelInstance.segmentDebugLogs shouldBe ("TODO")
+            modelInstance.segmentDebugLogs shouldBe segmentDebugLogs
+            modelInstance.segmentDebugLogs?.size shouldBe 1
         }
-
     }
 }

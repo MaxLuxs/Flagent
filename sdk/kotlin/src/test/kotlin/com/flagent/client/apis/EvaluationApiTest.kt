@@ -17,34 +17,49 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.EvaluationApi
-import com.flagent.client.models.Error
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 import com.flagent.client.models.EvalContext
-import com.flagent.client.models.EvalResult
 import com.flagent.client.models.EvaluationBatchRequest
-import com.flagent.client.models.EvaluationBatchResponse
+import com.flagent.client.models.EvaluationEntity
 
 class EvaluationApiTest : ShouldSpec() {
+    private val evalResultJson = """{"flagKey":"my_flag","variantKey":"control","flagID":1,"segmentID":10,"variantID":5}"""
+    private val batchResponseJson = """{"evaluationResults":[{"flagKey":"f1","variantKey":"control"},{"flagKey":"f2","variantKey":"treatment"}]}"""
+
     init {
-        // uncomment below to create an instance of EvaluationApi
-        //val apiInstance = EvaluationApi()
-
-        // to test postEvaluation
         should("test postEvaluation") {
-            // uncomment below to test postEvaluation
-            //val evalContext : EvalContext = {"flagID":1,"entityID":"user123","entityType":"user","entityContext":{"region":"US","tier":"premium"},"enableDebug":false} // EvalContext | 
-            //val result : EvalResult = apiInstance.postEvaluation(evalContext)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(evalResultJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = EvaluationApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val ctx = EvalContext(entityID = "user123", entityType = "user", flagKey = "my_flag")
+                val response = api.postEvaluation(ctx)
+                response.status shouldBe 200
+                val body = response.body()
+                body.flagKey shouldBe "my_flag"
+                body.variantKey shouldBe "control"
+            }
         }
 
-        // to test postEvaluationBatch
         should("test postEvaluationBatch") {
-            // uncomment below to test postEvaluationBatch
-            //val evaluationBatchRequest : EvaluationBatchRequest = {"entities":[{"entityID":"user123","entityType":"user","entityContext":{"region":"US","tier":"premium"}},{"entityID":"user456","entityType":"user","entityContext":{"region":"EU","tier":"basic"}}],"flagIDs":[1,2],"enableDebug":false} // EvaluationBatchRequest | 
-            //val result : EvaluationBatchResponse = apiInstance.postEvaluationBatch(evaluationBatchRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(batchResponseJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = EvaluationApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val req = EvaluationBatchRequest(entities = listOf(EvaluationEntity(entityID = "user123", entityType = "user")))
+                val response = api.postEvaluationBatch(req)
+                response.status shouldBe 200
+                val body = response.body()
+                body.evaluationResults.size shouldBe 2
+                body.evaluationResults[0].flagKey shouldBe "f1"
+            }
         }
-
     }
 }

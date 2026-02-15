@@ -17,29 +17,44 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 
-import com.flagent.client.apis.ExportApi
-import com.flagent.client.models.Error
-
+/**
+ * Export API tests. getExportEvalCacheJSON returns Map<String, Any> and getExportSQLite returns File;
+ * with MockEngine + ContentNegotiation we only verify request/status (body deserialization has limits).
+ */
 class ExportApiTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of ExportApi
-        //val apiInstance = ExportApi()
-
-        // to test getExportEvalCacheJSON
         should("test getExportEvalCacheJSON") {
-            // uncomment below to test getExportEvalCacheJSON
-            //val result : kotlin.collections.Map<kotlin.String, kotlin.Any> = apiInstance.getExportEvalCacheJSON()
-            //result shouldBe ("TODO")
+            runTest {
+                val json = """{"revision":"r1","flags":{},"experiments":{}}"""
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(json), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = ExportApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.getExportEvalCacheJSON()
+                response.status shouldBe 200
+                response.success shouldBe true
+                // Body is Map<String, Any>; kotlinx.serialization has no default serializer for Map, so we only assert status.
+            }
         }
 
-        // to test getExportSQLite
         should("test getExportSQLite") {
-            // uncomment below to test getExportSQLite
-            //val excludeSnapshots : kotlin.Boolean = true // kotlin.Boolean | Export without snapshots data - useful for smaller db without snapshots
-            //val result : java.io.File = apiInstance.getExportSQLite(excludeSnapshots)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(ByteArray(0)), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/octet-stream"))
+                }
+                val api = ExportApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.getExportSQLite(excludeSnapshots = true)
+                response.status shouldBe 200
+                response.success shouldBe true
+                // File response type is not handled by ContentNegotiation in mock; integration test with real server would assert body.
+            }
         }
-
     }
 }

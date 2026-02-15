@@ -1,45 +1,54 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for EvaluationBatchRequest
 void main() {
-  final instance = EvaluationBatchRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = EvaluationBatchRequest((b) => b
+    ..entities = ListBuilder<EvaluationEntity>([
+      EvaluationEntity((e) => e
+        ..entityID = 'user-1'
+        ..entityType = 'user'),
+    ])
+    ..enableDebug = false
+    ..flagIDs = ListBuilder<int>([1, 2])
+    ..flagKeys = ListBuilder<String>(['flag_a'])
+    ..flagTags = ListBuilder<String>(['tag1'])
+    ..flagTagsOperator = EvaluationBatchRequestFlagTagsOperatorEnum.valueOf('ANY'));
 
   group(EvaluationBatchRequest, () {
-    // BuiltList<EvaluationEntity> entities
     test('to test the property `entities`', () async {
-      // TODO
+      expect(instance.entities.length, equals(1));
+      expect(instance.entities[0].entityID, equals('user-1'));
     });
 
-    // bool enableDebug (default value: false)
     test('to test the property `enableDebug`', () async {
-      // TODO
+      expect(instance.enableDebug, equals(false));
     });
 
-    // FlagIDs. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results.
-    // BuiltList<int> flagIDs
     test('to test the property `flagIDs`', () async {
-      // TODO
+      expect(instance.flagIDs, isNotNull);
+      expect(instance.flagIDs!.length, equals(2));
+      expect(instance.flagIDs![0], equals(1));
     });
 
-    // FlagKeys. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results.
-    // BuiltList<String> flagKeys
     test('to test the property `flagKeys`', () async {
-      // TODO
+      expect(instance.flagKeys, isNotNull);
+      expect(instance.flagKeys!.length, equals(1));
+      expect(instance.flagKeys![0], equals('flag_a'));
     });
 
-    // FlagTags. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results.
-    // BuiltList<String> flagTags
     test('to test the property `flagTags`', () async {
-      // TODO
+      expect(instance.flagTags, isNotNull);
+      expect(instance.flagTags!.length, equals(1));
+      expect(instance.flagTags![0], equals('tag1'));
     });
 
-    // Determine how flagTags is used to filter flags to be evaluated.
-    // String flagTagsOperator (default value: 'ANY')
     test('to test the property `flagTagsOperator`', () async {
-      // TODO
+      expect(
+        instance.flagTagsOperator,
+        equals(EvaluationBatchRequestFlagTagsOperatorEnum.valueOf('ANY')),
+      );
     });
-
   });
 }

@@ -17,35 +17,45 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.DistributionApi
-import com.flagent.client.models.Distribution
-import com.flagent.client.models.Error
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 import com.flagent.client.models.PutDistributionsRequest
+import com.flagent.client.models.DistributionRequest
 
 class DistributionApiTest : ShouldSpec() {
+    private val distributionJson = """{"id":1,"segmentID":10,"variantID":100,"percent":50,"variantKey":"control"}"""
+    private val distributionListJson = """[$distributionJson]"""
+
     init {
-        // uncomment below to create an instance of DistributionApi
-        //val apiInstance = DistributionApi()
-
-        // to test findDistributions
         should("test findDistributions") {
-            // uncomment below to test findDistributions
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //val result : kotlin.collections.List<Distribution> = apiInstance.findDistributions(flagId, segmentId)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(distributionListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = DistributionApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.findDistributions(1L, 10L)
+                response.status shouldBe 200
+                val body = response.body()
+                body.size shouldBe 1
+                body[0].percent shouldBe 50L
+            }
         }
 
-        // to test putDistributions
         should("test putDistributions") {
-            // uncomment below to test putDistributions
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //val putDistributionsRequest : PutDistributionsRequest = {"distributions":[{"variantID":1,"variantKey":"control","percent":50},{"variantID":2,"variantKey":"treatment","percent":50}]} // PutDistributionsRequest | 
-            //val result : kotlin.collections.List<Distribution> = apiInstance.putDistributions(flagId, segmentId, putDistributionsRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(distributionListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = DistributionApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val req = PutDistributionsRequest(distributions = listOf(DistributionRequest(variantID = 100L, percent = 50L, variantKey = "control")))
+                val response = api.putDistributions(1L, 10L, req)
+                response.status shouldBe 200
+                response.body().size shouldBe 1
+            }
         }
-
     }
 }

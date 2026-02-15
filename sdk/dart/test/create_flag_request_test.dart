@@ -3,26 +3,22 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for CreateFlagRequest
 void main() {
-  final instance = CreateFlagRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = CreateFlagRequest((b) => b
+    ..description = 'New flag'
+    ..key = 'new_feature'
+    ..template = 'default');
 
   group(CreateFlagRequest, () {
-    // String description
     test('to test the property `description`', () async {
-      // TODO
+      expect(instance.description, equals('New flag'));
     });
 
-    // Unique key representation of the flag
-    // String key
     test('to test the property `key`', () async {
-      // TODO
+      expect(instance.key, equals('new_feature'));
     });
 
-    // Template for flag creation
-    // String template
     test('to test the property `template`', () async {
-      // TODO
+      expect(instance.template, equals('default'));
     });
-
   });
 }

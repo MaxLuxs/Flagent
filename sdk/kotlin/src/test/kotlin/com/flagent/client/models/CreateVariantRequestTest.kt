@@ -17,25 +17,23 @@ package com.flagent.client.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.models.CreateVariantRequest
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class CreateVariantRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of CreateVariantRequest
-        //val modelInstance = CreateVariantRequest()
+        val attachment = buildJsonObject { put("payload", "data") }
+        val modelInstance = CreateVariantRequest(
+            key = "new_variant",
+            attachment = attachment
+        )
 
-        // to test the property `key`
         should("test key") {
-            // uncomment below to test the property
-            //modelInstance.key shouldBe ("TODO")
+            modelInstance.key shouldBe "new_variant"
         }
 
-        // to test the property `attachment`
         should("test attachment") {
-            // uncomment below to test the property
-            //modelInstance.attachment shouldBe ("TODO")
+            modelInstance.attachment shouldBe attachment
         }
-
     }
 }

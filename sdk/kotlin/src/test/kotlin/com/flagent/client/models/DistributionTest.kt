@@ -18,42 +18,34 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Distribution
-
 class DistributionTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Distribution
-        //val modelInstance = Distribution()
+        val modelInstance = Distribution(
+            id = 1L,
+            segmentID = 10L,
+            variantID = 100L,
+            percent = 50L,
+            variantKey = "variant_a"
+        )
 
-        // to test the property `id`
         should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
+            modelInstance.id shouldBe 1L
         }
 
-        // to test the property `segmentID`
         should("test segmentID") {
-            // uncomment below to test the property
-            //modelInstance.segmentID shouldBe ("TODO")
+            modelInstance.segmentID shouldBe 10L
         }
 
-        // to test the property `variantID`
         should("test variantID") {
-            // uncomment below to test the property
-            //modelInstance.variantID shouldBe ("TODO")
+            modelInstance.variantID shouldBe 100L
         }
 
-        // to test the property `percent`
         should("test percent") {
-            // uncomment below to test the property
-            //modelInstance.percent shouldBe ("TODO")
+            modelInstance.percent shouldBe 50L
         }
 
-        // to test the property `variantKey`
         should("test variantKey") {
-            // uncomment below to test the property
-            //modelInstance.variantKey shouldBe ("TODO")
+            modelInstance.variantKey shouldBe "variant_a"
         }
-
     }
 }

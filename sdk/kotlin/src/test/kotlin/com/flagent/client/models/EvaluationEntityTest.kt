@@ -17,31 +17,28 @@ package com.flagent.client.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.models.EvaluationEntity
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class EvaluationEntityTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of EvaluationEntity
-        //val modelInstance = EvaluationEntity()
+        val entityContext = buildJsonObject { put("region", "EU") }
+        val modelInstance = EvaluationEntity(
+            entityID = "entity-1",
+            entityType = "user",
+            entityContext = entityContext
+        )
 
-        // to test the property `entityID`
         should("test entityID") {
-            // uncomment below to test the property
-            //modelInstance.entityID shouldBe ("TODO")
+            modelInstance.entityID shouldBe "entity-1"
         }
 
-        // to test the property `entityType`
         should("test entityType") {
-            // uncomment below to test the property
-            //modelInstance.entityType shouldBe ("TODO")
+            modelInstance.entityType shouldBe "user"
         }
 
-        // to test the property `entityContext`
         should("test entityContext") {
-            // uncomment below to test the property
-            //modelInstance.entityContext shouldBe ("TODO")
+            modelInstance.entityContext shouldBe entityContext
         }
-
     }
 }

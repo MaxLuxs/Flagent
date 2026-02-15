@@ -3,34 +3,32 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for Constraint
 void main() {
-  final instance = ConstraintBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = Constraint((b) => b
+    ..id = 1
+    ..segmentID = 10
+    ..property = 'region'
+    ..operator_ = ConstraintOperator_Enum.valueOf('EQ')
+    ..value = 'EU');
 
   group(Constraint, () {
-    // int id
     test('to test the property `id`', () async {
-      // TODO
+      expect(instance.id, equals(1));
     });
 
-    // int segmentID
     test('to test the property `segmentID`', () async {
-      // TODO
+      expect(instance.segmentID, equals(10));
     });
 
-    // String property
     test('to test the property `property`', () async {
-      // TODO
+      expect(instance.property, equals('region'));
     });
 
-    // String operator_
     test('to test the property `operator_`', () async {
-      // TODO
+      expect(instance.operator_, equals(ConstraintOperator_Enum.valueOf('EQ')));
     });
 
-    // String value
     test('to test the property `value`', () async {
-      // TODO
+      expect(instance.value, equals('EU'));
     });
-
   });
 }

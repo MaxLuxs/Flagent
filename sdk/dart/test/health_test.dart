@@ -3,15 +3,11 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for Health
 void main() {
-  final instance = HealthBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = Health((b) => b..status = 'ok');
 
   group(Health, () {
-    // Health status of the service
-    // String status
     test('to test the property `status`', () async {
-      // TODO
+      expect(instance.status, equals('ok'));
     });
-
   });
 }

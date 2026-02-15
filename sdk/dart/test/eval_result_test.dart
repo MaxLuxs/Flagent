@@ -1,66 +1,75 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/json_object.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for EvalResult
 void main() {
-  final instance = EvalResultBuilder();
-  // TODO add properties to the builder and call build()
+  final evalCtx = EvalContext((b) => b
+    ..entityID = 'user-1'
+    ..entityType = 'user'
+    ..flagKey = 'test_flag');
+  final instance = EvalResult((b) => b
+    ..flagID = 1
+    ..flagKey = 'test_flag'
+    ..flagSnapshotID = 10
+    ..flagTags = ListBuilder<String>(['tag1'])
+    ..segmentID = 5
+    ..variantID = 2
+    ..variantKey = 'control'
+    ..variantAttachment = MapBuilder<String, JsonObject?>()
+    ..evalContext = evalCtx.toBuilder()
+    ..timestamp = DateTime.utc(2024, 1, 1, 12, 0, 0)
+    ..evalDebugLog = null);
 
   group(EvalResult, () {
-    // int flagID
     test('to test the property `flagID`', () async {
-      // TODO
+      expect(instance.flagID, equals(1));
     });
 
-    // String flagKey
     test('to test the property `flagKey`', () async {
-      // TODO
+      expect(instance.flagKey, equals('test_flag'));
     });
 
-    // int flagSnapshotID
     test('to test the property `flagSnapshotID`', () async {
-      // TODO
+      expect(instance.flagSnapshotID, equals(10));
     });
 
-    // BuiltList<String> flagTags
     test('to test the property `flagTags`', () async {
-      // TODO
+      expect(instance.flagTags, isNotNull);
+      expect(instance.flagTags!.length, equals(1));
+      expect(instance.flagTags![0], equals('tag1'));
     });
 
-    // int segmentID
     test('to test the property `segmentID`', () async {
-      // TODO
+      expect(instance.segmentID, equals(5));
     });
 
-    // int variantID
     test('to test the property `variantID`', () async {
-      // TODO
+      expect(instance.variantID, equals(2));
     });
 
-    // String variantKey
     test('to test the property `variantKey`', () async {
-      // TODO
+      expect(instance.variantKey, equals('control'));
     });
 
-    // BuiltMap<String, JsonObject> variantAttachment
     test('to test the property `variantAttachment`', () async {
-      // TODO
+      expect(instance.variantAttachment, isNotNull);
+      expect(instance.variantAttachment!.isEmpty, isTrue);
     });
 
-    // EvalContext evalContext
     test('to test the property `evalContext`', () async {
-      // TODO
+      expect(instance.evalContext, isNotNull);
+      expect(instance.evalContext!.entityID, equals('user-1'));
+      expect(instance.evalContext!.flagKey, equals('test_flag'));
     });
 
-    // DateTime timestamp
     test('to test the property `timestamp`', () async {
-      // TODO
+      expect(instance.timestamp, equals(DateTime.utc(2024, 1, 1, 12, 0, 0)));
     });
 
-    // EvalDebugLog evalDebugLog
     test('to test the property `evalDebugLog`', () async {
-      // TODO
+      expect(instance.evalDebugLog, isNull);
     });
-
   });
 }

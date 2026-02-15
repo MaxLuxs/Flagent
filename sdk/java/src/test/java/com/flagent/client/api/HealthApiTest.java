@@ -17,6 +17,7 @@ import com.flagent.client.ApiException;
 import com.flagent.client.model.Error;
 import com.flagent.client.model.Health;
 import com.flagent.client.model.Info;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +29,9 @@ import java.util.Set;
 
 
 /**
- * API tests for HealthApi
+ * API tests for HealthApi. Disabled: requires live Flagent server.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class HealthApiTest {
 
     private final HealthApi api = new HealthApi();
@@ -46,10 +47,9 @@ public class HealthApiTest {
      */
     @Test
     public void getHealthTest() throws ApiException {
-        Health response = 
-        api.getHealth();
-        
-        // TODO: test validations
+        Health response = api.getHealth();
+        Assertions.assertNotNull(response);
+        Assertions.assertNotNull(response.getStatus());
     }
     
     /**
@@ -62,10 +62,8 @@ public class HealthApiTest {
      */
     @Test
     public void getInfoTest() throws ApiException {
-        Info response = 
-        api.getInfo();
-        
-        // TODO: test validations
+        Info response = api.getInfo();
+        Assertions.assertNotNull(response);
     }
-    
+
 }

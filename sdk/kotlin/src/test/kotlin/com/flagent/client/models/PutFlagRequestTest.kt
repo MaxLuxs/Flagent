@@ -18,42 +18,34 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.PutFlagRequest
-
 class PutFlagRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of PutFlagRequest
-        //val modelInstance = PutFlagRequest()
+        val modelInstance = PutFlagRequest(
+            description = "Updated description",
+            key = "updated_key",
+            dataRecordsEnabled = true,
+            entityType = "user",
+            notes = "# Usage notes"
+        )
 
-        // to test the property `description`
         should("test description") {
-            // uncomment below to test the property
-            //modelInstance.description shouldBe ("TODO")
+            modelInstance.description shouldBe "Updated description"
         }
 
-        // to test the property `key`
         should("test key") {
-            // uncomment below to test the property
-            //modelInstance.key shouldBe ("TODO")
+            modelInstance.key shouldBe "updated_key"
         }
 
-        // to test the property `dataRecordsEnabled` - Enabled data records will get data logging in the metrics pipeline
         should("test dataRecordsEnabled") {
-            // uncomment below to test the property
-            //modelInstance.dataRecordsEnabled shouldBe ("TODO")
+            modelInstance.dataRecordsEnabled shouldBe true
         }
 
-        // to test the property `entityType` - It will overwrite entityType into evaluation logs if it's not empty
         should("test entityType") {
-            // uncomment below to test the property
-            //modelInstance.entityType shouldBe ("TODO")
+            modelInstance.entityType shouldBe "user"
         }
 
-        // to test the property `notes`
         should("test notes") {
-            // uncomment below to test the property
-            //modelInstance.notes shouldBe ("TODO")
+            modelInstance.notes shouldBe "# Usage notes"
         }
-
     }
 }

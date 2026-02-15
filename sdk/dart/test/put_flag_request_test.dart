@@ -3,36 +3,32 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for PutFlagRequest
 void main() {
-  final instance = PutFlagRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = PutFlagRequest((b) => b
+    ..description = 'Updated description'
+    ..key = 'updated_key'
+    ..dataRecordsEnabled = true
+    ..entityType = 'device'
+    ..notes = 'Updated notes');
 
   group(PutFlagRequest, () {
-    // String description
     test('to test the property `description`', () async {
-      // TODO
+      expect(instance.description, equals('Updated description'));
     });
 
-    // String key
     test('to test the property `key`', () async {
-      // TODO
+      expect(instance.key, equals('updated_key'));
     });
 
-    // Enabled data records will get data logging in the metrics pipeline
-    // bool dataRecordsEnabled
     test('to test the property `dataRecordsEnabled`', () async {
-      // TODO
+      expect(instance.dataRecordsEnabled, equals(true));
     });
 
-    // It will overwrite entityType into evaluation logs if it's not empty
-    // String entityType
     test('to test the property `entityType`', () async {
-      // TODO
+      expect(instance.entityType, equals('device'));
     });
 
-    // String notes
     test('to test the property `notes`', () async {
-      // TODO
+      expect(instance.notes, equals('Updated notes'));
     });
-
   });
 }

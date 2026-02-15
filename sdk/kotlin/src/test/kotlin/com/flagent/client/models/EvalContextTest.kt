@@ -17,61 +17,53 @@ package com.flagent.client.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.models.EvalContext
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class EvalContextTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of EvalContext
-        //val modelInstance = EvalContext()
+        val entityContext = buildJsonObject { put("tier", "premium") }
+        val modelInstance = EvalContext(
+            entityID = "user-123",
+            entityType = "user",
+            entityContext = entityContext,
+            enableDebug = true,
+            flagID = 1L,
+            flagKey = "my_flag",
+            flagTags = listOf("experiment"),
+            flagTagsOperator = EvalContext.FlagTagsOperator.ALL
+        )
 
-        // to test the property `entityID` - EntityID is used to deterministically at random to evaluate the flag result. If it's empty, flagent will randomly generate one.
         should("test entityID") {
-            // uncomment below to test the property
-            //modelInstance.entityID shouldBe ("TODO")
+            modelInstance.entityID shouldBe "user-123"
         }
 
-        // to test the property `entityType`
         should("test entityType") {
-            // uncomment below to test the property
-            //modelInstance.entityType shouldBe ("TODO")
+            modelInstance.entityType shouldBe "user"
         }
 
-        // to test the property `entityContext`
         should("test entityContext") {
-            // uncomment below to test the property
-            //modelInstance.entityContext shouldBe ("TODO")
+            modelInstance.entityContext shouldBe entityContext
         }
 
-        // to test the property `enableDebug`
         should("test enableDebug") {
-            // uncomment below to test the property
-            //modelInstance.enableDebug shouldBe ("TODO")
+            modelInstance.enableDebug shouldBe true
         }
 
-        // to test the property `flagID` - FlagID. flagID or flagKey will resolve to the same flag. Either works.
         should("test flagID") {
-            // uncomment below to test the property
-            //modelInstance.flagID shouldBe ("TODO")
+            modelInstance.flagID shouldBe 1L
         }
 
-        // to test the property `flagKey` - FlagKey. flagID or flagKey will resolve to the same flag. Either works.
         should("test flagKey") {
-            // uncomment below to test the property
-            //modelInstance.flagKey shouldBe ("TODO")
+            modelInstance.flagKey shouldBe "my_flag"
         }
 
-        // to test the property `flagTags` - FlagTags. flagTags looks up flags by tag. Either works.
         should("test flagTags") {
-            // uncomment below to test the property
-            //modelInstance.flagTags shouldBe ("TODO")
+            modelInstance.flagTags shouldBe listOf("experiment")
         }
 
-        // to test the property `flagTagsOperator` - Determine how flagTags is used to filter flags to be evaluated. OR extends the evaluation to those which contains at least one of the provided flagTags or AND limit the evaluation to those which contains all the flagTags.
         should("test flagTagsOperator") {
-            // uncomment below to test the property
-            //modelInstance.flagTagsOperator shouldBe ("TODO")
+            modelInstance.flagTagsOperator shouldBe EvalContext.FlagTagsOperator.ALL
         }
-
     }
 }

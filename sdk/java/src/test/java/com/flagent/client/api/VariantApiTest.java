@@ -18,6 +18,7 @@ import com.flagent.client.model.CreateVariantRequest;
 import com.flagent.client.model.Error;
 import com.flagent.client.model.PutVariantRequest;
 import com.flagent.client.model.Variant;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -29,9 +30,9 @@ import java.util.Set;
 
 
 /**
- * API tests for VariantApi
+ * API tests for VariantApi. Disabled: requires live Flagent server.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class VariantApiTest {
 
     private final VariantApi api = new VariantApi();
@@ -49,10 +50,8 @@ public class VariantApiTest {
     public void createVariantTest() throws ApiException {
         Long flagId = null;
         CreateVariantRequest createVariantRequest = null;
-        Variant response = 
-        api.createVariant(flagId, createVariantRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.createVariant(flagId, createVariantRequest));
     }
     
     /**
@@ -68,9 +67,8 @@ public class VariantApiTest {
         Long flagId = null;
         Long variantId = null;
         
-        api.deleteVariant(flagId, variantId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.deleteVariant(flagId, variantId));
     }
     
     /**
@@ -84,10 +82,8 @@ public class VariantApiTest {
     @Test
     public void findVariantsTest() throws ApiException {
         Long flagId = null;
-        List<Variant> response = 
-        api.findVariants(flagId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.findVariants(flagId));
     }
     
     /**
@@ -103,10 +99,8 @@ public class VariantApiTest {
         Long flagId = null;
         Long variantId = null;
         PutVariantRequest putVariantRequest = null;
-        Variant response = 
-        api.putVariant(flagId, variantId, putVariantRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.putVariant(flagId, variantId, putVariantRequest));
     }
-    
+
 }

@@ -18,18 +18,12 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.SetFlagEnabledRequest
-
 class SetFlagEnabledRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of SetFlagEnabledRequest
-        //val modelInstance = SetFlagEnabledRequest()
+        val modelInstance = SetFlagEnabledRequest(enabled = true)
 
-        // to test the property `enabled`
         should("test enabled") {
-            // uncomment below to test the property
-            //modelInstance.enabled shouldBe ("TODO")
+            modelInstance.enabled shouldBe true
         }
-
     }
 }

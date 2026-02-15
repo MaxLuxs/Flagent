@@ -27,6 +27,7 @@ dependencies {
         implementation("com.flagent:kotlin-enhanced:0.1.6")
     }
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     implementation(libs.compose.runtime)

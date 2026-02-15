@@ -18,19 +18,19 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.EvaluationBatchResponse
-import com.flagent.client.models.EvalResult
-
 class EvaluationBatchResponseTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of EvaluationBatchResponse
-        //val modelInstance = EvaluationBatchResponse()
+        val evaluationResults = listOf(
+            EvalResult(flagKey = "flag1", variantKey = "control"),
+            EvalResult(flagKey = "flag2", variantKey = "treatment")
+        )
+        val modelInstance = EvaluationBatchResponse(evaluationResults = evaluationResults)
 
-        // to test the property `evaluationResults`
         should("test evaluationResults") {
-            // uncomment below to test the property
-            //modelInstance.evaluationResults shouldBe ("TODO")
+            modelInstance.evaluationResults shouldBe evaluationResults
+            modelInstance.evaluationResults.size shouldBe 2
+            modelInstance.evaluationResults[0].flagKey shouldBe "flag1"
+            modelInstance.evaluationResults[1].variantKey shouldBe "treatment"
         }
-
     }
 }

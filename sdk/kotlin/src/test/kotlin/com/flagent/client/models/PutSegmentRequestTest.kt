@@ -18,24 +18,19 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.PutSegmentRequest
-
 class PutSegmentRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of PutSegmentRequest
-        //val modelInstance = PutSegmentRequest()
+        val modelInstance = PutSegmentRequest(
+            description = "Updated segment",
+            rolloutPercent = 75L
+        )
 
-        // to test the property `description`
         should("test description") {
-            // uncomment below to test the property
-            //modelInstance.description shouldBe ("TODO")
+            modelInstance.description shouldBe "Updated segment"
         }
 
-        // to test the property `rolloutPercent`
         should("test rolloutPercent") {
-            // uncomment below to test the property
-            //modelInstance.rolloutPercent shouldBe ("TODO")
+            modelInstance.rolloutPercent shouldBe 75L
         }
-
     }
 }

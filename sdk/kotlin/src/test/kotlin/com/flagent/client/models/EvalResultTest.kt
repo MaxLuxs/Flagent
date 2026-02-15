@@ -17,81 +17,72 @@ package com.flagent.client.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.models.EvalResult
-import com.flagent.client.models.EvalContext
-import com.flagent.client.models.EvalDebugLog
+import kotlinx.datetime.Instant
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class EvalResultTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of EvalResult
-        //val modelInstance = EvalResult()
+        val evalContext = EvalContext(entityID = "user-1", entityType = "user")
+        val evalDebugLog = EvalDebugLog(msg = "Debug info")
+        val variantAttachment = buildJsonObject { put("payload", "value") }
+        val timestamp = Instant.fromEpochMilliseconds(1704067200000L)
+        val modelInstance = EvalResult(
+            flagID = 1L,
+            flagKey = "test_flag",
+            flagSnapshotID = 100L,
+            flagTags = listOf("tag1"),
+            segmentID = 10L,
+            variantID = 5L,
+            variantKey = "control",
+            variantAttachment = variantAttachment,
+            evalContext = evalContext,
+            timestamp = timestamp,
+            evalDebugLog = evalDebugLog
+        )
 
-        // to test the property `flagID`
         should("test flagID") {
-            // uncomment below to test the property
-            //modelInstance.flagID shouldBe ("TODO")
+            modelInstance.flagID shouldBe 1L
         }
 
-        // to test the property `flagKey`
         should("test flagKey") {
-            // uncomment below to test the property
-            //modelInstance.flagKey shouldBe ("TODO")
+            modelInstance.flagKey shouldBe "test_flag"
         }
 
-        // to test the property `flagSnapshotID`
         should("test flagSnapshotID") {
-            // uncomment below to test the property
-            //modelInstance.flagSnapshotID shouldBe ("TODO")
+            modelInstance.flagSnapshotID shouldBe 100L
         }
 
-        // to test the property `flagTags`
         should("test flagTags") {
-            // uncomment below to test the property
-            //modelInstance.flagTags shouldBe ("TODO")
+            modelInstance.flagTags shouldBe listOf("tag1")
         }
 
-        // to test the property `segmentID`
         should("test segmentID") {
-            // uncomment below to test the property
-            //modelInstance.segmentID shouldBe ("TODO")
+            modelInstance.segmentID shouldBe 10L
         }
 
-        // to test the property `variantID`
         should("test variantID") {
-            // uncomment below to test the property
-            //modelInstance.variantID shouldBe ("TODO")
+            modelInstance.variantID shouldBe 5L
         }
 
-        // to test the property `variantKey`
         should("test variantKey") {
-            // uncomment below to test the property
-            //modelInstance.variantKey shouldBe ("TODO")
+            modelInstance.variantKey shouldBe "control"
         }
 
-        // to test the property `variantAttachment`
         should("test variantAttachment") {
-            // uncomment below to test the property
-            //modelInstance.variantAttachment shouldBe ("TODO")
+            modelInstance.variantAttachment shouldBe variantAttachment
         }
 
-        // to test the property `evalContext`
         should("test evalContext") {
-            // uncomment below to test the property
-            //modelInstance.evalContext shouldBe ("TODO")
+            modelInstance.evalContext shouldBe evalContext
         }
 
-        // to test the property `timestamp`
         should("test timestamp") {
-            // uncomment below to test the property
-            //modelInstance.timestamp shouldBe ("TODO")
+            modelInstance.timestamp shouldBe timestamp
         }
 
-        // to test the property `evalDebugLog`
         should("test evalDebugLog") {
-            // uncomment below to test the property
-            //modelInstance.evalDebugLog shouldBe ("TODO")
+            modelInstance.evalDebugLog shouldBe evalDebugLog
         }
-
     }
 }

@@ -3,27 +3,22 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for Info
 void main() {
-  final instance = InfoBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = Info((b) => b
+    ..version = '1.0.0'
+    ..buildTime = '2024-01-01T00:00:00Z'
+    ..gitCommit = 'abc123');
 
   group(Info, () {
-    // Application version
-    // String version
     test('to test the property `version`', () async {
-      // TODO
+      expect(instance.version, equals('1.0.0'));
     });
 
-    // Build timestamp
-    // String buildTime
     test('to test the property `buildTime`', () async {
-      // TODO
+      expect(instance.buildTime, equals('2024-01-01T00:00:00Z'));
     });
 
-    // Git commit hash
-    // String gitCommit
     test('to test the property `gitCommit`', () async {
-      // TODO
+      expect(instance.gitCommit, equals('abc123'));
     });
-
   });
 }

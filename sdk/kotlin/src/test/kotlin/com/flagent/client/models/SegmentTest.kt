@@ -18,56 +18,50 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Segment
-import com.flagent.client.models.Constraint
-import com.flagent.client.models.Distribution
-
 class SegmentTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Segment
-        //val modelInstance = Segment()
+        val constraints = listOf(
+            Constraint(1L, 10L, "region", Constraint.`Operator`.EQ, "EU")
+        )
+        val distributions = listOf(
+            Distribution(1L, 10L, 100L, 50L, "control")
+        )
+        val modelInstance = Segment(
+            id = 1L,
+            flagID = 10L,
+            description = "Segment for EU",
+            rank = 0L,
+            rolloutPercent = 100L,
+            constraints = constraints,
+            distributions = distributions
+        )
 
-        // to test the property `id`
         should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
+            modelInstance.id shouldBe 1L
         }
 
-        // to test the property `flagID`
         should("test flagID") {
-            // uncomment below to test the property
-            //modelInstance.flagID shouldBe ("TODO")
+            modelInstance.flagID shouldBe 10L
         }
 
-        // to test the property `description`
         should("test description") {
-            // uncomment below to test the property
-            //modelInstance.description shouldBe ("TODO")
+            modelInstance.description shouldBe "Segment for EU"
         }
 
-        // to test the property `rank`
         should("test rank") {
-            // uncomment below to test the property
-            //modelInstance.rank shouldBe ("TODO")
+            modelInstance.rank shouldBe 0L
         }
 
-        // to test the property `rolloutPercent`
         should("test rolloutPercent") {
-            // uncomment below to test the property
-            //modelInstance.rolloutPercent shouldBe ("TODO")
+            modelInstance.rolloutPercent shouldBe 100L
         }
 
-        // to test the property `constraints`
         should("test constraints") {
-            // uncomment below to test the property
-            //modelInstance.constraints shouldBe ("TODO")
+            modelInstance.constraints shouldBe constraints
         }
 
-        // to test the property `distributions`
         should("test distributions") {
-            // uncomment below to test the property
-            //modelInstance.distributions shouldBe ("TODO")
+            modelInstance.distributions shouldBe distributions
         }
-
     }
 }

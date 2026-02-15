@@ -17,6 +17,7 @@ import com.flagent.client.ApiException;
 import com.flagent.client.model.CreateTagRequest;
 import com.flagent.client.model.Error;
 import com.flagent.client.model.Tag;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +29,9 @@ import java.util.Set;
 
 
 /**
- * API tests for TagApi
+ * API tests for TagApi. Disabled: requires live Flagent server.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class TagApiTest {
 
     private final TagApi api = new TagApi();
@@ -48,10 +49,8 @@ public class TagApiTest {
     public void createFlagTagTest() throws ApiException {
         Long flagId = null;
         CreateTagRequest createTagRequest = null;
-        Tag response = 
-        api.createFlagTag(flagId, createTagRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.createFlagTag(flagId, createTagRequest));
     }
     
     /**
@@ -67,9 +66,8 @@ public class TagApiTest {
         Long flagId = null;
         Long tagId = null;
         
-        api.deleteFlagTag(flagId, tagId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.deleteFlagTag(flagId, tagId));
     }
     
     /**
@@ -85,10 +83,8 @@ public class TagApiTest {
         Long limit = null;
         Long offset = null;
         String valueLike = null;
-        List<Tag> response = 
-        api.findAllTags(limit, offset, valueLike);
-        
-        // TODO: test validations
+        List<Tag> response = api.findAllTags(limit, offset, valueLike);
+        Assertions.assertNotNull(response);
     }
     
     /**
@@ -102,10 +98,8 @@ public class TagApiTest {
     @Test
     public void findFlagTagsTest() throws ApiException {
         Long flagId = null;
-        List<Tag> response = 
-        api.findFlagTags(flagId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.findFlagTags(flagId));
     }
-    
+
 }

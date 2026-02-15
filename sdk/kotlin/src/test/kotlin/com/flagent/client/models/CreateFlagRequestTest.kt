@@ -18,30 +18,24 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.CreateFlagRequest
-
 class CreateFlagRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of CreateFlagRequest
-        //val modelInstance = CreateFlagRequest()
+        val modelInstance = CreateFlagRequest(
+            description = "New feature flag",
+            key = "new_feature",
+            template = "default"
+        )
 
-        // to test the property `description`
         should("test description") {
-            // uncomment below to test the property
-            //modelInstance.description shouldBe ("TODO")
+            modelInstance.description shouldBe "New feature flag"
         }
 
-        // to test the property `key` - Unique key representation of the flag
         should("test key") {
-            // uncomment below to test the property
-            //modelInstance.key shouldBe ("TODO")
+            modelInstance.key shouldBe "new_feature"
         }
 
-        // to test the property `template` - Template for flag creation
         should("test template") {
-            // uncomment below to test the property
-            //modelInstance.template shouldBe ("TODO")
+            modelInstance.template shouldBe "default"
         }
-
     }
 }

@@ -1,29 +1,29 @@
+import 'dart:typed_data';
+
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
+import 'mock_dio_helper.dart';
 
 /// tests for ExportApi
 void main() {
-  final instance = FlagentClient().getExportApi();
+  final client = createMockFlagentClient();
+  final instance = client.getExportApi();
 
   group(ExportApi, () {
-    // Export eval cache as JSON
-    //
-    // Export JSON format of the eval cache dump. This endpoint exports the current state of the evaluation cache in JSON format.
-    //
-    //Future<BuiltMap<String, JsonObject>> getExportEvalCacheJSON() async
     test('test getExportEvalCacheJSON', () async {
-      // TODO
+      final response = await instance.getExportEvalCacheJSON();
+      expect(response.statusCode, equals(200));
+      expect(response.data, isNotNull);
+      // BuiltMap from empty {} or serialized empty map
+      expect(response.data!.length, greaterThanOrEqualTo(0));
     });
 
-    // Export database as SQLite
-    //
-    // Export sqlite3 format of the db dump, which is converted from the main database. Returns a SQLite database file that can be used for backup or migration purposes.
-    //
-    //Future<Uint8List> getExportSQLite({ bool excludeSnapshots }) async
     test('test getExportSQLite', () async {
-      // TODO
+      final response = await instance.getExportSQLite();
+      expect(response.data, isNotNull);
+      expect(response.data, isA<Uint8List>());
+      expect(response.statusCode, equals(200));
     });
-
   });
 }

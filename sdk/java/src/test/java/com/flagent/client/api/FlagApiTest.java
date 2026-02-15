@@ -20,6 +20,7 @@ import com.flagent.client.model.Flag;
 import com.flagent.client.model.FlagSnapshot;
 import com.flagent.client.model.PutFlagRequest;
 import com.flagent.client.model.SetFlagEnabledRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -31,177 +32,70 @@ import java.util.Set;
 
 
 /**
- * API tests for FlagApi
+ * API tests for FlagApi.
+ * Disabled by default: require live Flagent server. Enable and set base URL to run integration tests.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class FlagApiTest {
 
     private final FlagApi api = new FlagApi();
 
-    
-    /**
-     * Create a new flag
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
     @Test
     public void createFlagTest() throws ApiException {
         CreateFlagRequest createFlagRequest = null;
-        Flag response = 
-        api.createFlag(createFlagRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class, () -> api.createFlag(createFlagRequest));
     }
-    
-    /**
-     * Delete flag
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void deleteFlagTest() throws ApiException {
         Long flagId = null;
-        
-        api.deleteFlag(flagId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class, () -> api.deleteFlag(flagId));
     }
-    
-    /**
-     * Get all flags
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void findFlagsTest() throws ApiException {
-        Long limit = null;
-        Long offset = null;
-        Boolean enabled = null;
-        String description = null;
-        String key = null;
-        String descriptionLike = null;
-        Boolean preload = null;
-        Boolean deleted = null;
-        String tags = null;
-        List<Flag> response = 
-        api.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags);
-        
-        // TODO: test validations
+        List<Flag> response = api.findFlags(null, null, null, null, null, null, null, null, null);
+        Assertions.assertNotNull(response);
+        Assertions.assertTrue(response instanceof List);
     }
-    
-    /**
-     * Get flag by ID
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void getFlagTest() throws ApiException {
         Long flagId = null;
-        Flag response = 
-        api.getFlag(flagId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class, () -> api.getFlag(flagId));
     }
-    
-    /**
-     * Get all entity types
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void getFlagEntityTypesTest() throws ApiException {
-        List<String> response = 
-        api.getFlagEntityTypes();
-        
-        // TODO: test validations
+        List<String> response = api.getFlagEntityTypes();
+        Assertions.assertNotNull(response);
+        Assertions.assertTrue(response instanceof List);
     }
-    
-    /**
-     * Get flag snapshots
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void getFlagSnapshotsTest() throws ApiException {
         Long flagId = null;
-        Long limit = null;
-        Long offset = null;
-        String sort = null;
-        List<FlagSnapshot> response = 
-        api.getFlagSnapshots(flagId, limit, offset, sort);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class, () -> api.getFlagSnapshots(flagId, null, null, null));
     }
-    
-    /**
-     * Update flag
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void putFlagTest() throws ApiException {
         Long flagId = null;
         PutFlagRequest putFlagRequest = null;
-        Flag response = 
-        api.putFlag(flagId, putFlagRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class, () -> api.putFlag(flagId, putFlagRequest));
     }
-    
-    /**
-     * Restore deleted flag
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void restoreFlagTest() throws ApiException {
         Long flagId = null;
-        Flag response = 
-        api.restoreFlag(flagId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class, () -> api.restoreFlag(flagId));
     }
-    
-    /**
-     * Set flag enabled status
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void setFlagEnabledTest() throws ApiException {
         Long flagId = null;
         SetFlagEnabledRequest setFlagEnabledRequest = null;
-        Flag response = 
-        api.setFlagEnabled(flagId, setFlagEnabledRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class, () -> api.setFlagEnabled(flagId, setFlagEnabledRequest));
     }
-    
+
 }

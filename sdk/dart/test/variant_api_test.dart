@@ -1,43 +1,48 @@
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
+import 'mock_dio_helper.dart';
 
 /// tests for VariantApi
 void main() {
-  final instance = FlagentClient().getVariantApi();
+  final client = createMockFlagentClient();
+  final instance = client.getVariantApi();
 
   group(VariantApi, () {
-    // Create variant
-    //
-    // Create a variant for the flag. Variants are the possible outcomes of flag evaluation.
-    //
-    //Future<Variant> createVariant(int flagId, CreateVariantRequest createVariantRequest) async
     test('test createVariant', () async {
-      // TODO
+      final request = CreateVariantRequest((b) => b..key = 'variant_a');
+      final response = await instance.createVariant(
+        flagId: 1,
+        createVariantRequest: request,
+      );
+      expect(response.data, isNotNull);
+      expect(response.data!.id, equals(1));
+      expect(response.data!.key, equals('control'));
+      expect(response.statusCode, equals(200));
     });
 
-    // Delete variant
-    //
-    // Delete a variant. This will also remove it from all distributions.
-    //
-    //Future deleteVariant(int flagId, int variantId) async
     test('test deleteVariant', () async {
-      // TODO
+      final response = await instance.deleteVariant(flagId: 1, variantId: 1);
+      expect(response.statusCode, equals(200));
     });
 
-    // Get variants for flag
-    //
-    //Future<BuiltList<Variant>> findVariants(int flagId) async
     test('test findVariants', () async {
-      // TODO
+      final response = await instance.findVariants(flagId: 1);
+      expect(response.data, isNotNull);
+      expect(response.data!, isEmpty);
+      expect(response.statusCode, equals(200));
     });
 
-    // Update variant
-    //
-    //Future<Variant> putVariant(int flagId, int variantId, PutVariantRequest putVariantRequest) async
     test('test putVariant', () async {
-      // TODO
+      final request = PutVariantRequest((b) => b..key = 'updated_variant');
+      final response = await instance.putVariant(
+        flagId: 1,
+        variantId: 1,
+        putVariantRequest: request,
+      );
+      expect(response.data, isNotNull);
+      expect(response.data!.key, equals('control'));
+      expect(response.statusCode, equals(200));
     });
-
   });
 }

@@ -18,24 +18,19 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Tag
-
 class TagTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Tag
-        //val modelInstance = Tag()
+        val modelInstance = Tag(
+            id = 1L,
+            `value` = "tag-value"
+        )
 
-        // to test the property `id`
         should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
+            modelInstance.id shouldBe 1L
         }
 
-        // to test the property ``value``
-        should("test `value`") {
-            // uncomment below to test the property
-            //modelInstance.`value` shouldBe ("TODO")
+        should("test value") {
+            modelInstance.`value` shouldBe "tag-value"
         }
-
     }
 }

@@ -1,16 +1,18 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for PutSegmentReorderRequest
 void main() {
-  final instance = PutSegmentReorderRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = PutSegmentReorderRequest((b) => b
+    ..segmentIDs = ListBuilder<int>([3, 1, 2]));
 
   group(PutSegmentReorderRequest, () {
-    // BuiltList<int> segmentIDs
     test('to test the property `segmentIDs`', () async {
-      // TODO
+      expect(instance.segmentIDs.length, equals(3));
+      expect(instance.segmentIDs[0], equals(3));
+      expect(instance.segmentIDs[1], equals(1));
+      expect(instance.segmentIDs[2], equals(2));
     });
-
   });
 }

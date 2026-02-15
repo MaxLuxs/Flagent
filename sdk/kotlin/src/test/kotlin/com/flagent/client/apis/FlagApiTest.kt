@@ -17,102 +17,136 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.FlagApi
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 import com.flagent.client.models.CreateFlagRequest
-import com.flagent.client.models.Error
-import com.flagent.client.models.Flag
-import com.flagent.client.models.FlagSnapshot
 import com.flagent.client.models.PutFlagRequest
 import com.flagent.client.models.SetFlagEnabledRequest
 
 class FlagApiTest : ShouldSpec() {
+    private val flagJson = """{"id":1,"key":"test_flag","description":"Desc","enabled":true,"dataRecordsEnabled":false}"""
+    private val flagListJson = """[$flagJson]"""
+    private val snapshotListJson = """[{"id":1,"flag":$flagJson,"updatedAt":1704067200000,"updatedBy":"system"}]"""
+    private val entityTypesJson = """["user","device"]"""
+
     init {
-        // uncomment below to create an instance of FlagApi
-        //val apiInstance = FlagApi()
-
-        // to test createFlag
         should("test createFlag") {
-            // uncomment below to test createFlag
-            //val createFlagRequest : CreateFlagRequest = {"description":"New feature flag","key":"new_feature"} // CreateFlagRequest | 
-            //val result : Flag = apiInstance.createFlag(createFlagRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(flagJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val req = CreateFlagRequest(description = "New flag", key = "new_feature")
+                val response = api.createFlag(req)
+                response.status shouldBe 200
+                val body = response.body()
+                body.key shouldBe "test_flag"
+                body.enabled shouldBe true
+            }
         }
 
-        // to test deleteFlag
         should("test deleteFlag") {
-            // uncomment below to test deleteFlag
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //apiInstance.deleteFlag(flagId)
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel("{}"), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                api.deleteFlag(789L)
+            }
         }
 
-        // to test findFlags
         should("test findFlags") {
-            // uncomment below to test findFlags
-            //val limit : kotlin.Long = 789 // kotlin.Long | The numbers of flags to return
-            //val offset : kotlin.Long = 789 // kotlin.Long | Return flags given the offset, it should usually set together with limit
-            //val enabled : kotlin.Boolean = true // kotlin.Boolean | Return flags having given enabled status
-            //val description : kotlin.String = description_example // kotlin.String | Filter flags by exact description match
-            //val key : kotlin.String = key_example // kotlin.String | Filter flags by exact key match
-            //val descriptionLike : kotlin.String = descriptionLike_example // kotlin.String | Filter flags by partial description match
-            //val preload : kotlin.Boolean = true // kotlin.Boolean | Preload segments, variants, and tags
-            //val deleted : kotlin.Boolean = true // kotlin.Boolean | Include deleted flags in results
-            //val tags : kotlin.String = tags_example // kotlin.String | Filter flags by tags (comma-separated)
-            //val result : kotlin.collections.List<Flag> = apiInstance.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(flagListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.findFlags(limit = 10L, offset = 0L, null, null, null, null, null, null, null)
+                response.status shouldBe 200
+                val body = response.body()
+                body.size shouldBe 1
+                body[0].key shouldBe "test_flag"
+            }
         }
 
-        // to test getFlag
         should("test getFlag") {
-            // uncomment below to test getFlag
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val result : Flag = apiInstance.getFlag(flagId)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(flagJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.getFlag(789L)
+                response.status shouldBe 200
+                response.body().key shouldBe "test_flag"
+            }
         }
 
-        // to test getFlagEntityTypes
         should("test getFlagEntityTypes") {
-            // uncomment below to test getFlagEntityTypes
-            //val result : kotlin.collections.List<kotlin.String> = apiInstance.getFlagEntityTypes()
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(entityTypesJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.getFlagEntityTypes()
+                response.status shouldBe 200
+                val body = response.body()
+                body shouldBe listOf("user", "device")
+            }
         }
 
-        // to test getFlagSnapshots
         should("test getFlagSnapshots") {
-            // uncomment below to test getFlagSnapshots
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val limit : kotlin.Long = 789 // kotlin.Long | The number of snapshots to return
-            //val offset : kotlin.Long = 789 // kotlin.Long | Return snapshots given the offset
-            //val sort : kotlin.String = sort_example // kotlin.String | Sort order
-            //val result : kotlin.collections.List<FlagSnapshot> = apiInstance.getFlagSnapshots(flagId, limit, offset, sort)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(snapshotListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.getFlagSnapshots(789L, 10L, 0L, null)
+                response.status shouldBe 200
+                val body = response.body()
+                body.size shouldBe 1
+                body[0].flag.key shouldBe "test_flag"
+            }
         }
 
-        // to test putFlag
         should("test putFlag") {
-            // uncomment below to test putFlag
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val putFlagRequest : PutFlagRequest =  // PutFlagRequest | 
-            //val result : Flag = apiInstance.putFlag(flagId, putFlagRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(flagJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val req = PutFlagRequest(description = "Updated")
+                val response = api.putFlag(789L, req)
+                response.status shouldBe 200
+                response.body().key shouldBe "test_flag"
+            }
         }
 
-        // to test restoreFlag
         should("test restoreFlag") {
-            // uncomment below to test restoreFlag
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val result : Flag = apiInstance.restoreFlag(flagId)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(flagJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.restoreFlag(789L)
+                response.status shouldBe 200
+                response.body().id shouldBe 1L
+            }
         }
 
-        // to test setFlagEnabled
         should("test setFlagEnabled") {
-            // uncomment below to test setFlagEnabled
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val setFlagEnabledRequest : SetFlagEnabledRequest = {"enabled":true} // SetFlagEnabledRequest | 
-            //val result : Flag = apiInstance.setFlagEnabled(flagId, setFlagEnabledRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(flagJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = FlagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.setFlagEnabled(789L, SetFlagEnabledRequest(enabled = true))
+                response.status shouldBe 200
+                response.body().enabled shouldBe true
+            }
         }
-
     }
 }

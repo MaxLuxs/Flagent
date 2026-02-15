@@ -1,18 +1,17 @@
 package com.flagent.debug.ui
 
-// TODO: Implement with Compose Multiplatform when ready
-// import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composable
 import com.flagent.enhanced.manager.FlagentManager
 
 /**
- * Main entry point for Flagent Debug UI
+ * Main entry point for Flagent Debug UI.
+ * Provides a Composable debug screen for evaluation and cache actions.
  */
 object FlagentDebugUI {
     /**
-     * Get debug screen composable
-     * TODO: Uncomment when Compose Multiplatform is configured
+     * Debug screen composable: evaluation form, result display, cache actions, last evaluations.
      */
-    // @Composable
+    @Composable
     fun DebugScreen(manager: FlagentManager) {
         FlagentDebugScreen(manager = manager)
     }

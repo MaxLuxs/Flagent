@@ -29,21 +29,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.openapitools.jackson.nullable.JsonNullable;
 import java.util.NoSuchElementException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
  * Model tests for Flag
  */
 class FlagTest {
-    private final Flag model = new Flag();
 
     /**
      * Model tests for Flag
      */
     @Test
     void testFlag() {
-        // TODO: test Flag
+        Flag model = new Flag()
+            .id(1L)
+            .key("test_flag")
+            .description("Test flag description")
+            .enabled(true)
+            .dataRecordsEnabled(false);
+        Assertions.assertNotNull(model);
+        Assertions.assertEquals(1L, model.getId());
+        Assertions.assertEquals("test_flag", model.getKey());
     }
 
     /**
@@ -51,7 +57,8 @@ class FlagTest {
      */
     @Test
     void idTest() {
-        // TODO: test id
+        Flag model = new Flag().id(42L);
+        Assertions.assertEquals(42L, model.getId());
     }
 
     /**
@@ -59,7 +66,8 @@ class FlagTest {
      */
     @Test
     void keyTest() {
-        // TODO: test key
+        Flag model = new Flag().key("my_key");
+        Assertions.assertEquals("my_key", model.getKey());
     }
 
     /**
@@ -67,7 +75,8 @@ class FlagTest {
      */
     @Test
     void descriptionTest() {
-        // TODO: test description
+        Flag model = new Flag().description("A description");
+        Assertions.assertEquals("A description", model.getDescription());
     }
 
     /**
@@ -75,7 +84,10 @@ class FlagTest {
      */
     @Test
     void enabledTest() {
-        // TODO: test enabled
+        Flag model = new Flag().enabled(true);
+        Assertions.assertTrue(model.getEnabled());
+        model.setEnabled(false);
+        Assertions.assertFalse(model.getEnabled());
     }
 
     /**
@@ -83,7 +95,10 @@ class FlagTest {
      */
     @Test
     void snapshotIDTest() {
-        // TODO: test snapshotID
+        Flag model = new Flag().snapshotID(100L);
+        Assertions.assertEquals(100L, model.getSnapshotID());
+        model.setSnapshotID(null);
+        Assertions.assertNull(model.getSnapshotID());
     }
 
     /**
@@ -91,7 +106,8 @@ class FlagTest {
      */
     @Test
     void dataRecordsEnabledTest() {
-        // TODO: test dataRecordsEnabled
+        Flag model = new Flag().dataRecordsEnabled(true);
+        Assertions.assertTrue(model.getDataRecordsEnabled());
     }
 
     /**
@@ -99,7 +115,8 @@ class FlagTest {
      */
     @Test
     void entityTypeTest() {
-        // TODO: test entityType
+        Flag model = new Flag().entityType("user");
+        Assertions.assertEquals("user", model.getEntityType());
     }
 
     /**
@@ -107,7 +124,8 @@ class FlagTest {
      */
     @Test
     void notesTest() {
-        // TODO: test notes
+        Flag model = new Flag().notes("Some notes");
+        Assertions.assertEquals("Some notes", model.getNotes());
     }
 
     /**
@@ -115,7 +133,8 @@ class FlagTest {
      */
     @Test
     void createdByTest() {
-        // TODO: test createdBy
+        Flag model = new Flag().createdBy("admin");
+        Assertions.assertEquals("admin", model.getCreatedBy());
     }
 
     /**
@@ -123,7 +142,8 @@ class FlagTest {
      */
     @Test
     void updatedByTest() {
-        // TODO: test updatedBy
+        Flag model = new Flag().updatedBy("system");
+        Assertions.assertEquals("system", model.getUpdatedBy());
     }
 
     /**
@@ -131,7 +151,12 @@ class FlagTest {
      */
     @Test
     void segmentsTest() {
-        // TODO: test segments
+        List<Segment> segments = new ArrayList<>();
+        segments.add(new Segment().id(1L).flagID(1L).description("s1").rank(0L).rolloutPercent(100L));
+        Flag model = new Flag().segments(segments);
+        Assertions.assertNotNull(model.getSegments());
+        Assertions.assertEquals(1, model.getSegments().size());
+        Assertions.assertEquals(1L, model.getSegments().get(0).getId());
     }
 
     /**
@@ -139,7 +164,12 @@ class FlagTest {
      */
     @Test
     void variantsTest() {
-        // TODO: test variants
+        List<Variant> variants = new ArrayList<>();
+        variants.add(new Variant().id(1L).flagID(1L).key("control"));
+        Flag model = new Flag().variants(variants);
+        Assertions.assertNotNull(model.getVariants());
+        Assertions.assertEquals(1, model.getVariants().size());
+        Assertions.assertEquals("control", model.getVariants().get(0).getKey());
     }
 
     /**
@@ -147,7 +177,12 @@ class FlagTest {
      */
     @Test
     void tagsTest() {
-        // TODO: test tags
+        List<Tag> tags = new ArrayList<>();
+        tags.add(new Tag().id(1L).value("production"));
+        Flag model = new Flag().tags(tags);
+        Assertions.assertNotNull(model.getTags());
+        Assertions.assertEquals(1, model.getTags().size());
+        Assertions.assertEquals("production", model.getTags().get(0).getValue());
     }
 
 }

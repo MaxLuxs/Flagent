@@ -3,29 +3,34 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for FlagSnapshot
 void main() {
-  final instance = FlagSnapshotBuilder();
-  // TODO add properties to the builder and call build()
+  final flag = Flag((b) => b
+    ..id = 1
+    ..key = 'snapshot_flag'
+    ..description = 'Desc'
+    ..enabled = true
+    ..dataRecordsEnabled = false);
+  final instance = FlagSnapshot((b) => b
+    ..id = 100
+    ..updatedBy = 'admin'
+    ..flag = flag.toBuilder()
+    ..updatedAt = DateTime.utc(2024, 1, 1, 12, 0, 0));
 
   group(FlagSnapshot, () {
-    // int id
     test('to test the property `id`', () async {
-      // TODO
+      expect(instance.id, equals(100));
     });
 
-    // String updatedBy
     test('to test the property `updatedBy`', () async {
-      // TODO
+      expect(instance.updatedBy, equals('admin'));
     });
 
-    // Flag flag
     test('to test the property `flag`', () async {
-      // TODO
+      expect(instance.flag.key, equals('snapshot_flag'));
+      expect(instance.flag.id, equals(1));
     });
 
-    // DateTime updatedAt
     test('to test the property `updatedAt`', () async {
-      // TODO
+      expect(instance.updatedAt, equals(DateTime.utc(2024, 1, 1, 12, 0, 0)));
     });
-
   });
 }

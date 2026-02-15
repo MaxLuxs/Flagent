@@ -18,6 +18,7 @@ import com.flagent.client.model.Constraint;
 import com.flagent.client.model.CreateConstraintRequest;
 import com.flagent.client.model.Error;
 import com.flagent.client.model.PutConstraintRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -29,9 +30,9 @@ import java.util.Set;
 
 
 /**
- * API tests for ConstraintApi
+ * API tests for ConstraintApi. Disabled: requires live Flagent server.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class ConstraintApiTest {
 
     private final ConstraintApi api = new ConstraintApi();
@@ -50,10 +51,8 @@ public class ConstraintApiTest {
         Long flagId = null;
         Long segmentId = null;
         CreateConstraintRequest createConstraintRequest = null;
-        Constraint response = 
-        api.createConstraint(flagId, segmentId, createConstraintRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.createConstraint(flagId, segmentId, createConstraintRequest));
     }
     
     /**
@@ -70,11 +69,10 @@ public class ConstraintApiTest {
         Long segmentId = null;
         Long constraintId = null;
         
-        api.deleteConstraint(flagId, segmentId, constraintId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.deleteConstraint(flagId, segmentId, constraintId));
     }
-    
+
     /**
      * Get constraints for segment
      *
@@ -87,10 +85,8 @@ public class ConstraintApiTest {
     public void findConstraintsTest() throws ApiException {
         Long flagId = null;
         Long segmentId = null;
-        List<Constraint> response = 
-        api.findConstraints(flagId, segmentId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.findConstraints(flagId, segmentId));
     }
     
     /**
@@ -107,10 +103,8 @@ public class ConstraintApiTest {
         Long segmentId = null;
         Long constraintId = null;
         PutConstraintRequest putConstraintRequest = null;
-        Constraint response = 
-        api.putConstraint(flagId, segmentId, constraintId, putConstraintRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.putConstraint(flagId, segmentId, constraintId, putConstraintRequest));
     }
-    
+
 }

@@ -16,6 +16,7 @@ package com.flagent.client.api;
 import com.flagent.client.ApiException;
 import com.flagent.client.model.Error;
 import java.io.File;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +28,9 @@ import java.util.Set;
 
 
 /**
- * API tests for ExportApi
+ * API tests for ExportApi. Disabled: requires live Flagent server.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class ExportApiTest {
 
     private final ExportApi api = new ExportApi();
@@ -45,10 +46,8 @@ public class ExportApiTest {
      */
     @Test
     public void getExportEvalCacheJSONTest() throws ApiException {
-        Map<String, Object> response = 
-        api.getExportEvalCacheJSON();
-        
-        // TODO: test validations
+        Map<String, Object> response = api.getExportEvalCacheJSON();
+        Assertions.assertNotNull(response);
     }
     
     /**
@@ -62,10 +61,8 @@ public class ExportApiTest {
     @Test
     public void getExportSQLiteTest() throws ApiException {
         Boolean excludeSnapshots = null;
-        File response = 
-        api.getExportSQLite(excludeSnapshots);
-        
-        // TODO: test validations
+        File response = api.getExportSQLite(excludeSnapshots);
+        Assertions.assertNotNull(response);
     }
-    
+
 }

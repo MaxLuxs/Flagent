@@ -17,38 +17,40 @@ package com.flagent.client.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.models.FlagSnapshot
-import com.flagent.client.models.Flag
+import kotlinx.datetime.Instant
 
 class FlagSnapshotTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of FlagSnapshot
-        //val modelInstance = FlagSnapshot()
+        val flag = Flag(
+            id = 1L,
+            key = "snapshot_flag",
+            description = "Desc",
+            enabled = true,
+            dataRecordsEnabled = false
+        )
+        val updatedAt = Instant.fromEpochMilliseconds(1704067200000L)
+        val modelInstance = FlagSnapshot(
+            id = 1L,
+            flag = flag,
+            updatedAt = updatedAt,
+            updatedBy = "system"
+        )
 
-        // to test the property `id`
         should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
+            modelInstance.id shouldBe 1L
         }
 
-        // to test the property `flag`
         should("test flag") {
-            // uncomment below to test the property
-            //modelInstance.flag shouldBe ("TODO")
+            modelInstance.flag shouldBe flag
+            modelInstance.flag.key shouldBe "snapshot_flag"
         }
 
-        // to test the property `updatedAt`
         should("test updatedAt") {
-            // uncomment below to test the property
-            //modelInstance.updatedAt shouldBe ("TODO")
+            modelInstance.updatedAt shouldBe updatedAt
         }
 
-        // to test the property `updatedBy`
         should("test updatedBy") {
-            // uncomment below to test the property
-            //modelInstance.updatedBy shouldBe ("TODO")
+            modelInstance.updatedBy shouldBe "system"
         }
-
     }
 }

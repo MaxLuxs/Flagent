@@ -1,21 +1,22 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/json_object.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for CreateVariantRequest
 void main() {
-  final instance = CreateVariantRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = CreateVariantRequest((b) => b
+    ..key = 'variant_a'
+    ..attachment = MapBuilder<String, JsonObject?>());
 
   group(CreateVariantRequest, () {
-    // String key
     test('to test the property `key`', () async {
-      // TODO
+      expect(instance.key, equals('variant_a'));
     });
 
-    // BuiltMap<String, JsonObject> attachment
     test('to test the property `attachment`', () async {
-      // TODO
+      expect(instance.attachment, isNotNull);
+      expect(instance.attachment!.isEmpty, isTrue);
     });
-
   });
 }

@@ -1,74 +1,81 @@
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
+import 'mock_dio_helper.dart';
 
 /// tests for FlagApi
 void main() {
-  final instance = FlagentClient().getFlagApi();
+  final client = createMockFlagentClient();
+  final instance = client.getFlagApi();
 
   group(FlagApi, () {
-    // Create a new flag
-    //
-    //Future<Flag> createFlag(CreateFlagRequest createFlagRequest) async
     test('test createFlag', () async {
-      // TODO
+      final request = CreateFlagRequest((b) => b
+        ..description = 'New flag'
+        ..key = 'new_flag');
+      final response = await instance.createFlag(createFlagRequest: request);
+      expect(response.data, isNotNull);
+      expect(response.data!.key, equals('new_flag'));
+      expect(response.data!.id, equals(1));
+      expect(response.statusCode, equals(200));
     });
 
-    // Delete flag
-    //
-    //Future deleteFlag(int flagId) async
     test('test deleteFlag', () async {
-      // TODO
+      final response = await instance.deleteFlag(flagId: 1);
+      expect(response.statusCode, equals(200));
     });
 
-    // Get all flags
-    //
-    //Future<BuiltList<Flag>> findFlags({ int limit, int offset, bool enabled, String description, String key, String descriptionLike, bool preload, bool deleted, String tags }) async
     test('test findFlags', () async {
-      // TODO
+      final response = await instance.findFlags();
+      expect(response.data, isNotNull);
+      expect(response.data!, isEmpty);
+      expect(response.statusCode, equals(200));
     });
 
-    // Get flag by ID
-    //
-    //Future<Flag> getFlag(int flagId) async
     test('test getFlag', () async {
-      // TODO
+      final response = await instance.getFlag(flagId: 1);
+      expect(response.data, isNotNull);
+      expect(response.data!.id, equals(1));
+      expect(response.data!.key, equals('test_flag'));
+      expect(response.statusCode, equals(200));
     });
 
-    // Get all entity types
-    //
-    //Future<BuiltList<String>> getFlagEntityTypes() async
     test('test getFlagEntityTypes', () async {
-      // TODO
+      final response = await instance.getFlagEntityTypes();
+      expect(response.data, isNotNull);
+      expect(response.data!.length, equals(2));
+      expect(response.data!.contains('user'), isTrue);
+      expect(response.statusCode, equals(200));
     });
 
-    // Get flag snapshots
-    //
-    //Future<BuiltList<FlagSnapshot>> getFlagSnapshots(int flagId, { int limit, int offset, String sort }) async
     test('test getFlagSnapshots', () async {
-      // TODO
+      final response = await instance.getFlagSnapshots(flagId: 1);
+      expect(response.data, isNotNull);
+      expect(response.data!, isEmpty);
+      expect(response.statusCode, equals(200));
     });
 
-    // Update flag
-    //
-    //Future<Flag> putFlag(int flagId, PutFlagRequest putFlagRequest) async
     test('test putFlag', () async {
-      // TODO
+      final request = PutFlagRequest((b) => b
+        ..description = 'Updated'
+        ..key = 'updated_key');
+      final response = await instance.putFlag(flagId: 1, putFlagRequest: request);
+      expect(response.data, isNotNull);
+      expect(response.statusCode, equals(200));
     });
 
-    // Restore deleted flag
-    //
-    //Future<Flag> restoreFlag(int flagId) async
     test('test restoreFlag', () async {
-      // TODO
+      final response = await instance.restoreFlag(flagId: 1);
+      expect(response.statusCode, equals(200));
     });
 
-    // Set flag enabled status
-    //
-    //Future<Flag> setFlagEnabled(int flagId, SetFlagEnabledRequest setFlagEnabledRequest) async
     test('test setFlagEnabled', () async {
-      // TODO
+      final request = SetFlagEnabledRequest((b) => b..enabled = true);
+      final response = await instance.setFlagEnabled(
+        flagId: 1,
+        setFlagEnabledRequest: request,
+      );
+      expect(response.statusCode, equals(200));
     });
-
   });
 }

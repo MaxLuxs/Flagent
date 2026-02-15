@@ -18,93 +18,82 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Flag
-import com.flagent.client.models.Segment
-import com.flagent.client.models.Tag
-import com.flagent.client.models.Variant
-
 class FlagTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Flag
-        //val modelInstance = Flag()
+        val segments = listOf(
+            Segment(1L, 10L, "Segment 1", 0L, 100L, null, null)
+        )
+        val variants = listOf(
+            Variant(1L, 10L, "control", null),
+            Variant(2L, 10L, "treatment", null)
+        )
+        val tags = listOf(Tag(1L, "feature"))
+        val modelInstance = Flag(
+            id = 1L,
+            key = "test_flag",
+            description = "Test feature flag",
+            enabled = true,
+            dataRecordsEnabled = false,
+            snapshotID = 100L,
+            entityType = "user",
+            notes = "# Notes",
+            createdBy = "admin",
+            updatedBy = "admin",
+            segments = segments,
+            variants = variants,
+            tags = tags
+        )
 
-        // to test the property `id`
         should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
+            modelInstance.id shouldBe 1L
         }
 
-        // to test the property `key` - Unique key representation of the flag
         should("test key") {
-            // uncomment below to test the property
-            //modelInstance.key shouldBe ("TODO")
+            modelInstance.key shouldBe "test_flag"
         }
 
-        // to test the property `description`
         should("test description") {
-            // uncomment below to test the property
-            //modelInstance.description shouldBe ("TODO")
+            modelInstance.description shouldBe "Test feature flag"
         }
 
-        // to test the property `enabled`
         should("test enabled") {
-            // uncomment below to test the property
-            //modelInstance.enabled shouldBe ("TODO")
+            modelInstance.enabled shouldBe true
         }
 
-        // to test the property `dataRecordsEnabled` - Enabled data records will get data logging in the metrics pipeline
         should("test dataRecordsEnabled") {
-            // uncomment below to test the property
-            //modelInstance.dataRecordsEnabled shouldBe ("TODO")
+            modelInstance.dataRecordsEnabled shouldBe false
         }
 
-        // to test the property `snapshotID`
         should("test snapshotID") {
-            // uncomment below to test the property
-            //modelInstance.snapshotID shouldBe ("TODO")
+            modelInstance.snapshotID shouldBe 100L
         }
 
-        // to test the property `entityType` - It will override the entityType in the evaluation logs if it's not empty
         should("test entityType") {
-            // uncomment below to test the property
-            //modelInstance.entityType shouldBe ("TODO")
+            modelInstance.entityType shouldBe "user"
         }
 
-        // to test the property `notes` - Flag usage details in markdown format
         should("test notes") {
-            // uncomment below to test the property
-            //modelInstance.notes shouldBe ("TODO")
+            modelInstance.notes shouldBe "# Notes"
         }
 
-        // to test the property `createdBy`
         should("test createdBy") {
-            // uncomment below to test the property
-            //modelInstance.createdBy shouldBe ("TODO")
+            modelInstance.createdBy shouldBe "admin"
         }
 
-        // to test the property `updatedBy`
         should("test updatedBy") {
-            // uncomment below to test the property
-            //modelInstance.updatedBy shouldBe ("TODO")
+            modelInstance.updatedBy shouldBe "admin"
         }
 
-        // to test the property `segments`
         should("test segments") {
-            // uncomment below to test the property
-            //modelInstance.segments shouldBe ("TODO")
+            modelInstance.segments shouldBe segments
         }
 
-        // to test the property `variants`
         should("test variants") {
-            // uncomment below to test the property
-            //modelInstance.variants shouldBe ("TODO")
+            modelInstance.variants shouldBe variants
         }
 
-        // to test the property `tags`
         should("test tags") {
-            // uncomment below to test the property
-            //modelInstance.tags shouldBe ("TODO")
+            modelInstance.tags shouldBe tags
         }
-
     }
 }

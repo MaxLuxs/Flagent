@@ -19,6 +19,7 @@ import com.flagent.client.model.Error;
 import com.flagent.client.model.PutSegmentReorderRequest;
 import com.flagent.client.model.PutSegmentRequest;
 import com.flagent.client.model.Segment;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -30,9 +31,9 @@ import java.util.Set;
 
 
 /**
- * API tests for SegmentApi
+ * API tests for SegmentApi. Disabled: requires live Flagent server.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class SegmentApiTest {
 
     private final SegmentApi api = new SegmentApi();
@@ -50,10 +51,8 @@ public class SegmentApiTest {
     public void createSegmentTest() throws ApiException {
         Long flagId = null;
         CreateSegmentRequest createSegmentRequest = null;
-        Segment response = 
-        api.createSegment(flagId, createSegmentRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.createSegment(flagId, createSegmentRequest));
     }
     
     /**
@@ -69,9 +68,8 @@ public class SegmentApiTest {
         Long flagId = null;
         Long segmentId = null;
         
-        api.deleteSegment(flagId, segmentId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.deleteSegment(flagId, segmentId));
     }
     
     /**
@@ -85,10 +83,8 @@ public class SegmentApiTest {
     @Test
     public void findSegmentsTest() throws ApiException {
         Long flagId = null;
-        List<Segment> response = 
-        api.findSegments(flagId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.findSegments(flagId));
     }
     
     /**
@@ -104,10 +100,8 @@ public class SegmentApiTest {
         Long flagId = null;
         Long segmentId = null;
         PutSegmentRequest putSegmentRequest = null;
-        Segment response = 
-        api.putSegment(flagId, segmentId, putSegmentRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.putSegment(flagId, segmentId, putSegmentRequest));
     }
     
     /**
@@ -123,9 +117,8 @@ public class SegmentApiTest {
         Long flagId = null;
         PutSegmentReorderRequest putSegmentReorderRequest = null;
         
-        api.putSegmentReorder(flagId, putSegmentReorderRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.putSegmentReorder(flagId, putSegmentReorderRequest));
     }
-    
+
 }

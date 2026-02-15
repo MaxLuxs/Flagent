@@ -3,24 +3,22 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for PutConstraintRequest
 void main() {
-  final instance = PutConstraintRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = PutConstraintRequest((b) => b
+    ..property = 'region'
+    ..operator_ = 'IN'
+    ..value = 'EU,US');
 
   group(PutConstraintRequest, () {
-    // String property
     test('to test the property `property`', () async {
-      // TODO
+      expect(instance.property, equals('region'));
     });
 
-    // String operator_
     test('to test the property `operator_`', () async {
-      // TODO
+      expect(instance.operator_, equals('IN'));
     });
 
-    // String value
     test('to test the property `value`', () async {
-      // TODO
+      expect(instance.value, equals('EU,US'));
     });
-
   });
 }

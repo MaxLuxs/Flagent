@@ -18,49 +18,42 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.EvaluationBatchRequest
-import com.flagent.client.models.EvaluationEntity
-
 class EvaluationBatchRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of EvaluationBatchRequest
-        //val modelInstance = EvaluationBatchRequest()
+        val entities = listOf(
+            EvaluationEntity(entityID = "e1", entityType = "user")
+        )
+        val modelInstance = EvaluationBatchRequest(
+            entities = entities,
+            enableDebug = true,
+            flagIDs = listOf(1, 2),
+            flagKeys = listOf("flag_a", "flag_b"),
+            flagTags = listOf("exp"),
+            flagTagsOperator = EvaluationBatchRequest.FlagTagsOperator.ALL
+        )
 
-        // to test the property `entities`
         should("test entities") {
-            // uncomment below to test the property
-            //modelInstance.entities shouldBe ("TODO")
+            modelInstance.entities shouldBe entities
         }
 
-        // to test the property `enableDebug`
         should("test enableDebug") {
-            // uncomment below to test the property
-            //modelInstance.enableDebug shouldBe ("TODO")
+            modelInstance.enableDebug shouldBe true
         }
 
-        // to test the property `flagIDs` - FlagIDs. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results.
         should("test flagIDs") {
-            // uncomment below to test the property
-            //modelInstance.flagIDs shouldBe ("TODO")
+            modelInstance.flagIDs shouldBe listOf(1, 2)
         }
 
-        // to test the property `flagKeys` - FlagKeys. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results.
         should("test flagKeys") {
-            // uncomment below to test the property
-            //modelInstance.flagKeys shouldBe ("TODO")
+            modelInstance.flagKeys shouldBe listOf("flag_a", "flag_b")
         }
 
-        // to test the property `flagTags` - FlagTags. Either flagIDs, flagKeys or flagTags works. If pass in multiples, Flagent may return duplicate results.
         should("test flagTags") {
-            // uncomment below to test the property
-            //modelInstance.flagTags shouldBe ("TODO")
+            modelInstance.flagTags shouldBe listOf("exp")
         }
 
-        // to test the property `flagTagsOperator` - Determine how flagTags is used to filter flags to be evaluated.
         should("test flagTagsOperator") {
-            // uncomment below to test the property
-            //modelInstance.flagTagsOperator shouldBe ("TODO")
+            modelInstance.flagTagsOperator shouldBe EvaluationBatchRequest.FlagTagsOperator.ALL
         }
-
     }
 }

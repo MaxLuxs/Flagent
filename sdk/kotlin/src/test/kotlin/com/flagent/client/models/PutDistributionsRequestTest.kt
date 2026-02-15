@@ -18,19 +18,19 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.PutDistributionsRequest
-import com.flagent.client.models.DistributionRequest
-
 class PutDistributionsRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of PutDistributionsRequest
-        //val modelInstance = PutDistributionsRequest()
+        val distributions = listOf(
+            DistributionRequest(variantID = 1L, percent = 50L, variantKey = "control"),
+            DistributionRequest(variantID = 2L, percent = 50L, variantKey = "treatment")
+        )
+        val modelInstance = PutDistributionsRequest(distributions = distributions)
 
-        // to test the property `distributions`
         should("test distributions") {
-            // uncomment below to test the property
-            //modelInstance.distributions shouldBe ("TODO")
+            modelInstance.distributions shouldBe distributions
+            modelInstance.distributions.size shouldBe 2
+            modelInstance.distributions[0].variantKey shouldBe "control"
+            modelInstance.distributions[1].percent shouldBe 50L
         }
-
     }
 }

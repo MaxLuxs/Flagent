@@ -1,80 +1,78 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for Flag
 void main() {
-  final instance = FlagBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = Flag((b) => b
+    ..id = 1
+    ..key = 'test_flag'
+    ..description = 'Test description'
+    ..enabled = true
+    ..snapshotID = 10
+    ..dataRecordsEnabled = false
+    ..entityType = 'user'
+    ..notes = 'Usage notes'
+    ..createdBy = 'admin'
+    ..updatedBy = 'admin'
+    ..segments = ListBuilder<Segment>()
+    ..variants = ListBuilder<Variant>()
+    ..tags = ListBuilder<Tag>());
 
   group(Flag, () {
-    // int id
     test('to test the property `id`', () async {
-      // TODO
+      expect(instance.id, equals(1));
     });
 
-    // Unique key representation of the flag
-    // String key
     test('to test the property `key`', () async {
-      // TODO
+      expect(instance.key, equals('test_flag'));
     });
 
-    // String description
     test('to test the property `description`', () async {
-      // TODO
+      expect(instance.description, equals('Test description'));
     });
 
-    // bool enabled
     test('to test the property `enabled`', () async {
-      // TODO
+      expect(instance.enabled, equals(true));
     });
 
-    // int snapshotID
     test('to test the property `snapshotID`', () async {
-      // TODO
+      expect(instance.snapshotID, equals(10));
     });
 
-    // Enabled data records will get data logging in the metrics pipeline
-    // bool dataRecordsEnabled
     test('to test the property `dataRecordsEnabled`', () async {
-      // TODO
+      expect(instance.dataRecordsEnabled, equals(false));
     });
 
-    // It will override the entityType in the evaluation logs if it's not empty
-    // String entityType
     test('to test the property `entityType`', () async {
-      // TODO
+      expect(instance.entityType, equals('user'));
     });
 
-    // Flag usage details in markdown format
-    // String notes
     test('to test the property `notes`', () async {
-      // TODO
+      expect(instance.notes, equals('Usage notes'));
     });
 
-    // String createdBy
     test('to test the property `createdBy`', () async {
-      // TODO
+      expect(instance.createdBy, equals('admin'));
     });
 
-    // String updatedBy
     test('to test the property `updatedBy`', () async {
-      // TODO
+      expect(instance.updatedBy, equals('admin'));
     });
 
-    // BuiltList<Segment> segments
     test('to test the property `segments`', () async {
-      // TODO
+      expect(instance.segments, isNotNull);
+      expect(instance.segments!.length, equals(0));
     });
 
-    // BuiltList<Variant> variants
     test('to test the property `variants`', () async {
-      // TODO
+      expect(instance.variants, isNotNull);
+      expect(instance.variants!.length, equals(0));
     });
 
-    // BuiltList<Tag> tags
     test('to test the property `tags`', () async {
-      // TODO
+      expect(instance.tags, isNotNull);
+      expect(instance.tags!.length, equals(0));
     });
-
   });
 }

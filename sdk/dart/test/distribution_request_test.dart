@@ -3,24 +3,22 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for DistributionRequest
 void main() {
-  final instance = DistributionRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = DistributionRequest((b) => b
+    ..variantID = 1
+    ..variantKey = 'control'
+    ..percent = 50);
 
   group(DistributionRequest, () {
-    // int variantID
     test('to test the property `variantID`', () async {
-      // TODO
+      expect(instance.variantID, equals(1));
     });
 
-    // String variantKey
     test('to test the property `variantKey`', () async {
-      // TODO
+      expect(instance.variantKey, equals('control'));
     });
 
-    // int percent
     test('to test the property `percent`', () async {
-      // TODO
+      expect(instance.percent, equals(50));
     });
-
   });
 }

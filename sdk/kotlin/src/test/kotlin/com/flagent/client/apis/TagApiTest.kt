@@ -17,51 +17,65 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.TagApi
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 import com.flagent.client.models.CreateTagRequest
-import com.flagent.client.models.Error
-import com.flagent.client.models.Tag
 
 class TagApiTest : ShouldSpec() {
+    private val tagJson = """{"id":1,"value":"tag1"}"""
+    private val tagListJson = """[$tagJson]"""
+
     init {
-        // uncomment below to create an instance of TagApi
-        //val apiInstance = TagApi()
-
-        // to test createFlagTag
         should("test createFlagTag") {
-            // uncomment below to test createFlagTag
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val createTagRequest : CreateTagRequest = {"value":"production"} // CreateTagRequest | 
-            //val result : Tag = apiInstance.createFlagTag(flagId, createTagRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(tagJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = TagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.createFlagTag(1L, CreateTagRequest(`value` = "new_tag"))
+                response.status shouldBe 200
+                response.body().`value` shouldBe "tag1"
+            }
         }
 
-        // to test deleteFlagTag
         should("test deleteFlagTag") {
-            // uncomment below to test deleteFlagTag
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val tagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the tag
-            //apiInstance.deleteFlagTag(flagId, tagId)
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel("{}"), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = TagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                api.deleteFlagTag(1L, 1L)
+            }
         }
 
-        // to test findAllTags
         should("test findAllTags") {
-            // uncomment below to test findAllTags
-            //val limit : kotlin.Long = 789 // kotlin.Long | The numbers of tags to return
-            //val offset : kotlin.Long = 789 // kotlin.Long | Return tags given the offset
-            //val valueLike : kotlin.String = valueLike_example // kotlin.String | Return tags partially matching given value
-            //val result : kotlin.collections.List<Tag> = apiInstance.findAllTags(limit, offset, valueLike)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(tagListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = TagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.findAllTags(10L, 0L, null)
+                response.status shouldBe 200
+                response.body().size shouldBe 1
+            }
         }
 
-        // to test findFlagTags
         should("test findFlagTags") {
-            // uncomment below to test findFlagTags
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val result : kotlin.collections.List<Tag> = apiInstance.findFlagTags(flagId)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(tagListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = TagApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.findFlagTags(1L)
+                response.status shouldBe 200
+                val body = response.body()
+                body.size shouldBe 1
+                body[0].`value` shouldBe "tag1"
+            }
         }
-
     }
 }

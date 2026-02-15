@@ -3,19 +3,17 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for CreateSegmentRequest
 void main() {
-  final instance = CreateSegmentRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = CreateSegmentRequest((b) => b
+    ..description = 'Segment desc'
+    ..rolloutPercent = 50);
 
   group(CreateSegmentRequest, () {
-    // String description
     test('to test the property `description`', () async {
-      // TODO
+      expect(instance.description, equals('Segment desc'));
     });
 
-    // int rolloutPercent
     test('to test the property `rolloutPercent`', () async {
-      // TODO
+      expect(instance.rolloutPercent, equals(50));
     });
-
   });
 }

@@ -18,18 +18,12 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Health
-
 class HealthTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Health
-        //val modelInstance = Health()
+        val modelInstance = Health(status = "UP")
 
-        // to test the property `status` - Health status of the service
         should("test status") {
-            // uncomment below to test the property
-            //modelInstance.status shouldBe ("TODO")
+            modelInstance.status shouldBe "UP"
         }
-
     }
 }

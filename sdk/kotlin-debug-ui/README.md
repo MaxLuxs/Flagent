@@ -37,8 +37,8 @@ FlagentDebugUI.DebugScreen(manager)
 
 ## Features
 
-- List all flags
-- View flag details with evaluation logs
-- Local overrides (test different flag values)
-- Evaluation logs viewer
-- Cache statistics
+- Evaluation form (flag key/ID, entity ID/type, enable debug)
+- Result display with variant and segment info
+- Eval debug log when debug is enabled
+- Clear cache and evict expired entries
+- Last evaluations list (recent results)

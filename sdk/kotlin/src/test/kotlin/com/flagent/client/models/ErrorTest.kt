@@ -18,18 +18,12 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.Error
-
 class ErrorTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Error
-        //val modelInstance = Error()
+        val modelInstance = Error(message = "Something went wrong")
 
-        // to test the property `message` - Error message describing what went wrong
         should("test message") {
-            // uncomment below to test the property
-            //modelInstance.message shouldBe ("TODO")
+            modelInstance.message shouldBe "Something went wrong"
         }
-
     }
 }

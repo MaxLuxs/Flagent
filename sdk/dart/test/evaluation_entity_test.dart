@@ -1,26 +1,27 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/json_object.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for EvaluationEntity
 void main() {
-  final instance = EvaluationEntityBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = EvaluationEntity((b) => b
+    ..entityID = 'user-1'
+    ..entityType = 'user'
+    ..entityContext = MapBuilder<String, JsonObject?>());
 
   group(EvaluationEntity, () {
-    // String entityID
     test('to test the property `entityID`', () async {
-      // TODO
+      expect(instance.entityID, equals('user-1'));
     });
 
-    // String entityType
     test('to test the property `entityType`', () async {
-      // TODO
+      expect(instance.entityType, equals('user'));
     });
 
-    // BuiltMap<String, JsonObject> entityContext
     test('to test the property `entityContext`', () async {
-      // TODO
+      expect(instance.entityContext, isNotNull);
+      expect(instance.entityContext!.isEmpty, isTrue);
     });
-
   });
 }

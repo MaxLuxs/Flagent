@@ -1,27 +1,27 @@
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
+import 'mock_dio_helper.dart';
 
 /// tests for HealthApi
 void main() {
-  final instance = FlagentClient().getHealthApi();
+  final client = createMockFlagentClient();
+  final instance = client.getHealthApi();
 
   group(HealthApi, () {
-    // Health check
-    //
-    // Check if Flagent is healthy
-    //
-    //Future<Health> getHealth() async
     test('test getHealth', () async {
-      // TODO
+      final response = await instance.getHealth();
+      expect(response.data, isNotNull);
+      expect(response.data!.status, equals('ok'));
+      expect(response.statusCode, equals(200));
     });
 
-    // Get version information
-    //
-    //Future<Info> getInfo() async
     test('test getInfo', () async {
-      // TODO
+      final response = await instance.getInfo();
+      expect(response.data, isNotNull);
+      expect(response.data!.version, equals('1.0.0'));
+      expect(response.data!.gitCommit, equals('abc'));
+      expect(response.statusCode, equals(200));
     });
-
   });
 }

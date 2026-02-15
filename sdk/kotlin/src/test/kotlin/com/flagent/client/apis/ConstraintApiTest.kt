@@ -17,56 +17,66 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.ConstraintApi
-import com.flagent.client.models.Constraint
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 import com.flagent.client.models.CreateConstraintRequest
-import com.flagent.client.models.Error
 import com.flagent.client.models.PutConstraintRequest
 
 class ConstraintApiTest : ShouldSpec() {
+    private val constraintJson = """{"id":1,"segmentID":10,"property":"region","operator":"EQ","value":"EU"}"""
+    private val constraintListJson = """[$constraintJson]"""
+
     init {
-        // uncomment below to create an instance of ConstraintApi
-        //val apiInstance = ConstraintApi()
-
-        // to test createConstraint
         should("test createConstraint") {
-            // uncomment below to test createConstraint
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //val createConstraintRequest : CreateConstraintRequest = {"property":"region","operator":"EQ","value":"US"} // CreateConstraintRequest | 
-            //val result : Constraint = apiInstance.createConstraint(flagId, segmentId, createConstraintRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(constraintJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = ConstraintApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.createConstraint(1L, 10L, CreateConstraintRequest(property = "region", operator = "EQ", value = "EU"))
+                response.status shouldBe 200
+                response.body().`property` shouldBe "region"
+            }
         }
 
-        // to test deleteConstraint
         should("test deleteConstraint") {
-            // uncomment below to test deleteConstraint
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //val constraintId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the constraint
-            //apiInstance.deleteConstraint(flagId, segmentId, constraintId)
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel("{}"), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = ConstraintApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                api.deleteConstraint(1L, 10L, 1L)
+            }
         }
 
-        // to test findConstraints
         should("test findConstraints") {
-            // uncomment below to test findConstraints
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //val result : kotlin.collections.List<Constraint> = apiInstance.findConstraints(flagId, segmentId)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(constraintListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = ConstraintApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.findConstraints(1L, 10L)
+                response.status shouldBe 200
+                val body = response.body()
+                body.size shouldBe 1
+                body[0].segmentID shouldBe 10L
+            }
         }
 
-        // to test putConstraint
         should("test putConstraint") {
-            // uncomment below to test putConstraint
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //val constraintId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the constraint
-            //val putConstraintRequest : PutConstraintRequest = {"property":"region","operator":"IN","value":"US,CA,MX"} // PutConstraintRequest | 
-            //val result : Constraint = apiInstance.putConstraint(flagId, segmentId, constraintId, putConstraintRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(constraintJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = ConstraintApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.putConstraint(1L, 10L, 1L, PutConstraintRequest(`property` = "region", `operator` = "IN", `value` = "EU,US"))
+                response.status shouldBe 200
+                response.body().`value` shouldBe "EU"
+            }
         }
-
     }
 }

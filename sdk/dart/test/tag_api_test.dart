@@ -1,41 +1,43 @@
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
+import 'mock_dio_helper.dart';
 
 /// tests for TagApi
 void main() {
-  final instance = FlagentClient().getTagApi();
+  final client = createMockFlagentClient();
+  final instance = client.getTagApi();
 
   group(TagApi, () {
-    // Create tag and associate with flag
-    //
-    // Create a tag and associate it with the flag. Tags are used for organizing and filtering flags.
-    //
-    //Future<Tag> createFlagTag(int flagId, CreateTagRequest createTagRequest) async
     test('test createFlagTag', () async {
-      // TODO
+      final request = CreateTagRequest((b) => b..value = 'production');
+      final response = await instance.createFlagTag(
+        flagId: 1,
+        createTagRequest: request,
+      );
+      expect(response.data, isNotNull);
+      expect(response.data!.id, equals(1));
+      expect(response.data!.value, equals('tag1'));
+      expect(response.statusCode, equals(200));
     });
 
-    // Remove tag from flag
-    //
-    //Future deleteFlagTag(int flagId, int tagId) async
     test('test deleteFlagTag', () async {
-      // TODO
+      final response = await instance.deleteFlagTag(flagId: 1, tagId: 1);
+      expect(response.statusCode, equals(200));
     });
 
-    // Get all tags
-    //
-    //Future<BuiltList<Tag>> findAllTags({ int limit, int offset, String valueLike }) async
     test('test findAllTags', () async {
-      // TODO
+      final response = await instance.findAllTags();
+      expect(response.data, isNotNull);
+      expect(response.data!, isEmpty);
+      expect(response.statusCode, equals(200));
     });
 
-    // Get tags for flag
-    //
-    //Future<BuiltList<Tag>> findFlagTags(int flagId) async
     test('test findFlagTags', () async {
-      // TODO
+      final response = await instance.findFlagTags(flagId: 1);
+      expect(response.data, isNotNull);
+      expect(response.data!, isEmpty);
+      expect(response.statusCode, equals(200));
     });
-
   });
 }

@@ -1,31 +1,34 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/json_object.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for Variant
 void main() {
-  final instance = VariantBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = Variant((b) => b
+    ..id = 1
+    ..flagID = 10
+    ..key = 'control'
+    ..attachment = MapBuilder<String, JsonObject?>({
+      'key': JsonObject({'nested': 'value'}),
+    }));
 
   group(Variant, () {
-    // int id
     test('to test the property `id`', () async {
-      // TODO
+      expect(instance.id, equals(1));
     });
 
-    // int flagID
     test('to test the property `flagID`', () async {
-      // TODO
+      expect(instance.flagID, equals(10));
     });
 
-    // String key
     test('to test the property `key`', () async {
-      // TODO
+      expect(instance.key, equals('control'));
     });
 
-    // BuiltMap<String, JsonObject> attachment
     test('to test the property `attachment`', () async {
-      // TODO
+      expect(instance.attachment, isNotNull);
+      expect(instance.attachment!.length, equals(1));
     });
-
   });
 }

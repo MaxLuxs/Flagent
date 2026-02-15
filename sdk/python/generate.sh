@@ -2,6 +2,10 @@
 
 # Generate Python SDK from OpenAPI specification
 # Requires OpenAPI Generator: https://openapi-generator.tech/
+#
+# After generation, apply_post_generation_patches.py is run to:
+# - Use pydantic v2 model_dump_json() in models' to_json() (removes TODO).
+# - Fix api_client.py: document that 'long' maps to int (Python 3).
 
 set -e
 
@@ -65,5 +69,8 @@ for f in $(find "$OUTPUT_DIR" -name "*.py"); do
             "$f"
     fi
 done
+
+# Apply post-generation patches (pydantic v2 to_json, api_client long type)
+python3 "$SCRIPT_DIR/apply_post_generation_patches.py" "$OUTPUT_DIR"
 
 echo "Python SDK generated successfully in $OUTPUT_DIR"

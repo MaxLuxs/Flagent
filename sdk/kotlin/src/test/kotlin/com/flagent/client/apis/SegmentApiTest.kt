@@ -17,61 +17,77 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.SegmentApi
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 import com.flagent.client.models.CreateSegmentRequest
-import com.flagent.client.models.Error
-import com.flagent.client.models.PutSegmentReorderRequest
 import com.flagent.client.models.PutSegmentRequest
-import com.flagent.client.models.Segment
+import com.flagent.client.models.PutSegmentReorderRequest
 
 class SegmentApiTest : ShouldSpec() {
+    private val segmentJson = """{"id":1,"flagID":10,"description":"Segment 1","rank":0,"rolloutPercent":100}"""
+    private val segmentListJson = """[$segmentJson]"""
+
     init {
-        // uncomment below to create an instance of SegmentApi
-        //val apiInstance = SegmentApi()
-
-        // to test createSegment
         should("test createSegment") {
-            // uncomment below to test createSegment
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val createSegmentRequest : CreateSegmentRequest = {"description":"US users","rolloutPercent":100} // CreateSegmentRequest | 
-            //val result : Segment = apiInstance.createSegment(flagId, createSegmentRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(segmentJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = SegmentApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.createSegment(10L, CreateSegmentRequest(description = "Seg", rolloutPercent = 100L))
+                response.status shouldBe 200
+                response.body().description shouldBe "Segment 1"
+            }
         }
 
-        // to test deleteSegment
         should("test deleteSegment") {
-            // uncomment below to test deleteSegment
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //apiInstance.deleteSegment(flagId, segmentId)
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel("{}"), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = SegmentApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                api.deleteSegment(1L, 1L)
+            }
         }
 
-        // to test findSegments
         should("test findSegments") {
-            // uncomment below to test findSegments
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val result : kotlin.collections.List<Segment> = apiInstance.findSegments(flagId)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(segmentListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = SegmentApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.findSegments(1L)
+                response.status shouldBe 200
+                val body = response.body()
+                body.size shouldBe 1
+                body[0].flagID shouldBe 10L
+            }
         }
 
-        // to test putSegment
         should("test putSegment") {
-            // uncomment below to test putSegment
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val segmentId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the segment
-            //val putSegmentRequest : PutSegmentRequest = {"description":"US users - updated","rolloutPercent":50} // PutSegmentRequest | 
-            //val result : Segment = apiInstance.putSegment(flagId, segmentId, putSegmentRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(segmentJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = SegmentApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.putSegment(1L, 1L, PutSegmentRequest(description = "Updated", rolloutPercent = 50L))
+                response.status shouldBe 200
+                response.body().rolloutPercent shouldBe 100L
+            }
         }
 
-        // to test putSegmentReorder
         should("test putSegmentReorder") {
-            // uncomment below to test putSegmentReorder
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val putSegmentReorderRequest : PutSegmentReorderRequest = {"segmentIDs":[2,1,3]} // PutSegmentReorderRequest | 
-            //apiInstance.putSegmentReorder(flagId, putSegmentReorderRequest)
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel("{}"), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = SegmentApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                api.putSegmentReorder(1L, PutSegmentReorderRequest(segmentIDs = listOf(2L, 1L)))
+            }
         }
-
     }
 }

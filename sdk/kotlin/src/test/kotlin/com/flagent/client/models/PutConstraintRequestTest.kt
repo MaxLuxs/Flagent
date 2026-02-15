@@ -18,30 +18,24 @@ package com.flagent.client.models
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
 
-import com.flagent.client.models.PutConstraintRequest
-
 class PutConstraintRequestTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of PutConstraintRequest
-        //val modelInstance = PutConstraintRequest()
+        val modelInstance = PutConstraintRequest(
+            `property` = "region",
+            `operator` = "IN",
+            `value` = "EU,US"
+        )
 
-        // to test the property ``property``
-        should("test `property`") {
-            // uncomment below to test the property
-            //modelInstance.`property` shouldBe ("TODO")
+        should("test property") {
+            modelInstance.`property` shouldBe "region"
         }
 
-        // to test the property ``operator``
-        should("test `operator`") {
-            // uncomment below to test the property
-            //modelInstance.`operator` shouldBe ("TODO")
+        should("test operator") {
+            modelInstance.`operator` shouldBe "IN"
         }
 
-        // to test the property ``value``
-        should("test `value`") {
-            // uncomment below to test the property
-            //modelInstance.`value` shouldBe ("TODO")
+        should("test value") {
+            modelInstance.`value` shouldBe "EU,US"
         }
-
     }
 }

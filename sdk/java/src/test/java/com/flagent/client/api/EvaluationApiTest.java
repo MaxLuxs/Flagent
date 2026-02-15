@@ -14,62 +14,33 @@
 package com.flagent.client.api;
 
 import com.flagent.client.ApiException;
-import com.flagent.client.model.Error;
 import com.flagent.client.model.EvalContext;
-import com.flagent.client.model.EvalResult;
 import com.flagent.client.model.EvaluationBatchRequest;
-import com.flagent.client.model.EvaluationBatchResponse;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
- * API tests for EvaluationApi
+ * Unit tests for EvaluationApi. Invalid input must yield ApiException.
+ * For tests against a live backend see EvaluationApiIntegrationTest.
  */
-@Disabled
 public class EvaluationApiTest {
 
     private final EvaluationApi api = new EvaluationApi();
 
-    
     /**
-     * Evaluate flag
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * postEvaluation with null context must throw (400 Bad Request).
      */
     @Test
-    public void postEvaluationTest() throws ApiException {
-        EvalContext evalContext = null;
-        EvalResult response = 
-        api.postEvaluation(evalContext);
-        
-        // TODO: test validations
+    public void postEvaluation_nullContext_throws() {
+        Assertions.assertThrows(ApiException.class, () -> api.postEvaluation(null));
     }
-    
+
     /**
-     * Batch evaluate flags
-     *
-     * Evaluate multiple flags for multiple entities in a single request. More efficient than multiple single evaluation requests.
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * postEvaluationBatch with null request must throw (400 Bad Request).
      */
     @Test
-    public void postEvaluationBatchTest() throws ApiException {
-        EvaluationBatchRequest evaluationBatchRequest = null;
-        EvaluationBatchResponse response = 
-        api.postEvaluationBatch(evaluationBatchRequest);
-        
-        // TODO: test validations
+    public void postEvaluationBatch_nullRequest_throws() {
+        Assertions.assertThrows(ApiException.class, () -> api.postEvaluationBatch(null));
     }
-    
 }

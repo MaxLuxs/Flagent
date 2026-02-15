@@ -17,37 +17,34 @@ package com.flagent.client.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.models.Variant
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class VariantTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of Variant
-        //val modelInstance = Variant()
+        val attachment = buildJsonObject { put("key", "value") }
+        val modelInstance = Variant(
+            id = 1L,
+            flagID = 10L,
+            key = "variant_a",
+            attachment = attachment
+        )
 
-        // to test the property `id`
         should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
+            modelInstance.id shouldBe 1L
         }
 
-        // to test the property `flagID`
         should("test flagID") {
-            // uncomment below to test the property
-            //modelInstance.flagID shouldBe ("TODO")
+            modelInstance.flagID shouldBe 10L
         }
 
-        // to test the property `key`
         should("test key") {
-            // uncomment below to test the property
-            //modelInstance.key shouldBe ("TODO")
+            modelInstance.key shouldBe "variant_a"
         }
 
-        // to test the property `attachment`
         should("test attachment") {
-            // uncomment below to test the property
-            //modelInstance.attachment shouldBe ("TODO")
+            modelInstance.attachment shouldBe attachment
         }
-
     }
 }

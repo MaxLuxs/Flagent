@@ -15,12 +15,14 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(url: "https://github.com/Flight-School/AnyCodable", .upToNextMajor(from: "0.6.1")),
+        .package(path: "../swift"),
         .package(path: "../swift-enhanced"),
     ],
     targets: [
         .target(
             name: "FlagentDebugUI",
-            dependencies: ["FlagentEnhanced"],
+            dependencies: ["AnyCodable", "FlagentClient", "FlagentEnhanced"],
             path: "Sources/FlagentDebugUI"
         ),
     ]

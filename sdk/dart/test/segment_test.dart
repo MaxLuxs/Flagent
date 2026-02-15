@@ -1,46 +1,47 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:test/test.dart';
 import 'package:flagent_client/flagent_client.dart';
 
 // tests for Segment
 void main() {
-  final instance = SegmentBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = Segment((b) => b
+    ..id = 1
+    ..flagID = 10
+    ..description = 'EU users'
+    ..rank = 1
+    ..rolloutPercent = 100
+    ..constraints = ListBuilder<Constraint>()
+    ..distributions = ListBuilder<Distribution>());
 
   group(Segment, () {
-    // int id
     test('to test the property `id`', () async {
-      // TODO
+      expect(instance.id, equals(1));
     });
 
-    // int flagID
     test('to test the property `flagID`', () async {
-      // TODO
+      expect(instance.flagID, equals(10));
     });
 
-    // String description
     test('to test the property `description`', () async {
-      // TODO
+      expect(instance.description, equals('EU users'));
     });
 
-    // int rank
     test('to test the property `rank`', () async {
-      // TODO
+      expect(instance.rank, equals(1));
     });
 
-    // int rolloutPercent
     test('to test the property `rolloutPercent`', () async {
-      // TODO
+      expect(instance.rolloutPercent, equals(100));
     });
 
-    // BuiltList<Constraint> constraints
     test('to test the property `constraints`', () async {
-      // TODO
+      expect(instance.constraints, isNotNull);
+      expect(instance.constraints!.length, equals(0));
     });
 
-    // BuiltList<Distribution> distributions
     test('to test the property `distributions`', () async {
-      // TODO
+      expect(instance.distributions, isNotNull);
+      expect(instance.distributions!.length, equals(0));
     });
-
   });
 }

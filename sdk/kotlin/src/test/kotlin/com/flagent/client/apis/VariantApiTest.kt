@@ -17,52 +17,66 @@ package com.flagent.client.apis
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.ShouldSpec
-
-import com.flagent.client.apis.VariantApi
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.test.runTest
 import com.flagent.client.models.CreateVariantRequest
-import com.flagent.client.models.Error
 import com.flagent.client.models.PutVariantRequest
-import com.flagent.client.models.Variant
 
 class VariantApiTest : ShouldSpec() {
+    private val variantJson = """{"id":1,"flagID":10,"key":"control"}"""
+    private val variantListJson = """[$variantJson]"""
+
     init {
-        // uncomment below to create an instance of VariantApi
-        //val apiInstance = VariantApi()
-
-        // to test createVariant
         should("test createVariant") {
-            // uncomment below to test createVariant
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val createVariantRequest : CreateVariantRequest = {"key":"treatment","attachment":{"color":"blue","size":"large"}} // CreateVariantRequest | 
-            //val result : Variant = apiInstance.createVariant(flagId, createVariantRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(variantJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = VariantApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.createVariant(10L, CreateVariantRequest(key = "control"))
+                response.status shouldBe 200
+                response.body().key shouldBe "control"
+            }
         }
 
-        // to test deleteVariant
         should("test deleteVariant") {
-            // uncomment below to test deleteVariant
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val variantId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the variant
-            //apiInstance.deleteVariant(flagId, variantId)
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel("{}"), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = VariantApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                api.deleteVariant(1L, 1L)
+            }
         }
 
-        // to test findVariants
         should("test findVariants") {
-            // uncomment below to test findVariants
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val result : kotlin.collections.List<Variant> = apiInstance.findVariants(flagId)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(variantListJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = VariantApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.findVariants(1L)
+                response.status shouldBe 200
+                val body = response.body()
+                body.size shouldBe 1
+                body[0].flagID shouldBe 10L
+            }
         }
 
-        // to test putVariant
         should("test putVariant") {
-            // uncomment below to test putVariant
-            //val flagId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the flag
-            //val variantId : kotlin.Long = 789 // kotlin.Long | Numeric ID of the variant
-            //val putVariantRequest : PutVariantRequest = {"key":"treatment_updated","attachment":{"color":"red","size":"small"}} // PutVariantRequest | 
-            //val result : Variant = apiInstance.putVariant(flagId, variantId, putVariantRequest)
-            //result shouldBe ("TODO")
+            runTest {
+                val mockEngine = MockEngine {
+                    respond(ByteReadChannel(variantJson), HttpStatusCode.OK, io.ktor.http.headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                val api = VariantApi(baseUrl = "http://localhost", httpClientEngine = mockEngine)
+                val response = api.putVariant(1L, 1L, PutVariantRequest(key = "updated_control"))
+                response.status shouldBe 200
+                response.body().key shouldBe "control"
+            }
         }
-
     }
 }

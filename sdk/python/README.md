@@ -371,6 +371,16 @@ black src/flagent
 isort src/flagent
 ```
 
+### Regenerating the API client
+
+The `flagent._generated` package is generated from the OpenAPI spec. To regenerate:
+
+```bash
+./generate.sh
+```
+
+The script runs the OpenAPI generator then applies post-generation patches (pydantic v2 `model_dump_json` in models, and Python 3 `long`→`int` in `api_client`). Patches are applied by `apply_post_generation_patches.py`. **Always use `./generate.sh`** (which runs the patches); do not run the OpenAPI generator alone or patches will be missing.
+
 ## Best Practices
 
 ### 1. Reuse Client Instances

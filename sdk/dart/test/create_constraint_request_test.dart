@@ -3,24 +3,22 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for CreateConstraintRequest
 void main() {
-  final instance = CreateConstraintRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = CreateConstraintRequest((b) => b
+    ..property = 'tier'
+    ..operator_ = 'EQ'
+    ..value = 'premium');
 
   group(CreateConstraintRequest, () {
-    // String property
     test('to test the property `property`', () async {
-      // TODO
+      expect(instance.property, equals('tier'));
     });
 
-    // String operator_
     test('to test the property `operator_`', () async {
-      // TODO
+      expect(instance.operator_, equals('EQ'));
     });
 
-    // String value
     test('to test the property `value`', () async {
-      // TODO
+      expect(instance.value, equals('premium'));
     });
-
   });
 }

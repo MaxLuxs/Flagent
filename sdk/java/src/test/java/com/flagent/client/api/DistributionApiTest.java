@@ -17,6 +17,7 @@ import com.flagent.client.ApiException;
 import com.flagent.client.model.Distribution;
 import com.flagent.client.model.Error;
 import com.flagent.client.model.PutDistributionsRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +29,9 @@ import java.util.Set;
 
 
 /**
- * API tests for DistributionApi
+ * API tests for DistributionApi. Disabled: requires live Flagent server.
  */
-@Disabled
+@Disabled("Integration test: requires live Flagent server")
 public class DistributionApiTest {
 
     private final DistributionApi api = new DistributionApi();
@@ -48,10 +49,8 @@ public class DistributionApiTest {
     public void findDistributionsTest() throws ApiException {
         Long flagId = null;
         Long segmentId = null;
-        List<Distribution> response = 
-        api.findDistributions(flagId, segmentId);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.findDistributions(flagId, segmentId));
     }
     
     /**
@@ -67,10 +66,8 @@ public class DistributionApiTest {
         Long flagId = null;
         Long segmentId = null;
         PutDistributionsRequest putDistributionsRequest = null;
-        List<Distribution> response = 
-        api.putDistributions(flagId, segmentId, putDistributionsRequest);
-        
-        // TODO: test validations
+        Assertions.assertThrows(ApiException.class,
+            () -> api.putDistributions(flagId, segmentId, putDistributionsRequest));
     }
-    
+
 }

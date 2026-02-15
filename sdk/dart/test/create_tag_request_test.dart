@@ -3,14 +3,11 @@ import 'package:flagent_client/flagent_client.dart';
 
 // tests for CreateTagRequest
 void main() {
-  final instance = CreateTagRequestBuilder();
-  // TODO add properties to the builder and call build()
+  final instance = CreateTagRequest((b) => b..value = 'production');
 
   group(CreateTagRequest, () {
-    // String value
     test('to test the property `value`', () async {
-      // TODO
+      expect(instance.value, equals('production'));
     });
-
   });
 }
