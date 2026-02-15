@@ -18,8 +18,12 @@ data class Flag(
     val dataRecordsEnabled: Boolean = false,
     val entityType: String? = null,
     val environmentId: Long? = null,
+    val projectId: Long? = null,
+    val dependsOn: List<String> = emptyList(),
     val segments: List<Segment> = emptyList(),
     val variants: List<Variant> = emptyList(),
     val tags: List<Tag> = emptyList(),
-    val updatedAt: String? = null
+    val updatedAt: String? = null,
+    /** When set, flag is archived (soft-deleted). Restore clears it; permanent delete removes row. */
+    val deletedAt: String? = null
 )

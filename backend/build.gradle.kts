@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktor.plugin)
     alias(libs.plugins.dependency.check)
     application
@@ -85,6 +85,7 @@ dependencies {
     // JWT (JJWT)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
+    implementation(libs.jbcrypt)
     runtimeOnly(libs.jjwt.jackson)
 
     // Billing
@@ -155,10 +156,14 @@ tasks.jar {
 
 tasks.test {
     useJUnitPlatform {
+        val tagsToExclude = mutableListOf("performance", "compatibility")
+        if (!project.hasProperty("includeE2E")) {
+            tagsToExclude.add("e2e")  // E2E/load tests use full app and may need Kafka; run with -PincludeE2E (sets FLAGENT_RECORDER_ENABLED=false)
+        }
         if (project.hasProperty("includeCompatibilityTests")) {
             excludeTags("performance")
         } else {
-            excludeTags("performance", "compatibility")
+            excludeTags(*tagsToExclude.toTypedArray())
         }
     }
     // Exclude integration tests by default (they need Postgres). CI runs them with -PincludeIntegrationTests.
@@ -189,6 +194,10 @@ tasks.test {
     environment("FLAGENT_JWT_AUTH_SECRET", "test-secret-at-least-32-characters-long")
     // E2ETest creates tenant via POST /admin/tenants; when enterprise is present AdminAuth requires X-Admin-Key
     environment("FLAGENT_ADMIN_API_KEY", "test-admin-key")
+    // When running E2E tests (-PincludeE2E), use noop recorder so Kafka is not required
+    if (project.hasProperty("includeE2E")) {
+        environment("FLAGENT_RECORDER_ENABLED", "false")
+    }
     // IntegrationWebhookRoutesTest - GitHub webhook auto-create
     environment("FLAGENT_GITHUB_AUTO_CREATE_FLAG", "true")
     reports {

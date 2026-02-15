@@ -23,7 +23,7 @@ class EvaluateBatchUseCase(
     /**
      * Evaluate multiple flags for a single entity
      */
-    fun invoke(
+    suspend fun invoke(
         flags: List<Flag>,
         entityID: EntityID,
         entityType: String?,

@@ -16,6 +16,8 @@ data class CrashReport(
     val deviceInfo: String? = null,
     val breadcrumbs: String? = null,
     val customKeys: String? = null,
+    /** Keys of flags that were active when the crash occurred (SDK sends these). */
+    val activeFlagKeys: List<String>? = null,
     val timestamp: Long,
     val tenantId: String? = null
 )
