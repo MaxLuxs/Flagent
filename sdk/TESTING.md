@@ -148,6 +148,29 @@ cd sdk/go && go test ./...
 cd ../go-enhanced && go test ./...
 ```
 
+## Проверка перед коммитом (SDK)
+
+Из корня репозитория:
+
+```bash
+# JS (base + enhanced)
+cd sdk/javascript && npm run build && npm test && cd ../javascript-enhanced && npm run build && npm test && cd ../../..
+
+# Go
+cd sdk/go && go build ./... && cd ../go-enhanced && go build ./... && cd ../../..
+
+# Python (нужен .venv: python -m venv .venv && .venv/bin/pip install -e ".[dev]")
+cd sdk/python && .venv/bin/python -m pytest tests/ -q && cd ../..
+
+# Swift
+cd sdk/swift && swift build && cd ../swift-enhanced && swift build && cd ../..
+
+# Kotlin Enhanced (JVM; kotlin-client может требовать регенерации)
+./gradlew :kotlin-enhanced:jvmTest
+```
+
+Dart/Flutter: `flutter pub get && flutter test` в `sdk/dart` и `sdk/flutter-enhanced` (нужен установленный Flutter).
+
 ## Интеграционное тестирование
 
 Для полного тестирования нужен запущенный Flagent сервер:
