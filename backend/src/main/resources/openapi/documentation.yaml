@@ -168,6 +168,18 @@ paths:
           description: Filter flags by tags (comma-separated)
           schema:
             type: string
+        - name: includeArchived
+          in: query
+          description: Include archived (soft-deleted) flags; alias for deleted=true
+          schema:
+            type: boolean
+            default: false
+        - name: environmentId
+          in: query
+          description: When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags.
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
           description: List of flags
@@ -417,6 +429,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Flag'
+        '400':
+          description: Bad request - invalid flag ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Flag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /flags/{flagId}/permanent:
+    delete:
+      tags:
+        - flag
+      summary: Permanently delete flag
+      description: Removes the flag and all related data (cascade). Use after archiving (soft delete). Cannot be undone.
+      operationId: permanentDeleteFlag
+      parameters:
+        - name: flagId
+          in: path
+          required: true
+          description: Numeric ID of the flag
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: Flag permanently deleted
         '400':
           description: Bad request - invalid flag ID
           content:
@@ -1897,6 +1947,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Tag'
+        dependsOn:
+          type: array
+          items:
+            type: string
+          description: List of flag keys this flag depends on; if any dependency is disabled, this flag evaluates to no variant
+        updatedAt:
+          type: string
+          nullable: true
+          description: Last update timestamp (ISO-8601)
+        archived:
+          type: boolean
+          default: false
+          description: True when flag is archived (soft-deleted). Use restore to revive or permanent delete to remove.
       example:
         id: 1
         key: "new_feature"
@@ -1911,6 +1974,8 @@ components:
         segments: []
         variants: []
         tags: []
+        dependsOn: []
+        archived: false
 
     CreateFlagRequest:
       type: object
@@ -1928,10 +1993,26 @@ components:
           type: string
           nullable: true
           description: Template for flag creation
+        environmentId:
+          type: integer
+          format: int64
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          nullable: true
+          description: Project scope (Enterprise)
+        dependsOn:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: List of flag keys this flag depends on
       example:
         description: "New feature flag"
         key: "new_feature"
         template: null
+        dependsOn: []
 
     PutFlagRequest:
       type: object
@@ -1954,12 +2035,28 @@ components:
         notes:
           type: string
           nullable: true
+        environmentId:
+          type: integer
+          format: int64
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          nullable: true
+          description: Project scope (Enterprise)
+        dependsOn:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: List of flag keys this flag depends on
       example:
         description: "Updated description"
         key: "new_feature_updated"
         dataRecordsEnabled: true
         entityType: "user"
         notes: "Updated notes"
+        dependsOn: ["other_flag"]
 
     SetFlagEnabledRequest:
       type: object

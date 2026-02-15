@@ -762,12 +762,32 @@
       "type" : "string",
       "description" : "Template for flag creation",
       "nullable" : true
+    },
+    "environmentId" : {
+      "type" : "integer",
+      "format" : "int64",
+      "nullable" : true
+    },
+    "projectId" : {
+      "type" : "integer",
+      "description" : "Project scope (Enterprise)",
+      "format" : "int64",
+      "nullable" : true
+    },
+    "dependsOn" : {
+      "type" : "array",
+      "description" : "List of flag keys this flag depends on",
+      "nullable" : true,
+      "items" : {
+        "type" : "string"
+      }
     }
   },
   "example" : {
     "description" : "New feature flag",
     "key" : "new_feature",
-    "template" : null
+    "template" : null,
+    "dependsOn" : [ ]
   }
 };
             defs["CreateSegmentRequest"] = {
@@ -1231,6 +1251,23 @@
       "items" : {
         "$ref" : "#/components/schemas/Tag"
       }
+    },
+    "dependsOn" : {
+      "type" : "array",
+      "description" : "List of flag keys this flag depends on; if any dependency is disabled, this flag evaluates to no variant",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "updatedAt" : {
+      "type" : "string",
+      "description" : "Last update timestamp (ISO-8601)",
+      "nullable" : true
+    },
+    "archived" : {
+      "type" : "boolean",
+      "description" : "True when flag is archived (soft-deleted). Use restore to revive or permanent delete to remove.",
+      "default" : false
     }
   },
   "example" : {
@@ -1246,7 +1283,9 @@
     "updatedBy" : "admin",
     "segments" : [ ],
     "variants" : [ ],
-    "tags" : [ ]
+    "tags" : [ ],
+    "dependsOn" : [ ],
+    "archived" : false
   }
 };
             defs["FlagSnapshot"] = {
@@ -1380,6 +1419,25 @@
     "notes" : {
       "type" : "string",
       "nullable" : true
+    },
+    "environmentId" : {
+      "type" : "integer",
+      "format" : "int64",
+      "nullable" : true
+    },
+    "projectId" : {
+      "type" : "integer",
+      "description" : "Project scope (Enterprise)",
+      "format" : "int64",
+      "nullable" : true
+    },
+    "dependsOn" : {
+      "type" : "array",
+      "description" : "List of flag keys this flag depends on",
+      "nullable" : true,
+      "items" : {
+        "type" : "string"
+      }
     }
   },
   "example" : {
@@ -1387,7 +1445,8 @@
     "key" : "new_feature_updated",
     "dataRecordsEnabled" : true,
     "entityType" : "user",
-    "notes" : "Updated notes"
+    "notes" : "Updated notes",
+    "dependsOn" : [ "other_flag" ]
   }
 };
             defs["PutSegmentReorderRequest"] = {
@@ -1646,6 +1705,9 @@
                     </li>
                     <li data-group="Flag" data-name="getFlagSnapshots" class="">
                       <a href="#api-Flag-getFlagSnapshots">getFlagSnapshots</a>
+                    </li>
+                    <li data-group="Flag" data-name="permanentDeleteFlag" class="">
+                      <a href="#api-Flag-permanentDeleteFlag">permanentDeleteFlag</a>
                     </li>
                     <li data-group="Flag" data-name="putFlag" class="">
                       <a href="#api-Flag-putFlag">putFlag</a>
@@ -7671,7 +7733,7 @@ except ApiException as e:
                           <div class="tab-pane active" id="examples-Flag-findFlags-0-curl">
                            <pre class="prettyprint"><code class="language-bsh">curl -X GET\
 -H "Accept: application/json"\
-"http://localhost:18000/api/v1/flags?limit=&offset=&enabled=&description=&key=&descriptionLike=&preload=&deleted=&tags="</code></pre>
+"http://localhost:18000/api/v1/flags?limit=&offset=&enabled=&description=&key=&descriptionLike=&preload=&deleted=&tags=&includeArchived=&environmentId="</code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Flag-findFlags-0-java">
                             <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
@@ -7696,8 +7758,10 @@ public class FlagApiExample {
         Boolean preload = true; // Boolean | Preload segments, variants, and tags
         Boolean deleted = true; // Boolean | Include deleted flags in results
         String tags = tags_example; // String | Filter flags by tags (comma-separated)
+        Boolean includeArchived = true; // Boolean | Include archived (soft-deleted) flags; alias for deleted=true
+        Long environmentId = 789; // Long | When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags.
         try {
-            array[Flag] result = apiInstance.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags);
+            array[Flag] result = apiInstance.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags, includeArchived, environmentId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling FlagApi#findFlags");
@@ -7723,8 +7787,10 @@ public class FlagApiExample {
         Boolean preload = true; // Boolean | Preload segments, variants, and tags
         Boolean deleted = true; // Boolean | Include deleted flags in results
         String tags = tags_example; // String | Filter flags by tags (comma-separated)
+        Boolean includeArchived = true; // Boolean | Include archived (soft-deleted) flags; alias for deleted=true
+        Long environmentId = 789; // Long | When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags.
         try {
-            array[Flag] result = apiInstance.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags);
+            array[Flag] result = apiInstance.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags, includeArchived, environmentId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling FlagApi#findFlags");
@@ -7747,6 +7813,8 @@ String *descriptionLike = descriptionLike_example; // Filter flags by partial de
 Boolean *preload = true; // Preload segments, variants, and tags (optional) (default to false)
 Boolean *deleted = true; // Include deleted flags in results (optional) (default to false)
 String *tags = tags_example; // Filter flags by tags (comma-separated) (optional)
+Boolean *includeArchived = true; // Include archived (soft-deleted) flags; alias for deleted=true (optional) (default to false)
+Long *environmentId = 789; // When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags. (optional)
 
 FlagApi *apiInstance = [[FlagApi alloc] init];
 
@@ -7760,6 +7828,8 @@ FlagApi *apiInstance = [[FlagApi alloc] init];
     preload:preload
     deleted:deleted
     tags:tags
+    includeArchived:includeArchived
+    environmentId:environmentId
               completionHandler: ^(array[Flag] output, NSError* error) {
                             if (output) {
                                 NSLog(@"%@", output);
@@ -7784,7 +7854,9 @@ var opts = {
   'descriptionLike': descriptionLike_example, // {{String}} Filter flags by partial description match
   'preload': true, // {{Boolean}} Preload segments, variants, and tags
   'deleted': true, // {{Boolean}} Include deleted flags in results
-  'tags': tags_example // {{String}} Filter flags by tags (comma-separated)
+  'tags': tags_example, // {{String}} Filter flags by tags (comma-separated)
+  'includeArchived': true, // {{Boolean}} Include archived (soft-deleted) flags; alias for deleted=true
+  'environmentId': 789 // {{Long}} When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags.
 };
 var callback = function(error, data, response) {
   if (error) {
@@ -7824,11 +7896,13 @@ namespace Example
             var preload = true;  // Boolean | Preload segments, variants, and tags (optional)  (default to false)
             var deleted = true;  // Boolean | Include deleted flags in results (optional)  (default to false)
             var tags = tags_example;  // String | Filter flags by tags (comma-separated) (optional) 
+            var includeArchived = true;  // Boolean | Include archived (soft-deleted) flags; alias for deleted=true (optional)  (default to false)
+            var environmentId = 789;  // Long | When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags. (optional) 
 
             try
             {
                 // Get all flags
-                array[Flag] result = apiInstance.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags);
+                array[Flag] result = apiInstance.findFlags(limit, offset, enabled, description, key, descriptionLike, preload, deleted, tags, includeArchived, environmentId);
                 Debug.WriteLine(result);
             }
             catch (Exception e)
@@ -7855,9 +7929,11 @@ $descriptionLike = descriptionLike_example; // String | Filter flags by partial 
 $preload = true; // Boolean | Preload segments, variants, and tags
 $deleted = true; // Boolean | Include deleted flags in results
 $tags = tags_example; // String | Filter flags by tags (comma-separated)
+$includeArchived = true; // Boolean | Include archived (soft-deleted) flags; alias for deleted=true
+$environmentId = 789; // Long | When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags.
 
 try {
-    $result = $api_instance->findFlags($limit, $offset, $enabled, $description, $key, $descriptionLike, $preload, $deleted, $tags);
+    $result = $api_instance->findFlags($limit, $offset, $enabled, $description, $key, $descriptionLike, $preload, $deleted, $tags, $includeArchived, $environmentId);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling FlagApi->findFlags: ', $e->getMessage(), PHP_EOL;
@@ -7880,9 +7956,11 @@ my $descriptionLike = descriptionLike_example; # String | Filter flags by partia
 my $preload = true; # Boolean | Preload segments, variants, and tags
 my $deleted = true; # Boolean | Include deleted flags in results
 my $tags = tags_example; # String | Filter flags by tags (comma-separated)
+my $includeArchived = true; # Boolean | Include archived (soft-deleted) flags; alias for deleted=true
+my $environmentId = 789; # Long | When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags.
 
 eval { 
-    my $result = $api_instance->findFlags(limit => $limit, offset => $offset, enabled => $enabled, description => $description, key => $key, descriptionLike => $descriptionLike, preload => $preload, deleted => $deleted, tags => $tags);
+    my $result = $api_instance->findFlags(limit => $limit, offset => $offset, enabled => $enabled, description => $description, key => $key, descriptionLike => $descriptionLike, preload => $preload, deleted => $deleted, tags => $tags, includeArchived => $includeArchived, environmentId => $environmentId);
     print Dumper($result);
 };
 if ($@) {
@@ -7908,10 +7986,12 @@ descriptionLike = descriptionLike_example # String | Filter flags by partial des
 preload = true # Boolean | Preload segments, variants, and tags (optional) (default to false)
 deleted = true # Boolean | Include deleted flags in results (optional) (default to false)
 tags = tags_example # String | Filter flags by tags (comma-separated) (optional)
+includeArchived = true # Boolean | Include archived (soft-deleted) flags; alias for deleted=true (optional) (default to false)
+environmentId = 789 # Long | When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags. (optional)
 
 try: 
     # Get all flags
-    api_response = api_instance.find_flags(limit=limit, offset=offset, enabled=enabled, description=description, key=key, descriptionLike=descriptionLike, preload=preload, deleted=deleted, tags=tags)
+    api_response = api_instance.find_flags(limit=limit, offset=offset, enabled=enabled, description=description, key=key, descriptionLike=descriptionLike, preload=preload, deleted=deleted, tags=tags, includeArchived=includeArchived, environmentId=environmentId)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling FlagApi->findFlags: %s\n" % e)</code></pre>
@@ -8101,6 +8181,47 @@ except ApiException as e:
                                 
                                                     <div class="inner description">
                                                         Filter flags by tags (comma-separated)
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                                <tr><td style="width:150px;">includeArchived</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_findFlags_includeArchived">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    Boolean
+                                                </span>
+                                
+                                                    <div class="inner description">
+                                                        Include archived (soft-deleted) flags; alias for deleted&#x3D;true
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                                <tr><td style="width:150px;">environmentId</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_findFlags_environmentId">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    Long
+                                                </span>
+                                                    <span class="format">
+                                                        (int64)
+                                                    </span>
+                                
+                                                    <div class="inner description">
+                                                        When set (multi-environment), return only flags for this environment or global (no env). Omit for all flags.
                                                     </div>
                                             </div>
                                         </div>
@@ -9584,6 +9705,400 @@ except ApiException as e:
                                     </script>
                                   </div>
                                   <input id='responses-getFlagSnapshots-500-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Flag-permanentDeleteFlag">
+                      <article id="api-Flag-permanentDeleteFlag-0" data-group="User" data-name="permanentDeleteFlag" data-version="0">
+                        <div class="pull-left">
+                          <h1>permanentDeleteFlag</h1>
+                          <p>Permanently delete flag</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked">Removes the flag and all related data (cascade). Use after archiving (soft delete). Cannot be undone.</p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="delete"><code><span class="pln">/flags/{flagId}/permanent</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Flag-permanentDeleteFlag-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Flag-permanentDeleteFlag-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Flag-permanentDeleteFlag-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Flag-permanentDeleteFlag-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Flag-permanentDeleteFlag-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X DELETE\
+-H "Accept: application/json"\
+"http://localhost:18000/api/v1/flags/{flagId}/permanent"</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.FlagApi;
+
+import java.io.File;
+import java.util.*;
+
+public class FlagApiExample {
+
+    public static void main(String[] args) {
+        
+        FlagApi apiInstance = new FlagApi();
+        Long flagId = 789; // Long | Numeric ID of the flag
+        try {
+            apiInstance.permanentDeleteFlag(flagId);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FlagApi#permanentDeleteFlag");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.FlagApi;
+
+public class FlagApiExample {
+
+    public static void main(String[] args) {
+        FlagApi apiInstance = new FlagApi();
+        Long flagId = 789; // Long | Numeric ID of the flag
+        try {
+            apiInstance.permanentDeleteFlag(flagId);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FlagApi#permanentDeleteFlag");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Long *flagId = 789; // Numeric ID of the flag
+
+FlagApi *apiInstance = [[FlagApi alloc] init];
+
+// Permanently delete flag
+[apiInstance permanentDeleteFlagWith:flagId
+              completionHandler: ^(NSError* error) {
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var FlagentApi = require('flagent_api');
+
+var api = new FlagentApi.FlagApi()
+var flagId = 789; // {{Long}} Numeric ID of the flag
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.permanentDeleteFlag(flagId, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class permanentDeleteFlagExample
+    {
+        public void main()
+        {
+
+            var apiInstance = new FlagApi();
+            var flagId = 789;  // Long | Numeric ID of the flag
+
+            try
+            {
+                // Permanently delete flag
+                apiInstance.permanentDeleteFlag(flagId);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling FlagApi.permanentDeleteFlag: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\ApiFlagApi();
+$flagId = 789; // Long | Numeric ID of the flag
+
+try {
+    $api_instance->permanentDeleteFlag($flagId);
+} catch (Exception $e) {
+    echo 'Exception when calling FlagApi->permanentDeleteFlag: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::FlagApi;
+
+my $api_instance = WWW::SwaggerClient::FlagApi->new();
+my $flagId = 789; # Long | Numeric ID of the flag
+
+eval { 
+    $api_instance->permanentDeleteFlag(flagId => $flagId);
+};
+if ($@) {
+    warn "Exception when calling FlagApi->permanentDeleteFlag: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Flag-permanentDeleteFlag-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.FlagApi()
+flagId = 789 # Long | Numeric ID of the flag
+
+try: 
+    # Permanently delete flag
+    api_instance.permanent_delete_flag(flagId)
+except ApiException as e:
+    print("Exception when calling FlagApi->permanentDeleteFlag: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">flagId*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_permanentDeleteFlag_flagId">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      Long
+                                                  </span>
+                                                      <span class="format">
+                                                          (int64)
+                                                      </span>
+                                  
+                                                      <div class="inner description">
+                                                          Numeric ID of the flag
+                                                      </div>
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 - Flag permanently deleted </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                            </div>
+
+                            <h3> Status: 400 - Bad request - invalid flag ID </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-permanentDeleteFlag-400-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-permanentDeleteFlag-400-schema">
+                                  <div id='responses-permanentDeleteFlag-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Bad request - invalid flag ID",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/Error"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-permanentDeleteFlag-400-schema-data').val(stringify(schema));
+                                        var result = $('#responses-permanentDeleteFlag-400-schema-400');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-permanentDeleteFlag-400-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                            <h3> Status: 404 - Flag not found </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-permanentDeleteFlag-404-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-permanentDeleteFlag-404-schema">
+                                  <div id='responses-permanentDeleteFlag-404-schema-404' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Flag not found",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/Error"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-permanentDeleteFlag-404-schema-data').val(stringify(schema));
+                                        var result = $('#responses-permanentDeleteFlag-404-schema-404');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-permanentDeleteFlag-404-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                            <h3> Status: 500 - Internal server error </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-permanentDeleteFlag-500-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-permanentDeleteFlag-500-schema">
+                                  <div id='responses-permanentDeleteFlag-500-schema-500' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Internal server error",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/Error"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-permanentDeleteFlag-500-schema-data').val(stringify(schema));
+                                        var result = $('#responses-permanentDeleteFlag-500-schema-500');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-permanentDeleteFlag-500-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
 

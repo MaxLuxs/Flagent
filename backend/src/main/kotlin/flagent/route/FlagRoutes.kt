@@ -31,8 +31,11 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                     val key = call.request.queryParameters["key"]
                     val descriptionLike = call.request.queryParameters["descriptionLike"]
                     val preload = call.request.queryParameters["preload"]?.toBoolean() ?: false
-                    val deleted = call.request.queryParameters["deleted"]?.toBoolean() ?: false
+                    val deleted = call.request.queryParameters["deleted"]?.toBoolean()
+                        ?: call.request.queryParameters["includeArchived"]?.toBoolean() ?: false
                     val tags = call.request.queryParameters["tags"]
+                    val environmentId = call.request.queryParameters["environmentId"]?.toLongOrNull()
+                    val projectId = call.request.queryParameters["projectId"]?.toLongOrNull()
                     
                     val total = flagService.countFlags(
                         enabled = enabled,
@@ -40,7 +43,9 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                         key = key,
                         descriptionLike = descriptionLike,
                         deleted = deleted,
-                        tags = tags
+                        tags = tags,
+                        environmentId = environmentId,
+                        projectId = projectId
                     )
                     val flags = flagService.findFlags(
                         limit = limit,
@@ -51,7 +56,9 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                         descriptionLike = descriptionLike,
                         preload = preload,
                         deleted = deleted,
-                        tags = tags
+                        tags = tags,
+                        environmentId = environmentId,
+                        projectId = projectId
                     )
                     call.response.headers.append("X-Total-Count", total.toString())
                     call.respond(flags.map { mapFlagToResponse(it) })
@@ -81,7 +88,9 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                             key = request.key,
                             description = request.description,
                             template = request.template,
-                            environmentId = request.environmentId
+                            environmentId = request.environmentId,
+                            projectId = request.projectId,
+                            dependsOn = request.dependsOn
                         )
                         val flag = flagService.createFlag(command, updatedBy)
                         AuditLoggerRegistry.logger?.log(call, "flag.created", "flag:${flag.key}", mapOf("id" to flag.id, "key" to flag.key))
@@ -121,7 +130,9 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                             dataRecordsEnabled = request.dataRecordsEnabled,
                             entityType = request.entityType,
                             notes = request.notes,
-                            environmentId = request.environmentId
+                            environmentId = request.environmentId,
+                            projectId = request.projectId,
+                            dependsOn = request.dependsOn
                         )
                         val updatedFlag = flagService.updateFlag(flagId, command, updatedBy)
                         AuditLoggerRegistry.logger?.log(call, "flag.updated", "flag:${updatedFlag.key}", mapOf("id" to flagId))
@@ -163,6 +174,19 @@ fun Routing.configureFlagRoutes(flagService: FlagService) {
                             ?: return@put call.respond(HttpStatusCode.NotFound, "Flag not found")
                         
                         call.respond(mapFlagToResponse(flag))
+                    }
+                }
+                
+                route("/{flagId}/permanent") {
+                    delete {
+                        val flagId = call.parameters["flagId"]?.toIntOrNull()
+                            ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid flag ID")
+                        
+                        val flag = flagService.getFlagIncludeDeleted(flagId)
+                            ?: return@delete call.respond(HttpStatusCode.NotFound, "Flag not found")
+                        flagService.permanentDeleteFlag(flagId)
+                        AuditLoggerRegistry.logger?.log(call, "flag.permanently_deleted", "flag:${flag.key}", mapOf("id" to flagId))
+                        call.respond(HttpStatusCode.OK)
                     }
                 }
             }

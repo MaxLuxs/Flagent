@@ -20,6 +20,7 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
             post("/evaluation") {
                 val request = call.receive<EvaluationRequest>()
                 val environmentId = EvalEnvironmentProvider.getEnvironmentId(call as Any)
+                val clientId = call.request.header("X-Client-Id")?.takeIf { it.isNotBlank() }
                 val result = evaluationService.evaluateFlag(
                     flagID = request.flagID,
                     flagKey = request.flagKey,
@@ -27,7 +28,8 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                     entityType = request.entityType,
                     entityContext = request.entityContext?.mapValues { it.value } as? Map<String, Any>,
                     enableDebug = request.enableDebug,
-                    environmentId = environmentId
+                    environmentId = environmentId,
+                    clientId = clientId
                 )
                 call.respond(mapEvalResultToResponse(result))
             }
@@ -50,6 +52,7 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                 val results = mutableListOf<EvaluationResponse>()
                 
                 val environmentId = EvalEnvironmentProvider.getEnvironmentId(call as Any)
+                val clientId = call.request.header("X-Client-Id")?.takeIf { it.isNotBlank() }
                 // Evaluate by tags
                 if (request.flagTags.isNotEmpty()) {
                     request.entities.forEach { entity ->
@@ -60,7 +63,8 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                             entityType = entity.entityType,
                             entityContext = entity.entityContext?.mapValues { it.value } as? Map<String, Any>,
                             enableDebug = request.enableDebug,
-                            environmentId = environmentId
+                            environmentId = environmentId,
+                            clientId = clientId
                         )
                         results.addAll(tagResults.map { mapEvalResultToResponse(it) })
                     }
@@ -76,7 +80,8 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                             entityType = entity.entityType,
                             entityContext = entity.entityContext?.mapValues { it.value } as? Map<String, Any>,
                             enableDebug = request.enableDebug,
-                            environmentId = environmentId
+                            environmentId = environmentId,
+                            clientId = clientId
                         )
                         results.add(mapEvalResultToResponse(result))
                     }
@@ -92,7 +97,8 @@ fun Routing.configureEvaluationRoutes(evaluationService: EvaluationService) {
                             entityType = entity.entityType,
                             entityContext = entity.entityContext?.mapValues { it.value } as? Map<String, Any>,
                             enableDebug = request.enableDebug,
-                            environmentId = environmentId
+                            environmentId = environmentId,
+                            clientId = clientId
                         )
                         results.add(mapEvalResultToResponse(result))
                     }

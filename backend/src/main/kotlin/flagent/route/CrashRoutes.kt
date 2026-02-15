@@ -22,6 +22,8 @@ data class CrashReportRequest(
     val deviceInfo: String? = null,
     val breadcrumbs: String? = null,
     val customKeys: String? = null,
+    /** Keys of flags that were active when the crash occurred. */
+    val activeFlagKeys: List<String>? = null,
     val timestamp: Long? = null
 )
 
@@ -35,6 +37,7 @@ data class CrashReportResponse(
     val deviceInfo: String?,
     val breadcrumbs: String?,
     val customKeys: String?,
+    val activeFlagKeys: List<String>? = null,
     val timestamp: Long,
     val tenantId: String?
 )
@@ -59,6 +62,7 @@ fun Routing.configureCrashRoutes(crashReportService: CrashReportService) {
                     deviceInfo = body.deviceInfo,
                     breadcrumbs = body.breadcrumbs,
                     customKeys = body.customKeys,
+                    activeFlagKeys = body.activeFlagKeys,
                     timestamp = timestamp,
                     tenantId = null
                 )
@@ -86,6 +90,7 @@ fun Routing.configureCrashRoutes(crashReportService: CrashReportService) {
                         deviceInfo = req.deviceInfo,
                         breadcrumbs = req.breadcrumbs,
                         customKeys = req.customKeys,
+                        activeFlagKeys = req.activeFlagKeys,
                         timestamp = req.timestamp ?: timestamp,
                         tenantId = null
                     )
@@ -130,6 +135,7 @@ private fun toResponse(c: CrashReport) = CrashReportResponse(
     deviceInfo = c.deviceInfo,
     breadcrumbs = c.breadcrumbs,
     customKeys = c.customKeys,
+    activeFlagKeys = c.activeFlagKeys,
     timestamp = c.timestamp,
     tenantId = c.tenantId
 )

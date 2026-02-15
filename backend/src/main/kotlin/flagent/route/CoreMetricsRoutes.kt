@@ -55,5 +55,28 @@ fun Routing.configureCoreMetricsRoutes(coreMetricsService: CoreMetricsService, f
             val stats = coreMetricsService.getFlagStats(flagId, start, end, timeBucketMs)
             call.respond(HttpStatusCode.OK, stats)
         }
+        get("/flags/{flagId}/usage") {
+            val flagId = call.parameters["flagId"]?.toIntOrNull()
+                ?: run {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid flagId"))
+                    return@get
+                }
+            val start = call.request.queryParameters["start"]?.toLongOrNull()
+                ?: run {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing start"))
+                    return@get
+                }
+            val end = call.request.queryParameters["end"]?.toLongOrNull()
+                ?: run {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing end"))
+                    return@get
+                }
+            if (flagService != null && flagService.getFlag(flagId) == null) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Flag not found"))
+                return@get
+            }
+            val usage = coreMetricsService.getFlagUsage(flagId, start, end)
+            call.respond(HttpStatusCode.OK, usage)
+        }
     }
 }

@@ -2,31 +2,35 @@ package flagent.application
 
 import flagent.api.EnterpriseConfigurator
 import flagent.config.AppConfig
-import flagent.repository.Database
-import flagent.middleware.configureErrorHandling
-import flagent.middleware.configureCompression
-import flagent.middleware.configureLogging
-import flagent.middleware.configureJWTAuth
+import flagent.mcp.configureMcpRoutes
 import flagent.middleware.configureBasicAuth
-import flagent.middleware.configureHeaderAuth
+import flagent.middleware.configureCompression
 import flagent.middleware.configureCookieAuth
-import flagent.middleware.configurePrometheusMetrics
-import flagent.middleware.configureStatsDMetrics
-import flagent.middleware.configureSentry
+import flagent.middleware.configureErrorHandling
+import flagent.middleware.configureHeaderAuth
+import flagent.middleware.configureJWTAuth
+import flagent.middleware.configureLogging
 import flagent.middleware.configureNewRelic
+import flagent.middleware.configurePrometheusMetrics
+import flagent.middleware.configureRealtimeEventBus
+import flagent.middleware.configureSSE
+import flagent.middleware.configureSentry
+import flagent.middleware.configureStatsDMetrics
+import flagent.repository.Database
+import flagent.route.configureAdminUserRoutes
+import flagent.route.configureAnalyticsEventsRoutes
 import flagent.route.configureAuthRoutes
 import flagent.route.configureConstraintRoutes
-import flagent.route.configureAnalyticsEventsRoutes
 import flagent.route.configureCoreMetricsRoutes
 import flagent.route.configureCrashRoutes
 import flagent.route.configureDistributionRoutes
 import flagent.route.configureEvaluationRoutes
 import flagent.route.configureExportRoutes
-import flagent.route.configureImportRoutes
 import flagent.route.configureFlagEntityTypeRoutes
 import flagent.route.configureFlagRoutes
 import flagent.route.configureFlagSnapshotRoutes
 import flagent.route.configureHealthRoutes
+import flagent.route.configureImportRoutes
 import flagent.route.configureInfoRoutes
 import flagent.route.configureProfilingRoutes
 import flagent.route.configureSegmentRoutes
@@ -34,23 +38,31 @@ import flagent.route.configureTagRoutes
 import flagent.route.configureVariantRoutes
 import flagent.route.configureWebhookRoutes
 import flagent.route.integration.configureIntegrationWebhookRoutes
-import flagent.mcp.configureMcpRoutes
-import flagent.middleware.configureSSE
-import flagent.middleware.configureRealtimeEventBus
-import flagent.route.RealtimeEventBus
 import flagent.route.realtimeRoutes
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.plugins.openapi.*
-import io.ktor.server.plugins.swagger.*
-import io.ktor.server.routing.*
-import io.ktor.server.response.*
-import io.ktor.server.http.content.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopped
+import io.ktor.server.application.install
+import io.ktor.server.engine.connector
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.staticFiles
+import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.openapi.openAPI
+import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
+import io.ktor.server.routing.post
+import io.ktor.server.routing.put
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.io.File
@@ -71,7 +83,10 @@ private fun Application.configurePlugins() {
             maxAgeInSeconds = AppConfig.corsMaxAge.toLong()
             AppConfig.corsAllowedHeaders.forEach { allowHeader(it) }
             AppConfig.corsAllowedMethods.forEach { method ->
-                try { allowMethod(io.ktor.http.HttpMethod.parse(method)) } catch (_: Exception) {}
+                try {
+                    allowMethod(io.ktor.http.HttpMethod.parse(method))
+                } catch (_: Exception) {
+                }
             }
             val origins = AppConfig.corsAllowedOrigins
             val useWildcard = origins.any { it == "*" } && !AppConfig.corsAllowCredentials
@@ -81,8 +96,10 @@ private fun Application.configurePlugins() {
                     allowHost(origin.removePrefix("http://").removePrefix("https://"))
                 }
                 if (origins.any { it == "*" }) {
-                    listOf("localhost:8080", "localhost:8081", "localhost:18000",
-                        "127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:18000").forEach { allowHost(it) }
+                    listOf(
+                        "localhost:8080", "localhost:8081", "localhost:18000",
+                        "127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:18000"
+                    ).forEach { allowHost(it) }
                 }
             }
             AppConfig.corsExposedHeaders.forEach { exposeHeader(it) }
@@ -125,7 +142,7 @@ fun main() {
 
 fun Application.module() {
     logger.info { "Starting Flagent server on ${AppConfig.host}:${AppConfig.port}" }
-    
+
     // Initialize database
     try {
         Database.init()
@@ -134,7 +151,7 @@ fun Application.module() {
         logger.error(e) { "Failed to initialize database" }
         throw e
     }
-    
+
     configurePlugins()
     val eventBus = configureRealtimeEventBus()
 
@@ -145,7 +162,8 @@ fun Application.module() {
         logger.info { "Firebase RC sync started for project ${AppConfig.firebaseRcProjectId}" }
     }
 
-    val recordingAndMetrics = createRecordingAndMetrics(repos.evaluationEventRepository, repos.analyticsEventRepository)
+    val recordingAndMetrics =
+        createRecordingAndMetrics(repos.evaluationEventRepository, repos.analyticsEventRepository)
     if (recordingAndMetrics.dataRecordingService != null) {
         logger.info { "DataRecordingService initialized with type: ${AppConfig.recorderType}" }
     }
@@ -158,25 +176,28 @@ fun Application.module() {
 
     val services = createServices(repos, cacheAndSync, recordingAndMetrics, eventBus)
 
-    val enterpriseConfigurator = ServiceLoader.load(EnterpriseConfigurator::class.java).toList().firstOrNull() ?: DefaultEnterpriseConfigurator()
+    val enterpriseConfigurator =
+        ServiceLoader.load(EnterpriseConfigurator::class.java).toList().firstOrNull()
+            ?: DefaultEnterpriseConfigurator()
     EnterprisePresence.enterpriseEnabled = enterpriseConfigurator !is DefaultEnterpriseConfigurator
 
-    val coreDeps = CoreDependenciesImpl(services.segmentService, repos.flagRepository, cacheAndSync.evalCache)
+    val coreDeps =
+        CoreDependenciesImpl(services.segmentService, repos.flagRepository, cacheAndSync.evalCache)
     val backendContext = EnterpriseBackendContextImpl(coreDeps)
     enterpriseConfigurator.configure(this, backendContext)
 
     routing {
         val routeConfig: Routing.() -> Unit = {
             configureHealthRoutes()
-            configureAuthRoutes()
+            configureAuthRoutes(services.userService)
             configureInfoRoutes()
             configureEvaluationRoutes(services.evaluationService)
 
             realtimeRoutes(services.flagService, eventBus)
-            
+
             // Profiling routes (if enabled)
             configureProfilingRoutes()
-            
+
             // In EvalOnlyMode, only register health and evaluation routes
             if (!AppConfig.evalOnlyMode) {
                 configureFlagRoutes(services.flagService)
@@ -191,6 +212,7 @@ fun Application.module() {
                 configureImportRoutes(services.importService)
                 configureWebhookRoutes(services.webhookService)
                 configureIntegrationWebhookRoutes(services.flagService)
+                configureAdminUserRoutes(services.userService)
 
                 if (!EnterprisePresence.enterpriseEnabled && services.coreMetricsService != null) {
                     configureCoreMetricsRoutes(services.coreMetricsService, services.flagService)
@@ -210,31 +232,56 @@ fun Application.module() {
 
             // MCP server (Model Context Protocol for AI assistants)
             if (AppConfig.mcpEnabled) {
-                configureMcpRoutes(AppConfig.mcpPath, services.evaluationService, cacheAndSync.evalCache)
+                configureMcpRoutes(
+                    AppConfig.mcpPath,
+                    services.evaluationService,
+                    cacheAndSync.evalCache,
+                    flagService = if (AppConfig.evalOnlyMode) null else services.flagService
+                )
             }
 
             // Catch-all for unmatched /api paths: return 404 JSON instead of falling through to staticFiles (index.html)
             route("/api") {
                 route("{...}") {
                     get {
-                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                        call.respondText(
+                            """{"error":"Not found"}""",
+                            ContentType.Application.Json,
+                            HttpStatusCode.NotFound
+                        )
                     }
                     post {
-                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                        call.respondText(
+                            """{"error":"Not found"}""",
+                            ContentType.Application.Json,
+                            HttpStatusCode.NotFound
+                        )
                     }
                     put {
-                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                        call.respondText(
+                            """{"error":"Not found"}""",
+                            ContentType.Application.Json,
+                            HttpStatusCode.NotFound
+                        )
                     }
                     delete {
-                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                        call.respondText(
+                            """{"error":"Not found"}""",
+                            ContentType.Application.Json,
+                            HttpStatusCode.NotFound
+                        )
                     }
                     patch {
-                        call.respondText("""{"error":"Not found"}""", io.ktor.http.ContentType.Application.Json, io.ktor.http.HttpStatusCode.NotFound)
+                        call.respondText(
+                            """{"error":"Not found"}""",
+                            ContentType.Application.Json,
+                            HttpStatusCode.NotFound
+                        )
                     }
                 }
             }
         }
-        
+
         // Apply WebPrefix if configured
         val routingInstance = this
         if (AppConfig.webPrefix.isNotEmpty()) {
@@ -245,19 +292,19 @@ fun Application.module() {
             routingInstance.configureStaticFiles()
         } else {
             routeConfig()
-            
+
             // Static file serving for frontend (after API routes, without prefix)
             configureStaticFiles()
         }
-        
+
         // New Ktor 3.4.0 OpenAPI and Swagger UI plugins
         // Serve OpenAPI specification at /openapi
         openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
-        
+
         // Serve Swagger UI at /docs
         swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
     }
-    
+
     environment.monitor.subscribe(ApplicationStopped) {
         cacheAndSync.evalCache.stop()
         cacheAndSync.firebaseRcSyncService?.stop()

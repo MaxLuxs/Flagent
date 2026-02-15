@@ -35,10 +35,13 @@ object ResponseMappers {
             dataRecordsEnabled = flag.dataRecordsEnabled,
             entityType = flag.entityType,
             environmentId = flag.environmentId,
+            projectId = flag.projectId,
+            dependsOn = flag.dependsOn,
             segments = flag.segments.map { mapSegmentToResponse(it) },
             variants = flag.variants.map { mapVariantToResponse(it) },
             tags = flag.tags.map { mapTagToResponse(it) },
-            updatedAt = flag.updatedAt
+            updatedAt = flag.updatedAt,
+            archived = flag.deletedAt != null
         )
     }
 

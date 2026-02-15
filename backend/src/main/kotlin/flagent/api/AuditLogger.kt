@@ -16,5 +16,5 @@ object AuditLoggerRegistry {
 }
 
 object TenantIdProvider {
-    var getter: (io.ktor.server.application.ApplicationCall) -> Long? = { null }
+    var getter: (ApplicationCall) -> Long? = { null }
 }

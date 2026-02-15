@@ -22,8 +22,10 @@ import flagent.repository.impl.FlagSnapshotRepository
 import flagent.repository.impl.SegmentRepository
 import flagent.repository.impl.TagRepository
 import flagent.repository.impl.VariantRepository
+import flagent.repository.impl.UserRepository
 import flagent.repository.impl.WebhookRepository
 import flagent.service.AnalyticsEventsService
+import flagent.service.UserService
 import flagent.service.ConstraintService
 import flagent.service.CrashReportService
 import flagent.service.CoreMetricsService
@@ -52,6 +54,7 @@ data class AppRepositories(
     val flagSnapshotRepository: FlagSnapshotRepository,
     val flagEntityTypeRepository: FlagEntityTypeRepository,
     val webhookRepository: WebhookRepository,
+    val userRepository: UserRepository,
     val evaluationEventRepository: EvaluationEventRepository,
     val analyticsEventRepository: AnalyticsEventRepository,
     val crashReportRepository: CrashReportRepository
@@ -82,6 +85,7 @@ data class AppServices(
     val flagSnapshotService: FlagSnapshotService,
     val flagEntityTypeService: FlagEntityTypeService,
     val webhookService: WebhookService,
+    val userService: UserService,
     val exportService: ExportService,
     val importService: ImportService,
     val analyticsEventsService: AnalyticsEventsService,
@@ -99,6 +103,7 @@ fun createRepositories(): AppRepositories = AppRepositories(
     flagSnapshotRepository = FlagSnapshotRepository(),
     flagEntityTypeRepository = FlagEntityTypeRepository(),
     webhookRepository = WebhookRepository(),
+    userRepository = UserRepository(),
     evaluationEventRepository = EvaluationEventRepository(),
     analyticsEventRepository = AnalyticsEventRepository(),
     crashReportRepository = CrashReportRepository()
@@ -171,7 +176,7 @@ fun createServices(
     eventBus: RealtimeEventBus
 ): AppServices {
     val sharedFlagEvaluatorAdapter = SharedFlagEvaluatorAdapter()
-    val evaluateFlagUseCase = EvaluateFlagUseCase(sharedFlagEvaluatorAdapter)
+    val evaluateFlagUseCase = EvaluateFlagUseCase(sharedFlagEvaluatorAdapter, repos.flagRepository)
     val evaluationService = EvaluationService(
         cacheAndSync.evalCache,
         evaluateFlagUseCase,
@@ -205,6 +210,7 @@ fun createServices(
         eventBus
     )
     val webhookService = WebhookService(repos.webhookRepository, repos.flagRepository)
+    val userService = UserService(repos.userRepository)
     val flagService = FlagService(
         repos.flagRepository,
         flagSnapshotService,
@@ -243,6 +249,7 @@ fun createServices(
         flagSnapshotService,
         flagEntityTypeService,
         webhookService,
+        userService,
         exportService,
         importService,
         analyticsEventsService,
