@@ -59,7 +59,7 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
             PlanCard(
                 themeMode = themeMode,
                 name = "Pro",
-                price = "$49/month",
+                price = "Contact us",
                 features = listOf(
                     "Everything in Starter",
                     "Managed hosting & SLA",

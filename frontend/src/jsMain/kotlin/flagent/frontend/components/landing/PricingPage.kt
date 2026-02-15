@@ -150,7 +150,7 @@ fun PricingPage() {
                         property("margin", "16px auto 0")
                     }
                 }) {
-                    Text("Flagent is in active development. Self-hosted is available today. Flagent Cloud (SaaS) is planned but not yet launched; SaaS prices below are indicative and may change.")
+                    Text("Flagent is in active development. Self-hosted is available today. Flagent Cloud (SaaS) is planned but not yet launched. Contact us for a consultation.")
                 }
             }
             // Open Source Self-Hosted
@@ -204,7 +204,7 @@ fun PricingPage() {
                     color(Color("rgba(255,255,255,0.6)"))
                     marginBottom(16.px)
                 }
-            }) { Text("Planned — not yet available. Prices subject to change.") }
+            }) { Text("Planned — not yet available. Contact us for a consultation.") }
             Div(attrs = {
                 classes("pricing-grid")
                 style {
@@ -216,21 +216,21 @@ fun PricingPage() {
             }) {
                 PricingCard(
                     name = "Starter",
-                    price = "Free",
-                    description = "Planned free tier for small teams (e.g. 100k evals/month).",
+                    price = "Contact us",
+                    description = "Planned entry tier: managed hosting, community support.",
                     features = listOf(
                         "Everything in Open Source",
                         "Managed hosting (planned)",
                         "Community support"
                     ),
-                    ctaLabel = "Star on GitHub",
+                    ctaLabel = "Contact us",
                     highlighted = false,
                     badge = "Planned",
                     onCta = { Router.navigateTo(Route.Home) }
                 )
                 PricingCard(
                     name = "Pro",
-                    price = "\$49–99/mo",
+                    price = "Contact us",
                     description = "Planned: higher limits, SLA, priority support.",
                     features = listOf(
                         "Everything in Starter",
@@ -238,21 +238,21 @@ fun PricingPage() {
                         "99.9% uptime SLA",
                         "Priority support"
                     ),
-                    ctaLabel = "Star on GitHub",
+                    ctaLabel = "Contact us",
                     highlighted = true,
                     badge = "Planned",
                     onCta = { Router.navigateTo(Route.Home) }
                 )
                 PricingCard(
                     name = "Team",
-                    price = "From \$199",
-                    description = "Planned: multi-tenant, higher limits.",
+                    price = "Contact us",
+                    description = "Planned: multi-tenant, extended limits.",
                     features = listOf(
                         "Everything in Pro",
                         "Multi-tenancy (planned)",
                         "Extended limits"
                     ),
-                    ctaLabel = "Star on GitHub",
+                    ctaLabel = "Contact us",
                     highlighted = false,
                     badge = "Planned",
                     onCta = { Router.navigateTo(Route.Home) }

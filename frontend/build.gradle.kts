@@ -45,6 +45,9 @@ kotlin {
 }
 
 // Ensure design tokens CSS is copied to resources before frontend build/run
+tasks.named("jsProcessResources").configure {
+    dependsOn(":flagent-design-tokens:copyCssToFrontend")
+}
 tasks.named("jsBrowserDevelopmentWebpack").configure {
     dependsOn(":flagent-design-tokens:copyCssToFrontend")
 }
@@ -98,7 +101,7 @@ tasks.register("runBackendDev") {
 // Ensure JS test compilation runs after main JS compilation (avoids friendPaths ordering issues
 // when building from root with Kotlin MPP + Compose). jsBrowserTest stays in check.
 tasks.named("compileTestKotlinJs").configure {
-    mustRunAfter(tasks.named("compileKotlinJs"))
+    dependsOn(tasks.named("compileKotlinJs"))
 }
 
 // E2E tests (Playwright) - run from frontend/e2e with: npm run test
