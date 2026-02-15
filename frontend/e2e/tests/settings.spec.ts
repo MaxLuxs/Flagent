@@ -32,4 +32,12 @@ test.describe('Settings Page @oss', () => {
       page.getByText(/Features|Функции|Metrics|Метрики|General|Общие/i).first()
     ).toBeVisible({ timeout: 5000 });
   });
+
+  test('Export section visible when present', async ({ page }) => {
+    await page.waitForLoadState('domcontentloaded');
+    const exportHeading = page.getByText(/Export|Экспорт|Export data|Экспорт данных/i).first();
+    if ((await exportHeading.count()) > 0) {
+      await expect(exportHeading).toBeVisible({ timeout: 5000 });
+    }
+  });
 });

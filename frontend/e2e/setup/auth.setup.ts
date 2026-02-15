@@ -3,7 +3,7 @@
  * Runs before chromium/firefox/webkit projects.
  */
 import { test as setup } from '@playwright/test';
-import { createTenant, login } from './helpers/api';
+import { createTenant, login } from '../helpers/api';
 
 const AUTH_FILE = 'playwright/.auth/user.json';
 

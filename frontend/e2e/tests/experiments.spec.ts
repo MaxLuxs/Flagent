@@ -70,4 +70,27 @@ test.describe('Experiments Page @oss', () => {
       })
     ).toBeVisible({ timeout: 10000 });
   });
+
+  test('card view shows variant names (OSS)', async ({ page, request }) => {
+    const experiment = await ensureExperimentAndApiKey(page, request);
+    if (!experiment) {
+      test.skip();
+      return;
+    }
+    await page.goto('/experiments');
+    await page.waitForLoadState('domcontentloaded');
+    await Promise.race([
+      page.locator('table tbody tr').first().waitFor({ state: 'visible', timeout: 15000 }),
+      page.getByText(/No experiments|Нет экспериментов/i).waitFor({ state: 'visible', timeout: 15000 }),
+    ]);
+    const cardsBtn = page.getByRole('button', { name: /Cards|Карточки/i });
+    if ((await cardsBtn.count()) === 0) {
+      test.skip(true, 'Cards view button not found (maybe no experiments)');
+      return;
+    }
+    await cardsBtn.click();
+    await expect(
+      page.getByText(/control|treatment|variant/i).first()
+    ).toBeVisible({ timeout: 5000 });
+  });
 });

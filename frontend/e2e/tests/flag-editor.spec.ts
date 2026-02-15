@@ -134,6 +134,24 @@ test.describe('Flag Editor - Full Flow @oss', () => {
     ).toBeVisible({ timeout: 5000 });
   });
 
+  test('can open Metrics tab from flag detail', async ({ page }) => {
+    const firstRow = page.locator('table tbody tr').first();
+    await firstRow.click();
+    await page.waitForLoadState('domcontentloaded');
+
+    const metricsTab = page.getByRole('button', { name: /Metrics|Метрики/i }).first();
+    if ((await metricsTab.count()) === 0) {
+      test.skip(true, 'Metrics tab not found (feature may be disabled)');
+      return;
+    }
+    await metricsTab.click();
+    await page.waitForTimeout(500);
+    await expect(page).toHaveURL(/\/flags\/\d+\/metrics/);
+    await expect(
+      page.getByText(/Metrics|Метрики|Evaluation|Оценка|API|stats/i).first()
+    ).toBeVisible({ timeout: 5000 });
+  });
+
   test('has back to flags button', async ({ page }) => {
     const firstRow = page.locator('table tbody tr').first();
     await firstRow.click();

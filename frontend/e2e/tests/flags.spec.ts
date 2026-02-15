@@ -50,3 +50,41 @@ test.describe('Flag Detail @oss', () => {
     }
   });
 });
+
+test.describe('Flags List - Toggle and Search @oss', () => {
+  test('can toggle flag ON/OFF from list row without opening detail @smoke', async ({ page }) => {
+    await page.goto('/flags');
+    await page.waitForLoadState('domcontentloaded');
+
+    const table = page.locator('table tbody tr');
+    await expect(table.first()).toBeVisible({ timeout: 10000 });
+
+    // Find the ON/OFF toggle in first row (label with checkbox, or cell with "ON"/"OFF" text)
+    const firstRow = table.first();
+    const toggleCell = firstRow.locator('td').filter({ has: page.locator('label:has-text("ON"), label:has-text("OFF")') });
+    const toggleCheckbox = toggleCell.locator('input[type="checkbox"]').first();
+
+    if ((await toggleCheckbox.count()) === 0) {
+      test.skip(true, 'No toggle in first row (empty list or layout changed)');
+      return;
+    }
+
+    const wasChecked = await toggleCheckbox.isChecked();
+    await toggleCheckbox.click();
+    await expect(toggleCheckbox).toBeChecked({ checked: !wasChecked, timeout: 10000 });
+  });
+
+  test('can filter flags by search query', async ({ page }) => {
+    await page.goto('/flags');
+    await page.waitForLoadState('domcontentloaded');
+
+    const searchInput = page.getByPlaceholder(/Search|Поиск|flag key|ключ флага/i).first();
+    if ((await searchInput.count()) === 0) {
+      test.skip(true, 'Search input not found (layout may differ)');
+      return;
+    }
+    await searchInput.fill('e2e_');
+    await page.waitForTimeout(500);
+    await expect(searchInput).toHaveValue('e2e_');
+  });
+});

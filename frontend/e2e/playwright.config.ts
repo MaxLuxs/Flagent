@@ -49,7 +49,7 @@ export default defineConfig({
   },
   expect: { timeout: 15000 },
   projects: [
-    { name: 'setup', testDir: '.', testMatch: /auth\.setup\.ts/ },
+    { name: 'setup', testDir: './setup', testMatch: /\.setup\.ts$/ },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], storageState: AUTH_FILE },
