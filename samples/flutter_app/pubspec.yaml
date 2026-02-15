@@ -1,0 +1,21 @@
+name: flutter_app
+description: Flagent Flutter sample with UI — evaluation, batch, debug screen.
+version: 0.1.6
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flagent_client:
+    path: ../../sdk/dart
+  flagent_enhanced:
+    path: ../../sdk/flutter-enhanced
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

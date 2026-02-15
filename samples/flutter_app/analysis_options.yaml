@@ -1,0 +1,7 @@
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+linter:
+  rules:
+    - prefer_const_constructors
+    - avoid_print

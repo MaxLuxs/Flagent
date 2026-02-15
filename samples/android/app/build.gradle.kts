@@ -62,6 +62,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":flagent-design-tokens"))
     implementation(project(":kotlin-client"))
     implementation(project(":kotlin-enhanced"))
     implementation(project(":kotlin-debug-ui"))

@@ -1,6 +1,7 @@
 package com.flagent.sample.di
 
 import com.flagent.client.apis.EvaluationApi
+import com.flagent.client.apis.FlagApi
 import com.flagent.enhanced.config.FlagentConfig
 import com.flagent.enhanced.manager.FlagentManager
 import com.flagent.koin.FlagentManagerProvider
@@ -20,4 +21,6 @@ object AppModule {
         baseUrl: String,
         config: FlagentConfig = FlagentConfig()
     ): FlagentManager = provider.getManager(baseUrl, config)
+
+    fun getFlagApi(baseUrl: String): FlagApi = provider.getFlagApi(baseUrl)
 }

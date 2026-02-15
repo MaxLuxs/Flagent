@@ -86,6 +86,22 @@ dart pub get
 dart run bin/main.dart
 ```
 
+### Flutter App Sample (`flutter_app/`)
+
+Flutter приложение **с UI** (Material): экраны Home, Evaluate и Debug.
+
+**Особенности:**
+- Форма оценки флага и отображение результата
+- Вкладка Debug: форма оценки, действия с кэшем (clear / evict), список последних оценок
+
+**Запуск:**
+```bash
+cd samples/flutter_app
+flutter create . --org com.flagent   # первый раз: сгенерировать android/ios
+flutter pub get
+flutter run
+```
+
 ### React Native Sample (`react-native/`)
 
 Эталонный код для использования Flagent SDK в React Native. Использует `@flagent/client` и `@flagent/enhanced-client`.
@@ -124,15 +140,30 @@ cd backend
 
 ```
 samples/
-├── android/          # Android sample application
+├── android/          # Android sample (Compose UI, подключён SDK Debug UI)
 ├── javascript/       # JavaScript/HTML sample
-├── kotlin/           # Kotlin/JVM sample
-├── swift/            # Swift sample
-├── flutter/          # Flutter/Dart sample
+├── kotlin/            # Kotlin/JVM консольный sample
+├── swift/            # Swift консольный sample
+├── flutter/          # Flutter/Dart консольный sample
+├── flutter_app/      # Flutter приложение с UI (Home, Evaluate, Debug)
 ├── react-native/     # React Native reference
 ├── ktor/             # Ktor plugin sample
+├── spring-boot/      # Spring Boot plugin sample
 └── README.md         # Этот файл
 ```
+
+## UI и Debug UI
+
+| Sample      | Есть UI | Подключён SDK Debug UI |
+|-------------|---------|------------------------|
+| Android     | Да (Compose) | Да — вкладка Debug, `kotlin-debug-ui` |
+| Flutter App | Да (Material) | Встроенная вкладка Debug (форма, кэш, последние оценки) |
+| JavaScript  | Да (HTML) | Только чекбокс Debug mode (без React Debug Panel) |
+| Swift       | Нет (CLI) | — |
+| Flutter (консоль) | Нет (CLI) | — |
+| Kotlin, Ktor, Spring Boot | Нет | — |
+
+**Android** использует модуль SDK Debug UI (`kotlin-debug-ui`). **Flutter App** — свой экран Debug во Flutter; отдельного пакета Flutter Debug UI в SDK нет.
 
 ## Лицензия
 

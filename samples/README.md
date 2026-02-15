@@ -88,6 +88,23 @@ dart pub get
 dart run bin/main.dart
 ```
 
+### Flutter App Sample (`flutter_app/`)
+
+Flutter application **with UI** (Material): Home, Evaluate, and Debug screens.
+
+**Features:**
+- Single flag evaluation form and result display
+- Debug screen: evaluate form, cache actions (clear / evict), last evaluations list
+- Uses `flagent_enhanced` with caching
+
+**Run:**
+```bash
+cd samples/flutter_app
+flutter create . --org com.flagent   # first time: generate android/ios
+flutter pub get
+flutter run
+```
+
 ### React Native Sample (`react-native/`)
 
 Reference code for using Flagent SDK in React Native. Uses `@flagent/client` and `@flagent/enhanced-client`.
@@ -126,15 +143,30 @@ The server will start on `http://localhost:18000` by default.
 
 ```
 samples/
-├── android/          # Android sample application
+├── android/          # Android sample (Compose UI, includes SDK Debug UI)
 ├── javascript/       # JavaScript/HTML sample
-├── kotlin/           # Kotlin/JVM sample
-├── swift/            # Swift sample
-├── flutter/          # Flutter/Dart sample
+├── kotlin/           # Kotlin/JVM console sample
+├── swift/            # Swift console sample
+├── flutter/          # Flutter/Dart console sample
+├── flutter_app/     # Flutter app with UI (Home, Evaluate, Debug)
 ├── react-native/     # React Native reference
 ├── ktor/             # Ktor plugin sample
+├── spring-boot/      # Spring Boot plugin sample
 └── README.md         # This file
 ```
+
+## UI and Debug UI
+
+| Sample     | Has UI | SDK Debug UI integrated |
+|------------|--------|--------------------------|
+| Android    | Yes (Compose) | Yes — `kotlin-debug-ui` on Debug tab |
+| Flutter App | Yes (Material) | Debug tab in-app (form, cache, last evals) |
+| JavaScript | Yes (HTML) | Debug mode checkbox only (no React Debug Panel) |
+| Swift      | No (CLI) | — |
+| Flutter (console) | No (CLI) | — |
+| Kotlin, Ktor, Spring Boot | No | — |
+
+The **Android sample** uses the SDK Debug UI module (`kotlin-debug-ui`). The **Flutter App** sample implements its own Debug tab (evaluate form, cache actions, last evaluations) in Flutter; there is no separate Flutter Debug UI package in the SDK. Swift and the **Flutter console** sample are CLI-only.
 
 ## License
 
