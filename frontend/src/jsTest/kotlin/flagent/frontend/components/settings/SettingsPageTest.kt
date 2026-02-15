@@ -1,5 +1,6 @@
 package flagent.frontend.components.settings
 
+import flagent.frontend.i18n.LocalizedStrings
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -22,5 +23,11 @@ class SettingsPageTest {
     fun testDefaultActiveTab() {
         val defaultTab = "general"
         assertEquals("general", defaultTab)
+    }
+
+    @Test
+    fun testMcpSectionStringsExist() {
+        assertTrue(LocalizedStrings.mcpSectionTitle.isNotBlank(), "MCP section title should be localized")
+        assertTrue(LocalizedStrings.mcpCopyUrl.isNotBlank(), "MCP copy URL label should be localized")
     }
 }

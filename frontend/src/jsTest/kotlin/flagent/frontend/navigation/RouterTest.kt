@@ -79,6 +79,25 @@ class RouterTest {
 
         val flagAnomalies = Route.FlagAnomalies(99)
         assertEquals("/flags/99/anomalies", flagAnomalies.path())
+
+        val flagMetricsWithType = Route.FlagMetrics(7, "eval")
+        assertEquals("/flags/7/metrics?metric=eval", flagMetricsWithType.path())
+    }
+
+    @Test
+    fun testAllKeyRoutesHavePaths() {
+        with(Router) {
+            assertEquals("/", Route.Home.path())
+            assertEquals("/flags", Route.FlagsList.path())
+            assertEquals("/flags/new", Route.CreateFlag.path())
+            assertEquals("/dashboard", Route.Dashboard.path())
+            assertEquals("/experiments", Route.Experiments.path())
+            assertEquals("/segments", Route.Segments.path())
+            assertEquals("/analytics", Route.Analytics.path())
+            assertEquals("/settings", Route.Settings.path())
+            assertEquals("/login", Route.Login.path())
+            assertEquals("/debug", Route.DebugConsole().path())
+        }
     }
     
     @Test

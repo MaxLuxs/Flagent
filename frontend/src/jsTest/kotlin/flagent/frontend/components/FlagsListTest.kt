@@ -82,4 +82,50 @@ class FlagsListTest {
         val groupByTag = true
         assertTrue(groupByTag)
     }
+
+    @Test
+    fun testFilterKeyFormatConsistency() {
+        val statusFilter: Boolean? = true
+        val searchQuery = "test"
+        val keyFilter = "my_key"
+        val tags = listOf("a", "b")
+        val filterKey = "$statusFilter|$searchQuery|$keyFilter|${tags.joinToString(",")}|false|false"
+        assertTrue(filterKey.contains("true"))
+        assertTrue(filterKey.contains("test"))
+        assertTrue(filterKey.contains("my_key"))
+        assertTrue(filterKey.contains("a,b"))
+    }
+
+    @Test
+    fun testFilterKeyWithNullStatus() {
+        val statusFilter: Boolean? = null
+        val filterKeyPart = statusFilter?.toString() ?: "null"
+        assertEquals("null", filterKeyPart)
+    }
+
+    @Test
+    fun testStatusParamForApi() {
+        val statusTrue: Boolean? = true
+        val statusFalse: Boolean? = false
+        val statusNull: Boolean? = null
+        assertEquals("true", statusTrue.toString())
+        assertEquals("false", statusFalse.toString())
+        assertTrue(statusNull == null)
+    }
+
+    @Test
+    fun testOnToggleEnabledContract() {
+        var receivedId: Int? = null
+        var receivedEnabled: Boolean? = null
+        val onToggleEnabled: (Int, Boolean) -> Unit = { id, enabled ->
+            receivedId = id
+            receivedEnabled = enabled
+        }
+        onToggleEnabled(42, true)
+        assertEquals(42, receivedId)
+        assertEquals(true, receivedEnabled)
+        onToggleEnabled(1, false)
+        assertEquals(1, receivedId)
+        assertEquals(false, receivedEnabled)
+    }
 }
