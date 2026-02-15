@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":flagent-design-tokens"))
     if (findProject(":kotlin-client") != null) {
         implementation(project(":kotlin-client"))
     } else {
@@ -33,6 +34,7 @@ dependencies {
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
+    implementation("androidx.compose.animation:animation")
 
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.mockk)

@@ -14,7 +14,7 @@ describe('FlagentDebugPanel', () => {
     expect(screen.getByRole('button', { name: /Flagent/ })).toBeTruthy();
   });
 
-  it('shows "Pass flagKeys prop" when flagKeys empty', () => {
+  it('shows "Pass flagKeys or flagsProvider" when flagKeys empty and no flagsProvider', () => {
     const manager = { evaluate: jest.fn() } as any;
     render(
       <FlagentProvider manager={manager}>
@@ -22,7 +22,7 @@ describe('FlagentDebugPanel', () => {
       </FlagentProvider>
     );
     fireEvent.click(screen.getByRole('button', { name: /Flagent/ }));
-    expect(screen.getByText('Pass flagKeys prop to inspect')).toBeTruthy();
+    expect(screen.getByText('Pass flagKeys or flagsProvider to inspect')).toBeTruthy();
   });
 
   it('evaluates and displays flag states', async () => {

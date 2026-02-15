@@ -5,4 +5,4 @@ export { FlagentDebugPanel } from './FlagentDebugPanel';
 export type { FeatureFlagProps } from './FeatureFlag';
 export type { FlagentProviderProps } from './FlagentProvider';
 export type { UseFlagResult } from './useFlag';
-export type { FlagentDebugPanelProps } from './FlagentDebugPanel';
+export type { FlagentDebugPanelProps, FlagRow } from './FlagentDebugPanel';

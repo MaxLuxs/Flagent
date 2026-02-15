@@ -33,17 +33,41 @@ return enabled ? <NewCheckout /> : <OldCheckout />;
 
 ## Usage (Debug UI)
 
-```typescript
-import { FlagentDebugUI } from '@flagent/debug-ui';
+```tsx
+import { FlagentDebugPanel } from '@flagent/debug-ui';
 import { FlagentManager } from '@flagent/enhanced-client';
 
 const manager = new FlagentManager(config);
-<FlagentDebugUI manager={manager} />
+<FlagentProvider manager={manager}>
+  <FlagentDebugPanel flagKeys={['feature_a', 'feature_b']} />
+</FlagentProvider>
+```
+
+With **list of all flags** (e.g. from FlagApi or ExportApi):
+
+```tsx
+import { FlagentDebugPanel, FlagRow } from '@flagent/debug-ui';
+import { FlagApi } from '@flagent/client';
+
+const flagApi = new FlagApi(configuration, basePath, axios);
+const flagsProvider = async (): Promise<FlagRow[]> => {
+  const res = await flagApi.findFlags(1000);
+  return res.data.map((f) => ({
+    key: f.key,
+    id: f.id,
+    enabled: f.enabled,
+    variantKeys: f.variants?.map((v) => v.key) ?? [],
+  }));
+};
+
+<FlagentDebugPanel flagsProvider={flagsProvider} position="bottom-right" />
 ```
 
 ## Features
 
-- List all flags
-- View flag details with evaluation logs
-- Local overrides
-- Evaluation logs viewer
+- **Flags list** — when `flagsProvider` is set, loads and shows all flags with overrides column; Refresh and Clear all overrides
+- **Local overrides** — set variant (or disabled) per flag; overrides apply to Evaluate and list
+- **Evaluate** — flag key, entity ID/type, Debug checkbox, result and evalDebugLog
+- **Cache** — Clear cache, Evict expired
+- **Last evaluations** — recent evaluate results
+- Optional `flagKeys` for simple on/off list when no flagsProvider

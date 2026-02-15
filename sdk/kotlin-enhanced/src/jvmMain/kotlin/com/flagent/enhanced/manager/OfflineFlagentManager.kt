@@ -4,7 +4,9 @@ import com.flagent.client.apis.ExportApi
 import com.flagent.client.apis.FlagApi
 import com.flagent.enhanced.config.OfflineFlagentConfig
 import com.flagent.enhanced.fetcher.DefaultSnapshotFetcher
+import com.flagent.enhanced.model.FlagSnapshot
 import com.flagent.enhanced.model.LocalEvaluationResult
+import com.flagent.enhanced.model.LocalFlag
 import com.flagent.enhanced.platform.createPersistentStorage
 import com.flagent.enhanced.realtime.RealtimeClient
 import com.flagent.enhanced.realtime.RealtimeConfig
@@ -103,4 +105,14 @@ class OfflineFlagentManager(
     fun getSnapshotAge(): Long? = core.getSnapshotAge()
 
     fun isSnapshotExpired(): Boolean = core.isSnapshotExpired()
+
+    /**
+     * Returns current snapshot for debug/inspection only (e.g. Debug UI).
+     */
+    fun getSnapshotForDebug(): FlagSnapshot? = core.getSnapshotForDebug()
+
+    /**
+     * Returns list of all flags from current snapshot for debug/inspection only.
+     */
+    fun getFlagsList(): List<LocalFlag> = core.getFlagsList()
 }

@@ -6,6 +6,7 @@ import com.flagent.enhanced.evaluator.LocalEvaluator
 import com.flagent.enhanced.fetcher.SnapshotFetcher
 import com.flagent.enhanced.model.FlagSnapshot
 import com.flagent.enhanced.model.LocalEvaluationResult
+import com.flagent.enhanced.model.LocalFlag
 import com.flagent.enhanced.platform.currentTimeMs
 import com.flagent.enhanced.platform.logWarn
 import com.flagent.enhanced.storage.SnapshotStorage
@@ -195,4 +196,16 @@ class OfflineFlagentManagerCore(
     }
 
     fun isSnapshotExpired(): Boolean = currentSnapshot?.isExpired() ?: true
+
+    /**
+     * Returns current snapshot for debug/inspection only (e.g. Debug UI).
+     * Read-only; may be null if not bootstrapped.
+     */
+    fun getSnapshotForDebug(): FlagSnapshot? = currentSnapshot
+
+    /**
+     * Returns list of all flags from current snapshot for debug/inspection only.
+     * Empty if not bootstrapped.
+     */
+    fun getFlagsList(): List<LocalFlag> = currentSnapshot?.flags?.values?.toList() ?: emptyList()
 }

@@ -24,20 +24,38 @@ let manager = FlagentManager()
 FlagentDebugUI.show(manager: manager)
 ```
 
-**iOS:** The library does not present the UI automatically. Present `DebugView(manager:)` in a sheet from your app, for example:
+**iOS:** Present `DebugView(manager:flagsProvider:)` in a sheet from your app:
 
 ```swift
 import FlagentDebugUI
 import FlagentEnhanced
 
-// In your view:
 .sheet(isPresented: $showDebug) {
     DebugView(manager: manager)
 }
 ```
 
+With **list of all flags** (e.g. from FlagAPI in FlagentClient). The `.async()` extension (Combine `Publisher` → async/await) is provided by FlagentEnhanced:
+
+```swift
+import FlagentDebugUI
+import FlagentEnhanced  // provides .async() on AnyPublisher
+import FlagentClient    // provides FlagAPI
+
+let flagsProvider: () async throws -> [FlagRow] = {
+    let flags = try await FlagAPI.findFlags(limit: 1000).async()
+    return flags.map { FlagRow(key: $0.key, id: $0.id, enabled: $0.enabled, variantKeys: $0.variants?.map(\.key) ?? []) }
+}
+
+FlagentDebugUI.show(manager: manager, flagsProvider: flagsProvider)
+// or on iOS:
+DebugView(manager: manager, flagsProvider: flagsProvider)
+```
+
 ## Features
 
+- **Flags list** — when `flagsProvider` is set, loads and shows all flags; Refresh and Clear all overrides; per-flag Override picker (variant or disabled)
+- **Local overrides** — set variant per flag for testing; overrides apply to Evaluate
 - Evaluation form (flag key/ID, entity ID/type, enable debug)
 - Result display with variant and segment info
 - Eval debug log when debug is enabled
