@@ -9,10 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
   <link rel="stylesheet" href="docsify-custom.css">
 </head>
-<body>
+<body class="docs-page">
   <!-- Unified Navbar (same as landing) -->
   <nav class="navbar">
     <div class="container">
@@ -25,7 +24,8 @@
           <a href="quickstart.html">Quick Start</a>
           <a href="sdk.html">SDKs</a>
           <a href="api-docs.html">API</a>
-          <a href="docs.html">Docs</a>
+          <a href="docs.html" class="active">Docs</a>
+          <a href="pricing.html">Pricing</a>
           <a href="blog/index.html">Blog</a>
           <div class="lang-switcher">
             <button class="lang-btn active" data-lang="en">EN</button>
@@ -62,6 +62,7 @@
             <li><a href="quickstart.html">Quick Start</a></li>
             <li><a href="sdk.html">SDKs</a></li>
             <li><a href="docs.html#/guides/deployment.md">Deployment</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
             <li><a href="blog/index.html">Blog</a></li>
           </ul>
         </div>
@@ -86,22 +87,46 @@
   </footer>
 
   <script>
-    window.$docsify = {
-      name: 'Flagent',
-      repo: 'https://github.com/MaxLuxs/Flagent',
-      loadSidebar: true,
-      subMaxLevel: 3,
-      homepage: 'README.md',
-      relativePath: true,
-      search: 'auto',
-      formatUpdated: '{YYYY}-{MM}-{DD}',
-      notFoundPage: true,
-      copyCode: {
-        buttonText: 'Copy',
-        errorText: 'Error',
-        successText: 'Copied!'
+    (function() {
+      var path = location.pathname || '/';
+      var idx = path.indexOf('/docs.html');
+      var basePath;
+      if (location.protocol === 'file:') {
+        basePath = './';
+      } else {
+        basePath = (idx !== -1 ? path.substring(0, idx) : '') + '/';
       }
-    }
+      if (!basePath.endsWith('/')) basePath += '/';
+      window.$docsify = {
+        name: 'Flagent',
+        repo: 'https://github.com/MaxLuxs/Flagent',
+        basePath: basePath,
+        alias: (function() {
+          var a = {
+            '/roadmap': '/guides/roadmap.md',
+            '/roadmap.md': '/guides/roadmap.md'
+          };
+          [['configuration','guides/configuration.ru'],['deployment','guides/deployment.ru'],['getting-started','guides/getting-started.ru'],['versioning','guides/versioning.ru'],['faq','guides/faq.ru'],['mcp','guides/mcp.ru'],['use-cases','guides/use-cases.ru'],['gitops','guides/gitops.ru'],['preview-environments','guides/preview-environments.ru'],['trunk-based-development','guides/trunk-based-development.ru'],['build-time-verification','guides/build-time-verification.ru'],['vscode-extension','guides/vscode-extension.ru'],['publishing','guides/publishing.ru'],['admin-and-tenants','guides/admin-and-tenants.ru'],['endpoints','api/endpoints.ru'],['evaluation-spec','architecture/evaluation-spec.ru'],['frontend','architecture/frontend.ru'],['backend','architecture/backend.ru'],['offline-first-sdk','features/offline-first-sdk.ru'],['real-time-updates','features/real-time-updates.ru'],['performance-optimizations','features/performance-optimizations.ru'],['benchmarks','performance/benchmarks.ru'],['tuning-guide','performance/tuning-guide.ru']].forEach(function(p) {
+            a['/' + p[0] + '.ru'] = '/' + p[1];
+          });
+          a['/roadmap.ru'] = '/guides/roadmap.md';
+          a['/guides/roadmap.ru'] = '/guides/roadmap.md';
+          return a;
+        })(),
+        loadSidebar: true,
+        subMaxLevel: 3,
+        homepage: 'README.md',
+        relativePath: false,
+        search: 'auto',
+        formatUpdated: '{YYYY}-{MM}-{DD}',
+        notFoundPage: '404.md',
+        copyCode: {
+          buttonText: 'Copy',
+          errorText: 'Error',
+          successText: 'Copied!'
+        }
+      };
+    })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>

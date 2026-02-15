@@ -1,45 +1,46 @@
-# Архитектура Backend (Ktor)
+# Backend Architecture (Ktor)
 
-## Обзор
+> [English](backend.md) | [Русский](backend.ru.md)
 
-Backend построен на Ktor с использованием Kotlin Coroutines для асинхронности.
-Следует принципам Clean Architecture с разделением на слои.
+## Overview
 
-## Структура
+The backend is built on Ktor with Kotlin Coroutines for async I/O. It follows Clean Architecture with clear layer separation.
+
+## Structure
 
 ```
 flagent/backend/
-├── application/       # Application.kt - точка входа, EnterpriseConfigurator
-├── config/            # Конфигурация из environment
+├── application/       # Application.kt - entry point, EnterpriseConfigurator
+├── config/            # Configuration from environment
 ├── domain/            # Domain Layer
 │   ├── entity/        # Data classes (Flag, Segment, Constraint, etc.)
-│   ├── repository/    # Интерфейсы репозиториев (IFlagRepository, etc.)
+│   ├── repository/    # Repository interfaces (IFlagRepository, etc.)
 │   ├── usecase/       # Use cases (EvaluateFlagUseCase, EvaluateBatchUseCase)
 │   └── value/         # Value objects (EntityID, FlagKey, EvaluationContext)
-├── repository/        # Infrastructure - Exposed таблицы, реализации репозиториев
-├── service/           # Application Layer - оркестрация use cases
+├── repository/        # Infrastructure - Exposed tables, repository implementations
+├── service/           # Application Layer - orchestrates use cases
 │   ├── command/       # Command objects (CreateFlagCommand, PutSegmentCommand, etc.)
-│   └── adapter/       # Adapters к shared evaluator
+│   └── adapter/       # Adapters to shared evaluator
 ├── route/             # Presentation - Ktor routes (API endpoints)
 │   └── mapper/        # ResponseMappers (domain → API Response)
-├── middleware/        # Ktor plugins (CORS, auth, etc)
-├── cache/             # In-memory кэш для evaluation
+├── middleware/        # Ktor plugins (CORS, auth, etc.)
+├── cache/             # In-memory cache for evaluation
 ├── recorder/          # Data recording (Kafka/Kinesis/PubSub)
-└── util/              # Утилиты
+└── util/              # Utilities
 ```
 
-## Поток данных (Request → Command → Service → Repository)
+## Data flow (Request → Command → Service → Repository)
 
 ```
 HTTP Request (CreateFlagRequest, PutSegmentRequest, etc.)
     ↓
 Route Handler
     ↓
-Request → Command mapping (CreateFlagCommand, PutSegmentCommand, etc.)
+Request → Command mapping
     ↓
-Service (принимает Command, строит domain entity внутри)
+Service (accepts Command, builds domain entity)
     ↓
-Use Case / Repository (доступ к БД)
+Use Case / Repository (DB access)
     ↓
 Database (Exposed)
     ↓
@@ -48,20 +49,20 @@ Domain entity → Response mapping (ResponseMappers)
 HTTP Response
 ```
 
-## Evaluation Flow
+## Evaluation flow
 
 ```
 POST /api/v1/evaluation
     ↓
 EvaluationRoute
     ↓
-EvaluationService (делегирует в EvaluateFlagUseCase + SharedFlagEvaluatorAdapter)
+EvaluationService (delegates to EvaluateFlagUseCase + SharedFlagEvaluatorAdapter)
     ↓
 EvaluateFlagUseCase → shared FlagEvaluator
     ↓
 EvalCache (in-memory)
     ↓
-Flag evaluation algorithm (в shared module)
+Flag evaluation algorithm (shared module)
     ↓
 Constraint evaluation (ConstraintEvaluator)
     ↓
@@ -72,46 +73,23 @@ Return result
 DataRecorder (async)
 ```
 
-## Кэширование
+## Caching
 
-- **EvalCache**: In-memory кэш всех флагов
-- Обновляется периодически из БД (по умолчанию каждые 3 секунды)
-- Thread-safe через coroutines
-- Индексация: ID, Key, Tags
+- **EvalCache**: In-memory cache of all flags
+- Refreshed periodically from DB (default every 3 seconds)
+- Thread-safe via coroutines
+- Indexed by ID, Key, Tags
 
-## Аутентификация
+## Authentication
 
-Поддерживаемые методы:
-- JWT (HS256, HS512, RS256)
-- Basic Auth
-- Header Auth
-- Cookie Auth
+Supported methods: JWT (HS256, HS512, RS256), Basic Auth, Header Auth, Cookie Auth.
 
-## Мониторинг
+## Monitoring
 
-- Prometheus metrics
-- StatsD
-- Logging (structured)
+Prometheus metrics, StatsD, structured logging.
 
-## API Документация
+## API documentation
 
-### Swagger UI
+**Swagger UI** at `/docs`: view endpoints, test API, view request/response schemas.
 
-Интерактивная документация API доступна через Swagger UI на endpoint `/docs`:
-- Просмотр всех API endpoints
-- Интерактивное тестирование API
-- Просмотр схем данных (request/response models)
-
-### OpenAPI Спецификация
-
-OpenAPI 3.0 спецификация доступна через:
-- `GET /api/v1/openapi.yaml` - спецификация в YAML формате
-- `GET /api/v1/openapi.json` - спецификация в JSON формате
-
-Спецификация загружается из файла `docs/api/openapi.yaml` при старте приложения.
-
-### Реализация
-
-- **DocumentationRoutes.kt**: Routes для Swagger UI и OpenAPI спецификации
-- **Зависимости**: `ktor-server-swagger`, Jackson YAML для конвертации
-- **Swagger UI**: Встроен через CDN (версия 5.10.3)
+**OpenAPI 3.0**: `GET /api/v1/openapi.yaml`, `GET /api/v1/openapi.json`. Spec is loaded from `docs/api/openapi.yaml` at startup. Implementation: DocumentationRoutes.kt, `ktor-server-swagger`, Swagger UI via CDN (v5.10.3).

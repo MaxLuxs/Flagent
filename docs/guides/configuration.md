@@ -57,36 +57,30 @@ Flagent supports PostgreSQL, MySQL, and SQLite databases.
 
 ### PostgreSQL (Recommended for Production)
 
+The backend expects a **JDBC URL** (not a plain `postgresql://` URI):
+
 ```bash
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flagent?sslmode=disable
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=user&password=password&sslmode=disable
 ```
 
-**Connection String Format:**
-```
-postgresql://[user[:password]@][host][:port][/database][?param1=value1&...]
-```
+**Connection string format:** `jdbc:postgresql://host:port/database?user=...&password=...&param=value`
 
-**Parameters:**
-- `sslmode` - SSL mode (disable, require, verify-full)
-- `connect_timeout` - Connection timeout in seconds
+**Common parameters:**
+- `user`, `password` — credentials (or in URL: `jdbc:postgresql://user:password@host:5432/db`)
+- `sslmode` — disable, require, verify-full
+- `connect_timeout` — connection timeout in seconds
 
 ### MySQL
 
+Use a **JDBC URL**:
+
 ```bash
 FLAGENT_DB_DBDRIVER=mysql
-FLAGENT_DB_DBCONNECTIONSTR=user:password@tcp(127.0.0.1:3306)/flagent?parseTime=true
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:mysql://localhost:3306/flagent?user=root&password=root&parseTime=true
 ```
 
-**Connection String Format:**
-```
-[user[:password]@]tcp([host][:port])[/database][?param1=value1&...]
-```
-
-**Parameters:**
-- `parseTime` - Parse time/date strings (true/false)
-- `charset` - Character set (utf8mb4, latin1)
-- `timeout` - Connection timeout
+**Parameters:** `user`, `password`, `parseTime`, `charset`, `connectionTimeout`, etc.
 
 ### SQLite (Development Only)
 
@@ -261,29 +255,26 @@ FLAGENT_DEV_MODE=true
 FLAGENT_DEV_SKIP_TENANT_AUTH=true
 ```
 
-## Admin Auth (Enterprise)
+## Admin Auth (required for UI login)
 
-When enabled, `/admin/*` routes (e.g. create/list tenants) require either a JWT from `POST /auth/login` (admin email/password) or the `X-Admin-Key` header. **Enabled by default** for security.
+Admin auth is **enabled by default**. To log in to the UI you **must** set admin credentials and a JWT secret; otherwise you get "Admin credentials not configured".
 
 ```bash
-# Enable admin auth (default: true). Set to false to allow open access (dev only).
-FLAGENT_ADMIN_AUTH_ENABLED=true
-
-# Admin login (for POST /auth/login)
-FLAGENT_ADMIN_EMAIL=admin@example.com
-FLAGENT_ADMIN_PASSWORD=your-secret-password
-
-# Optional: bcrypt hash instead of plain password (future)
-# FLAGENT_ADMIN_PASSWORD_HASH=$2a$10$...
-
-# Optional: API key for admin requests without login (X-Admin-Key header)
-FLAGENT_ADMIN_API_KEY=your-admin-api-key
-
-# JWT secret for signing admin tokens (required when admin auth enabled)
+# Required for login to work
+FLAGENT_ADMIN_EMAIL=admin@local
+FLAGENT_ADMIN_PASSWORD=admin
 FLAGENT_JWT_AUTH_SECRET=at-least-32-characters-secret
+
+# Optional: disable admin auth (dev only, not recommended)
+# FLAGENT_ADMIN_AUTH_ENABLED=false
+
+# Optional: API key for admin API without login (X-Admin-Key header)
+# FLAGENT_ADMIN_API_KEY=your-admin-api-key
 ```
 
-**Flow:** 1) Set the variables above. 2) Open UI → Login with admin email/password (or use `X-Admin-Key` in API requests). 3) After login, go to Tenants → Create first tenant → use the returned API key for `/api/v1/*` requests.
+- **Login:** Use `FLAGENT_ADMIN_EMAIL` as the login field (email, not username).
+- **JWT secret:** Must be at least 32 characters; used to sign tokens after login.
+- **Flow:** Set vars → start server → open UI → log in with email/password. Then create a tenant and use its API key for `/api/v1/*` requests.
 
 ## Data Recording Configuration
 
@@ -452,13 +443,15 @@ HOST=0.0.0.0
 PORT=18000
 ENVIRONMENT=production
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db:5432/flagent?sslmode=require
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db:5432/flagent?user=user&password=password&sslmode=require
+FLAGENT_ADMIN_EMAIL=admin@yourcompany.com
+FLAGENT_ADMIN_PASSWORD=secure-password
+FLAGENT_JWT_AUTH_SECRET=your-secure-secret-key-min-32-chars
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
 FLAGENT_PROMETHEUS_ENABLED=true
 FLAGENT_PROMETHEUS_PATH=/metrics
-FLAGENT_JWT_AUTH_SECRET=your-secure-secret-key
 FLAGENT_RECORDER_ENABLED=true
 FLAGENT_RECORDER_TYPE=kafka
 FLAGENT_RECORDER_KAFKA_BROKERS=kafka1:9092,kafka2:9092

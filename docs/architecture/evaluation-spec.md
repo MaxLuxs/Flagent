@@ -1,5 +1,7 @@
 # Flagent Evaluation Specification
 
+> [English](evaluation-spec.md) | [Русский](evaluation-spec.ru.md)
+
 Canonical specification for flag evaluation, rollout, and constraint matching. All implementations (backend, shared evaluator, Kotlin-enhanced SDK, Go-enhanced SDK) MUST follow this spec for consistent results.
 
 ## 1. Hash input for rollout

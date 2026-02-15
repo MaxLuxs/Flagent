@@ -1,6 +1,8 @@
 # Performance Tuning Guide
 
-Руководство по оптимизации производительности Flagent на основе результатов load testing.
+> [English](tuning-guide.md) | [Русский](tuning-guide.ru.md)
+
+Guide to tuning Flagent performance based on load testing results.
 
 **Note:** Metrics, anomaly, and smart rollout indices/tables apply when using the corresponding features (Core metrics or Enterprise). Evaluation and flag CRUD are always relevant for OSS.
 
@@ -8,7 +10,7 @@
 
 ### Indices
 
-Автоматически создаются следующие индексы для оптимизации запросов:
+The following indices are created automatically to optimize queries:
 
 #### Metrics Queries
 ```sql
@@ -48,7 +50,7 @@ CREATE INDEX idx_rollout_history ON smart_rollout_history(rollout_config_id, cha
 
 ### Index Monitoring
 
-Проверка использования индексов (PostgreSQL):
+Checking index usage (PostgreSQL):
 
 ```sql
 SELECT
@@ -64,7 +66,7 @@ AND tablename LIKE '%metric%' OR tablename LIKE '%anomaly%' OR tablename LIKE '%
 ORDER BY idx_scan DESC;
 ```
 
-**В коде:**
+**In code:**
 ```kotlin
 val stats = PerformanceOptimization.getIndexStats()
 stats.forEach { stat ->
@@ -74,12 +76,12 @@ stats.forEach { stat ->
 
 ### Table Maintenance
 
-**Analyze tables** (обновить статистику для query optimizer):
+**Analyze tables** (update statistics for query optimizer):
 ```kotlin
 PerformanceOptimization.analyze()
 ```
 
-**Vacuum** (PostgreSQL, освободить место):
+**Vacuum** (PostgreSQL, reclaim space):
 ```sql
 VACUUM ANALYZE metric_data_points;
 VACUUM ANALYZE anomaly_alerts;
@@ -187,7 +189,7 @@ export DB_MIN_IDLE=2
 
 ### HikariCP Configuration
 
-Оптимальные настройки для HikariCP (уже настроены в `DatabaseConfig.kt`):
+Recommended HikariCP settings (configured in `DatabaseConfig.kt`):
 
 ```kotlin
 maximumPoolSize = 50           // Max connections
@@ -215,7 +217,7 @@ connections = expected_concurrent_requests / 2
 - 200 concurrent requests → `200 / 2 = 100 connections`
 - **Recommended: take the higher value**, cap at 100
 
-**В коде:**
+**In code:**
 ```kotlin
 val recommended = DatabaseConfig.getRecommendedPoolSize(
     coreCount = 8,
@@ -252,12 +254,12 @@ LIMIT 20;
 
 ### Query Timeouts
 
-Настроенные timeouts в `DatabaseConfig.QueryTimeouts`:
+Configured timeouts in `DatabaseConfig.QueryTimeouts`:
 - **SHORT_QUERY_MS**: 1s - simple inserts/selects
 - **MEDIUM_QUERY_MS**: 5s - aggregations
 - **LONG_QUERY_MS**: 30s - complex analytics
 
-**Применение:**
+**Usage:**
 ```kotlin
 transaction {
     queryTimeout = DatabaseConfig.QueryTimeouts.MEDIUM_QUERY_MS.toInt()
@@ -271,7 +273,7 @@ transaction {
 
 ### Automated Cleanup
 
-`AiRolloutScheduler` автоматически чистит старые данные:
+`AiRolloutScheduler` automatically cleans up old data:
 
 ```kotlin
 // In AiRolloutScheduler
@@ -283,7 +285,7 @@ private suspend fun cleanupOldData() {
 }
 ```
 
-**Конфигурация retention:**
+**Retention configuration:**
 ```bash
 export METRIC_RETENTION_DAYS=90  # Default: 90 days
 export ANOMALY_RETENTION_DAYS=180 # Default: 180 days
@@ -304,7 +306,7 @@ AND detected_at < (extract(epoch from now() - interval '180 days') * 1000);
 
 ### Partitioning (Advanced)
 
-Для больших объемов данных (millions of metrics) рекомендуется partitioning по timestamp:
+For large data volumes (millions of metrics), partitioning by timestamp is recommended:
 
 ```sql
 -- Create partitioned table (PostgreSQL 10+)
@@ -326,12 +328,12 @@ FOR VALUES FROM (1704067200000) TO (1706745600000);
 
 ### In-Memory Cache
 
-**EvalCache** уже реализован для evaluation:
+**EvalCache** is already implemented for evaluation:
 - TTL: 60 seconds
 - Refresh interval: 3 seconds
 - Cache size: unlimited (production: add LRU eviction)
 
-**Metrics Aggregation Cache** (рекомендация):
+**Metrics Aggregation Cache** (recommended):
 ```kotlin
 // Cache aggregated metrics for 5 minutes
 val cache = ConcurrentHashMap<String, CachedAggregation>()
@@ -347,10 +349,10 @@ data class CachedAggregation(
 
 ### Redis Cache (Optional)
 
-Для distributed caching (multi-instance deployment):
+For distributed caching (multi-instance deployment):
 
 ```kotlin
-// Redis для shared cache между инстансами
+// Redis for shared cache across instances
 val redis = RedisClient.create("redis://localhost:6379")
 
 // Cache metrics aggregations
@@ -383,7 +385,7 @@ Evaluation API (`POST /api/v1/evaluation`) is the hot path. Optimize for low lat
 
 ## Load Test Results & Benchmarks
 
-### Baseline Performance (без оптимизаций)
+### Baseline Performance (before optimization)
 
 **Metrics API:**
 - Single metric: ~50ms avg, ~150ms p95
@@ -395,7 +397,7 @@ Evaluation API (`POST /api/v1/evaluation`) is the hot path. Optimize for low lat
 - Detection: ~800ms avg, ~2000ms p95
 - Get alerts: ~150ms avg, ~400ms p95
 
-### After Optimization (индексы + pool tuning)
+### After Optimization (indices + pool tuning)
 
 **Metrics API:**
 - Single metric: ~10-20ms avg, ~50ms p95 (**5x faster**)
@@ -409,7 +411,7 @@ Evaluation API (`POST /api/v1/evaluation`) is the hot path. Optimize for low lat
 
 ### Target Performance (production)
 
-- p95 < 200ms для всех API endpoints
+- p95 < 200ms for all API endpoints
 - p99 < 500ms
 - Error rate < 1%
 - Throughput: 500+ RPS per instance
@@ -420,11 +422,11 @@ Evaluation API (`POST /api/v1/evaluation`) is the hot path. Optimize for low lat
 
 ### Grafana Dashboards
 
-Используйте готовые dashboards:
+Use the provided dashboards:
 - `grafana/dashboards/flagent-metrics.json` - Metrics visualization
 - `grafana/dashboards/flagent-anomalies.json` - Anomaly alerts
 
-**Запуск:**
+**Run:**
 ```bash
 docker-compose -f grafana/docker-compose.grafana.yml up -d
 # Open http://localhost:3000 (admin/admin)
@@ -451,7 +453,7 @@ docker-compose -f grafana/docker-compose.grafana.yml up -d
 
 ### Alerting Rules
 
-**Prometheus alerts** (рекомендация):
+**Prometheus alerts** (recommended):
 ```yaml
 groups:
   - name: flagent
@@ -517,12 +519,12 @@ When scaling up:
 
 ### High CPU Usage
 
-**Причины:**
+**Causes:**
 - Missing indices → add missing indices
 - Complex aggregations → add caching
 - Too many connections → reduce pool size
 
-**Решение:**
+**Solution:**
 ```sql
 -- Find expensive queries
 SELECT query, total_time FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
@@ -530,12 +532,12 @@ SELECT query, total_time FROM pg_stat_statements ORDER BY total_time DESC LIMIT 
 
 ### High Memory Usage
 
-**Причины:**
+**Causes:**
 - Connection pool too large
 - Cache size unlimited
 - Memory leaks
 
-**Решение:**
+**Solution:**
 ```bash
 # Reduce pool size: modify maximumPoolSize in backend/src/main/kotlin/flagent/repository/Database.kt
 
@@ -545,7 +547,7 @@ jstat -gc <pid> 1000
 
 ### Slow Queries
 
-**Решение:**
+**Solution:**
 1. Check if indices exist: `\d+ table_name`
 2. Explain query: `EXPLAIN ANALYZE SELECT ...`
 3. Add missing indices
@@ -553,7 +555,7 @@ jstat -gc <pid> 1000
 
 ### Connection Pool Exhaustion
 
-**Решение:**
+**Solution:**
 1. Increase pool size: modify `maximumPoolSize` in `Database.kt` (default: 10)
 2. Check for connection leaks (monitor `hikaricp_connections_active`)
 3. Reduce connection timeout

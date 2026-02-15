@@ -73,12 +73,20 @@
 
                 <div class="step">
                     <h3 data-i18n="docker.step2.title">Step 2: Run Container</h3>
+                    <p data-i18n="docker.step2.desc">
+                        Образ по умолчанию использует SQLite (файл в контейнере). Для входа в UI нужны admin-учётные данные и JWT secret. Минимальный запуск:
+                    </p>
                     <div class="code-block">
-                        <pre><code>docker run -it -p 18000:18000 ghcr.io/maxluxs/flagent</code></pre>
+                        <pre><code>docker run -d -p 18000:18000 \
+  -e FLAGENT_ADMIN_EMAIL=admin@local \
+  -e FLAGENT_ADMIN_PASSWORD=admin \
+  -e FLAGENT_JWT_AUTH_SECRET=change-me-min-32-chars-for-dev-only \
+  -v flagent-data:/data \
+  ghcr.io/maxluxs/flagent</code></pre>
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
                     <p class="step-note" data-i18n="docker.step2.note">
-                        По умолчанию Flagent использует SQLite в памяти, что идеально для тестирования.
+                        <code>-v flagent-data:/data</code> — данные SQLite сохраняются между перезапусками. Без тома данные теряются при остановке контейнера.
                     </p>
                 </div>
 
@@ -215,7 +223,7 @@ cd Flagent</code></pre>
                     <h3 data-i18n="source.step2.title">Step 2: Clone Repository</h3>
                     <div class="code-block">
                         <pre><code>git clone https://github.com/MaxLuxs/Flagent.git
-cd Flagent/flagent</code></pre>
+cd Flagent</code></pre>
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
                 </div>
@@ -234,14 +242,17 @@ cd Flagent/flagent</code></pre>
                 <div class="step">
                     <h3 data-i18n="source.step4.title">Step 4: Configure Environment</h3>
                     <p data-i18n="source.step4.desc">
-                        Установите переменные окружения для подключения к базе данных:
+                        Обязательно задайте базу данных и учётные данные админа (без них вход в UI даст «Admin credentials not configured»):
                     </p>
                     <div class="config-options">
                         <div class="config-option">
-                            <h4 data-i18n="source.step4.sqlite">SQLite (for testing)</h4>
+                            <h4 data-i18n="source.step4.sqlite">SQLite (для теста)</h4>
                             <div class="code-block">
                                 <pre><code>export FLAGENT_DB_DBDRIVER=sqlite3
 export FLAGENT_DB_DBCONNECTIONSTR=flagent.sqlite
+export FLAGENT_ADMIN_EMAIL=admin@local
+export FLAGENT_ADMIN_PASSWORD=admin
+export FLAGENT_JWT_AUTH_SECRET=dev-secret-min-32-characters-long
 export PORT=18000</code></pre>
                                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                             </div>
@@ -249,8 +260,11 @@ export PORT=18000</code></pre>
                         <div class="config-option">
                             <h4 data-i18n="source.step4.postgres">PostgreSQL</h4>
                             <div class="code-block">
-                                <pre><code>export FLAGENT_DB_DBDRIVER=postgresql
-export FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=postgres&password=postgres
+                                <pre><code>export FLAGENT_DB_DBDRIVER=postgres
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=postgres&amp;password=postgres
+export FLAGENT_ADMIN_EMAIL=admin@local
+export FLAGENT_ADMIN_PASSWORD=admin
+export FLAGENT_JWT_AUTH_SECRET=dev-secret-min-32-characters-long
 export PORT=18000</code></pre>
                                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                             </div>
@@ -259,12 +273,16 @@ export PORT=18000</code></pre>
                             <h4 data-i18n="source.step4.mysql">MySQL</h4>
                             <div class="code-block">
                                 <pre><code>export FLAGENT_DB_DBDRIVER=mysql
-export FLAGENT_DB_DBCONNECTIONSTR=jdbc:mysql://localhost:3306/flagent?user=root&password=root
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:mysql://localhost:3306/flagent?user=root&amp;password=root
+export FLAGENT_ADMIN_EMAIL=admin@local
+export FLAGENT_ADMIN_PASSWORD=admin
+export FLAGENT_JWT_AUTH_SECRET=dev-secret-min-32-characters-long
 export PORT=18000</code></pre>
                                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                             </div>
                         </div>
                     </div>
+                    <p class="step-note">Подробнее: <a href="docs.html#/guides/configuration.md">Configuration</a>.</p>
                 </div>
 
                 <div class="step">

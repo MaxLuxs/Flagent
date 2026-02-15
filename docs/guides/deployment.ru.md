@@ -97,7 +97,7 @@ open http://localhost:18000
 export HOST=0.0.0.0
 export PORT=18000
 export FLAGENT_DB_DBDRIVER=postgres
-export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flagent
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=user&password=password
 export FLAGENT_LOGRUS_LEVEL=info
 export FLAGENT_LOGRUS_FORMAT=json
 
@@ -112,14 +112,14 @@ java -jar backend/build/libs/backend-0.1.6-all.jar
 
 ```bash
 export FLAGENT_DB_DBDRIVER=postgres
-export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db-host:5432/flagent?sslmode=require
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db-host:5432/flagent?user=user&password=password&sslmode=require
 ```
 
 **MySQL:**
 
 ```bash
 export FLAGENT_DB_DBDRIVER=mysql
-export FLAGENT_DB_DBCONNECTIONSTR=user:password@tcp(db-host:3306)/flagent?parseTime=true
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:mysql://db-host:3306/flagent?user=user&password=password&parseTime=true
 ```
 
 ### Конфигурация безопасности
@@ -286,7 +286,7 @@ docker build -t flagent:latest .
 docker run -d \
   -p 18000:18000 \
   -e FLAGENT_DB_DBDRIVER=postgres \
-  -e FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db:5432/flagent \
+  -e FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db:5432/flagent?user=user&password=password \
   flagent:latest
 ```
 
@@ -315,7 +315,7 @@ HOST=0.0.0.0
 PORT=18000
 ENVIRONMENT=staging
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@staging-db:5432/flagent
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://staging-db:5432/flagent?user=user&password=password
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
@@ -331,7 +331,7 @@ HOST=0.0.0.0
 PORT=18000
 ENVIRONMENT=production
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@prod-db:5432/flagent?sslmode=require
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://prod-db:5432/flagent?user=user&password=password&sslmode=require
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
@@ -366,7 +366,7 @@ services:
       - "18000:18000"
     environment:
       - FLAGENT_DB_DBDRIVER=postgres
-      - FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db:5432/flagent
+      - FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db:5432/flagent?user=user&password=password
 ```
 
 ### Вертикальное масштабирование

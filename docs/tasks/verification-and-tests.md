@@ -6,14 +6,18 @@ See [Current status](status.md) for backend/frontend test commands and [Contribu
 
 | Component        | Test command | Notes |
 |------------------|--------------|--------|
-| **Kotlin Debug UI** | `./gradlew :kotlin-debug-ui:test` | Module must compile (Compose BOM / ExposedDropdownMenu). |
+| **Kotlin client (KMP)** | `./gradlew :kotlin-client:jvmTest` | API client; регенерация: `sdk/kotlin/generate.sh`, см. [CODEGEN](../../sdk/kotlin/CODEGEN.md). Отчёт покрытия: `:kotlin-client:jacocoTestReport` (HTML в `sdk/kotlin/build/reports/jacoco/jacocoTestReport/html/`). Проверка покрытия ≥85%: `./gradlew :kotlin-client:jacocoCoverageVerification`. |
+| **Kotlin Debug UI** | `./gradlew :kotlin-debug-ui:jvmTest` | Compose Multiplatform (JVM/Android/iOS). |
 | **Flutter App**     | `cd samples/flutter_app && flutter pub get && flutter test` | Requires Flutter SDK. |
 
 ## Quick commands
 
 ```bash
+# Kotlin API client (KMP)
+./gradlew :kotlin-client:jvmTest
+
 # Kotlin Debug UI
-./gradlew :kotlin-debug-ui:test
+./gradlew :kotlin-debug-ui:jvmTest
 
 # Flutter App sample
 cd samples/flutter_app && flutter pub get && flutter test

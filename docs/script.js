@@ -426,8 +426,8 @@ const translations = {
     }
 };
 
-// Get current language from localStorage or default to 'ru'
-let currentLang = localStorage.getItem('flagent-lang') || 'ru';
+// Get current language from localStorage or default to 'en'
+let currentLang = localStorage.getItem('flagent-lang') || 'en';
 
 // Function to change language
 function changeLanguage(lang) {
@@ -459,6 +459,26 @@ function changeLanguage(lang) {
     });
 }
 
+// On docs.html: switch doc path to .ru or back to EN when changing language
+function getDocsifyPath() {
+    var hash = (location.hash || '#/').replace(/^#\/?/, '');
+    return hash.replace(/\.md$/i, '');
+}
+function setDocsifyPath(path) {
+    location.hash = '#/' + path;
+}
+function switchDocsLang(lang) {
+    var path = getDocsifyPath();
+    if (!path || path === 'README') return path;
+    if (lang === 'ru') {
+        if (path.endsWith('.ru')) return path;
+        return path + '.ru';
+    } else {
+        if (path.endsWith('.ru')) return path.slice(0, -3);
+        return path;
+    }
+}
+
 // Initialize language on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Set initial language
@@ -468,6 +488,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const lang = this.getAttribute('data-lang');
+            var isDocs = location.pathname.indexOf('docs.html') !== -1;
+            if (isDocs && window.$docsify) {
+                var newPath = switchDocsLang(lang);
+                if (newPath !== getDocsifyPath()) {
+                    setDocsifyPath(newPath);
+                }
+            }
             changeLanguage(lang);
         });
     });

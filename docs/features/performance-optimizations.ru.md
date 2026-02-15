@@ -1,24 +1,24 @@
-# Performance Optimizations
+# Оптимизации производительности
 
-> [English](performance-optimizations.md) | [Русский](performance-optimizations.ru.md)
+> [English](performance-optimizations.md) | Русский
 
-## Overview
+## Обзор
 
-Flagent provides a range of performance optimizations for maximum evaluation speed and scalability. These optimizations make Flagent ready for high load and many concurrent requests.
+Flagent предоставляет множество оптимизаций производительности для обеспечения максимальной скорости evaluation и масштабируемости. Эти оптимизации делают Flagent готовым к работе с высокими нагрузками и большим количеством одновременных запросов.
 
-## Key Optimizations
+## Ключевые оптимизации
 
 ### 1. Client-Side Evaluation SDK
 
-SDKs with client-side evaluation run evaluations on the client without calling the server.
+SDK с поддержкой client-side evaluation позволяет выполнять evaluation на стороне клиента без необходимости обращаться к серверу.
 
-**Benefits:**
-- Lower server load
-- Zero latency for the client
-- Offline operation
-- Scalability independent of server capacity
+**Преимущества:**
+- Снижение нагрузки на сервер
+- Нулевая латентность для клиента
+- Работа в offline режиме
+- Масштабируемость без ограничений сервера
 
-**Architecture:**
+**Архитектура:**
 
 ```
 Client Application
@@ -32,7 +32,7 @@ Evaluation Engine
 Result (instant)
 ```
 
-**Example:**
+**Пример использования:**
 
 ```kotlin
 // Kotlin SDK
@@ -41,7 +41,7 @@ val manager = FlagentManager(
     enableClientSideEvaluation = true
 )
 
-// Evaluation runs locally
+// Evaluation происходит локально
 val result = manager.evaluate(
     flagKey = "new_payment_flow",
     entityID = "user123",
@@ -49,7 +49,7 @@ val result = manager.evaluate(
 )
 ```
 
-**Configuration:**
+**Конфигурация:**
 
 ```kotlin
 data class FlagentManagerConfig(
@@ -62,15 +62,15 @@ data class FlagentManagerConfig(
 
 ### 2. Edge Caching
 
-Caching at edge nodes to reduce latency and load on the origin server.
+Кэширование на edge-узлах для снижения латентности и нагрузки на центральный сервер.
 
-**Benefits:**
-- Low latency via geographic distribution
-- Reduced load on the origin server
-- Automatic invalidation on changes
-- CDN support (CloudFront, Fastly, Cloudflare)
+**Преимущества:**
+- Низкая латентность благодаря географическому распределению
+- Снижение нагрузки на центральный сервер
+- Автоматическая инвалидация при изменениях
+- Поддержка CDN (CloudFront, Fastly, Cloudflare)
 
-**Architecture:**
+**Архитектура:**
 
 ```
 Client Request
@@ -84,7 +84,7 @@ Edge Cache (store)
 Client Response
 ```
 
-**Configuration:**
+**Конфигурация:**
 
 ```yaml
 # CDN Configuration
@@ -97,18 +97,18 @@ edge_caching:
 
 ### 3. Batch Optimization
 
-Optimized batch evaluation for processing multiple requests at once.
+Оптимизация batch evaluation для обработки множественных запросов одновременно.
 
-**Benefits:**
-- Lower per-request overhead
-- Parallel processing
-- Better resource utilization
-- Support for large batch requests
+**Преимущества:**
+- Снижение overhead на запрос
+- Параллельная обработка
+- Оптимизация использования ресурсов
+- Поддержка больших batch-запросов
 
-**Example:**
+**Пример использования:**
 
 ```kotlin
-// Batch evaluation
+// Batch evaluation с оптимизацией
 val results = manager.evaluateBatch(
     entities = listOf(
         EvaluationEntity(
@@ -122,27 +122,27 @@ val results = manager.evaluateBatch(
     ),
     flagKeys = listOf("flag1", "flag2", "flag3")
 )
-// All evaluations run in parallel
+// Все evaluation выполняются параллельно
 ```
 
-**Internal optimizations:**
+**Внутренняя оптимизация:**
 
-- Parallel entity processing
-- Shared cache for batch requests
-- Optimized database queries
+- Параллельная обработка entity
+- Общий кэш для всех запросов в batch
+- Оптимизация database queries
 - Batch database operations
 
 ### 4. Connection Pooling
 
-Connection pooling for efficient use of database connections.
+Пул соединений для эффективного использования database connections.
 
-**Benefits:**
-- Lower connection setup overhead
-- Connection reuse
-- Configurable max connections
-- Pool monitoring
+**Преимущества:**
+- Снижение overhead на установку соединений
+- Переиспользование соединений
+- Контроль максимального количества соединений
+- Мониторинг пула
 
-**Configuration (HikariCP):**
+**Конфигурация (HikariCP):**
 
 ```kotlin
 data class DatabaseConfig(
@@ -160,22 +160,22 @@ data class DatabaseConfig(
 
 ### 5. EvalCache Optimizations
 
-In-memory cache optimizations for evaluation.
+Оптимизации in-memory кэша для evaluation.
 
-**Current optimizations:**
-- ConcurrentHashMap for thread-safe access
-- Indexing by ID, Key, Tags
-- Non-blocking periodic refresh
-- Minimal lock time
+**Текущие оптимизации:**
+- ConcurrentHashMap для thread-safe доступа
+- Индексация по ID, Key, Tags
+- Периодическое обновление без блокировок
+- Минимальное время блокировки
 
-**Planned improvements:**
+**Планируемые улучшения:**
 
-- **Incremental Updates**: Update only changed flags
-- **Lazy Loading**: Load flags on demand
-- **Compression**: In-memory data compression
-- **Memory-Mapped Files**: Off-heap storage
+- **Incremental Updates**: Обновление только измененных флагов
+- **Lazy Loading**: Загрузка флагов по требованию
+- **Compression**: Сжатие данных в памяти
+- **Memory-Mapped Files**: Использование off-heap памяти
 
-**Example configuration:**
+**Пример конфигурации:**
 
 ```kotlin
 data class EvalCacheConfig(
@@ -189,15 +189,15 @@ data class EvalCacheConfig(
 
 ### 6. Async Data Recording
 
-Asynchronous data recording to avoid impacting evaluation latency.
+Асинхронная запись данных для снижения impact на evaluation latency.
 
-**Benefits:**
-- No impact on evaluation latency
-- Batched writes
-- Retry logic
+**Преимущества:**
+- Нулевой impact на evaluation latency
+- Batch обработка записей
+- Retry логика
 - Rate limiting
 
-**Architecture:**
+**Архитектура:**
 
 ```
 Evaluation Request
@@ -211,7 +211,7 @@ Batch Processor
 Kafka/Kinesis/PubSub
 ```
 
-**Example configuration:**
+**Пример конфигурации:**
 
 ```kotlin
 data class DataRecordingConfig(
@@ -224,17 +224,17 @@ data class DataRecordingConfig(
 )
 ```
 
-## Performance Metrics
+## Метрики производительности
 
-### Targets
+### Целевые показатели
 
 - **Evaluation Latency (p50)**: < 1ms (client-side), < 5ms (server-side)
 - **Evaluation Latency (p99)**: < 10ms (client-side), < 50ms (server-side)
-- **Throughput**: > 100 req/s per server (see backend PerformanceTest)
+- **Throughput**: > 100 req/s на одном сервере (см. backend PerformanceTest)
 - **Cache Hit Rate**: > 95%
 - **Batch Processing**: > 1,000 evaluations/second
 
-### Monitoring
+### Мониторинг
 
 ```kotlin
 // Prometheus metrics
@@ -254,7 +254,7 @@ val throughput = Counter.build()
     .register()
 ```
 
-## Configuration
+## Конфигурация
 
 ### Environment Variables
 
@@ -281,36 +281,36 @@ FLAGENT_CLIENT_SIDE_EVAL_CACHE_TTL=60s
 
 ## Roadmap
 
-### Phase 1: Core optimizations (Done)
+### Фаза 1: Базовые оптимизации (Реализовано)
 - ✅ Connection pooling
 - ✅ Async data recording
-- ✅ EvalCache with indexing
+- ✅ EvalCache с индексацией
 - ✅ Batch evaluation
 
-### Phase 2: Client-Side Evaluation (Planned)
+### Фаза 2: Client-Side Evaluation (В планах)
 - ⏳ Client-side evaluation SDK
 - ⏳ Flag synchronization
 - ⏳ Offline support
 - ⏳ Incremental updates
 
-### Phase 3: Edge Caching (Planned)
-- ⏳ CDN integration
+### Фаза 3: Edge Caching (В планах)
+- ⏳ CDN интеграция
 - ⏳ Cache invalidation
 - ⏳ Stale-while-revalidate
 - ⏳ Geodistribution
 
-### Phase 4: Advanced optimizations (Planned)
+### Фаза 4: Продвинутые оптимизации (В планах)
 - ⏳ Incremental cache updates
 - ⏳ Memory compression
 - ⏳ Memory-mapped files
 - ⏳ Predictive caching
 
-## Usage Examples
+## Примеры использования
 
-### High-load application
+### Высоконагруженное приложение
 
 ```kotlin
-// High-load configuration
+// Конфигурация для высоких нагрузок
 val config = FlagentConfig(
     evalCache = EvalCacheConfig(
         refreshInterval = 1.second,
@@ -328,17 +328,17 @@ val config = FlagentConfig(
 )
 ```
 
-### Microservices
+### Микросервисная архитектура
 
 ```kotlin
-// Client-side evaluation for microservices
+// Client-side evaluation для микросервисов
 val manager = FlagentManager(
     baseUrl = "https://flags.example.com/api/v1",
     enableClientSideEvaluation = true,
     cacheRefreshInterval = 30.seconds
 )
 
-// Evaluation without network latency
+// Evaluation без network latency
 val result = manager.evaluate(
     flagKey = "feature_enabled",
     entityID = serviceId,
@@ -346,7 +346,7 @@ val result = manager.evaluate(
 )
 ```
 
-## Related documentation
+## Связанная документация
 
 - [Architecture](../architecture/backend.md)
 - [EvalCache Implementation](https://github.com/MaxLuxs/Flagent/blob/main/backend/src/main/kotlin/flagent/cache/impl/EvalCache.kt)

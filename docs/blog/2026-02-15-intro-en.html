@@ -67,49 +67,48 @@
                 </header>
 
                 <div class="article-body">
-                    <p>Hi. I’m <strong>Maxim</strong>, and I’ve been building Android apps for about five years. Over time I kept running into the same problem: I wanted feature flags, gradual rollouts, and a way to experiment without betting the whole release on one big deploy — but nothing I tried really fit.</p>
+                    <p>Hi. I’m <strong>Maxim</strong>. I’ve been doing Android for about five years, and I kept hitting the same wall: I wanted to roll out features gradually, kill something in one click when it goes wrong, and not bet the whole release on a single big deploy. So basically — feature flags and a sane way to run experiments. But everything I tried felt off.</p>
 
-                    <p>Either the stack didn’t match (no proper Kotlin-native story), or it was too heavy for what I needed, or it was yet another SaaS I had to wire into our pipeline. So at some point I thought: why not build something that fits the way I work?</p>
+                    <p>Sometimes the stack didn’t match: no real Kotlin-native story, everything through wrappers. Sometimes it was a full-blown platform with tons of features when I just needed "on/off" and simple A/B. Or yet another cloud service — their pipeline, their limits, their contracts. So I thought: fine, I’ll build what I’d actually use. That’s how <strong>Flagent</strong> started.</p>
 
-                    <h2>What I was missing</h2>
-                    <p>I wanted:</p>
-                    <ul>
-                        <li><strong>Feature flags</strong> — turn things on and off without a new app release.</li>
-                        <li><strong>Experimentation</strong> — A/B tests and rollouts with clear rules, not ad‑hoc ifs in code.</li>
-                        <li><strong>Faster, safer releases</strong> — ship often, hide behind flags, and kill a feature in one click if something goes wrong.</li>
-                        <li>Something that plays nice with <strong>Kotlin</strong> and the rest of my stack, not a bolt-on from another ecosystem.</li>
-                    </ul>
-                    <p>I looked at what’s out there and took ideas from several systems, but I couldn’t find one that was “this is exactly what I need.” So I started a pet project. That project is <strong>Flagent</strong>.</p>
+                    <h2>What I was actually missing</h2>
+                    <p>A few things. First, <strong>feature flags</strong> themselves: turn features on and off without pushing a new build to the store. Not "commit and wait a week" but "flip in the admin — app behaviour changes." Second, <strong>experiments</strong>: not random <code>if (BuildConfig.DEBUG)</code> scattered in code and not "let the backend figure it out," but clear rules — who sees what, what percentage, which variant. Third — all of that had to work with <strong>Kotlin</strong> and the stack I already use, not a whole separate world with its own SDKs and quirks.</p>
 
-                    <h2>What Flagent is today</h2>
-                    <p>It’s an open-source feature-flag and experimentation backend plus a small admin UI. You can self-host it and plug it into your apps. Right now it already has:</p>
-                    <ul>
-                        <li><strong>Backend</strong> — Ktor, Clean Architecture, PostgreSQL / MySQL / SQLite.</li>
-                        <li><strong>Admin UI</strong> — Compose for Web: flags, segments, variants, constraints, a debug console.</li>
-                        <li><strong>SDKs</strong> — Kotlin (including an “enhanced” one with offline eval and real-time updates), JavaScript/TS, Swift, Python, Go. Plus a Ktor plugin for server-side evaluation.</li>
-                        <li><strong>Evaluation</strong> — deterministic bucketing (MurmurHash3), targeting by segments and constraints.</li>
-                        <li><strong>Client-side evaluation</strong> in Kotlin and Go — evaluate locally, no round-trip for every check.</li>
-                        <li><strong>Real-time updates</strong> (SSE) so clients get new flag state without polling.</li>
-                    </ul>
-                    <p>So it’s already usable: you can run the server, create flags, connect an SDK, and start gating features or running simple experiments. I use ideas from other platforms, but the design and implementation are tuned for what I care about: type safety, coroutines, and something I can host myself.</p>
+                    <p>I looked at what's out there — existing products and homegrown setups at various companies. Took ideas from several, but never found one "this is it." So I started a side project and built it for myself.</p>
 
-                    <h2>How to use it</h2>
-                    <p>Get the server up:</p>
-                    <pre><code>docker run -p 18000:18000 ghcr.io/maxluxs/flagent</code></pre>
-                    <p>Open <code>http://localhost:18000</code>, log in (default <code>admin@local</code> / <code>admin</code>), create a flag, grab an API key. Then in your app you add the SDK and evaluate:</p>
+                    <h2>What's in Flagent right now</h2>
+                    <p>It's an open-source backend plus a small admin UI. You self-host it and plug your apps in via API or SDK.</p>
+
+                    <p>The <strong>backend</strong> is Ktor, clean architecture inside, no bloat. DB: PostgreSQL, MySQL, or SQLite (SQLite is handy for local tinkering). The <strong>admin UI</strong> is Compose for Web: you create flags, set up segments (who falls into which bucket), variants, constraints. There's a debug console so you can see why a user got or didn't get a variant.</p>
+
+                    <p><strong>SDKs</strong> exist for Kotlin (including an "enhanced" one with offline evaluation and live updates over SSE), JavaScript/TypeScript, Swift, Python, Go. Plus a Ktor plugin for server-side evaluation. Flag evaluation is deterministic: same user, same rules — same variant every time (MurmurHash3). No "in A today, B tomorrow." You can target by segments and constraints: region, subscription tier, whatever you pass in context.</p>
+
+                    <p>For mobile, the important bit is <strong>client-side evaluation</strong> in Kotlin (and Go): after one snapshot fetch, flags are evaluated locally — no server round-trip on every <code>isEnabled()</code>. And real-time updates over SSE: change a flag in the admin, clients pick it up in seconds without restarting the app.</p>
+
+                    <p>So you can already run the server, create flags, wire up your app, and either gate features behind flags or run simple A/B tests. I didn't reinvent the wheel — I looked at how other platforms do it — but I put it together the way I like: type safety, coroutines, self-host, no vendor lock-in.</p>
+
+                    <h2>How to try it</h2>
+                    <p>Fastest way is Docker. You need to pass admin credentials and a JWT secret or you won't get into the UI (we fixed that in the docs recently). Minimal run:</p>
+                    <pre><code>docker run -d -p 18000:18000 \
+  -e FLAGENT_ADMIN_EMAIL=admin@local \
+  -e FLAGENT_ADMIN_PASSWORD=admin \
+  -e FLAGENT_JWT_AUTH_SECRET=any-secret-at-least-32-chars \
+  -v flagent-data:/data \
+  ghcr.io/maxluxs/flagent</code></pre>
+                    <p>Then open <code>http://localhost:18000</code>, log in (<code>admin@local</code> / <code>admin</code>), create a flag, grab the API key from the tenant settings. In your app you add the SDK and check:</p>
                     <pre><code>if (client.isEnabled("my-feature")) {
     // new behaviour
 } else {
-    // old behaviour
+    // old one
 }</code></pre>
-                    <p>For the full walkthrough, see the <a href="../quickstart.html">Quick Start</a> and the <a href="../docs.html">docs</a>. There are guides for configuration, deployment, SDKs, and the API.</p>
+                    <p>Full walkthrough is in <a href="../quickstart.html">Quick Start</a> and the <a href="../docs.html">docs</a> — how to set up the DB, deploy, which env vars you need, how to plug in the SDK for your language.</p>
 
                     <h2>Where it’s going</h2>
-                    <p>Right now it’s a side project. I’m building it for my own needs first, but I’d like it to grow into something others can rely on too — better docs, more integrations, maybe a managed option later. I’m not promising a fixed roadmap; I’m just sharing what exists and where I’d like to take it.</p>
+                    <p>Right now it’s a side project. I’m building it for my own use first, but I’d like it to be something others can rely on too: solid docs, straightforward self-hosting, maybe a managed option later. I’m not nailing down a roadmap — I’m just sharing what’s there and where I’d like to take it.</p>
 
-                    <p>If this resonates — you’re on Kotlin or Ktor, or you just want a simple self-hosted flag server — I’d really appreciate your support: try it, star the repo, open an issue or a discussion, or share how you’d use it. That feedback is what will shape the next steps.</p>
+                    <p>If this resonates — you’re on Kotlin or Ktor, or you just want a simple self-hosted flag server without a cloud subscription — I’d be glad if you gave it a try, starred the repo, or dropped a note in an issue or discussion about how you’d use it. That feedback is what’ll drive the next steps.</p>
 
-                    <p>Thanks for reading. You can find the project on <a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a> and more in the <a href="../docs.html">documentation</a>.</p>
+                    <p>Thanks for reading. Repo is on <a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a>, everything else is in the <a href="../docs.html">docs</a>.</p>
                 </div>
             </article>
         </div>

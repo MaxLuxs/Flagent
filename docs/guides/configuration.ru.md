@@ -56,13 +56,10 @@ Flagent поддерживает базы данных PostgreSQL, MySQL и SQLi
 
 ```bash
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flagent?sslmode=disable
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=user&password=password&sslmode=disable
 ```
 
-**Формат строки подключения:**
-```
-postgresql://[user[:password]@][host][:port][/database][?param1=value1&...]
-```
+**Формат:** JDBC URL: `jdbc:postgresql://host:port/database?user=...&password=...`
 
 **Параметры:**
 - `sslmode` - Режим SSL (disable, require, verify-full)
@@ -72,7 +69,7 @@ postgresql://[user[:password]@][host][:port][/database][?param1=value1&...]
 
 ```bash
 FLAGENT_DB_DBDRIVER=mysql
-FLAGENT_DB_DBCONNECTIONSTR=user:password@tcp(127.0.0.1:3306)/flagent?parseTime=true
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:mysql://localhost:3306/flagent?user=root&password=root&parseTime=true
 ```
 
 **Формат строки подключения:**
@@ -383,7 +380,7 @@ HOST=0.0.0.0
 PORT=18000
 ENVIRONMENT=production
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db:5432/flagent?sslmode=require
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db:5432/flagent?user=user&password=password&sslmode=require
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false

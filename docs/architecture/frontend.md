@@ -1,5 +1,7 @@
 # Frontend Architecture
 
+> [English](frontend.md) | [Русский](frontend.ru.md)
+
 ## Overview
 
 The Flagent admin UI is built with **Compose for Web** (Kotlin/JS). It provides a single-page application for managing feature flags, segments, experiments, and analytics, with the same design system and navigation as the documentation site where applicable.

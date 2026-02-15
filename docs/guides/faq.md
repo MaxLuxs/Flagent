@@ -1,5 +1,7 @@
 # Frequently Asked Questions (FAQ)
 
+> [English](faq.md) | [Русский](faq.ru.md)
+
 Common questions about Flagent and their answers.
 
 ## General Questions

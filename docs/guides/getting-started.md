@@ -17,14 +17,24 @@ Flagent is an open-source feature flag and experimentation platform that helps y
 
 ### 1. Start Flagent Server
 
+The backend requires a **database** and **admin credentials** (and JWT secret for login). Without them you get "Admin credentials not configured" and cannot log in to the UI.
+
 #### Using Docker (Recommended)
 
 ```bash
 docker pull ghcr.io/maxluxs/flagent
-docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
+docker run -d -p 18000:18000 \
+  -e FLAGENT_ADMIN_EMAIL=admin@local \
+  -e FLAGENT_ADMIN_PASSWORD=admin \
+  -e FLAGENT_JWT_AUTH_SECRET=change-me-min-32-chars-for-dev-only \
+  -v flagent-data:/data \
+  ghcr.io/maxluxs/flagent
 ```
 
-#### Using Docker Compose
+- Default DB in the image: SQLite at `/data/flagent.sqlite`. Use `-v flagent-data:/data` so data persists.
+- For production use Docker Compose with PostgreSQL (see below).
+
+#### Using Docker Compose (PostgreSQL, production-ready)
 
 ```bash
 git clone https://github.com/MaxLuxs/Flagent.git
@@ -32,14 +42,30 @@ cd Flagent
 docker compose up -d
 ```
 
+Uses PostgreSQL and preconfigured admin/JWT from `docker-compose.yml`.
+
 #### Build from Source
 
 ```bash
 git clone https://github.com/MaxLuxs/Flagent.git
 cd Flagent
 ./gradlew build
+```
+
+Set **required** environment variables before running (otherwise login fails):
+
+```bash
+# Minimal for local run (SQLite + admin login)
+export FLAGENT_DB_DBDRIVER=sqlite3
+export FLAGENT_DB_DBCONNECTIONSTR=flagent.sqlite
+export FLAGENT_ADMIN_EMAIL=admin@local
+export FLAGENT_ADMIN_PASSWORD=admin
+export FLAGENT_JWT_AUTH_SECRET=dev-secret-at-least-32-characters-long
+export PORT=18000
 ./gradlew :backend:run
 ```
+
+For PostgreSQL use `FLAGENT_DB_DBDRIVER=postgres` and `FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=postgres&password=postgres`. See [Configuration](configuration.md).
 
 ### 2. Access Flagent UI
 
@@ -432,16 +458,12 @@ See [Real-Time Updates Guide](https://github.com/MaxLuxs/Flagent/blob/main/sdk/k
 
 ### Cannot log in (500 or "Admin credentials not configured")
 
-1. **Docker:** The image has default credentials. For custom setup:
-   ```bash
-   docker run -d -p 18000:18000 \
-     -e FLAGENT_ADMIN_EMAIL=admin@local \
-     -e FLAGENT_ADMIN_PASSWORD=admin \
-     -e FLAGENT_JWT_AUTH_SECRET=your-secret-min-32-chars \
-     ghcr.io/maxluxs/flagent
-   ```
-2. **Login uses email**, not username — use `admin@local`, not `admin`.
-3. **JWT secret** must be at least 32 characters.
+The server needs admin credentials and a JWT secret to issue login tokens. Set these **before** first run:
+
+1. **Required env vars:** `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET` (min 32 chars). See [Configuration](configuration.md#admin-auth-enterprise).
+2. **Docker:** Pass them with `-e` (see Quick Start above). Without them the image’s built-in defaults may not be enough depending on build.
+3. **From source:** Always export the three variables; otherwise login will fail.
+4. **Login uses email** — use the value of `FLAGENT_ADMIN_EMAIL` (e.g. `admin@local`), not a username.
 
 ### UnsupportedClassVersionError
 

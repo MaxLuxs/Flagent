@@ -1,5 +1,7 @@
 # Project version (single source)
 
+> [English](versioning.md) | [Русский](versioning.ru.md)
+
 **Single source of truth:** root file `VERSION` (one line, e.g. `0.1.0`).
 
 - **Gradle:** root `build.gradle.kts` reads `VERSION`; all subprojects inherit this version (do not set `version` in subproject `build.gradle.kts`).

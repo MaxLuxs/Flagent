@@ -1,78 +1,337 @@
-/* Flagent docs: unify Docsify with landing design */
+/* ============================================================
+   Flagent Docs — full layout (no Vue theme)
+   Open: docs.html or docs.html#/
+   ============================================================ */
 
-/* Push Docsify layout below our navbar */
-.app-name-link,
-.sidebar,
-.sidebar-toggle,
-.content {
-  top: 60px !important;
-}
-
-#app .sidebar {
-  padding-top: 1rem;
-  background: var(--color-bg, #fff);
-  border-right: 1px solid var(--color-border, #e2e8f0);
-}
-
-#app .sidebar .sidebar-nav > ul > li > a {
-  color: var(--color-text, #0f172a);
-  font-weight: 500;
-}
-
-#app .sidebar .sidebar-nav > ul > li > a:hover {
-  color: var(--color-primary, #0ea5e9);
-}
-
-#app .content {
-  padding-top: 2rem;
+/* ---- Page ---- */
+body.docs-page {
+  --docs-navbar-height: 72px;
+  margin: 0;
+  min-height: 100vh;
+  background: #f1f5f9;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--color-text, #0f172a);
+  font-size: 16px;
+  color: #0f172a;
+}
+body.docs-page::before {
+  display: none !important;
 }
 
-#app .markdown-section {
-  max-width: 900px;
+/* ---- GitHub corner (Docsify injects when repo is set): limit size and position ---- */
+body.docs-page .github-corner {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 80px !important;
+  height: 80px !important;
+  z-index: 90 !important;
+  overflow: hidden !important;
+}
+body.docs-page .github-corner svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
 }
 
-#app .markdown-section h1,
-#app .markdown-section h2,
-#app .markdown-section h3 {
-  color: var(--color-text, #0f172a);
-  font-weight: 600;
+/* ---- #app: full width, no theme margin ---- */
+body.docs-page #app {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: calc(100vh - 140px);
+  position: relative;
+  font-size: 16px;
 }
 
-#app .markdown-section a {
-  color: var(--color-primary, #0ea5e9);
+body.docs-page #app:empty::before {
+  content: 'Loading…';
+  display: block;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #64748b;
 }
 
-#app .markdown-section a:hover {
-  color: var(--color-primary-dark, #0284c7);
+/* ---- main (Docsify container) ---- */
+body.docs-page #app main {
+  position: relative !important;
+  width: 100% !important;
+  min-height: calc(100vh - 140px);
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
-#app .markdown-section code {
-  background: var(--color-bg-alt, #f8fafc);
-  color: var(--color-text, #0f172a);
+/* ---- Sidebar ---- */
+body.docs-page .sidebar {
+  position: fixed !important;
+  top: var(--docs-navbar-height, 72px) !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 260px !important;
+  margin: 0 !important;
+  padding: 1rem 0 2rem 1rem !important;
+  background: #fff !important;
+  border-right: 1px solid #e2e8f0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  z-index: 100;
+  box-sizing: border-box;
+}
+
+body.docs-page .sidebar > h1,
+body.docs-page .sidebar .app-name {
+  margin: 0 0 1rem !important;
+  padding: 0 0.5rem !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+}
+
+body.docs-page .sidebar .app-name-link {
+  color: #0f172a !important;
+  text-decoration: none !important;
+}
+
+body.docs-page .sidebar .sidebar-nav {
+  padding-bottom: 2rem;
+}
+
+body.docs-page .sidebar .sidebar-nav ul {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 0 0 0.5rem !important;
+}
+
+body.docs-page .sidebar .sidebar-nav li {
+  margin: 0 !important;
+}
+
+body.docs-page .sidebar .sidebar-nav li > a {
+  display: block !important;
+  padding: 0.35rem 0 !important;
+  color: #0f172a !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  font-size: 0.9375rem;
   border-radius: 4px;
 }
 
-#app .markdown-section pre > code {
+body.docs-page .sidebar .sidebar-nav li > a:hover {
+  color: #0ea5e9 !important;
+}
+
+body.docs-page .sidebar .sidebar-nav li.active > a {
+  color: #0ea5e9 !important;
+  font-weight: 600 !important;
+}
+
+body.docs-page .sidebar .sidebar-nav ul ul {
+  padding-left: 1rem !important;
+  margin: 0.25rem 0 !important;
+}
+
+body.docs-page .sidebar .sidebar-nav ul ul li a {
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  color: #475569 !important;
+}
+
+body.docs-page .sidebar .search {
+  padding: 0.5rem 0.5rem 1rem !important;
+}
+
+body.docs-page .sidebar .search input {
+  width: 100% !important;
+  padding: 0.5rem 0.75rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  font-size: 0.875rem !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+}
+
+/* Sidebar toggle (hide on desktop, show on mobile later) */
+body.docs-page .sidebar-toggle {
+  display: none;
+}
+
+/* ---- Content area (right of sidebar) ---- */
+body.docs-page .content {
+  position: relative;
+  z-index: 10;
+  margin-left: 260px !important;
+  padding: 2rem 2rem 4rem !important;
+  min-height: calc(100vh - 140px);
+  background: #fff !important;
+  box-sizing: border-box !important;
+}
+
+/* Footer: same column as content so sidebar does not overlap it */
+body.docs-page .footer {
+  margin-left: 260px !important;
+  box-sizing: border-box;
+}
+
+/* ---- Markdown content ---- */
+body.docs-page .markdown-section {
+  max-width: 720px;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.65;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+}
+
+body.docs-page .markdown-section h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1rem !important;
+  color: #0f172a;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.docs-page .markdown-section h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 1.5em 0 0.5em !important;
+  color: #0f172a;
+}
+
+body.docs-page .markdown-section h3,
+body.docs-page .markdown-section h4 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1.25em 0 0.4em !important;
+  color: #0f172a;
+}
+
+body.docs-page .markdown-section p {
+  margin: 0 0 1em !important;
+  line-height: 1.65;
+  color: #0f172a;
+}
+
+body.docs-page .markdown-section ul,
+body.docs-page .markdown-section ol {
+  margin: 0 0 1em !important;
+  padding-left: 1.5em;
+}
+
+body.docs-page .markdown-section li {
+  margin: 0.25em 0;
+  line-height: 1.6;
+}
+
+body.docs-page .markdown-section a {
+  color: #0ea5e9;
+  text-decoration: none;
+}
+
+body.docs-page .markdown-section a:hover {
+  text-decoration: underline;
+}
+
+body.docs-page .markdown-section code {
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: ui-monospace, monospace;
+}
+
+body.docs-page .markdown-section pre {
+  margin: 1em 0 !important;
+  padding: 1rem !important;
   background: #1e293b;
-  color: #e2e8f0;
+  border-radius: 8px;
+  overflow-x: auto;
 }
 
-#app .sidebar-toggle {
-  background: var(--color-bg, #fff);
-  border: 1px solid var(--color-border, #e2e8f0);
+body.docs-page .markdown-section pre code {
+  background: none !important;
+  color: #e2e8f0 !important;
+  padding: 0 !important;
+  font-size: 0.875rem;
 }
 
-.search input {
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 6px;
+body.docs-page .markdown-section table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
 }
 
-/* Mobile: sidebar overlay */
-@media screen and (max-width: 768px) {
-  .sidebar,
-  .content {
-    top: 56px !important;
+body.docs-page .markdown-section th,
+body.docs-page .markdown-section td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+body.docs-page .markdown-section th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+body.docs-page .markdown-section blockquote {
+  margin: 1em 0;
+  padding: 0.5em 0 0.5em 1rem;
+  border-left: 4px solid #0ea5e9;
+  color: #475569;
+  background: #f8fafc;
+  border-radius: 0 4px 4px 0;
+}
+
+body.docs-page .markdown-section hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 2em 0;
+}
+
+/* Anchor links */
+body.docs-page .markdown-section .anchor {
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 768px) {
+  body.docs-page .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 4px 0 12px rgba(0,0,0,0.08);
+  }
+
+  body.docs-page .sidebar-toggle {
+    display: block !important;
+    position: fixed !important;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 101;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  body.docs-page.close .sidebar {
+    transform: translateX(0);
+  }
+
+  body.docs-page .content {
+    margin-left: 0 !important;
+    padding: 1rem !important;
+  }
+
+  body.docs-page .footer {
+    margin-left: 0 !important;
   }
 }

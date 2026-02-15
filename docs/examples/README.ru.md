@@ -95,7 +95,7 @@ POST /api/v1/evaluation/batch
 ```kotlin
 // application.conf или environment variables
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://flagent:password@localhost:5432/flagent
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=flagent&password=password
 PORT=18000
 ```
 

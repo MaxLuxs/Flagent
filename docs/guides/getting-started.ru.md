@@ -17,14 +17,23 @@ Flagent — это open-source платформа для feature flags и экс
 
 ### 1. Запустить Flagent сервер
 
+Для работы бэкенду нужны **база данных** и **учётные данные админа** (и JWT secret для входа). Без них при входе в UI будет ошибка «Admin credentials not configured».
+
 #### Через Docker (Рекомендуется)
 
 ```bash
 docker pull ghcr.io/maxluxs/flagent
-docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
+docker run -d -p 18000:18000 \
+  -e FLAGENT_ADMIN_EMAIL=admin@local \
+  -e FLAGENT_ADMIN_PASSWORD=admin \
+  -e FLAGENT_JWT_AUTH_SECRET=change-me-min-32-chars-for-dev-only \
+  -v flagent-data:/data \
+  ghcr.io/maxluxs/flagent
 ```
 
-#### Через Docker Compose
+По умолчанию в образе используется SQLite (`/data/flagent.sqlite`). Том `-v flagent-data:/data` сохраняет данные между перезапусками.
+
+#### Через Docker Compose (PostgreSQL)
 
 ```bash
 git clone https://github.com/MaxLuxs/Flagent.git
@@ -32,14 +41,29 @@ cd Flagent
 docker compose up -d
 ```
 
+В `docker-compose.yml` уже заданы PostgreSQL и учётные данные.
+
 #### Сборка из исходников
 
 ```bash
 git clone https://github.com/MaxLuxs/Flagent.git
 cd Flagent
 ./gradlew build
+```
+
+Перед запуском задайте переменные окружения (иначе вход в UI не сработает):
+
+```bash
+export FLAGENT_DB_DBDRIVER=sqlite3
+export FLAGENT_DB_DBCONNECTIONSTR=flagent.sqlite
+export FLAGENT_ADMIN_EMAIL=admin@local
+export FLAGENT_ADMIN_PASSWORD=admin
+export FLAGENT_JWT_AUTH_SECRET=dev-secret-at-least-32-characters-long
+export PORT=18000
 ./gradlew :backend:run
 ```
+
+Для PostgreSQL: [Configuration](configuration.md).
 
 ### 2. Открыть Flagent UI
 

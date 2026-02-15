@@ -3,8 +3,8 @@
 Flagent is offered in three ways:
 
 - **Open Source (self-hosted)** — Free. Use today. No limits on flags or experiments.
-- **Flagent Cloud (SaaS)** — Planned; not yet available. Indicative pricing and tiers are subject to change.
-- **Enterprise** — Custom pricing. Dedicated support, custom development, SLA, on-premise, training.
+- **Flagent Cloud (SaaS)** — Planned; not yet available. Contact us for a consultation.
+- **Enterprise** — Custom. Dedicated support, custom development, SLA, on-premise, training. Contact us for a consultation.
 
 ## What Flagent includes (not just feature flags)
 
@@ -14,45 +14,32 @@ Flagent is **feature flags + A/B experiments + analytics + crash analytics + int
 - **Crash analytics** — Ingestion and list of crash reports (all editions); in Enterprise: crash rate by flag and integration with Anomaly Detection and Smart Rollout.
 - **Integrations** — Webhooks, Realtime (SSE), MCP for AI assistants, Export/Import (YAML/JSON).
 
-See the comparison table below for what is supported in each edition.
+**In all editions:** feature flags, A/B experiments, gradual rollouts, kill switches, targeting & segments, client-side evaluation, official SDKs (Kotlin, JS, Swift, Python, Go, Java), Ktor plugin & REST API, Admin UI & Debug Console, analytics events & evaluation counts, crash ingestion & list, Export/Import, Webhooks, Realtime (SSE), MCP, basic auth (JWT). The table below shows **where editions differ**.
 
 ## Feature comparison
 
 | Category | Capability | Open Source | SaaS (planned) | Enterprise |
-|----------|------------|-------------|----------------|------------|
-| **Flags and experiments** | Feature flags | Yes | Yes | Yes |
-| | A/B testing & experiments | Yes | Yes | Yes |
-| | Gradual rollouts & kill switches | Yes | Yes | Yes |
-| | Multi-environment, targeting, segments | Yes | Yes | Yes |
-| | Client-side evaluation (offline-first) | Yes | Yes | Yes |
-| | Official SDKs (Kotlin, JS, Swift, Python, Go, Java) | Yes | Yes | Yes |
-| | Ktor plugin & REST API | Yes | Yes | Yes |
-| | Admin UI & Debug Console | Yes | Yes | Yes |
-| **Analytics** | Analytics events (first_open, session_start, custom) | Yes | Yes | Yes |
-| | Evaluation counts & core metrics | Yes | Yes | Yes |
-| | Advanced analytics & insights (per-flag/variant) | No | Yes | Yes |
-| | Data recorders (Kafka, Kinesis, PubSub) | Yes | Yes | Yes |
-| **Crash analytics** | Crash reporting (ingestion, list, stack traces) | Yes | Yes | Yes |
-| | Crash rate by flag & anomaly integration | No | No | Yes |
-| **Automation and reliability** | Anomaly detection & alerts | No | No | Yes |
-| | Smart rollout (auto-rollback) | No | No | Yes |
-| **Integrations and hosting** | Export/Import, Webhooks, Realtime (SSE), MCP | Yes | Yes | Yes |
-| | Self-hosted deployment | Yes | Yes | Yes |
-| | Managed cloud hosting | No | Yes | Yes |
-| | On-premise, multi-tenancy | No | No | Yes |
-| **Security and control** | Basic auth (JWT) | Yes | Yes | Yes |
-| | RBAC | Basic | Basic | Custom roles |
-| | SSO (SAML, OIDC) | No | No | Yes |
+|----------|------------|:-----------:|:--------------:|:-----------:|
+| **Analytics** | Advanced analytics & insights (per-flag/variant) | — | ✓ | ✓ |
+| **Crash** | Crash rate by flag & anomaly integration | — | — | ✓ |
+| **Automation** | Anomaly detection & alerts | — | — | ✓ |
+| | Smart rollout (auto-rollback) | — | — | ✓ |
+| **Hosting** | Self-hosted | ✓ | ✓ | ✓ |
+| | Managed cloud (Flagent Cloud) | — | ✓ | ✓ |
+| | On-premise, multi-tenancy | — | — | ✓ |
+| **Security** | RBAC | Basic | Basic | Custom roles |
+| | SSO (SAML, OIDC) | — | — | ✓ |
 | | Audit log | Basic | Basic | Advanced |
-| **Support** | Community / Priority / SLA / Dedicated | Yes / No / No / No | Yes / Yes / Yes / No | Yes / Yes / Yes / Yes |
+| **Support** | Community | ✓ | ✓ | ✓ |
+| | Priority support | — | ✓ | ✓ |
+| | 99.9% uptime SLA | — | ✓ | ✓ |
+| | Dedicated support | — | — | ✓ |
+
+*✓ = included, — = not included*
 
 ## Flagent Cloud (SaaS) — planned
 
-Flagent Cloud is **not yet launched**. Planned tiers (indicative; subject to change):
-
-- **Starter** — Free tier (e.g. 100k evaluations/month), community support.
-- **Pro** — ~$49–99/month, higher limits, SLA, priority support, advanced analytics.
-- **Team** — From ~$199/month, multi-tenant, extended limits.
+Flagent Cloud is **not yet launched**. Planned tiers: Starter (entry), Pro (higher limits, SLA), Team (multi-tenant). **Contact us for a consultation** if you're interested.
 
 Star the [GitHub repo](https://github.com/MaxLuxs/Flagent) or watch [Issues](https://github.com/MaxLuxs/Flagent/issues) for updates on SaaS availability.
 

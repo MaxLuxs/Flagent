@@ -13,22 +13,20 @@ This guide covers deploying Flagent in various environments, from local developm
 
 ## Quick Start with Docker
 
-The fastest way to get started with Flagent:
+You must pass admin credentials and JWT secret so login works. Data persists if you mount a volume for SQLite:
 
 ```bash
-# Pull the Docker image
 docker pull ghcr.io/maxluxs/flagent
-
-# Run Flagent
-docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
-
-# Open Flagent UI
+docker run -d -p 18000:18000 \
+  -e FLAGENT_ADMIN_EMAIL=admin@local \
+  -e FLAGENT_ADMIN_PASSWORD=admin \
+  -e FLAGENT_JWT_AUTH_SECRET=change-me-min-32-chars-for-dev-only \
+  -v flagent-data:/data \
+  ghcr.io/maxluxs/flagent
 open http://localhost:18000
 ```
 
-**Default credentials:**
-- Email: `admin@local`
-- Password: `admin`
+**Login:** Email `admin@local`, Password `admin` (or whatever you set). See [Configuration](configuration.md#admin-auth-required-for-ui-login).
 
 ## Docker Compose (with PostgreSQL)
 
@@ -89,13 +87,16 @@ See `docker-compose.yml` for the complete configuration.
 
 All settings are configured via environment variables. See [Configuration Guide](configuration.md) for all options.
 
-**Basic configuration:**
+**Basic configuration (required: DB + admin auth):**
 
 ```bash
 export HOST=0.0.0.0
 export PORT=18000
 export FLAGENT_DB_DBDRIVER=postgres
-export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@localhost:5432/flagent
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://localhost:5432/flagent?user=user&password=password
+export FLAGENT_ADMIN_EMAIL=admin@local
+export FLAGENT_ADMIN_PASSWORD=admin
+export FLAGENT_JWT_AUTH_SECRET=at-least-32-characters-secret
 export FLAGENT_LOGRUS_LEVEL=info
 export FLAGENT_LOGRUS_FORMAT=json
 
@@ -110,18 +111,18 @@ java -jar backend/build/libs/backend-all.jar
 
 ### Database Configuration
 
-**PostgreSQL (Recommended for Production):**
+**PostgreSQL (recommended for production):** Use JDBC URL:
 
 ```bash
 export FLAGENT_DB_DBDRIVER=postgres
-export FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db-host:5432/flagent?sslmode=require
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db-host:5432/flagent?user=user&password=password&sslmode=require
 ```
 
-**MySQL:**
+**MySQL:** Use JDBC URL:
 
 ```bash
 export FLAGENT_DB_DBDRIVER=mysql
-export FLAGENT_DB_DBCONNECTIONSTR=user:password@tcp(db-host:3306)/flagent?parseTime=true
+export FLAGENT_DB_DBCONNECTIONSTR=jdbc:mysql://db-host:3306/flagent?user=user&password=password&parseTime=true
 ```
 
 ### Security Configuration
@@ -288,7 +289,7 @@ docker build -t flagent:latest .
 docker run -d \
   -p 18000:18000 \
   -e FLAGENT_DB_DBDRIVER=postgres \
-  -e FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db:5432/flagent \
+  -e FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db:5432/flagent?user=user&password=password \
   flagent:latest
 ```
 
@@ -317,7 +318,7 @@ HOST=0.0.0.0
 PORT=18000
 ENVIRONMENT=staging
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@staging-db:5432/flagent
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://staging-db:5432/flagent?user=user&password=password
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
@@ -333,7 +334,7 @@ HOST=0.0.0.0
 PORT=18000
 ENVIRONMENT=production
 FLAGENT_DB_DBDRIVER=postgres
-FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@prod-db:5432/flagent?sslmode=require
+FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://prod-db:5432/flagent?user=user&password=password&sslmode=require
 FLAGENT_LOGRUS_LEVEL=info
 FLAGENT_LOGRUS_FORMAT=json
 FLAGENT_EVAL_DEBUG_ENABLED=false
@@ -368,7 +369,7 @@ services:
       - "18000:18000"
     environment:
       - FLAGENT_DB_DBDRIVER=postgres
-      - FLAGENT_DB_DBCONNECTIONSTR=postgresql://user:password@db:5432/flagent
+      - FLAGENT_DB_DBCONNECTIONSTR=jdbc:postgresql://db:5432/flagent?user=user&password=password
 ```
 
 ### Vertical Scaling

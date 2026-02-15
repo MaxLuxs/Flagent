@@ -1,8 +1,3 @@
-* [Home](index.html)
-* [Quick Start](quickstart.html)
-* [SDKs](sdk.html)
-* [API Reference](api-docs.html)
-
 * **Getting Started**
   * [Overview](README.md)
   * [Getting Started](guides/getting-started.md)
@@ -29,7 +24,6 @@
   * [Frontend UI](guides/frontend-ui.md)
   * [Roadmap](guides/roadmap.md)
   * [Tasks: Status & Next](tasks/status.md)
-  * [Unleash Comparison](guides/unleash-comparison.md)
   * [Contributing](guides/contributing.md)
   * [Testing](guides/testing.md)
 

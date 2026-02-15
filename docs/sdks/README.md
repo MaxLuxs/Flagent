@@ -1,5 +1,7 @@
 # Flagent SDKs
 
+> [English](README.md) | [Русский](README.ru.md)
+
 Official client SDKs for Flagent. Use them to evaluate feature flags, run A/B tests, and fetch dynamic configuration in your application.
 
 ## Overview
