@@ -5,8 +5,11 @@ FROM eclipse-temurin:21-jdk-jammy AS build
 
 WORKDIR /app
 
-# Install dependencies for building
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+# Install dependencies for building (git for Gradle; Node for design-system token generation)
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy Gradle wrapper and build files
 COPY gradlew ./
