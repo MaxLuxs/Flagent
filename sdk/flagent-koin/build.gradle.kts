@@ -2,8 +2,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
+    alias(libs.plugins.android.library)
     `maven-publish`
 }
 
@@ -11,39 +12,73 @@ group = "com.flagent"
 
 repositories {
     mavenCentral()
+    google()
 }
 
-dependencies {
-    implementation(project(":kotlin-client"))
-    implementation(project(":kotlin-enhanced"))
+android {
+    compileSdk = 34
+    namespace = "com.flagent.koin"
+}
 
-    implementation(libs.koin.core)
+kotlin {
+    jvm()
+    jvmToolchain(21)
+    androidTarget()
+    iosArm64()
+    iosSimulatorArm64()
 
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.kotlinx.serialization.json)
-
-    testImplementation(libs.kotlin.test.junit5)
-    testImplementation(libs.mockk)
-    testImplementation(libs.koin.test)
-    testImplementation(libs.kotlinx.coroutines.test)
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":kotlin-client"))
+                implementation(project(":kotlin-enhanced"))
+                implementation(libs.koin.core)
+                implementation(libs.ktor.client.core)
+                implementation(libs.kotlinx.coroutines.core)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.cio)
+            }
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test.junit5)
+                implementation(libs.mockk)
+                implementation(libs.koin.test)
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.android)
+            }
+        }
+        val iosMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
+        }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
+    }
 }
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+        if (name.contains("Jvm", ignoreCase = true)) {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-    withSourcesJar()
-}
-
-tasks.named<Test>("test") {
+tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
 }
