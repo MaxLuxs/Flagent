@@ -1,12 +1,19 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.android.library)
     `maven-publish`
+}
+
+android {
+    compileSdk = 34
+    namespace = "com.flagent.shared"
 }
 
 
 kotlin {
     jvm()
+    androidTarget()
     js(IR) {
         browser()
     }

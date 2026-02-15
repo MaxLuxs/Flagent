@@ -223,6 +223,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
 ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
 dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency-check" }
 
