@@ -139,6 +139,8 @@ curl -X POST https://your-flagent.com/api/v1/integrations/github/webhook \
   -d '{"action":"opened","pull_request":{"number":1,"head":{"ref":"feature/test"}}}'
 ```
 
+The backend unit test that mocks this flow is disabled (it can return 500 in `testApplication`); the create-from-PR flow is verified against a live Flagent server or in integration tests.
+
 ---
 
 ## See also

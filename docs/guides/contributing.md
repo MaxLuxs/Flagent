@@ -161,6 +161,12 @@ flagent/
 ./gradlew test jacocoTestReport
 ```
 
+**Backend test tags and properties:**
+
+- By default, **E2E and load tests** (tag `e2e`) are **excluded** so the suite does not require Kafka. To include them (e.g. for full app flow), run with `-PincludeE2E`; the build sets `FLAGENT_RECORDER_ENABLED=false` so a recorder/Kafka is not required.
+- **Integration tests** (suffix `*IntegrationTest`) are excluded by default. Run with `-PincludeIntegrationTests` to include them (see [Deployment](deployment.md) for DB options).
+- **Compatibility** and **performance** tags are excluded by default; use `-PincludeCompatibilityTests` if needed.
+
 ### Writing Tests
 
 - Write **unit tests** for use cases, services, and repositories

@@ -74,7 +74,7 @@ k6 run --out json=eval-results.json --summary-export=eval-summary.json evaluatio
 | RAM | 4 GB | 8 GB |
 | Database | PostgreSQL 15 on same host | Dedicated DB server |
 
-For CI (GitHub Actions): `ubuntu-latest` (2 cores). Use EVAL_VUS=200 for stable CI runs.
+For CI (GitHub Actions): `ubuntu-latest` (2 cores). Use EVAL_VUS=200 for stable CI runs. The [load-test workflow](../../.github/workflows/load-test.yml) starts the server with `PORT=8000` and k6 uses `BASE_URL=http://localhost:8000`.
 
 ## Interpreting Results
 

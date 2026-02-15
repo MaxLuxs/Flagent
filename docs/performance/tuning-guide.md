@@ -2,6 +2,8 @@
 
 Руководство по оптимизации производительности Flagent на основе результатов load testing.
 
+**Note:** Metrics, anomaly, and smart rollout indices/tables apply when using the corresponding features (Core metrics or Enterprise). Evaluation and flag CRUD are always relevant for OSS.
+
 ## Database Optimization
 
 ### Indices

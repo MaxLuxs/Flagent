@@ -98,7 +98,7 @@
         return textFile;
       };
 
-      /// TODO: Implement resizing for expanding within iframe
+      /// Sends 'resize' to parent via postMessage; parent page may handle it to resize iframe (implementation is on parent side).
       function callResize() {
         window.parent.postMessage('resize', "*");
       }

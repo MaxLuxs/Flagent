@@ -139,6 +139,8 @@ curl -X POST https://your-flagent.com/api/v1/integrations/github/webhook \
   -d '{"action":"opened","pull_request":{"number":1,"head":{"ref":"feature/test"}}}'
 ```
 
+Юнит-тест с моком для этого сценария отключён (в testApplication может возвращаться 500); сценарий «создание флага из PR» проверяется на живом сервере Flagent или в интеграционных тестах.
+
 ---
 
 ## См. также

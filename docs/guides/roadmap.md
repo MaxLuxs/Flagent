@@ -22,7 +22,7 @@
 | Q3 2026 | Scale & integrations    | Edge service, public benchmarks       |
 | Q4 2026 | Enterprise               | Multi-tenancy, SSO/SAML, RBAC, AI rollouts (optional) |
 
-Detailed plans and internal strategy remain in private docs. For contributions and feature requests, see [GitHub Issues](https://github.com/MaxLuxs/Flagent/issues) and [Contributing](contributing.md).
+Detailed plans and internal strategy remain in private docs. For contributions and feature requests, see [GitHub Issues](https://github.com/MaxLuxs/Flagent/issues) and [Contributing](guides/contributing.md).
 
 ---
 
@@ -44,4 +44,4 @@ Detailed plans and internal strategy remain in private docs. For contributions a
 | Q3 2026 | Масштаб и интеграции      | Edge-сервис, публичные бенчмарки     |
 | Q4 2026 | Enterprise                | Multi-tenancy, SSO/SAML, RBAC, AI rollouts (опционально) |
 
-Детальные планы и внутренняя стратегия — в приватной документации. По контрибуции и запросам фич: [GitHub Issues](https://github.com/MaxLuxs/Flagent/issues) и [Contributing](contributing.md).
+Детальные планы и внутренняя стратегия — в приватной документации. По контрибуции и запросам фич: [GitHub Issues](https://github.com/MaxLuxs/Flagent/issues) и [Contributing](guides/contributing.md).

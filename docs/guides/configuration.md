@@ -415,8 +415,10 @@ FLAGENT_MCP_ENABLED=true
 FLAGENT_MCP_PATH=/mcp
 ```
 
-**Tools:** `evaluate_flag`, `list_flags`, `get_flag`  
-**Resources:** `flagent://flags`, `flagent://config/snapshot`
+**Tools:** `evaluate_flag`, `list_flags`, `get_flag`, `analyze_flags`, `suggest_segments`, `optimize_experiment`; when not in eval-only mode also `create_flag`, `update_flag`.  
+**Resources:** `flagent://flags`, `flagent://config/snapshot`  
+
+See [MCP Guide](mcp.md) for full tool descriptions, examples, and best practices.
 
 **Connect with MCP Inspector:**
 ```bash

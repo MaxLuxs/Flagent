@@ -4,6 +4,15 @@
 
 All API endpoints use the base path `/api/v1`.
 
+## Tenant Context and Authentication
+
+When multi-tenancy is enabled (e.g. with the enterprise module or `FLAGENT_ADMIN_API_KEY`), flag and evaluation endpoints are **tenant-scoped**. The server determines the tenant from:
+
+- **`X-API-Key`** — tenant API key (recommended for server-to-server and SDKs). Send in the request header: `X-API-Key: <tenant-api-key>`.
+- **`Authorization: Bearer <JWT>`** — when the JWT contains a tenant claim (e.g. SSO users).
+
+Without a valid tenant context, requests to `/api/v1/flags`, `/api/v1/evaluation`, etc. return 401. In OSS mode without tenant enforcement, these headers are optional. See [Admin and Tenants](../guides/admin-and-tenants.md) and [Security: Tenant API Keys](../guides/security-tenant-api-keys.md).
+
 ## API Documentation
 
 ### Swagger UI

@@ -11,13 +11,24 @@ Feature flags, A/B testing, dynamic configuration. Documentation index.
 | **Run Flagent in 5 min** | [Quick Start](quickstart.html) |
 | **See all SDKs** | [SDKs Overview](sdk.html) |
 | **Try the API** | [API Reference](api-docs.html) |
+| **Use the Admin UI** | [Frontend UI Guide](guides/frontend-ui.md) |
+| **Try the UI with demo data** | [Demo Data](guides/demo-data.md) |
 | **Read step-by-step** | [Getting Started](guides/getting-started.md) |
+
+---
+
+## Documentation Structure
+
+- **Getting Started** — [Getting Started](guides/getting-started.md), [Configuration](guides/configuration.md), [Deployment](guides/deployment.md)
+- **Guides** — Versioning, FAQ, Use Cases, GitOps, [Frontend UI](guides/frontend-ui.md), and more (see sidebar)
+- **API** — [OpenAPI Spec](api/openapi.yaml), [Endpoints](api/endpoints.md), [Examples](examples/README.md)
+- **SDKs** — [SDKs Overview](sdk.html), [SDK Integration Examples](examples/sdk-integration.md)
 
 ---
 
 ## Flagent Cloud — Coming Soon
 
-Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags and A/B testing as a service. [Home](/)
+Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags and A/B testing as a service. [Home](index.html)
 
 ---
 
@@ -76,15 +87,20 @@ Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature
 ```
 docs/
 ├── README.md           ← you are here
+├── docs.html           # Docs viewer (unified navbar + footer)
+├── docsify-custom.css  # Docsify theme overrides
 ├── quickstart.html     # 5-min start
 ├── sdk.html            # SDK overview
 ├── api-docs.html       # Swagger UI
-│
-├── guides/             # User guides
+├── _sidebar.md         # Sidebar navigation
+├── guides/             # User guides (incl. frontend-ui.md)
+├── sdks/               # SDK overview (README.md)
 ├── examples/           # API + SDK examples
 ├── api/                # OpenAPI spec
 ├── architecture/       # Backend, frontend, eval spec
 ├── features/           # SDK features
-├── performance/       # Benchmarks, tuning
-└── tutorials/          # Step-by-step tutorials
+├── performance/        # Benchmarks, tuning
+├── tutorials/         # Step-by-step tutorials
+├── tasks/             # Redirect to internal docs (see tasks/README.md)
+└── gh_pages/          # Landing (index.html) for GitHub Pages
 ```

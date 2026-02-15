@@ -1,12 +1,19 @@
-* [Home](/)
+* [Home](index.html)
 * [Quick Start](quickstart.html)
 * [SDKs](sdk.html)
 * [API Reference](api-docs.html)
 
-* Guides
+* **Getting Started**
+  * [Overview](README.md)
   * [Getting Started](guides/getting-started.md)
   * [Configuration](guides/configuration.md)
+  * [MCP (AI Assistants)](guides/mcp.md)
   * [Deployment](guides/deployment.md)
+
+* **Guides**
+  * [Admin and Tenants](guides/admin-and-tenants.md)
+  * [Demo Data (Full Tenant)](guides/demo-data.md)
+  * [Security: Tenant API Keys](guides/security-tenant-api-keys.md)
   * [Versioning](guides/versioning.md)
   * [Compatibility](guides/compatibility.md)
   * [FAQ](guides/faq.md)
@@ -18,17 +25,22 @@
   * [Declarative UI](guides/declarative-ui.md)
   * [VS Code Extension](guides/vscode-extension.md)
   * [Publishing](guides/publishing.md)
+  * [Frontend UI](guides/frontend-ui.md)
   * [Roadmap](guides/roadmap.md)
+  * [Tasks: Status & Next](tasks/status.md)
+  * [Unleash Comparison](guides/unleash-comparison.md)
   * [Contributing](guides/contributing.md)
+  * [Testing](guides/testing.md)
 
-* API & Examples
+* **API & SDKs**
+  * [SDKs Overview](sdks/README.md)
   * [OpenAPI Spec](api/openapi.yaml)
   * [Endpoints](api/endpoints.md)
-  * [Examples](examples/README.md)
   * [SDK Integration](examples/sdk-integration.md)
+  * [Examples](examples/README.md)
   * [Gradual Rollout](tutorials/gradual-rollout.md)
 
-* Architecture
+* **Architecture & Features**
   * [Backend](architecture/backend.md)
   * [Frontend](architecture/frontend.md)
   * [Evaluation Spec](architecture/evaluation-spec.md)

@@ -1,38 +1,39 @@
-# Архитектура Frontend
+# Frontend Architecture
 
-## Обзор
+## Overview
 
-Frontend будет переписан на Kotlin/JS или другой современный фреймворк.
+The Flagent admin UI is built with **Compose for Web** (Kotlin/JS). It provides a single-page application for managing feature flags, segments, experiments, and analytics, with the same design system and navigation as the documentation site where applicable.
 
-## Варианты реализации
+## Stack
 
-### Вариант 1: Kotlin/JS с React
-- Использовать Kotlin/JS для компиляции в JavaScript
-- React для UI компонентов
-- Совместное использование типов с backend
+- **UI:** Compose for Web (Kotlin/JS)
+- **HTTP:** Ktor client (or platform fetch)
+- **State:** Component state and optional shared state
+- **Build:** Gradle (JS target)
 
-### Вариант 2: Kotlin/JS с Compose for Web
-- Jetpack Compose for Web
-- Полностью Kotlin экосистема
+## Main Components
 
-### Вариант 3: Оставить Vue.js
-- Адаптировать под новый API
-- Минимальные изменения в UI
-
-## Компоненты для миграции
-
-1. **Flags List** - список всех флагов
-2. **Flag Editor** - создание/редактирование флага
-3. **Segment Editor** - управление сегментами
-4. **Constraint Editor** - создание ограничений
-5. **Distribution Editor** - управление распределениями
-6. **Debug Console** - консоль для тестирования evaluation
-7. **Flag History** - история изменений флага
+1. **Dashboard** — Quick stats, recent flags, quick actions (create flag, evaluation console).
+2. **Flags List** — List all flags with filters (key, status, tags) and search; create/edit entry point.
+3. **Flag Editor** — Create or edit a flag: key, description, status, targeting rules, variants, distributions.
+4. **Segment Editor** — Create/edit segments and constraints (e.g. region, tier, custom attributes).
+5. **Experiments** — List experiments and view metrics per variant; adjust distributions.
+6. **Evaluation / Debug Console** — Single and batch evaluation with entity ID and context.
+7. **Analytics** — Metrics over time; crash reporting when enabled.
 
 ## API Integration
 
-Все запросы к API через HTTP клиент:
-- `GET /api/v1/flags` - список флагов
-- `POST /api/v1/flags` - создание флага
-- `POST /api/v1/evaluation` - оценка флага
-- И т.д.
+The frontend uses the backend REST API:
+
+- `GET /api/v1/flags` — list flags
+- `POST /api/v1/flags` — create flag
+- `PUT /api/v1/flags/{id}` — update flag
+- `POST /api/v1/evaluation` — evaluate (single/batch)
+- Segments, experiments, and analytics use the corresponding API endpoints.
+
+All requests are sent from the browser to the same origin (or configured API base URL) with auth (e.g. JWT, cookie) when enabled.
+
+## Documentation
+
+- [Frontend UI Guide](../guides/frontend-ui.md) — how to use the admin UI (sections, tips, navigation).
+- [Backend architecture](backend.md) — API and server structure.
