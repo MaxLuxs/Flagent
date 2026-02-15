@@ -20,6 +20,35 @@ from .models import EvaluationResult
 from .exceptions import FlagentError, FlagNotFoundError, EvaluationError, NetworkError
 
 
+def create_client(
+    base_url: str,
+    api_key: Optional[str] = None,
+    timeout: float = 30.0,
+    max_retries: int = 3,
+) -> "FlagentClient":
+    """
+    Create a Flagent client (recommended entry point).
+
+    Same as ``FlagentClient(base_url, ...)``; use this for consistency with
+    other SDKs (Kotlin, JS, Go) that use create/builder.
+
+    Args:
+        base_url: Flagent API base URL (e.g. "https://api.example.com/api/v1").
+        api_key: Optional Bearer token for auth.
+        timeout: Request timeout in seconds.
+        max_retries: Max retries on network errors.
+
+    Returns:
+        FlagentClient instance.
+    """
+    return FlagentClient(
+        base_url=base_url,
+        api_key=api_key,
+        timeout=timeout,
+        max_retries=max_retries,
+    )
+
+
 class FlagentClient:
     """
     Async Flagent client for feature flag evaluation and management.
@@ -109,6 +138,23 @@ class FlagentClient:
                     f"Flag not found: {flag_key or flag_id}"
                 ) from e
             raise self._convert_error(e, "Evaluation failed") from e
+
+    async def is_enabled(
+        self,
+        flag_key: str,
+        entity_id: Optional[str] = None,
+        entity_type: Optional[str] = None,
+        entity_context: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Return True if the flag evaluates to an enabled variant (variant_key is not null)."""
+        result = await self.evaluate(
+            flag_key=flag_key,
+            entity_id=entity_id,
+            entity_type=entity_type,
+            entity_context=entity_context,
+            enable_debug=False,
+        )
+        return result.is_enabled()
 
     async def evaluate_batch(
         self,

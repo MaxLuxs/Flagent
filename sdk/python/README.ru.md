@@ -18,22 +18,23 @@ pip install flagent-python-client
 
 ## Быстрый старт
 
+Рекомендуемая точка входа — `create_client()` (как в Kotlin/JS/Go SDK):
+
 ```python
 import asyncio
-from flagent import FlagentClient
+from flagent import create_client
 
 async def main():
-    async with FlagentClient(base_url="http://localhost:18000/api/v1") as client:
-        result = await client.evaluate(
-            flag_key="new_payment_flow",
-            entity_id="user123",
-            entity_context={"tier": "premium", "region": "RU"}
-        )
-
-        if result.is_enabled():
-            print("enabled", result.variant_key)
-        else:
-            print("disabled")
+    client = create_client("http://localhost:18000/api/v1")
+    result = await client.evaluate(
+        flag_key="new_payment_flow",
+        entity_id="user123",
+        entity_context={"tier": "premium", "region": "RU"}
+    )
+    if result.is_enabled():
+        print("enabled", result.variant_key)
+    # или: enabled = await client.is_enabled("new_feature", entity_id="user123")
+    await client.close()
 
 asyncio.run(main())
 ```

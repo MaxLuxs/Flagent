@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch
 
-from flagent import FlagentClient
+from flagent import FlagentClient, create_client
 from flagent.models import EvaluationResult
 from flagent.exceptions import EvaluationError, FlagNotFoundError, NetworkError
 from flagent._generated.models import EvalResult
@@ -18,6 +18,47 @@ class TestFlagentClientInit:
     def test_sets_api_key(self):
         client = FlagentClient(base_url="http://test", api_key="secret")
         assert client.api_key == "secret"
+
+
+class TestCreateClient:
+    def test_create_client_returns_flagent_client(self):
+        client = create_client("http://localhost:18000/api/v1")
+        assert isinstance(client, FlagentClient)
+        assert client.base_url == "http://localhost:18000/api/v1"
+
+    def test_create_client_with_options(self):
+        client = create_client(
+            "http://api.example.com/api/v1",
+            api_key="key",
+            timeout=10.0,
+            max_retries=5,
+        )
+        assert client.api_key == "key"
+        assert client.timeout == 10.0
+
+
+class TestFlagentClientIsEnabled:
+    @pytest.mark.asyncio
+    async def test_is_enabled_true_when_variant_assigned(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._evaluation_api,
+            "post_evaluation",
+            new_callable=AsyncMock,
+            return_value=EvalResult(flag_key="f", variant_key="on"),
+        ):
+            assert await client.is_enabled("f", entity_id="user1") is True
+
+    @pytest.mark.asyncio
+    async def test_is_enabled_false_when_no_variant(self):
+        client = FlagentClient(base_url="http://test/api/v1")
+        with patch.object(
+            client._evaluation_api,
+            "post_evaluation",
+            new_callable=AsyncMock,
+            return_value=EvalResult(flag_key="f", variant_key=None),
+        ):
+            assert await client.is_enabled("f", entity_id="user1") is False
 
 
 class TestFlagentClientEvaluate:
