@@ -21,6 +21,7 @@ COPY gradle/libs.versions.toml ./gradle/
 COPY shared ./shared
 COPY backend ./backend
 COPY frontend ./frontend
+COPY design-system ./design-system
 COPY ktor-flagent ./ktor-flagent
 COPY sdk ./sdk
 COPY samples ./samples
