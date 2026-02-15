@@ -75,9 +75,14 @@
 
 Get Flagent running in under 5 minutes:
 
+### Option 1: Docker with In-Memory Database (Quickest)
+
 ```bash
 docker pull ghcr.io/maxluxs/flagent
-docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
+docker run -d --name flagent -p 18000:18000 \
+  -e FLAGENT_DB_DBDRIVER="sqlite3" \
+  -e FLAGENT_DB_DBCONNECTIONSTR=":memory:" \
+  ghcr.io/maxluxs/flagent
 
 # Open Flagent UI
 open http://localhost:18000
@@ -85,17 +90,55 @@ open http://localhost:18000
 
 **Default credentials:** `admin@local` / `admin`
 
+⚠️ **Note:** In-memory database is reset on container restart. Use **Option 2** for persistent data.
+
+### Option 2: Docker with Persistent SQLite
+
+```bash
+docker run -d --name flagent -p 18000:18000 \
+  -v flagent-db:/data \
+  -e FLAGENT_DB_DBDRIVER="sqlite3" \
+  -e FLAGENT_DB_DBCONNECTIONSTR="/data/flagent.sqlite" \
+  ghcr.io/maxluxs/flagent
+
+# Open Flagent UI
+open http://localhost:18000
+```
+
+Data persists in the `flagent-db` volume across container restarts.
+
+### Option 3: Docker Compose with PostgreSQL (Production)
+
+```bash
+git clone https://github.com/MaxLuxs/Flagent.git
+cd Flagent
+docker compose up -d
+
+# Open Flagent UI
+open http://localhost:18000
+```
+
+See [docker-compose.yml](docker-compose.yml) for PostgreSQL setup.
+
+### Environment Variables
+
+**Database Configuration (required):**
+- `FLAGENT_DB_DBDRIVER` - Database driver: `sqlite3`, `postgres`, `mysql` (default: `sqlite3`)
+- `FLAGENT_DB_DBCONNECTIONSTR` - Connection string:
+  - SQLite file: `/data/flagent.sqlite` or `./flagent.sqlite`
+  - SQLite memory: `:memory:`
+  - PostgreSQL: `jdbc:postgresql://localhost:5432/flagent`
+  - MySQL: `jdbc:mysql://localhost:3306/flagent`
+
+**Admin Authentication (default: `admin@local` / `admin`):**
+- `FLAGENT_ADMIN_EMAIL` - Admin email (default: `admin@local`)
+- `FLAGENT_ADMIN_PASSWORD` - Admin password (default: `admin`)
+- `FLAGENT_JWT_AUTH_SECRET` - JWT secret for tokens (min 32 chars, required for production)
+
+**Server:**
+- `PORT` - Server port (default: `18000`)
+
 For production: set `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET` (min 32 chars). See [Configuration](docs/guides/configuration.md).
-
-### Choose your path
-
-| Goal | Action |
-|------|--------|
-| Quick try (Docker) | `docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent` → http://localhost:18000 |
-| Development with UI | `./gradlew run` (backend 18000 + frontend 8080) |
-| Production | Docker Compose or K8s + PostgreSQL |
-
-**Requirements:** Java 21 for local run. JDK 21 required for `./gradlew run`.
 
 ## Self-Hosted (Open Source) from GitHub
 
