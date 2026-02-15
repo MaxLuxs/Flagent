@@ -2,7 +2,6 @@ package com.flagent.enhanced.manager
 
 import com.flagent.client.apis.EvaluationApi
 import com.flagent.client.models.EvalContext
-import io.ktor.client.statement.bodyAsText
 import com.flagent.client.models.EvalResult
 import com.flagent.client.models.EvaluationBatchRequest
 import com.flagent.client.models.EvaluationEntity
@@ -10,6 +9,7 @@ import com.flagent.enhanced.cache.CacheKey
 import com.flagent.enhanced.cache.EvaluationCache
 import com.flagent.enhanced.cache.InMemoryEvaluationCache
 import com.flagent.enhanced.config.FlagentConfig
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

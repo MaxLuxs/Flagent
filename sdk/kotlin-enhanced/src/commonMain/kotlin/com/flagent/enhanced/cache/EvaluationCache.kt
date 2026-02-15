@@ -1,9 +1,9 @@
 package com.flagent.enhanced.cache
 
 import com.flagent.client.models.EvalResult
+import com.flagent.enhanced.platform.currentTimeMs
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.ConcurrentHashMap
 
 data class CacheKey(
     val flagKey: String?,
@@ -32,12 +32,12 @@ interface EvaluationCache {
 class InMemoryEvaluationCache(
     private val ttlMs: Long
 ) : EvaluationCache {
-    private val cache = ConcurrentHashMap<String, CachedEntry>()
+    private val cache = mutableMapOf<String, CachedEntry>()
     private val mutex = Mutex()
 
     override suspend fun get(key: CacheKey): EvalResult? = mutex.withLock {
         val entry = cache[key.toKeyString()]
-        if (entry != null && !entry.isExpired(ttlMs, System.currentTimeMillis())) {
+        if (entry != null && !entry.isExpired(ttlMs, currentTimeMs())) {
             entry.result
         } else {
             cache.remove(key.toKeyString())
@@ -46,13 +46,13 @@ class InMemoryEvaluationCache(
     }
 
     override suspend fun put(key: CacheKey, result: EvalResult) = mutex.withLock {
-        cache[key.toKeyString()] = CachedEntry(result, System.currentTimeMillis())
+        cache[key.toKeyString()] = CachedEntry(result, currentTimeMs())
     }
 
     override suspend fun clear() = mutex.withLock { cache.clear() }
 
     override suspend fun evictExpired() = mutex.withLock {
-        val currentTime = System.currentTimeMillis()
+        val currentTime = currentTimeMs()
         cache.entries.filter { it.value.isExpired(ttlMs, currentTime) }.map { it.key }.forEach { cache.remove(it) }
     }
 }

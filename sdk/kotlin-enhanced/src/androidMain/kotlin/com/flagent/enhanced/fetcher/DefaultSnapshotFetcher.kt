@@ -32,7 +32,8 @@ class DefaultSnapshotFetcher(
     override suspend fun fetchSnapshot(ttlMs: Long): FlagSnapshot = withContext(Dispatchers.IO) {
         try {
             val response = exportApi.getExportEvalCacheJSON()
-            val json = response.body()
+            val body = response.body()
+            val json = mapToJsonObject(body)
             val flags = parseExportJson(json)
             FlagSnapshot(
                 flags = flags,

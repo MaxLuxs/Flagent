@@ -14,6 +14,10 @@ import io.ktor.util.reflect.TypeInfo
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.putJsonObject
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -33,18 +37,17 @@ class SnapshotFetcherTest {
         val exportApi = mockk<ExportApi>()
         val flagApi = mockk<FlagApi>(relaxed = true)
 
-        @Suppress("UNCHECKED_CAST")
-        val body = mapOf<String, Any>(
-            "flags" to listOf(
-                mapOf(
-                    "id" to 1,
-                    "key" to "test_flag",
-                    "enabled" to true,
-                    "segments" to emptyList<Any>(),
-                    "variants" to emptyList<Any>()
-                )
-            )
-        ) as Map<String, Any>
+        val body = buildJsonObject {
+            putJsonArray("flags") {
+                add(buildJsonObject {
+                    put("id", 1)
+                    put("key", "test_flag")
+                    put("enabled", true)
+                    putJsonArray("segments") {}
+                    putJsonArray("variants") {}
+                })
+            }
+        }
         coEvery { exportApi.getExportEvalCacheJSON() } returns HttpResponse(
             mockk(relaxed = true),
             mockk {
@@ -69,15 +72,14 @@ class SnapshotFetcherTest {
         val exportApi = mockk<ExportApi>()
         val flagApi = mockk<FlagApi>(relaxed = true)
 
-        @Suppress("UNCHECKED_CAST")
-        val body = mapOf<String, Any>(
-            "1" to mapOf(
-                "key" to "test_flag",
-                "enabled" to true,
-                "segments" to emptyList<Any>(),
-                "variants" to emptyList<Any>()
-            )
-        ) as Map<String, Any>
+        val body = buildJsonObject {
+            putJsonObject("1") {
+                put("key", "test_flag")
+                put("enabled", true)
+                putJsonArray("segments") {}
+                putJsonArray("variants") {}
+            }
+        }
         coEvery { exportApi.getExportEvalCacheJSON() } returns HttpResponse(
             mockk(relaxed = true),
             mockk {
@@ -186,15 +188,14 @@ class SnapshotFetcherTest {
     fun `fetchDelta returns full snapshot`() = runBlocking {
         val exportApi = mockk<ExportApi>()
         val flagApi = mockk<FlagApi>(relaxed = true)
-        @Suppress("UNCHECKED_CAST")
-        val body = mapOf<String, Any>(
-            "1" to mapOf(
-                "key" to "delta_flag",
-                "enabled" to true,
-                "segments" to emptyList<Any>(),
-                "variants" to emptyList<Any>()
-            )
-        ) as Map<String, Any>
+        val body = buildJsonObject {
+            putJsonObject("1") {
+                put("key", "delta_flag")
+                put("enabled", true)
+                putJsonArray("segments") {}
+                putJsonArray("variants") {}
+            }
+        }
         val ktorResponse = mockk<KtorResponse>(relaxed = true)
         coEvery { exportApi.getExportEvalCacheJSON() } returns httpResponseWithBody(ktorResponse, body)
 

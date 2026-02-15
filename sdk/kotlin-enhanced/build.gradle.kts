@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
+    alias(libs.plugins.android.library)
     `maven-publish`
 }
 
@@ -12,11 +13,18 @@ group = "com.flagent"
 
 repositories {
     mavenCentral()
+    google()
+}
+
+android {
+    compileSdk = 35
+    namespace = "com.flagent.enhanced"
 }
 
 kotlin {
     jvm()
     jvmToolchain(21)
+    androidTarget()
     iosArm64()
     iosSimulatorArm64()
 
@@ -24,6 +32,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":shared"))
+                implementation(project(":kotlin-client"))
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
@@ -40,11 +49,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(project(":shared"))
-                if (findProject(":kotlin-client") != null) {
-                    implementation(project(":kotlin-client"))
-                } else {
-                    implementation("com.flagent:kotlin-client:0.1.6")
-                }
+                implementation(project(":kotlin-client"))
                 implementation(libs.ktor.client.cio)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
@@ -53,16 +58,27 @@ kotlin {
             }
         }
         val jvmTest by getting {
-            kotlin.srcDirs("src/test/kotlin")
             dependencies {
                 implementation(libs.kotlin.test.junit5)
                 implementation(libs.mockk)
+                implementation(libs.ktor.client.cio)
+            }
+        }
+        val androidMain by getting {
+            dependencies {
+                implementation(project(":shared"))
+                implementation(project(":kotlin-client"))
+                implementation(libs.ktor.client.android)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
         val iosMain by creating {
             dependsOn(commonMain)
             dependencies {
+                implementation(project(":kotlin-client"))
                 implementation(libs.ktor.client.darwin)
+                implementation(libs.ktor.serialization.kotlinx.json)
             }
         }
         val iosArm64Main by getting { dependsOn(iosMain) }

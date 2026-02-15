@@ -20,19 +20,17 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-/**
- * JVM implementation of [SnapshotFetcher] using kotlin-client ExportApi/FlagApi.
- */
 @Suppress("UNCHECKED_CAST")
 class DefaultSnapshotFetcher(
     private val exportApi: ExportApi,
     private val flagApi: FlagApi
 ) : SnapshotFetcher {
 
-    override suspend fun fetchSnapshot(ttlMs: Long): FlagSnapshot = withContext(Dispatchers.IO) {
+    override suspend fun fetchSnapshot(ttlMs: Long): FlagSnapshot = withContext(Dispatchers.Default) {
         try {
             val response = exportApi.getExportEvalCacheJSON()
-            val json = response.body()
+            val body = response.body()
+            val json = mapToJsonObject(body)
             val flags = parseExportJson(json)
             FlagSnapshot(
                 flags = flags,
@@ -135,8 +133,7 @@ class DefaultSnapshotFetcher(
             LocalSegment(
                 id = segmentObj["id"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L,
                 rank = segmentObj["rank"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
-                rolloutPercent = segmentObj["rolloutPercent"]?.jsonPrimitive?.content?.toIntOrNull()
-                    ?: 100,
+                rolloutPercent = segmentObj["rolloutPercent"]?.jsonPrimitive?.content?.toIntOrNull() ?: 100,
                 constraints = segmentObj["constraints"]?.jsonArray?.map { constraintEl ->
                     val constraintObj = constraintEl.jsonObject
                     LocalConstraint(

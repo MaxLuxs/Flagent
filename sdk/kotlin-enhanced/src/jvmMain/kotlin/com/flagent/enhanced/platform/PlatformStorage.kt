@@ -6,3 +6,6 @@ import java.io.File
 
 actual fun createPersistentStorage(path: String): SnapshotStorage =
     FileSnapshotStorage(File(path))
+
+actual fun defaultStoragePath(): String =
+    File(System.getProperty("user.home"), ".flagent").absolutePath

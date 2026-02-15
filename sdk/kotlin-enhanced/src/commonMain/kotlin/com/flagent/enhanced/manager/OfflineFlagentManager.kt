@@ -23,6 +23,23 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
+ * Common API for offline manager (core or platform wrapper).
+ * Used by kotlin-debug-ui and other commonMain consumers.
+ */
+interface IOfflineFlagentManager {
+    suspend fun evaluate(
+        flagKey: String? = null,
+        flagID: Long? = null,
+        entityID: String,
+        entityType: String? = null,
+        entityContext: Map<String, Any> = emptyMap(),
+        enableDebug: Boolean = false
+    ): LocalEvaluationResult
+    suspend fun clearCache()
+    fun getFlagsList(): List<LocalFlag>
+}
+
+/**
  * Offline-first feature flag manager (KMP common).
  * JVM exposes [com.flagent.enhanced.manager.OfflineFlagentManager] with same API; iOS uses this type via factory.
  */
@@ -31,7 +48,7 @@ class OfflineFlagentManagerCore(
     private val storage: SnapshotStorage,
     private val config: OfflineFlagentConfig = OfflineFlagentConfig(),
     private val realtimeRefreshTrigger: Flow<Unit>? = null
-) {
+) : IOfflineFlagentManager {
     private val evaluator = LocalEvaluator()
     private var currentSnapshot: FlagSnapshot? = null
     private val snapshotMutex = Mutex()
@@ -83,13 +100,13 @@ class OfflineFlagentManagerCore(
         }
     }
 
-    suspend fun evaluate(
-        flagKey: String? = null,
-        flagID: Long? = null,
+    override suspend fun evaluate(
+        flagKey: String?,
+        flagID: Long?,
         entityID: String,
-        entityType: String? = null,
-        entityContext: Map<String, Any> = emptyMap(),
-        enableDebug: Boolean = false
+        entityType: String?,
+        entityContext: Map<String, Any>,
+        enableDebug: Boolean
     ): LocalEvaluationResult {
         val snapshot = getSnapshot()
         return evaluator.evaluate(
@@ -173,7 +190,7 @@ class OfflineFlagentManagerCore(
 
     fun isRealtimeEnabled(): Boolean = realtimeJob?.isActive == true
 
-    suspend fun clearCache() {
+    override suspend fun clearCache() {
         snapshotMutex.withLock {
             currentSnapshot = null
             storage.clear()
@@ -207,5 +224,5 @@ class OfflineFlagentManagerCore(
      * Returns list of all flags from current snapshot for debug/inspection only.
      * Empty if not bootstrapped.
      */
-    fun getFlagsList(): List<LocalFlag> = currentSnapshot?.flags?.values?.toList() ?: emptyList()
+    override fun getFlagsList(): List<LocalFlag> = currentSnapshot?.flags?.values?.toList() ?: emptyList()
 }
