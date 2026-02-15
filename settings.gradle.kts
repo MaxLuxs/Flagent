@@ -49,8 +49,8 @@ project(":kotlin-enhanced").projectDir = file("sdk/kotlin-enhanced")
 project(":kotlin-debug-ui").projectDir = file("sdk/kotlin-debug-ui")
 project(":flagent-koin").projectDir = file("sdk/flagent-koin")
 
-project(":android-sample").projectDir = file("sdk/android-sample")
-project(":android-sample:app").projectDir = file("sdk/android-sample/app")
+project(":android-sample").projectDir = file("samples/android")
+project(":android-sample:app").projectDir = file("samples/android/app")
 
 project(":sample-ktor").projectDir = file("samples/ktor")
 project(":sample-kotlin").projectDir = file("samples/kotlin")

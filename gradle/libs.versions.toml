@@ -23,6 +23,7 @@ flyway = "10.22.0"
 # Database Drivers
 postgresql = "42.7.9"
 mysql = "9.5.0"
+slf4j-api = "2.0.17"
 sqlite = "3.51.1.0"
 hikaricp = "7.0.2"
 
@@ -44,6 +45,7 @@ google-pubsub = "1.147.0"
 
 # Security
 jjwt = "0.13.0"
+jbcrypt = "0.4"
 dependency-check = "12.2.0"
 
 # Billing
@@ -151,6 +153,7 @@ flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql
 # Database Drivers
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-api" }
 sqlite = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 
@@ -174,6 +177,7 @@ google-pubsub = { module = "com.google.cloud:google-cloud-pubsub", version.ref =
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+jbcrypt = { module = "org.mindrot:jbcrypt", version.ref = "jbcrypt" }
 
 # Billing
 stripe-java = { module = "com.stripe:stripe-java", version.ref = "stripe" }
