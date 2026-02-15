@@ -42,6 +42,9 @@ jobs:
       - name: Run unit tests
         run: ./gradlew :backend:test :shared:jvmTest --no-daemon
       
+      - name: Backend E2E (explicit)
+        run: ./gradlew :backend:test --no-daemon --tests "flagent.test.e2e.E2ETest"
+      
       - name: Generate test coverage
         run: ./gradlew :backend:jacocoTestReport --no-daemon
       
@@ -235,6 +238,7 @@ jobs:
         run: cd frontend/e2e && npx playwright install --with-deps chromium
       - name: Build frontend for E2E
         run: ./gradlew :frontend:jsBrowserDevelopmentWebpack -q
+      # Playwright webServer (see frontend/e2e/playwright.config.ts) starts backend via :backend:runDev when CI=true
       - name: Run E2E tests (OSS edition)
         env:
           FLAGENT_EDITION: oss

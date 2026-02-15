@@ -92,7 +92,7 @@ jobs:
 
       - name: Setup test data
         run: |
-          # Create test flags
+          # Create test flags (OSS: no X-API-Key; if backend requires tenant, create one and add -H "X-API-Key: $API_KEY" to curl and pass API_KEY to k6 via -e)
           for i in {1..5}; do
             curl -X POST http://localhost:8000/api/v1/flags \
               -H "Content-Type: application/json" \
