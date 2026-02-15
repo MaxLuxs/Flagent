@@ -71,7 +71,9 @@ class FlagService(
         descriptionLike: String? = null,
         preload: Boolean = false,
         deleted: Boolean = false,
-        tags: String? = null
+        tags: String? = null,
+        environmentId: Long? = null,
+        projectId: Long? = null
     ): List<Flag> {
         return flagRepository.findAll(
             limit = limit,
@@ -82,7 +84,9 @@ class FlagService(
             descriptionLike = descriptionLike,
             preload = preload,
             deleted = deleted,
-            tags = tags
+            tags = tags,
+            environmentId = environmentId,
+            projectId = projectId
         )
     }
 
@@ -92,7 +96,9 @@ class FlagService(
         key: String? = null,
         descriptionLike: String? = null,
         deleted: Boolean = false,
-        tags: String? = null
+        tags: String? = null,
+        environmentId: Long? = null,
+        projectId: Long? = null
     ): Long {
         return flagRepository.countAll(
             enabled = enabled,
@@ -100,7 +106,9 @@ class FlagService(
             key = key,
             descriptionLike = descriptionLike,
             deleted = deleted,
-            tags = tags
+            tags = tags,
+            environmentId = environmentId,
+            projectId = projectId
         )
     }
     
@@ -110,11 +118,18 @@ class FlagService(
     
     suspend fun createFlag(command: CreateFlagCommand, updatedBy: String? = null): Flag {
         val key = createFlagKey(command.key)
+        val dependsOn = command.dependsOn?.filter { it.isNotBlank() }?.distinct() ?: emptyList()
+        if (dependsOn.any { it == key }) {
+            throw IllegalArgumentException("Flag cannot depend on itself: $key")
+        }
+        validateNoCycle(0, key, dependsOn)
         val flag = Flag(
             key = key,
             description = command.description,
             enabled = false,
-            environmentId = command.environmentId
+            environmentId = command.environmentId,
+            projectId = command.projectId,
+            dependsOn = dependsOn
         )
         val created = flagRepository.create(flag)
         
@@ -195,13 +210,21 @@ class FlagService(
             existingFlag.key
         }
         
+        val newDependsOn = command.dependsOn ?: existingFlag.dependsOn
+        if (newDependsOn.any { it == key }) {
+            throw IllegalArgumentException("Flag cannot depend on itself: $key")
+        }
+        validateNoCycle(flagId, key, newDependsOn)
+        
         val updatedFlag = existingFlag.copy(
             description = command.description ?: existingFlag.description,
             key = key,
             dataRecordsEnabled = command.dataRecordsEnabled ?: existingFlag.dataRecordsEnabled,
             entityType = command.entityType ?: existingFlag.entityType,
             environmentId = command.environmentId ?: existingFlag.environmentId,
+            projectId = command.projectId ?: existingFlag.projectId,
             notes = command.notes ?: existingFlag.notes,
+            dependsOn = newDependsOn,
             updatedBy = updatedBy
         )
         
@@ -236,6 +259,19 @@ class FlagService(
         return flagRepository.restore(id)
     }
     
+    /** Returns flag by id including archived (soft-deleted). For audit before permanent delete. */
+    suspend fun getFlagIncludeDeleted(id: Int): Flag? = flagRepository.findByIdIncludeDeleted(id)
+    
+    /** Permanently removes the flag (and cascade). Prefer archive (deleteFlag) then permanent delete. */
+    suspend fun permanentDeleteFlag(id: Int) {
+        val flag = flagRepository.findByIdIncludeDeleted(id)
+        flagRepository.permanentDelete(id)
+        flag?.let {
+            eventBus?.publishFlagDeleted(it.id.toLong(), it.key)
+            webhookService?.dispatchFlagDeleted(it.id, it.key)
+        }
+    }
+    
     suspend fun setFlagEnabled(id: Int, enabled: Boolean, updatedBy: String? = null): Flag? {
         val flag = flagRepository.findById(id) ?: return null
         val updated = flagRepository.update(flag.copy(enabled = enabled, updatedBy = updatedBy))
@@ -250,5 +286,24 @@ class FlagService(
 
     suspend fun batchSetEnabled(ids: List<Int>, enabled: Boolean, updatedBy: String? = null): List<Flag> {
         return ids.mapNotNull { id -> setFlagEnabled(id, enabled, updatedBy) }
+    }
+    
+    /**
+     * Validates that adding dependsOn does not create a circular dependency.
+     * Throws IllegalArgumentException if a cycle would be introduced.
+     */
+    private suspend fun validateNoCycle(flagId: Int, flagKey: String, dependsOnKeys: List<String>) {
+        val visited = mutableSetOf<String>()
+        val toVisit = dependsOnKeys.toMutableList()
+        while (toVisit.isNotEmpty()) {
+            val depKey = toVisit.removeAt(0)
+            if (depKey == flagKey) {
+                throw IllegalArgumentException("Circular dependency: $flagKey would depend on itself via $depKey")
+            }
+            if (depKey in visited) continue
+            visited.add(depKey)
+            val depFlag = flagRepository.findByKey(depKey) ?: continue
+            toVisit.addAll(depFlag.dependsOn)
+        }
     }
 }

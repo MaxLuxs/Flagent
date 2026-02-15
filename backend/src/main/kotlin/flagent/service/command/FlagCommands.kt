@@ -9,7 +9,9 @@ data class CreateFlagCommand(
     val key: String?,
     val description: String,
     val template: String? = null,
-    val environmentId: Long? = null
+    val environmentId: Long? = null,
+    val projectId: Long? = null,
+    val dependsOn: List<String>? = null
 )
 
 data class PutFlagCommand(
@@ -18,7 +20,9 @@ data class PutFlagCommand(
     val dataRecordsEnabled: Boolean?,
     val entityType: String?,
     val notes: String?,
-    val environmentId: Long? = null
+    val environmentId: Long? = null,
+    val projectId: Long? = null,
+    val dependsOn: List<String>? = null
 )
 
 data class SetFlagEnabledCommand(

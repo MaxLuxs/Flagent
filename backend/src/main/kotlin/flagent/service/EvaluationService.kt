@@ -33,14 +33,15 @@ class EvaluationService(
      * Evaluate flag by ID or Key.
      * @param environmentId when set (enterprise), only flags with matching environmentId or null (global) are returned
      */
-    fun evaluateFlag(
+    suspend fun evaluateFlag(
         flagID: Int?,
         flagKey: String?,
         entityID: String?,
         entityType: String?,
         entityContext: Map<String, Any>?,
         enableDebug: Boolean,
-        environmentId: Long? = null
+        environmentId: Long? = null,
+        clientId: String? = null
     ): EvalResult {
         val flag = when {
             flagID != null -> evalCache.getByFlagKeyOrID(flagID)
@@ -56,7 +57,8 @@ class EvaluationService(
             entityID = entityID,
             entityType = entityType,
             entityContext = entityContext,
-            enableDebug = enableDebug
+            enableDebug = enableDebug,
+            clientId = clientId
         )
     }
 
@@ -64,14 +66,15 @@ class EvaluationService(
      * Evaluate flags by tags.
      * @param environmentId when set (enterprise), only flags with matching environmentId or null (global) are returned
      */
-    fun evaluateFlagsByTags(
+    suspend fun evaluateFlagsByTags(
         tags: List<String>,
         operator: String?,
         entityID: String?,
         entityType: String?,
         entityContext: Map<String, Any>?,
         enableDebug: Boolean,
-        environmentId: Long? = null
+        environmentId: Long? = null,
+        clientId: String? = null
     ): List<EvalResult> {
         val flags = evalCache.getByTags(tags, operator)
         return flags.map { flag ->
@@ -83,7 +86,8 @@ class EvaluationService(
                 entityID = entityID,
                 entityType = entityType,
                 entityContext = entityContext,
-                enableDebug = enableDebug
+                enableDebug = enableDebug,
+                clientId = clientId
             )
         }
     }
@@ -98,14 +102,15 @@ class EvaluationService(
     /**
      * Evaluate flag with context - delegates to EvaluateFlagUseCase (shared evaluator).
      */
-    private fun evaluateFlagWithContext(
+    private suspend fun evaluateFlagWithContext(
         flag: Flag?,
         flagID: Int,
         flagKey: String,
         entityID: String?,
         entityType: String?,
         entityContext: Map<String, Any>?,
-        enableDebug: Boolean
+        enableDebug: Boolean,
+        clientId: String? = null
     ): EvalResult {
         if (flag == null) {
             return createBlankResult(
@@ -180,7 +185,7 @@ class EvaluationService(
         if (AppConfig.firebaseAnalyticsEnabled) {
             firebaseAnalyticsReporter?.recordAsync(result)
         }
-        evaluationEventRecorder?.record(flag.id, result.timestamp)
+        evaluationEventRecorder?.record(flag.id, result.timestamp, clientId)
 
         return result
     }

@@ -129,6 +129,11 @@ class ExportService(
                     it[notes] = flag.notes
                     it[dataRecordsEnabled] = flag.dataRecordsEnabled
                     it[entityType] = flag.entityType
+                    flag.environmentId?.let { eid -> it[environmentId] = eid }
+                    flag.projectId?.let { pid -> it[projectId] = pid }
+                    it[dependsOn] = flag.dependsOn.let { keys ->
+                        if (keys.isEmpty()) null else kotlinx.serialization.json.buildJsonArray { keys.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } }.toString()
+                    }
                     it[createdAt] = LocalDateTime.now()
                     it[updatedAt] = null
                     it[deletedAt] = null
