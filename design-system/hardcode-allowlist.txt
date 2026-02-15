@@ -1,0 +1,33 @@
+# Path suffixes that may still contain hardcoded colors (to be migrated to tokens).
+# Remove a line when the file has been updated to use FlagentTheme / tokens.
+# Run: ./design-system/check-hardcode.sh
+
+landing/
+auth/LoginForm.kt
+ShellLayout.kt
+SegmentEditor.kt
+tenants/TenantSwitcher.kt
+CommandBar.kt
+WebhooksSettings.kt
+FlagHistory.kt
+FlagEditor.kt
+MetricsChart.kt
+TrendChart.kt
+ActivityChart.kt
+StatusDistributionChart.kt
+Slider.kt
+JsonEditor.kt
+SkeletonLoader.kt
+ConstraintEditor.kt
+Navbar.kt
+InfoTooltip.kt
+EmptyState.kt
+LandingPage.kt
+BlogPage.kt
+PricingPage.kt
+MarketingLanding.kt
+LandingNavbar.kt
+LandingFooter.kt
+ExperimentCard.kt
+Dashboard.kt
+FlagsList.kt

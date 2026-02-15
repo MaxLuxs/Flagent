@@ -1,0 +1,87 @@
+/* Flagent Design Tokens — generated from tokens.json */
+
+:root, [data-theme="light"] {
+  --flagent-color-primary: #0EA5E9;
+  --flagent-color-primaryDark: #0284C7;
+  --flagent-color-primaryLight: #38BDF8;
+  --flagent-color-secondary: #14B8A6;
+  --flagent-color-secondaryDark: #0D9488;
+  --flagent-color-secondaryLight: #5EEAD4;
+  --flagent-color-accent: #F59E0B;
+  --flagent-color-success: #10B981;
+  --flagent-color-error: #EF4444;
+  --flagent-color-warning: #F59E0B;
+  --flagent-color-info: #3B82F6;
+  --flagent-color-neutral: #6B7280;
+  --flagent-color-neutralLight: #9CA3AF;
+  --flagent-color-neutralLighter: #D1D5DB;
+  --flagent-color-light-background: #FFFFFF;
+  --flagent-color-light-backgroundAlt: #F8FAFC;
+  --flagent-color-light-backgroundDark: #F1F5F9;
+  --flagent-color-light-text: #0F172A;
+  --flagent-color-light-textLight: #64748B;
+  --flagent-color-light-textLighter: #94A3B8;
+  --flagent-color-light-border: #E2E8F0;
+  --flagent-color-light-inputBg: #FFFFFF;
+  --flagent-color-light-inputBorder: #E2E8F0;
+  --flagent-color-light-cardBg: #FFFFFF;
+  --flagent-color-light-cardBorder: #E2E8F0;
+  --flagent-color-light-errorBg: #FEF2F2;
+  --flagent-color-light-errorText: #991B1B;
+  --flagent-color-light-badgeBg: #E5E7EB;
+  --flagent-color-light-successBg: #D1FAE5;
+  --flagent-color-light-warningBg: #FEF3C7;
+  --flagent-color-light-infoBg: #F0F9FF;
+  --flagent-color-codeBackground: #1E293B;
+  --flagent-color-codeText: #CBD5E1;
+  --flagent-color-overlay: rgba(0,0,0,0.5);
+  --flagent-color-primaryGlow: rgba(14,165,233,0.2);
+  --flagent-spacing-4: 4px;
+  --flagent-spacing-6: 6px;
+  --flagent-spacing-8: 8px;
+  --flagent-spacing-10: 10px;
+  --flagent-spacing-12: 12px;
+  --flagent-spacing-16: 16px;
+  --flagent-spacing-20: 20px;
+  --flagent-spacing-24: 24px;
+  --flagent-spacing-25: 25px;
+  --flagent-radius-sm: 3px;
+  --flagent-radius-md: 6px;
+  --flagent-radius-lg: 8px;
+  --flagent-radius-card: 10px;
+  --flagent-typography-fontFamily: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --flagent-typography-fontFamilyMono: monospace;
+  --flagent-typography-fontSize12: 12px;
+  --flagent-typography-fontSize14: 14px;
+  --flagent-typography-fontSize16: 16px;
+  --flagent-typography-fontSize24: 24px;
+  --flagent-typography-fontWeight400: 400;
+  --flagent-typography-fontWeight700: 700;
+  --flagent-shadow-default: rgba(0, 0, 0, 0.08);
+  --flagent-shadow-hover: rgba(0, 0, 0, 0.15);
+  --flagent-shadow-card: 0 2px 8px var(--flagent-shadow-default);
+  --flagent-shadow-modal: 0 10px 25px var(--flagent-shadow-hover);
+  --flagent-gradient-primary: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+  --flagent-gradient-secondary: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+  --flagent-gradient-hero: linear-gradient(135deg, #0f172a 0%, #1e293b 20%, #0f172a 40%, #1e3a5f 60%, #0f172a 80%, #1e293b 100%);
+}
+
+[data-theme="dark"] {
+  --flagent-color-dark-background: #0f172a;
+  --flagent-color-dark-sidebarBg: #1e293b;
+  --flagent-color-dark-contentBg: #0f172a;
+  --flagent-color-dark-text: #FFFFFF;
+  --flagent-color-dark-textLight: rgba(255,255,255,0.7);
+  --flagent-color-dark-border: rgba(255,255,255,0.08);
+  --flagent-color-dark-inputBg: rgba(255,255,255,0.06);
+  --flagent-color-dark-inputBorder: rgba(255,255,255,0.12);
+  --flagent-color-dark-cardBg: rgba(255,255,255,0.04);
+  --flagent-color-dark-cardBorder: rgba(255,255,255,0.08);
+  --flagent-color-dark-errorBg: rgba(239,68,68,0.2);
+  --flagent-color-dark-errorText: #FCA5A5;
+  --flagent-color-dark-badgeBg: rgba(255,255,255,0.12);
+  --flagent-color-dark-successBg: rgba(16,185,129,0.2);
+  --flagent-color-dark-warningBg: rgba(245,158,11,0.2);
+  --flagent-color-dark-infoBg: rgba(59,130,246,0.2);
+  --flagent-color-dark-textMuted: rgba(255,255,255,0.5);
+}
