@@ -1,5 +1,6 @@
 package flagent.recorder
 
+import flagent.repository.impl.EvaluationEventRecord
 import flagent.repository.impl.EvaluationEventRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +23,7 @@ class EvaluationEventRecorder(
     private val repository: EvaluationEventRepository
 ) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val channel = Channel<Pair<Int, Long>>(Channel.UNLIMITED)
+    private val channel = Channel<EvaluationEventRecord>(Channel.UNLIMITED)
     private val batchSize = 100
     private val batchTimeout = 1.seconds
 
@@ -32,7 +33,7 @@ class EvaluationEventRecorder(
 
     private fun startProcessor() {
         scope.launch {
-            val batch = mutableListOf<Pair<Int, Long>>()
+            val batch = mutableListOf<EvaluationEventRecord>()
             var lastBatchTime = System.currentTimeMillis()
 
             while (isActive) {
@@ -66,9 +67,10 @@ class EvaluationEventRecorder(
         }
     }
 
-    fun record(flagId: Int, timestampMs: Long) {
+    /** @param clientId optional, from X-Client-Id header for "who uses this flag" analytics */
+    fun record(flagId: Int, timestampMs: Long, clientId: String? = null) {
         try {
-            channel.trySend(flagId to timestampMs)
+            channel.trySend(EvaluationEventRecord(flagId, timestampMs, clientId?.takeIf { it.isNotBlank() }))
         } catch (e: Exception) {
             logger.error(e) { "Failed to queue evaluation event" }
         }
