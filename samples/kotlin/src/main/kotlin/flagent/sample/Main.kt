@@ -14,13 +14,15 @@ fun main() = runBlocking {
     println("Flagent Kotlin SDK Sample")
     println("============================================================")
     println("Base URL: $baseUrl")
+    println("Tip: Start backend with ./gradlew :backend:runDev")
+    println("      Seed demo flags: ./scripts/seed-demo-data.sh")
     println()
 
     val evaluationApi = EvaluationApi(baseUrl = baseUrl)
     val manager = FlagentManager(evaluationApi, FlagentConfig(enableCache = true))
 
     try {
-        println("Example 1: Single Flag Evaluation")
+        println("Example 1: Single flag evaluation")
         println("------------------------------------------------------------")
         val result = manager.evaluate(
             flagKey = "my_feature_flag",
@@ -29,13 +31,10 @@ fun main() = runBlocking {
             entityContext = mapOf("region" to "US", "tier" to "premium"),
             enableDebug = false
         )
-        println("Flag Key: ${result.flagKey}")
-        println("Variant Key: ${result.variantKey}")
-        println("Flag ID: ${result.flagID}")
-        println("Variant ID: ${result.variantID}")
+        println("  flagKey=${result.flagKey}, variantKey=${result.variantKey}, flagID=${result.flagID}, variantID=${result.variantID}")
         println()
 
-        println("Example 2: Batch Evaluation")
+        println("Example 2: Batch evaluation (multiple flags × entities)")
         println("------------------------------------------------------------")
         val batchResults = manager.evaluateBatch(
             flagKeys = listOf("my_feature_flag", "sample_flag_2"),
@@ -59,13 +58,15 @@ fun main() = runBlocking {
             ),
             enableDebug = false
         )
-        println("Total Results: ${batchResults.size}")
+        println("  Total results: ${batchResults.size}")
         batchResults.forEachIndexed { i, r ->
-            println("Result ${i + 1}: flagKey=${r.flagKey}, variantKey=${r.variantKey}, entityID=${r.evalContext?.entityID}")
+            println("  [${i + 1}] flagKey=${r.flagKey}, variantKey=${r.variantKey}, entityID=${r.evalContext?.entityID}")
         }
+        println()
+        println("Done. The SDK supports caching (see FlagentConfig) and debug logs (enableDebug = true).")
     } catch (e: Exception) {
         System.err.println("Error: ${e.message}")
-        System.err.println("Ensure Flagent backend is running at $baseUrl")
+        System.err.println("Ensure Flagent backend is running at $baseUrl and flags exist (e.g. run scripts/seed-demo-data.sh).")
         kotlin.system.exitProcess(1)
     }
 }

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Use gradle from backend if available, otherwise use system gradle
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BACKEND_GRADLEW="$SCRIPT_DIR/../../flagent/backend/gradlew"
+
+if [ -f "$BACKEND_GRADLEW" ]; then
+    exec "$BACKEND_GRADLEW" -p "$SCRIPT_DIR" "$@"
+else
+    exec gradle -p "$SCRIPT_DIR" "$@"
+fi
