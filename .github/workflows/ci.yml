@@ -41,6 +41,9 @@ jobs:
       
       - name: Run unit tests
         run: ./gradlew :backend:test :shared:jvmTest --no-daemon
+
+      - name: Design system hardcode check
+        run: ./design-system/check-hardcode.sh
       
       - name: Backend E2E (explicit)
         run: ./gradlew :backend:test --no-daemon --tests "flagent.test.e2e.E2ETest"
