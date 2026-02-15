@@ -14,6 +14,9 @@ include(":backend")
 include(":frontend")
 include(":ktor-flagent")
 
+// Design system (tokens → CSS, TS, Kotlin, Swift)
+include(":flagent-design-tokens")
+
 // SDK projects
 include(":kotlin-client")
 include(":java-client")
@@ -42,6 +45,7 @@ project(":backend").projectDir = file("backend")
 project(":frontend").projectDir = file("frontend")
 project(":ktor-flagent").projectDir = file("ktor-flagent")
 
+project(":flagent-design-tokens").projectDir = file("design-system")
 project(":kotlin-client").projectDir = file("sdk/kotlin")
 project(":java-client").projectDir = file("sdk/java")
 project(":flagent-spring-boot-starter").projectDir = file("sdk/spring-boot-starter")

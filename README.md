@@ -2,7 +2,7 @@
   <p><strong>English</strong> | <a href="README.ru.md">Русский</a></p>
   <h1>Flagent</h1>
   <p><strong>The First Kotlin-Native Feature Flag Platform</strong></p>
-  <p>Type-safe, coroutine-first feature flags and experimentation with AI-powered rollouts</p>
+  <p>Type-safe, coroutine-first feature flags and experimentation; optional Smart Rollout and anomaly detection (Enterprise)</p>
   
   <p>
     <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+">
@@ -46,7 +46,7 @@
 
 ---
 
-**Flagent** is a modern, production-ready feature flag and experimentation platform built with **Kotlin/Ktor**. The first Kotlin-native solution in the feature flags ecosystem, combining type-safety, coroutines, and clean architecture to deliver high-performance feature management with AI-powered capabilities.
+**Flagent** is a modern, production-ready feature flag and experimentation platform built with **Kotlin/Ktor**. The first Kotlin-native solution in the feature flags ecosystem, combining type-safety, coroutines, and clean architecture for high-performance feature management. Enterprise build adds multi-tenancy, SSO, RBAC, Smart Rollout and anomaly detection.
 
 ## 🎯 Why Flagent?
 
@@ -57,16 +57,15 @@
 - **Ktor Ecosystem** - Seamless integration with Ktor applications
 - **Clean Architecture** - DDD principles and testable design
 
-### AI-Powered Intelligence (Roadmap)
-- **Smart Rollouts** - ML-based automatic scaling based on metrics
-- **Anomaly Detection** - Auto-rollback on performance degradation  
-- **Predictive Targeting** - Data-driven segment recommendations
-- **A/B Insights** - Automated experiment analysis
+### Smart Rollout and Anomaly (Enterprise)
+- **Smart Rollout** - Configurable automated gradual rollouts (metrics-based; Enterprise).
+- **Anomaly Detection** - Alerts and optional rollback on degradation (Enterprise).
+- **Roadmap:** Predictive targeting, A/B insights, ML-based automation.
 
 ### Enterprise-Ready
 - **Extensive test coverage** - 200+ test files
 - **High Performance** - Low latency evaluation, load-tested (see [docs/performance/benchmarks.md](docs/performance/benchmarks.md))
-- **Multi-Tenancy** - Isolated environments for teams (Roadmap)
+- **Multi-Tenancy** - Isolated environments for teams (Enterprise)
 - **Real-Time Updates** - SSE in Kotlin Enhanced, Go Enhanced
 
 ## 🚀 Quick Start
@@ -165,12 +164,12 @@ Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when p
 - ✅ **Admin UI** - Modern Compose for Web dashboard
 - ✅ **Debug Console** - Real-time evaluation testing and debugging
 
-### Roadmap Features
-- 🚧 **GitOps Support** - Feature flags as code (YAML/JSON) (Q2 2026)
-- 🚧 **Multi-Tenancy** - Team isolation and resource limits (Q3 2026)
-- 🚧 **SSO/SAML** - Enterprise authentication (Auth0, Okta) (Q3 2026)
-- 🚧 **RBAC** - Role-based access control (Q3 2026)
-- 🚧 **AI Rollouts** - ML-powered gradual rollouts (Q4 2026)
+### Import/Export and Enterprise (internal module)
+- ✅ **Import/Export** - Flags as YAML/JSON: POST /import and export from Settings (OSS). No git sync or CLI yet.
+- ✅ **Multi-Tenancy** - Tenants, API key per tenant, X-Tenant-ID, tenant switcher in UI (Enterprise).
+- ✅ **SSO** - SAML and OAuth/OIDC providers, tenant-scoped login and JWT (Enterprise). Works with any IdP (e.g. Okta, Auth0, Azure AD).
+- ✅ **RBAC** - Custom roles and permissions, enforced on API routes (Enterprise).
+- ✅ **Smart Rollout & Anomaly** - Automated gradual rollout config and anomaly alerts with rollback options (Enterprise). No ML model; rules and metrics-based.
 
 ## 📖 Documentation
 
@@ -364,7 +363,7 @@ Flagent is evolving into a production-ready feature flag and experimentation pla
 
 ### Phase 2: Community (Q2-Q3 2026)
 **Goal**: Build community and product-market fit
-- Feature Flags as Code (GitOps workflow)
+- ✅ Import/export flags as YAML/JSON (POST /import, Settings) — done. CLI and git sync not yet.
 - CLI tool for automation
 - Webhooks and integrations (Slack, Datadog)
 - Java/.NET SDKs
@@ -376,12 +375,12 @@ Flagent is evolving into a production-ready feature flag and experimentation pla
 
 ### Phase 3: Enterprise (Q3-Q4 2026)
 **Goal**: Enterprise-ready features + SaaS launch
-- Multi-tenancy architecture
-- SSO/SAML (Auth0, Okta, Azure AD)
-- RBAC with custom roles
-- Audit logs and compliance
+- ✅ Multi-tenancy (tenants, API keys, X-Tenant-ID)
+- ✅ SSO (SAML + OAuth/OIDC, tenant-scoped)
+- ✅ RBAC (custom roles, permission checks on API)
+- ✅ Smart Rollout and Anomaly Detection (rules/metrics-based)
+- Audit logs and compliance (planned)
 - Advanced analytics dashboard
-- AI-powered rollouts (MVP)
 
 **Target**: 2000+ stars, SaaS beta, 10+ paying customers
 
