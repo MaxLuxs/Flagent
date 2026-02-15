@@ -2,7 +2,7 @@ package com.flagent.debug.ui
 
 import androidx.compose.runtime.Composable
 import com.flagent.enhanced.manager.FlagentManager
-import com.flagent.enhanced.manager.OfflineFlagentManager
+import com.flagent.enhanced.manager.IOfflineFlagentManager
 
 /**
  * Main entry point for Flagent Debug UI.
@@ -31,11 +31,11 @@ object FlagentDebugUI {
     }
 
     /**
-     * Debug screen with [OfflineFlagentManager]: uses offline evaluate and shows flags from
-     * [OfflineFlagentManager.getFlagsList]. No separate [flagsProvider] needed.
+     * Debug screen with [IOfflineFlagentManager]: uses offline evaluate and shows flags from
+     * [IOfflineFlagentManager.getFlagsList]. No separate [flagsProvider] needed.
      */
     @Composable
-    fun DebugScreen(offlineManager: OfflineFlagentManager) {
+    fun DebugScreen(offlineManager: IOfflineFlagentManager) {
         FlagentDebugTheme {
             FlagentDebugScreen(
                 evaluateManager = OfflineFlagentManagerAdapter(offlineManager),

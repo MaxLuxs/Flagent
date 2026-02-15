@@ -38,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.flagent.client.models.EvalResult
-import com.flagent.design.tokens.FlagentDesignTokens
 import kotlinx.coroutines.launch
 
 private const val LAST_EVALS_MAX = 10
@@ -68,6 +67,8 @@ internal fun FlagentDebugScreen(
     val lastEvals = remember { mutableStateListOf<EvalResult>() }
     val flagsList = remember { mutableStateListOf<FlagRow>() }
     val overrides = remember { mutableStateMapOf<String, String>() }
+    var lastOverrideKey by remember { mutableStateOf<String?>(null) }
+    var lastOverrideVariant by remember { mutableStateOf<String?>(null) }
     var flagsLoading by remember { mutableStateOf(false) }
     var flagsSearchQuery by remember { mutableStateOf("") }
     var flagsSortAscending by remember { mutableStateOf(true) }
@@ -90,13 +91,12 @@ internal fun FlagentDebugScreen(
         }
     }
 
-    val spacing = FlagentDesignTokens.Spacing
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(spacing.size16.dp),
-        verticalArrangement = Arrangement.spacedBy(spacing.size12.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             "Flagent Debug",
@@ -280,8 +280,19 @@ internal fun FlagentDebugScreen(
                                     is FlagsListEntry.Flag -> FlagRowItem(
                                         flagRow = entry.row,
                                         overrideValue = overrides[entry.row.key],
-                                        onSetOverride = { overrides[entry.row.key] = it },
-                                        onClearOverride = { overrides.remove(entry.row.key) },
+                                        onSetOverride = { v ->
+                                            overrides[entry.row.key] = v
+                                            flagKey = entry.row.key
+                                            lastOverrideKey = entry.row.key
+                                            lastOverrideVariant = v
+                                        },
+                                        onClearOverride = {
+                                            overrides.remove(entry.row.key)
+                                            if (lastOverrideKey == entry.row.key) {
+                                                lastOverrideKey = null
+                                                lastOverrideVariant = null
+                                            }
+                                        },
                                         modifier = Modifier.testTag("flag-row-${entry.row.key}")
                                     )
                                 }
@@ -327,8 +338,19 @@ internal fun FlagentDebugScreen(
                                             is FlagsListEntry.Flag -> FlagRowItem(
                                                 flagRow = entry.row,
                                                 overrideValue = overrides[entry.row.key],
-                                                onSetOverride = { overrides[entry.row.key] = it },
-                                                onClearOverride = { overrides.remove(entry.row.key) },
+                                                onSetOverride = { v ->
+                                                    overrides[entry.row.key] = v
+                                                    flagKey = entry.row.key
+                                                    lastOverrideKey = entry.row.key
+                                                    lastOverrideVariant = v
+                                                },
+                                                onClearOverride = {
+                                                    overrides.remove(entry.row.key)
+                                                    if (lastOverrideKey == entry.row.key) {
+                                                        lastOverrideKey = null
+                                                        lastOverrideVariant = null
+                                                    }
+                                                },
                                                 modifier = Modifier.testTag("flag-row-${entry.row.key}")
                                             )
                                         }
@@ -391,10 +413,10 @@ internal fun FlagentDebugScreen(
                     onClick = {
                         error = null
                         result = null
+                        val key = flagKey.ifBlank { null } ?: lastOverrideKey
+                        val overrideVariant = key?.let { overrides[it] } ?: (if (key == lastOverrideKey) lastOverrideVariant else null)
                         scope.launch {
                             try {
-                                val key = flagKey.ifBlank { null }
-                                val overrideVariant = key?.let { overrides[it] }
                                 val r = if (overrideVariant != null) {
                                     EvalResult(
                                         flagKey = key,

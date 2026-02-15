@@ -1,40 +1,42 @@
-@file:OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)
-
 package com.flagent.debug.ui
 
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.runComposeUiTest
 import com.flagent.client.models.EvalResult
 import com.flagent.enhanced.manager.FlagentManager
 import io.mockk.coEvery
 import io.mockk.mockk
-import org.junit.jupiter.api.Test
+import org.junit.Rule
+import org.junit.Test
+import kotlin.test.assertSame
 
 class FeatureFlagTest {
 
+    @get:Rule
+    val rule = createComposeRule()
+
     @Test
-    fun `FlagentProvider provides manager to children`() = runComposeUiTest {
+    fun `FlagentProvider provides manager to children`() {
         val manager = mockk<FlagentManager>()
         var receivedManager: FlagentManager? = null
 
-        setContent {
+        rule.setContent {
             FlagentProvider(manager = manager) {
                 receivedManager = LocalFlagentManager.current
                 Text("child", modifier = Modifier.testTag("child"))
             }
         }
 
-        onNodeWithTag("child").assertTextEquals("child")
-        assert(receivedManager === manager)
+        rule.onNodeWithTag("child").assertTextEquals("child")
+        assertSame(manager, receivedManager)
     }
 
     @Test
-    fun `FeatureFlag shows content when flag is enabled`() = runComposeUiTest {
+    fun `FeatureFlag shows content when flag is enabled`() {
         val manager = mockk<FlagentManager>()
         coEvery {
             manager.evaluate(
@@ -45,7 +47,7 @@ class FeatureFlagTest {
             )
         } returns EvalResult(flagKey = "test_flag", variantKey = "control")
 
-        setContent {
+        rule.setContent {
             FeatureFlag(
                 key = "test_flag",
                 manager = manager,
@@ -54,12 +56,12 @@ class FeatureFlagTest {
             )
         }
 
-        waitForIdle()
-        onNodeWithTag("content").assertTextEquals("Enabled")
+        rule.waitForIdle()
+        rule.onNodeWithTag("content").assertTextEquals("Enabled")
     }
 
     @Test
-    fun `FeatureFlag shows fallback when flag is disabled`() = runComposeUiTest {
+    fun `FeatureFlag shows fallback when flag is disabled`() {
         val manager = mockk<FlagentManager>()
         coEvery {
             manager.evaluate(
@@ -70,7 +72,7 @@ class FeatureFlagTest {
             )
         } returns EvalResult(flagKey = "test_flag", variantKey = "disabled")
 
-        setContent {
+        rule.setContent {
             FeatureFlag(
                 key = "test_flag",
                 manager = manager,
@@ -79,12 +81,12 @@ class FeatureFlagTest {
             )
         }
 
-        waitForIdle()
-        onNodeWithTag("fallback").assertTextEquals("Disabled")
+        rule.waitForIdle()
+        rule.onNodeWithTag("fallback").assertTextEquals("Disabled")
     }
 
     @Test
-    fun `FeatureFlag shows fallback on evaluation exception`() = runComposeUiTest {
+    fun `FeatureFlag shows fallback on evaluation exception`() {
         val manager = mockk<FlagentManager>()
         coEvery {
             manager.evaluate(
@@ -95,7 +97,7 @@ class FeatureFlagTest {
             )
         } throws RuntimeException("network error")
 
-        setContent {
+        rule.setContent {
             FeatureFlag(
                 key = "test_flag",
                 manager = manager,
@@ -104,12 +106,12 @@ class FeatureFlagTest {
             )
         }
 
-        waitForIdle()
-        onNodeWithTag("fallback").assertTextEquals("Disabled")
+        rule.waitForIdle()
+        rule.onNodeWithTag("fallback").assertTextEquals("Disabled")
     }
 
     @Test
-    fun `FeatureFlag shows content when variantKey is not disabled`() = runComposeUiTest {
+    fun `FeatureFlag shows content when variantKey is not disabled`() {
         val manager = mockk<FlagentManager>()
         coEvery {
             manager.evaluate(
@@ -120,7 +122,7 @@ class FeatureFlagTest {
             )
         } returns EvalResult(flagKey = "test_flag", variantKey = "variant_a")
 
-        setContent {
+        rule.setContent {
             FeatureFlag(
                 key = "test_flag",
                 manager = manager,
@@ -129,7 +131,7 @@ class FeatureFlagTest {
             )
         }
 
-        waitForIdle()
-        onNodeWithTag("content").assertTextEquals("Enabled")
+        rule.waitForIdle()
+        rule.onNodeWithTag("content").assertTextEquals("Enabled")
     }
 }

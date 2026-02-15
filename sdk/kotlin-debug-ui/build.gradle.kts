@@ -1,10 +1,11 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.api.tasks.compile.JavaCompile
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.android.library)
     `maven-publish`
 }
 
@@ -13,59 +14,78 @@ group = "com.flagent"
 repositories {
     mavenCentral()
     google()
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
-dependencies {
-    implementation(project(":flagent-design-tokens"))
-    if (findProject(":kotlin-client") != null) {
-        implementation(project(":kotlin-client"))
-    } else {
-        implementation("com.flagent:kotlin-client:0.1.6")
-    }
-    if (findProject(":kotlin-enhanced") != null) {
-        implementation(project(":kotlin-enhanced"))
-    } else {
-        implementation("com.flagent:kotlin-enhanced:0.1.6")
-    }
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.serialization.json)
-    val composeBom = platform(libs.compose.bom)
-    implementation(composeBom)
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.material3)
-    implementation("androidx.compose.animation:animation")
+android {
+    compileSdk = 35
+    namespace = "com.flagent.debug.ui"
+}
 
-    testImplementation(libs.kotlin.test.junit5)
-    testImplementation(libs.mockk)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(composeBom)
-    testImplementation("androidx.compose.ui:ui-test-junit4")
+kotlin {
+    jvm()
+    jvmToolchain(21)
+    androidTarget()
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":kotlin-client"))
+                implementation(project(":kotlin-enhanced"))
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.serialization.json)
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.animation)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val jvmMain by getting { }
+        val jvmTest by getting {
+            dependencies {
+                implementation(libs.mockk)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(compose.desktop.uiTestJUnit4)
+                implementation(compose.desktop.currentOs)
+            }
+        }
+        val androidMain by getting { }
+        val iosMain by creating {
+            dependsOn(commonMain)
+        }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
+    }
 }
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
-        freeCompilerArgs.add("-opt-in=androidx.compose.ui.test.ExperimentalTestApi")
+        if (name.contains("Jvm", ignoreCase = true)) {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
 }
 
-tasks.withType<JavaCompile> {
-    sourceCompatibility = "21"
-    targetCompatibility = "21"
+tasks.named<Test>("jvmTest") {
+    useJUnit()
 }
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            
+        withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
             pom {
                 name.set("Flagent Kotlin Debug UI")
                 description.set("Debug UI library for Flagent Enhanced SDK using Compose Multiplatform")
                 url.set("https://github.com/MaxLuxs/Flagent")
-                
                 licenses {
                     license {
                         name.set("Apache-2.0")

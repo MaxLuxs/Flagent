@@ -2,10 +2,10 @@ package com.flagent.debug.ui
 
 import com.flagent.client.models.EvalDebugLog
 import com.flagent.client.models.EvalResult
-import com.flagent.enhanced.manager.OfflineFlagentManager
+import com.flagent.enhanced.manager.IOfflineFlagentManager
 import com.flagent.enhanced.model.LocalVariant
 
-internal class OfflineFlagentManagerAdapter(private val offline: OfflineFlagentManager) : DebugEvaluateManager {
+internal class OfflineFlagentManagerAdapter(private val offline: IOfflineFlagentManager) : DebugEvaluateManager {
 
     override suspend fun evaluate(
         flagKey: String?,
@@ -43,7 +43,7 @@ internal class OfflineFlagentManagerAdapter(private val offline: OfflineFlagentM
     }
 }
 
-internal fun OfflineFlagentManager.getFlagsListAsFlagRows(): List<FlagRow> =
+internal fun IOfflineFlagentManager.getFlagsListAsFlagRows(): List<FlagRow> =
     getFlagsList().map { f ->
         FlagRow(
             key = f.key,
