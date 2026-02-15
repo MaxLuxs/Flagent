@@ -17,6 +17,7 @@
   * [Versioning](guides/versioning.md)
   * [Compatibility](guides/compatibility.md)
   * [FAQ](guides/faq.md)
+  * [Pricing and editions](guides/pricing-and-editions.md)
   * [Use Cases](guides/use-cases.md)
   * [GitOps](guides/gitops.md)
   * [Preview Environments](guides/preview-environments.md)

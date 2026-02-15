@@ -23,42 +23,47 @@ private data class FeatureRow(
 )
 
 private val FEATURE_COMPARISON = listOf(
-    // Core feature management
+    // Flags and experiments
     listOf(
         FeatureRow("Feature flags", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("A/B testing & experiments", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Gradual rollouts & kill switches", PlanAvailability("Yes", "Yes", "Yes")),
-        FeatureRow("Multi-environment (dev, staging, prod)", PlanAvailability("Yes", "Yes", "Yes")),
-        FeatureRow("Targeting rules & segments", PlanAvailability("Yes", "Yes", "Yes")),
+        FeatureRow("Multi-environment, targeting, segments", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Client-side evaluation (offline-first)", PlanAvailability("Yes", "Yes", "Yes")),
-        FeatureRow("Official SDKs (Kotlin, JS, Swift, Python, Go)", PlanAvailability("Yes", "Yes", "Yes")),
+        FeatureRow("Official SDKs (Kotlin, JS, Swift, Python, Go, Java)", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Ktor plugin & REST API", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Admin UI & Debug Console", PlanAvailability("Yes", "Yes", "Yes")),
     ),
-    // Governance and security
+    // Analytics
     listOf(
-        FeatureRow("Basic auth (JWT)", PlanAvailability("Yes", "Yes", "Yes")),
-        FeatureRow("Role-based access control (RBAC)", PlanAvailability("Basic", "Basic", "Custom roles")),
-        FeatureRow("Single sign-on (SSO)", PlanAvailability("No", "No", "SAML, OIDC")),
-        FeatureRow("Audit log", PlanAvailability("Basic", "Basic", "Advanced (2 years)")),
-    ),
-    // Observability and analytics
-    listOf(
-        FeatureRow("Analytics & impression data", PlanAvailability("Yes", "Yes", "Yes")),
-        FeatureRow("Advanced analytics & insights", PlanAvailability("No", "Yes", "Yes")),
+        FeatureRow("Analytics events (first_open, session_start, custom)", PlanAvailability("Yes", "Yes", "Yes")),
+        FeatureRow("Evaluation counts & core metrics", PlanAvailability("Yes", "Yes", "Yes")),
+        FeatureRow("Advanced analytics & insights (per-flag/variant)", PlanAvailability("No", "Yes", "Yes")),
         FeatureRow("Data recorders (Kafka, Kinesis, PubSub)", PlanAvailability("Yes", "Yes", "Yes")),
+    ),
+    // Crash analytics
+    listOf(
+        FeatureRow("Crash reporting (ingestion, list, stack traces)", PlanAvailability("Yes", "Yes", "Yes")),
+        FeatureRow("Crash rate by flag & anomaly integration", PlanAvailability("No", "No", "Yes")),
+    ),
+    // Automation and reliability
+    listOf(
         FeatureRow("Anomaly detection & alerts", PlanAvailability("No", "No", "Yes")),
         FeatureRow("Smart rollout (auto-rollback)", PlanAvailability("No", "No", "Yes")),
-        FeatureRow("Crash reporting (SDK aggregation)", PlanAvailability("No", "No", "Yes")),
     ),
     // Integrations and hosting
     listOf(
-        FeatureRow("Export / Import", PlanAvailability("Yes", "Yes", "Yes")),
-        FeatureRow("Webhooks", PlanAvailability("Yes", "Yes", "Yes")),
+        FeatureRow("Export / Import, Webhooks, Realtime (SSE), MCP", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Self-hosted deployment", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Managed cloud hosting", PlanAvailability("No", "Yes", "Yes")),
-        FeatureRow("On-premise deployment", PlanAvailability("No", "No", "Yes")),
-        FeatureRow("Multi-tenancy", PlanAvailability("No", "No", "Yes")),
+        FeatureRow("On-premise, multi-tenancy", PlanAvailability("No", "No", "Yes")),
+    ),
+    // Security and control
+    listOf(
+        FeatureRow("Basic auth (JWT)", PlanAvailability("Yes", "Yes", "Yes")),
+        FeatureRow("RBAC", PlanAvailability("Basic", "Basic", "Custom roles")),
+        FeatureRow("SSO (SAML, OIDC)", PlanAvailability("No", "No", "Yes")),
+        FeatureRow("Audit log", PlanAvailability("Basic", "Basic", "Advanced")),
     ),
     // Support
     listOf(
@@ -70,10 +75,12 @@ private val FEATURE_COMPARISON = listOf(
 )
 
 private val CATEGORY_TITLES = listOf(
-    "Core feature management",
-    "Governance and security",
-    "Observability and analytics",
+    "Flags and experiments",
+    "Analytics",
+    "Crash analytics",
+    "Automation and reliability",
     "Integrations and hosting",
+    "Security and control",
     "Support",
 )
 
@@ -134,7 +141,133 @@ fun PricingPage() {
                 }) {
                     Text("Flagent offers flexible pricing for teams of all sizes. Start free, scale as you grow.")
                 }
+                P(attrs = {
+                    style {
+                        fontSize(14.px)
+                        color(Color("rgba(255,255,255,0.55)"))
+                        lineHeight("1.5")
+                        maxWidth(640.px)
+                        property("margin", "16px auto 0")
+                    }
+                }) {
+                    Text("Flagent is in active development. Self-hosted is available today. Flagent Cloud (SaaS) is planned but not yet launched; SaaS prices below are indicative and may change.")
+                }
             }
+            // Open Source Self-Hosted
+            H2(attrs = {
+                style {
+                    fontSize(20.px)
+                    fontWeight(600)
+                    color(Color.white)
+                    marginTop(32.px)
+                    marginBottom(16.px)
+                }
+            }) { Text("Open Source Self-Hosted") }
+            Div(attrs = {
+                classes("pricing-grid")
+                style {
+                    display(DisplayStyle.Grid)
+                    property("grid-template-columns", "repeat(auto-fit, minmax(280px, 1fr))")
+                    gap(24.px)
+                    marginBottom(48.px)
+                }
+            }) {
+                PricingCard(
+                    name = "Open Source",
+                    price = "Free",
+                    description = "Use today. Self-hosted, full-featured. No limits on flags or experiments.",
+                    features = listOf(
+                        "Unlimited flags & experiments",
+                        "Analytics, crash reporting, A/B testing",
+                        "Official SDKs (Kotlin, JS, Swift, Python, Go, Java)",
+                        "Community support"
+                    ),
+                    ctaLabel = "Get Started",
+                    highlighted = false,
+                    badge = null,
+                    onCta = { Router.navigateTo(Route.Dashboard) }
+                )
+            }
+            // Flagent Cloud (SaaS) — Coming soon
+            H2(attrs = {
+                style {
+                    fontSize(20.px)
+                    fontWeight(600)
+                    color(Color.white)
+                    marginTop(24.px)
+                    marginBottom(8.px)
+                }
+            }) { Text("Flagent Cloud (SaaS)") }
+            P(attrs = {
+                style {
+                    fontSize(14.px)
+                    color(Color("rgba(255,255,255,0.6)"))
+                    marginBottom(16.px)
+                }
+            }) { Text("Planned — not yet available. Prices subject to change.") }
+            Div(attrs = {
+                classes("pricing-grid")
+                style {
+                    display(DisplayStyle.Grid)
+                    property("grid-template-columns", "repeat(auto-fit, minmax(260px, 1fr))")
+                    gap(24.px)
+                    marginBottom(48.px)
+                }
+            }) {
+                PricingCard(
+                    name = "Starter",
+                    price = "Free",
+                    description = "Planned free tier for small teams (e.g. 100k evals/month).",
+                    features = listOf(
+                        "Everything in Open Source",
+                        "Managed hosting (planned)",
+                        "Community support"
+                    ),
+                    ctaLabel = "Star on GitHub",
+                    highlighted = false,
+                    badge = "Planned",
+                    onCta = { Router.navigateTo(Route.Home) }
+                )
+                PricingCard(
+                    name = "Pro",
+                    price = "\$49–99/mo",
+                    description = "Planned: higher limits, SLA, priority support.",
+                    features = listOf(
+                        "Everything in Starter",
+                        "Advanced analytics (planned)",
+                        "99.9% uptime SLA",
+                        "Priority support"
+                    ),
+                    ctaLabel = "Star on GitHub",
+                    highlighted = true,
+                    badge = "Planned",
+                    onCta = { Router.navigateTo(Route.Home) }
+                )
+                PricingCard(
+                    name = "Team",
+                    price = "From \$199",
+                    description = "Planned: multi-tenant, higher limits.",
+                    features = listOf(
+                        "Everything in Pro",
+                        "Multi-tenancy (planned)",
+                        "Extended limits"
+                    ),
+                    ctaLabel = "Star on GitHub",
+                    highlighted = false,
+                    badge = "Planned",
+                    onCta = { Router.navigateTo(Route.Home) }
+                )
+            }
+            // Enterprise
+            H2(attrs = {
+                style {
+                    fontSize(20.px)
+                    fontWeight(600)
+                    color(Color.white)
+                    marginTop(24.px)
+                    marginBottom(16.px)
+                }
+            }) { Text("Enterprise") }
             Div(attrs = {
                 classes("pricing-grid")
                 style {
@@ -145,47 +278,19 @@ fun PricingPage() {
                 }
             }) {
                 PricingCard(
-                    name = "Open Source",
-                    price = "Free",
-                    description = "Self-hosted, full-featured. Perfect for small teams.",
-                    features = listOf(
-                        "Unlimited flags & experiments",
-                        "Kotlin Multiplatform SDK",
-                        "A/B testing & analytics",
-                        "Community support"
-                    ),
-                    ctaLabel = "Get Started",
-                    highlighted = false,
-                    onCta = { Router.navigateTo(Route.Dashboard) }
-                )
-                PricingCard(
-                    name = "Pro",
-                    price = "Contact us",
-                    description = "Managed hosting, SLA, and priority support.",
-                    features = listOf(
-                        "Everything in Open Source",
-                        "Managed cloud hosting",
-                        "99.9% uptime SLA",
-                        "Priority support",
-                        "Advanced analytics"
-                    ),
-                    ctaLabel = "Contact Sales",
-                    highlighted = true,
-                    onCta = { Router.navigateTo(Route.Home) }
-                )
-                PricingCard(
                     name = "Enterprise",
                     price = "Custom",
-                    description = "Dedicated infrastructure, SSO, and custom integrations.",
+                    description = "Dedicated infrastructure, custom development, SLA, on-premise, training.",
                     features = listOf(
-                        "Everything in Pro",
+                        "Everything in Pro / Team",
                         "SSO (SAML, OIDC)",
-                        "Multi-tenancy & RBAC",
+                        "Multi-tenancy & custom RBAC",
                         "On-premise deployment",
                         "Dedicated support"
                     ),
                     ctaLabel = "Contact Sales",
                     highlighted = false,
+                    badge = null,
                     onCta = { Router.navigateTo(Route.Home) }
                 )
             }
@@ -255,7 +360,7 @@ private fun FeatureComparisonTable() {
             }) {
                 Div(attrs = { style { padding(14.px, 16.px); color(Color("rgba(255,255,255,0.7)")); fontWeight(500) } }) { Text("Capability") }
                 Div(attrs = { style { padding(14.px, 16.px); textAlign("center"); color(Color.white); fontWeight(600) } }) { Text("Open Source") }
-                Div(attrs = { style { padding(14.px, 16.px); textAlign("center"); color(FlagentTheme.PrimaryLight); fontWeight(600) } }) { Text("Pro") }
+                Div(attrs = { style { padding(14.px, 16.px); textAlign("center"); color(FlagentTheme.PrimaryLight); fontWeight(600) } }) { Text("SaaS (Planned)") }
                 Div(attrs = { style { padding(14.px, 16.px); textAlign("center"); color(Color.white); fontWeight(600) } }) { Text("Enterprise") }
             }
             FEATURE_COMPARISON.forEachIndexed { catIndex, categoryRows ->
@@ -337,6 +442,7 @@ private fun PricingCard(
     features: List<String>,
     ctaLabel: String,
     highlighted: Boolean,
+    badge: String? = null,
     onCta: () -> Unit
 ) {
     Div(attrs = {
@@ -366,14 +472,35 @@ private fun PricingCard(
             el.style.setProperty("box-shadow", if (highlighted) "0 8px 32px rgba(14, 165, 233, 0.15)" else "0 4px 24px rgba(0,0,0,0.15)")
         }
     }) {
-        H3(attrs = {
+        Div(attrs = {
             style {
-                margin(0.px, 0.px, 8.px, 0.px)
-                fontSize(20.px)
-                fontWeight(600)
-                color(Color.white)
+                display(DisplayStyle.Flex)
+                alignItems(AlignItems.Center)
+                gap(8.px)
+                marginBottom(8.px)
             }
-        }) { Text(name) }
+        }) {
+            H3(attrs = {
+                style {
+                    margin(0.px)
+                    fontSize(20.px)
+                    fontWeight(600)
+                    color(Color.white)
+                }
+            }) { Text(name) }
+            badge?.let { b ->
+                Span(attrs = {
+                    style {
+                        fontSize(11.px)
+                        padding(4.px, 8.px)
+                        backgroundColor(Color("rgba(255,255,255,0.15)"))
+                        borderRadius(6.px)
+                        color(Color("rgba(255,255,255,0.85)"))
+                        fontWeight(500)
+                    }
+                }) { Text(b) }
+            }
+        }
         Div(attrs = {
             style {
                 marginBottom(16.px)

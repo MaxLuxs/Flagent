@@ -40,6 +40,7 @@
     <a href="#-key-features">Features</a> •
     <a href="#-sdks">SDKs</a> •
     <a href="#-use-cases">Use Cases</a> •
+    <a href="docs/guides/pricing-and-editions.md">Pricing & editions</a> •
     <a href="docs/guides/roadmap.md">Roadmap</a>
   </p>
 </div>
@@ -47,6 +48,8 @@
 ---
 
 **Flagent** is a modern, production-ready feature flag and experimentation platform built with **Kotlin/Ktor**. The first Kotlin-native solution in the feature flags ecosystem, combining type-safety, coroutines, and clean architecture for high-performance feature management. Enterprise build adds multi-tenancy, SSO, RBAC, Smart Rollout and anomaly detection.
+
+**Project status:** Flagent is in **active development**; we ship updates regularly. **Flagent Cloud (SaaS)** is planned but not yet launched. We welcome [sponsors](https://github.com/sponsors/MaxLuxs) and community support — see [Roadmap](docs/guides/roadmap.md).
 
 ## 🎯 Why Flagent?
 
@@ -422,7 +425,7 @@ Need help deploying Flagent in production? Want custom features or SLA guarantee
 - 🏢 **Professional Services** - Architecture review, deployment assistance, custom integrations
 - 🎓 **Training & Workshops** - Team training on feature flag best practices
 - 🔒 **Priority Support** - Faster response times and dedicated Slack channel
-- 🚀 **Managed Hosting** (Coming Soon) - Fully managed SaaS solution
+- 🚀 **Managed Hosting** — Flagent Cloud (planned; not yet available)
 
 Contact: **max.developer.luxs@gmail.com**
 

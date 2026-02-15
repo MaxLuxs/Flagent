@@ -45,11 +45,11 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
         }) {
             PlanCard(
                 themeMode = themeMode,
-                name = "Free",
-                price = "$0/month",
+                name = "Starter",
+                price = "Free",
                 features = listOf(
-                    "Up to 10 flags",
-                    "Basic evaluation",
+                    "Unlimited flags & experiments",
+                    "Client-side evaluation",
                     "Community support"
                 ),
                 isCurrent = true,
@@ -61,9 +61,9 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
                 name = "Pro",
                 price = "$49/month",
                 features = listOf(
-                    "Unlimited flags",
-                    "Advanced features",
-                    "Smart rollout",
+                    "Everything in Starter",
+                    "Managed hosting & SLA",
+                    "Advanced analytics",
                     "Priority support"
                 ),
                 isCurrent = false,
@@ -80,8 +80,8 @@ fun SubscriptionStatus(viewModel: BillingViewModel) {
                 price = "Custom",
                 features = listOf(
                     "Everything in Pro",
-                    "Multi-tenancy",
-                    "SSO/SAML",
+                    "SSO (SAML, OIDC)",
+                    "Multi-tenancy & custom RBAC",
                     "Dedicated support"
                 ),
                 isCurrent = false,
