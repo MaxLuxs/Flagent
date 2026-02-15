@@ -1,18 +1,18 @@
 package flagent.route
 
 import flagent.service.FlagService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.sse.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
+import io.ktor.server.sse.sse
 import io.ktor.sse.ServerSentEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
@@ -33,8 +33,9 @@ fun Route.realtimeRoutes(
         sse("/sse") {
             // Query parameters for filtering
             val flagKeys = call.request.queryParameters.getAll("flagKey")
-            val flagIDs = call.request.queryParameters.getAll("flagID")?.mapNotNull { it.toLongOrNull() }
-            
+            val flagIDs = call.request.queryParameters.getAll("flagID")
+                ?.mapNotNull { it.toLongOrNull() }
+
             // Send initial connection event
             send(
                 ServerSentEvent(
@@ -47,7 +48,7 @@ fun Route.realtimeRoutes(
                     event = "connected"
                 )
             )
-            
+
             // Subscribe to flag update events
             eventBus.subscribe().collect { event ->
                 // Filter events if specific flags are requested
@@ -56,13 +57,13 @@ fun Route.realtimeRoutes(
                         return@collect
                     }
                 }
-                
+
                 if (flagIDs != null && event.flagID != null) {
                     if (!flagIDs.contains(event.flagID)) {
                         return@collect
                     }
                 }
-                
+
                 // Send event to client
                 send(
                     ServerSentEvent(
@@ -73,7 +74,7 @@ fun Route.realtimeRoutes(
                 )
             }
         }
-        
+
         // Health check endpoint for SSE (use homogeneous map for JSON serialization)
         get("/sse/health") {
             call.respond(
@@ -100,28 +101,28 @@ class RealtimeEventBus {
         extraBufferCapacity = 100,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    
+
     val events = _events.asSharedFlow()
-    
+
     private var activeConnections = 0
-    
+
     /**
      * Publish an event to all subscribers.
      */
     suspend fun publish(event: RealtimeEvent) {
         _events.emit(event)
     }
-    
+
     /**
      * Subscribe to events.
      */
     fun subscribe() = events
-    
+
     /**
      * Get active connection count.
      */
     fun getActiveConnectionCount(): Int = _events.subscriptionCount.value
-    
+
     /**
      * Publish flag created event.
      */
@@ -135,7 +136,7 @@ class RealtimeEventBus {
             )
         )
     }
-    
+
     /**
      * Publish flag updated event.
      */
@@ -149,7 +150,7 @@ class RealtimeEventBus {
             )
         )
     }
-    
+
     /**
      * Publish flag deleted event.
      */
@@ -163,7 +164,7 @@ class RealtimeEventBus {
             )
         )
     }
-    
+
     /**
      * Publish flag enabled/disabled event.
      */
@@ -178,7 +179,7 @@ class RealtimeEventBus {
             )
         )
     }
-    
+
     /**
      * Publish segment updated event.
      */
@@ -193,7 +194,7 @@ class RealtimeEventBus {
             )
         )
     }
-    
+
     /**
      * Publish variant updated event.
      */

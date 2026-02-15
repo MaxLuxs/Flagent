@@ -2,12 +2,16 @@ package flagent.route
 
 import flagent.domain.entity.User
 import flagent.service.UserService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.auth.authenticate
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.put
+import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 
@@ -24,7 +28,11 @@ data class AdminUserResponse(
 )
 
 @Serializable
-data class CreateAdminUserRequest(val email: String = "", val password: String = "", val name: String? = null)
+data class CreateAdminUserRequest(
+    val email: String = "",
+    val password: String = "",
+    val name: String? = null
+)
 
 @Serializable
 data class UpdateAdminUserRequest(val name: String? = null, val password: String? = null)
@@ -56,20 +64,29 @@ fun Routing.configureAdminUserRoutes(userService: UserService) {
                 }
                 post {
                     val req = runCatching { call.receive<CreateAdminUserRequest>() }.getOrElse {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid request body"))
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Invalid request body")
+                        )
                         return@post
                     }
                     val email = req.email.trim()
                     val password = req.password
                     if (email.isBlank() || password.isBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Email and password are required"))
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Email and password are required")
+                        )
                         return@post
                     }
                     try {
                         val user = userService.create(email, password, req.name)
                         call.respond(HttpStatusCode.Created, user.toResponse())
                     } catch (e: IllegalArgumentException) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Bad request")))
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to (e.message ?: "Bad request"))
+                        )
                     }
                 }
                 get("/{id}") {
@@ -92,7 +109,10 @@ fun Routing.configureAdminUserRoutes(userService: UserService) {
                         return@put
                     }
                     val req = runCatching { call.receive<UpdateAdminUserRequest>() }.getOrElse {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid request body"))
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Invalid request body")
+                        )
                         return@put
                     }
                     try {

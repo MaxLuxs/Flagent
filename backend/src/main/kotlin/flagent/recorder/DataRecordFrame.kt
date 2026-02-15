@@ -1,9 +1,6 @@
 package flagent.recorder
 
-import flagent.config.AppConfig
 import flagent.service.EvalResult
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -32,25 +29,25 @@ class DataRecordFrame(
         const val FRAME_OUTPUT_MODE_PAYLOAD_RAW_JSON = "payload_raw_json"
         const val FRAME_OUTPUT_MODE_PAYLOAD_STRING = "payload_string"
     }
-    
+
     /**
      * Get partition key from entityID
      */
     fun getPartitionKey(): String {
         return evalResult.evalContext.entityID ?: ""
     }
-    
+
     /**
      * Output JSON marshaled bytes
      */
     fun output(): ByteArray {
-        val json = Json { 
+        val json = Json {
             ignoreUnknownKeys = true
             encodeDefaults = true
         }
         val payloadJson = json.encodeToJsonElement(EvalResult.serializer(), evalResult)
         val payloadString = json.encodeToString(EvalResult.serializer(), evalResult)
-        
+
         return when (options.frameOutputMode) {
             FRAME_OUTPUT_MODE_PAYLOAD_RAW_JSON -> {
                 val rawPayload = buildJsonObject {
@@ -58,13 +55,14 @@ class DataRecordFrame(
                 }
                 json.encodeToString(JsonObject.serializer(), rawPayload).toByteArray()
             }
+
             else -> {
                 val encryptedPayload = if (options.encrypted && options.encryptionKey != null) {
                     encrypt(payloadString, options.encryptionKey)
                 } else {
                     payloadString
                 }
-                
+
                 val stringPayload = buildJsonObject {
                     put("payload", encryptedPayload)
                     put("encrypted", options.encrypted && options.encryptionKey != null)
@@ -73,7 +71,7 @@ class DataRecordFrame(
             }
         }
     }
-    
+
     private fun encrypt(data: String, key: String): String {
         // Simple encryption using AES (similar to simplebox in Go)
         // For production, consider using a more secure encryption library

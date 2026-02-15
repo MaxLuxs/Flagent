@@ -10,9 +10,11 @@ import flagent.integration.firebase.FirebaseAnalyticsReporter
 import flagent.recorder.DataRecordingService
 import flagent.recorder.EvaluationEventRecorder
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import mu.KotlinLogging
-import java.util.*
+import java.util.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -124,7 +126,8 @@ class EvaluationService(
             )
         }
 
-        val finalEntityID = entityID?.takeIf { it.isNotBlank() } ?: "randomly_generated_${random.nextInt()}"
+        val finalEntityID =
+            entityID?.takeIf { it.isNotBlank() } ?: "randomly_generated_${random.nextInt()}"
         val finalEntityType = entityType ?: flag.entityType ?: ""
 
         val context = EvaluationContext(
@@ -153,11 +156,13 @@ class EvaluationService(
                     SegmentDebugLog(segmentID = log.segmentID, message = log.message)
                 } else emptyList()
             )
+
             enableDebug -> EvalDebugLog(
                 segmentDebugLogs = useCaseResult.debugLogs.map { log ->
                     SegmentDebugLog(segmentID = log.segmentID, message = log.message)
                 }
             )
+
             else -> null
         }
 

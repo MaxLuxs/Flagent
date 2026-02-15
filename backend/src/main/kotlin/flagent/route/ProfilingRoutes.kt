@@ -1,16 +1,20 @@
 package flagent.route
 
+import com.sun.management.HotSpotDiagnosticMXBean
 import flagent.config.AppConfig
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import mu.KotlinLogging
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.text.SimpleDateFormat
-import java.util.*
-import com.sun.management.HotSpotDiagnosticMXBean
+import java.util.Date
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,7 +28,7 @@ fun Routing.configureProfilingRoutes() {
     if (!AppConfig.pprofEnabled) {
         return
     }
-    
+
     route("/debug/pprof") {
         // Heap dump endpoint
         get("/heap") {
@@ -38,11 +42,14 @@ fun Routing.configureProfilingRoutes() {
                         "com.sun.management:type=HotSpotDiagnostic",
                         HotSpotDiagnosticMXBean::class.java
                     )
-                    
+
                     proxy.dumpHeap(tempFile.absolutePath, false)
-                    
+
                     val heapDumpBytes = tempFile.readBytes()
-                    call.response.headers.append("Content-Disposition", "attachment; filename=heap_dump.hprof")
+                    call.response.headers.append(
+                        "Content-Disposition",
+                        "attachment; filename=heap_dump.hprof"
+                    )
                     call.respondBytes(
                         bytes = heapDumpBytes,
                         contentType = ContentType.Application.OctetStream
@@ -60,13 +67,13 @@ fun Routing.configureProfilingRoutes() {
                 )
             }
         }
-        
+
         // Thread dump endpoint
         get("/thread") {
             try {
                 val threadMXBean = ManagementFactory.getThreadMXBean()
                 val threadInfos = threadMXBean.dumpAllThreads(true, true)
-                
+
                 val threadDump = buildString {
                     appendLine("Thread Dump - ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())}")
                     appendLine("=".repeat(80))
@@ -92,7 +99,7 @@ fun Routing.configureProfilingRoutes() {
                         appendLine()
                     }
                 }
-                
+
                 call.response.headers.append("Content-Type", "text/plain")
                 call.respondText(threadDump, ContentType.Text.Plain)
             } catch (e: Exception) {
@@ -103,7 +110,7 @@ fun Routing.configureProfilingRoutes() {
                 )
             }
         }
-        
+
         // CPU profile endpoint (simplified - returns thread dump as CPU profile analog)
         get("/profile") {
             try {
@@ -112,9 +119,15 @@ fun Routing.configureProfilingRoutes() {
                 // Full CPU profiling would require JFR integration or external tools
                 val threadMXBean = ManagementFactory.getThreadMXBean()
                 val threadInfos = threadMXBean.dumpAllThreads(true, true)
-                
+
                 val profile = buildString {
-                    appendLine("CPU Profile (Thread Dump) - ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())}")
+                    appendLine(
+                        "CPU Profile (Thread Dump) - ${
+                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(
+                                Date()
+                            )
+                        }"
+                    )
                     appendLine("=".repeat(80))
                     appendLine("Note: Full CPU profiling requires Java Flight Recorder (JFR) or external tools")
                     appendLine()
@@ -127,7 +140,7 @@ fun Routing.configureProfilingRoutes() {
                         appendLine()
                     }
                 }
-                
+
                 call.response.headers.append("Content-Type", "text/plain")
                 call.respondText(profile, ContentType.Text.Plain)
             } catch (e: Exception) {

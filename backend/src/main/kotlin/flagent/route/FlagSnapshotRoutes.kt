@@ -1,12 +1,14 @@
 package flagent.route
 
 import flagent.api.constants.ApiConstants
-import flagent.api.model.*
+import flagent.api.model.FlagResponse
+import flagent.api.model.FlagSnapshotResponse
 import flagent.service.FlagSnapshotService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import kotlinx.serialization.json.Json
 
 /**
@@ -14,27 +16,31 @@ import kotlinx.serialization.json.Json
  */
 fun Routing.configureFlagSnapshotRoutes(flagSnapshotService: FlagSnapshotService) {
     route(ApiConstants.API_BASE_PATH) {
-            route("/flags/{flagId}/snapshots") {
-                get {
-                    val flagId = call.parameters["flagId"]?.toIntOrNull()
-                        ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid flag ID")
-                    
-                    val limit = call.request.queryParameters["limit"]?.toIntOrNull()
-                    val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
-                    val sort = call.request.queryParameters["sort"]
-                    
-                    try {
-                        val snapshots = flagSnapshotService.findSnapshotsByFlagId(flagId, limit, offset, sort)
-                        val response = snapshots.map { mapFlagSnapshotToResponse(it) }
-                        call.respond(response)
-                    } catch (e: IllegalArgumentException) {
-                        call.respond(HttpStatusCode.NotFound, e.message ?: "Flag not found")
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.InternalServerError, e.message ?: "Internal server error")
-                    }
+        route("/flags/{flagId}/snapshots") {
+            get {
+                val flagId = call.parameters["flagId"]?.toIntOrNull()
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid flag ID")
+
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull()
+                val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
+                val sort = call.request.queryParameters["sort"]
+
+                try {
+                    val snapshots =
+                        flagSnapshotService.findSnapshotsByFlagId(flagId, limit, offset, sort)
+                    val response = snapshots.map { mapFlagSnapshotToResponse(it) }
+                    call.respond(response)
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.NotFound, e.message ?: "Flag not found")
+                } catch (e: Exception) {
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        e.message ?: "Internal server error"
+                    )
                 }
             }
         }
+    }
 }
 
 private fun mapFlagSnapshotToResponse(snapshot: flagent.domain.entity.FlagSnapshot): FlagSnapshotResponse {
@@ -45,7 +51,7 @@ private fun mapFlagSnapshotToResponse(snapshot: flagent.domain.entity.FlagSnapsh
     } catch (e: Exception) {
         null
     }
-    
+
     // Map flag from JSON
     val flagResponse = flagJson?.let { jsonObj ->
         try {
@@ -59,7 +65,7 @@ private fun mapFlagSnapshotToResponse(snapshot: flagent.domain.entity.FlagSnapsh
             val notes = jsonObj["notes"]?.toString()
             val createdBy = jsonObj["createdBy"]?.toString()
             val updatedBy = jsonObj["updatedBy"]?.toString()
-            
+
             FlagResponse(
                 id = flagId,
                 key = key,
@@ -91,11 +97,12 @@ private fun mapFlagSnapshotToResponse(snapshot: flagent.domain.entity.FlagSnapsh
         snapshotID = 0,
         dataRecordsEnabled = false
     )
-    
+
     return FlagSnapshotResponse(
         id = snapshot.id,
         updatedBy = snapshot.updatedBy,
         flag = flagResponse,
-        updatedAt = snapshot.updatedAt ?: java.time.Instant.now().toString() // Fallback for backward compatibility
+        updatedAt = snapshot.updatedAt ?: java.time.Instant.now()
+            .toString() // Fallback for backward compatibility
     )
 }

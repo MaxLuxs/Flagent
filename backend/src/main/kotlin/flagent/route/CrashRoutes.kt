@@ -3,11 +3,13 @@ package flagent.route
 import flagent.api.constants.ApiConstants
 import flagent.domain.entity.CrashReport
 import flagent.service.CrashReportService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
 
@@ -70,10 +72,16 @@ fun Routing.configureCrashRoutes(crashReportService: CrashReportService) {
                 call.respond(HttpStatusCode.Created, toResponse(saved))
             } catch (e: kotlinx.serialization.SerializationException) {
                 logger.warn("POST /crashes invalid JSON: {}", e.message)
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid JSON: ${e.message}"))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("error" to "Invalid JSON: ${e.message}")
+                )
             } catch (e: Exception) {
                 logger.error("POST /crashes failed", e)
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to save crash report"))
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Failed to save crash report")
+                )
             }
         }
 
@@ -99,10 +107,16 @@ fun Routing.configureCrashRoutes(crashReportService: CrashReportService) {
                 call.respond(HttpStatusCode.Created, saved.map { toResponse(it) })
             } catch (e: kotlinx.serialization.SerializationException) {
                 logger.warn("POST /crashes/batch invalid JSON: {}", e.message)
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid JSON: ${e.message}"))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("error" to "Invalid JSON: ${e.message}")
+                )
             } catch (e: Exception) {
                 logger.error("POST /crashes/batch failed", e)
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to save crash reports"))
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Failed to save crash reports")
+                )
             }
         }
 
@@ -114,13 +128,18 @@ fun Routing.configureCrashRoutes(crashReportService: CrashReportService) {
                 val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
                 val items = crashReportService.list(null, startTime, endTime, limit, offset)
                 val total = crashReportService.count(null, startTime, endTime)
-                call.respond(HttpStatusCode.OK, CrashListResponse(
-                    items = items.map { toResponse(it) },
-                    total = total
-                ))
+                call.respond(
+                    HttpStatusCode.OK, CrashListResponse(
+                        items = items.map { toResponse(it) },
+                        total = total
+                    )
+                )
             } catch (e: Exception) {
                 logger.error("GET /crashes failed", e)
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to list crash reports"))
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Failed to list crash reports")
+                )
             }
         }
     }

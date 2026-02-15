@@ -3,26 +3,29 @@ package flagent.service
 import flagent.api.model.FlagResponse
 import flagent.domain.entity.Webhook
 import flagent.domain.entity.WebhookEvents
+import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.IWebhookRepository
 import flagent.route.mapper.ResponseMappers.mapFlagToResponse
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import java.util.Base64
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import java.util.Base64
 
 private val logger = KotlinLogging.logger {}
 
@@ -31,7 +34,7 @@ private val logger = KotlinLogging.logger {}
  */
 class WebhookService(
     private val webhookRepository: IWebhookRepository,
-    private val flagRepository: flagent.domain.repository.IFlagRepository? = null,
+    private val flagRepository: IFlagRepository? = null,
     private val tenantId: String? = null
 ) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -67,7 +70,10 @@ class WebhookService(
         scope.launch {
             val flag = flagRepository?.findById(flagId) ?: return@launch
             val data = mapFlagToResponse(flag)
-            dispatch(WebhookEvents.FLAG_CREATED, WebhookPayload(event = WebhookEvents.FLAG_CREATED, flagData = data))
+            dispatch(
+                WebhookEvents.FLAG_CREATED,
+                WebhookPayload(event = WebhookEvents.FLAG_CREATED, flagData = data)
+            )
         }
     }
 
@@ -78,7 +84,10 @@ class WebhookService(
         scope.launch {
             val flag = flagRepository?.findById(flagId) ?: return@launch
             val data = mapFlagToResponse(flag)
-            dispatch(WebhookEvents.FLAG_UPDATED, WebhookPayload(event = WebhookEvents.FLAG_UPDATED, flagData = data))
+            dispatch(
+                WebhookEvents.FLAG_UPDATED,
+                WebhookPayload(event = WebhookEvents.FLAG_UPDATED, flagData = data)
+            )
         }
     }
 
@@ -87,7 +96,10 @@ class WebhookService(
      */
     fun dispatchFlagDeleted(flagId: Int, flagKey: String) {
         val data = WebhookFlagDeletedData(flagId = flagId, flagKey = flagKey, deleted = true)
-        dispatch(WebhookEvents.FLAG_DELETED, WebhookPayload(event = WebhookEvents.FLAG_DELETED, flagDeletedData = data))
+        dispatch(
+            WebhookEvents.FLAG_DELETED,
+            WebhookPayload(event = WebhookEvents.FLAG_DELETED, flagDeletedData = data)
+        )
     }
 
     /**
@@ -102,7 +114,11 @@ class WebhookService(
         }
     }
 
-    private suspend fun dispatchToWebhook(webhook: Webhook, event: String, payload: WebhookPayload) {
+    private suspend fun dispatchToWebhook(
+        webhook: Webhook,
+        event: String,
+        payload: WebhookPayload
+    ) {
         val body = json.encodeToString(payload)
         val retryDelays = listOf(1000L, 5000L, 30000L)
         for ((attempt, delayMs) in retryDelays.withIndex()) {
@@ -138,8 +154,19 @@ data class WebhookPayload(
     val flagData: FlagResponse? = null,
     val flagDeletedData: WebhookFlagDeletedData? = null
 ) {
-    constructor(event: String, flagData: FlagResponse) : this(event, System.currentTimeMillis(), flagData, null)
-    constructor(event: String, flagDeletedData: WebhookFlagDeletedData) : this(event, System.currentTimeMillis(), null, flagDeletedData)
+    constructor(event: String, flagData: FlagResponse) : this(
+        event,
+        System.currentTimeMillis(),
+        flagData,
+        null
+    )
+
+    constructor(event: String, flagDeletedData: WebhookFlagDeletedData) : this(
+        event,
+        System.currentTimeMillis(),
+        null,
+        flagDeletedData
+    )
 }
 
 @Serializable

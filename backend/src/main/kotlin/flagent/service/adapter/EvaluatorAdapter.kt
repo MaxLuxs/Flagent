@@ -1,6 +1,9 @@
 package flagent.service.adapter
 
-import flagent.domain.entity.*
+import flagent.domain.entity.Constraint
+import flagent.domain.entity.Distribution
+import flagent.domain.entity.Flag
+import flagent.domain.entity.Segment
 import flagent.evaluator.FlagEvaluator
 import flagent.evaluator.FlagEvaluator.EvalContext
 
@@ -9,7 +12,7 @@ import flagent.evaluator.FlagEvaluator.EvalContext
  * This allows backend to use shared evaluation logic without code duplication
  */
 object EvaluatorAdapter {
-    
+
     /**
      * Convert domain Flag to EvaluableFlag
      */
@@ -21,7 +24,7 @@ object EvaluatorAdapter {
             segments = flag.segments.map { toEvaluableSegment(it) }
         )
     }
-    
+
     /**
      * Convert domain Segment to EvaluableSegment
      */
@@ -34,7 +37,7 @@ object EvaluatorAdapter {
             distributions = segment.distributions.map { toEvaluableDistribution(it) }
         )
     }
-    
+
     /**
      * Convert domain Constraint to EvaluableConstraint
      */
@@ -46,7 +49,7 @@ object EvaluatorAdapter {
             value = constraint.value
         )
     }
-    
+
     /**
      * Convert domain Distribution to EvaluableDistribution
      */
@@ -57,7 +60,7 @@ object EvaluatorAdapter {
             percent = distribution.percent
         )
     }
-    
+
     /**
      * Create EvalContext from parameters
      */

@@ -212,7 +212,10 @@ fun Application.module() {
                 configureImportRoutes(services.importService)
                 configureWebhookRoutes(services.webhookService)
                 configureIntegrationWebhookRoutes(services.flagService)
-                configureAdminUserRoutes(services.userService)
+                // Admin user management (/admin/users) only when JWT auth is enabled — otherwise no route, no exposure
+                if (AppConfig.jwtAuthEnabled) {
+                    configureAdminUserRoutes(services.userService)
+                }
 
                 if (!EnterprisePresence.enterpriseEnabled && services.coreMetricsService != null) {
                     configureCoreMetricsRoutes(services.coreMetricsService, services.flagService)

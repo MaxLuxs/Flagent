@@ -1,11 +1,11 @@
 package flagent.util
 
-import flagent.config.AppConfig
 import com.auth0.jwt.JWT
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.request.*
+import flagent.config.AppConfig
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.principal
+import io.ktor.server.request.header
 
 /**
  * Get subject (user) from request.
@@ -17,17 +17,17 @@ fun ApplicationCall.getSubject(): String {
     if (AppConfig.jwtAuthEnabled) {
         return getSubjectFromJWT() ?: ""
     }
-    
+
     // Try header auth
     if (AppConfig.headerAuthEnabled) {
         return request.header(AppConfig.headerAuthUserField) ?: ""
     }
-    
+
     // Try cookie auth
     if (AppConfig.cookieAuthEnabled) {
         return getSubjectFromCookie() ?: ""
     }
-    
+
     return ""
 }
 
@@ -39,7 +39,7 @@ private fun ApplicationCall.getSubjectFromJWT(): String? {
     if (principal == null) {
         return null // Token not found in context
     }
-    
+
     // Principal is only set if token is valid
     val claim = principal.payload.getClaim(AppConfig.jwtAuthUserClaim)?.asString()
     return claim
@@ -50,7 +50,7 @@ private fun ApplicationCall.getSubjectFromJWT(): String? {
  */
 private fun ApplicationCall.getSubjectFromCookie(): String? {
     val cookie = request.cookies[AppConfig.cookieAuthUserField] ?: return null
-    
+
     // If JWT claim is configured, parse JWT from cookie value
     if (AppConfig.cookieAuthUserFieldJWTClaim.isNotEmpty()) {
         // Skip verification - cookie already passed auth middleware
@@ -64,7 +64,7 @@ private fun ApplicationCall.getSubjectFromCookie(): String? {
             return null
         }
     }
-    
+
     // Otherwise, return cookie value directly
     return cookie
 }

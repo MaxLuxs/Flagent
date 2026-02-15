@@ -1,6 +1,6 @@
 package flagent.service
 
-import flagent.domain.entity.*
+import flagent.domain.entity.Flag
 import flagent.domain.repository.IFlagRepository
 import flagent.route.RealtimeEventBus
 import flagent.service.command.CreateFlagCommand
@@ -35,7 +35,7 @@ class FlagService(
             key
         }
     }
-    
+
     private fun generateSecureRandomKey(): String {
         // Generate cryptographically secure random key (util.NewSecureRandomKey())
         // Format: "k" + random chars from charset
@@ -45,14 +45,14 @@ class FlagService(
         val randomKey = (1..length).map { charset[random.nextInt(charset.length)] }.joinToString("")
         return "k$randomKey"
     }
-    
+
     private fun validateKey(key: String): String {
         // Validate key format - matches util.IsSafeKey()
         // Format: ^[\w\d-/\.\:]+$ (word chars, digits, dash, slash, dot, colon)
         // Max length: 63
         val keyRegex = Regex("^[\\w\\d-/\\.:]+$")
         val keyLengthLimit = 63
-        
+
         if (!keyRegex.matches(key)) {
             throw IllegalArgumentException("key:$key should have the format $keyRegex")
         }
@@ -61,7 +61,7 @@ class FlagService(
         }
         return key
     }
-    
+
     suspend fun findFlags(
         limit: Int? = null,
         offset: Int = 0,
@@ -111,11 +111,11 @@ class FlagService(
             projectId = projectId
         )
     }
-    
+
     suspend fun getFlag(id: Int): Flag? {
         return flagRepository.findById(id)
     }
-    
+
     suspend fun createFlag(command: CreateFlagCommand, updatedBy: String? = null): Flag {
         val key = createFlagKey(command.key)
         val dependsOn = command.dependsOn?.filter { it.isNotBlank() }?.distinct() ?: emptyList()
@@ -132,19 +132,20 @@ class FlagService(
             dependsOn = dependsOn
         )
         val created = flagRepository.create(flag)
-        
+
         // Load template if specified
         if (command.template != null) {
             when (command.template) {
                 "simple_boolean_flag" -> {
                     loadSimpleBooleanFlagTemplate(created, updatedBy)
                 }
+
                 else -> {
                     throw IllegalArgumentException("unknown value for template: ${command.template}")
                 }
             }
         }
-        
+
         // Save flag snapshot after creation
         flagSnapshotService?.saveFlagSnapshot(created.id, updatedBy)
         eventBus?.publishFlagCreated(created.id.toLong(), created.key)
@@ -152,7 +153,7 @@ class FlagService(
 
         return created
     }
-    
+
     /**
      * LoadSimpleBooleanFlagTemplate loads the simple boolean flag template into
      * a new flag. It creates a single segment, variant ('on'), and distribution.
@@ -161,7 +162,7 @@ class FlagService(
         if (segmentService == null || variantService == null || distributionService == null) {
             throw IllegalStateException("SegmentService, VariantService, and DistributionService are required for template loading")
         }
-        
+
         // Create default segment
         val segment = segmentService.createSegment(
             CreateSegmentCommand(
@@ -171,7 +172,7 @@ class FlagService(
             ),
             updatedBy = updatedBy
         )
-        
+
         // Create default variant
         val variant = variantService.createVariant(
             CreateVariantCommand(
@@ -181,7 +182,7 @@ class FlagService(
             ),
             updatedBy = updatedBy
         )
-        
+
         // Create default distribution
         distributionService.updateDistributions(
             PutDistributionsCommand(
@@ -198,24 +199,24 @@ class FlagService(
             updatedBy = updatedBy
         )
     }
-    
+
     suspend fun updateFlag(flagId: Int, command: PutFlagCommand, updatedBy: String? = null): Flag {
         val existingFlag = flagRepository.findById(flagId)
             ?: throw IllegalArgumentException("Flag not found: $flagId")
-        
+
         val key = if ((command.key ?: existingFlag.key).isNotEmpty()) {
             validateKey(command.key ?: existingFlag.key)
             command.key ?: existingFlag.key
         } else {
             existingFlag.key
         }
-        
+
         val newDependsOn = command.dependsOn ?: existingFlag.dependsOn
         if (newDependsOn.any { it == key }) {
             throw IllegalArgumentException("Flag cannot depend on itself: $key")
         }
         validateNoCycle(flagId, key, newDependsOn)
-        
+
         val updatedFlag = existingFlag.copy(
             description = command.description ?: existingFlag.description,
             key = key,
@@ -227,7 +228,7 @@ class FlagService(
             dependsOn = newDependsOn,
             updatedBy = updatedBy
         )
-        
+
         // Create FlagEntityType if entityType is provided and not empty
         updatedFlag.entityType?.let { entityType ->
             if (entityType.isNotEmpty()) {
@@ -235,7 +236,7 @@ class FlagService(
                 flagEntityTypeService?.createOrGet(entityType)
             }
         }
-        
+
         val updated = flagRepository.update(updatedFlag)
 
         // Save flag snapshot after update
@@ -245,7 +246,7 @@ class FlagService(
 
         return updated
     }
-    
+
     suspend fun deleteFlag(id: Int) {
         val flag = flagRepository.findById(id)
         flagRepository.delete(id)
@@ -254,14 +255,14 @@ class FlagService(
             webhookService?.dispatchFlagDeleted(it.id, it.key)
         }
     }
-    
+
     suspend fun restoreFlag(id: Int): Flag? {
         return flagRepository.restore(id)
     }
-    
+
     /** Returns flag by id including archived (soft-deleted). For audit before permanent delete. */
     suspend fun getFlagIncludeDeleted(id: Int): Flag? = flagRepository.findByIdIncludeDeleted(id)
-    
+
     /** Permanently removes the flag (and cascade). Prefer archive (deleteFlag) then permanent delete. */
     suspend fun permanentDeleteFlag(id: Int) {
         val flag = flagRepository.findByIdIncludeDeleted(id)
@@ -271,7 +272,7 @@ class FlagService(
             webhookService?.dispatchFlagDeleted(it.id, it.key)
         }
     }
-    
+
     suspend fun setFlagEnabled(id: Int, enabled: Boolean, updatedBy: String? = null): Flag? {
         val flag = flagRepository.findById(id) ?: return null
         val updated = flagRepository.update(flag.copy(enabled = enabled, updatedBy = updatedBy))
@@ -284,10 +285,14 @@ class FlagService(
         return updated
     }
 
-    suspend fun batchSetEnabled(ids: List<Int>, enabled: Boolean, updatedBy: String? = null): List<Flag> {
+    suspend fun batchSetEnabled(
+        ids: List<Int>,
+        enabled: Boolean,
+        updatedBy: String? = null
+    ): List<Flag> {
         return ids.mapNotNull { id -> setFlagEnabled(id, enabled, updatedBy) }
     }
-    
+
     /**
      * Validates that adding dependsOn does not create a circular dependency.
      * Throws IllegalArgumentException if a cycle would be introduced.

@@ -20,7 +20,12 @@ class UserService(private val userRepository: IUserRepository) {
         val user = userRepository.findByEmail(email.trim()) ?: return null
         if (user.blockedAt != null) return null
         val hash = user.passwordHash ?: return null
-        return if (runCatching { BCrypt.checkpw(plainPassword, hash) }.getOrElse { false }) user else null
+        return if (runCatching {
+                BCrypt.checkpw(
+                    plainPassword,
+                    hash
+                )
+            }.getOrElse { false }) user else null
     }
 
     suspend fun findAll(limit: Int = 50, offset: Int = 0): List<User> =
@@ -37,14 +42,23 @@ class UserService(private val userRepository: IUserRepository) {
         val existing = userRepository.findByEmail(trimmedEmail)
         if (existing != null) throw IllegalArgumentException("User with this email already exists")
         val hash = BCrypt.hashpw(plainPassword, BCrypt.gensalt())
-        val user = User(email = trimmedEmail, name = name?.trim()?.takeIf { it.isNotBlank() }, passwordHash = hash)
+        val user = User(
+            email = trimmedEmail,
+            name = name?.trim()?.takeIf { it.isNotBlank() },
+            passwordHash = hash
+        )
         return userRepository.create(user)
     }
 
     suspend fun update(id: Int, name: String?, newPassword: String?): User {
-        val user = userRepository.findById(id) ?: throw NoSuchElementException("User not found: $id")
+        val user =
+            userRepository.findById(id) ?: throw NoSuchElementException("User not found: $id")
         val updatedHash = when {
-            newPassword != null && newPassword.isNotBlank() -> BCrypt.hashpw(newPassword, BCrypt.gensalt())
+            newPassword != null && newPassword.isNotBlank() -> BCrypt.hashpw(
+                newPassword,
+                BCrypt.gensalt()
+            )
+
             else -> user.passwordHash
         }
         val updated = user.copy(
@@ -60,7 +74,8 @@ class UserService(private val userRepository: IUserRepository) {
     }
 
     suspend fun block(id: Int) {
-        val user = userRepository.findById(id) ?: throw NoSuchElementException("User not found: $id")
+        val user =
+            userRepository.findById(id) ?: throw NoSuchElementException("User not found: $id")
         if (user.blockedAt != null) return // already blocked
         userRepository.setBlockedAt(id, java.time.LocalDateTime.now())
     }

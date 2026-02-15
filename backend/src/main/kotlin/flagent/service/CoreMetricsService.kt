@@ -4,8 +4,6 @@ import flagent.repository.impl.EvaluationEventRepository
 import flagent.repository.impl.FlagEvaluationStatsResult
 import flagent.repository.impl.FlagUsageByClientResult
 import flagent.repository.impl.MetricsOverviewResult
-import flagent.repository.impl.TopFlagEntry
-import flagent.repository.impl.TimeSeriesEntry
 
 /**
  * Core metrics service - evaluation count overview (OSS).

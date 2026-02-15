@@ -4,11 +4,15 @@ import flagent.api.constants.ApiConstants
 import flagent.domain.entity.Webhook
 import flagent.domain.entity.WebhookEvents
 import flagent.service.WebhookService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.put
+import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 
@@ -45,7 +49,10 @@ fun Routing.configureWebhookRoutes(webhookService: WebhookService) {
                 }
                 val validEvents = request.events.filter { it in WebhookEvents.ALL }
                 if (validEvents.isEmpty()) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "At least one valid event is required"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("error" to "At least one valid event is required")
+                    )
                     return@post
                 }
                 val webhook = Webhook(
@@ -77,20 +84,28 @@ fun Routing.configureWebhookRoutes(webhookService: WebhookService) {
                     }
                     val validEvents = request.events.filter { it in WebhookEvents.ALL }
                     if (validEvents.isEmpty()) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "At least one valid event is required"))
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "At least one valid event is required")
+                        )
                         return@put
                     }
-                    val updated = webhookService.update(existing.copy(
-                        url = request.url,
-                        events = validEvents,
-                        secret = request.secret,
-                        enabled = request.enabled
-                    ))
+                    val updated = webhookService.update(
+                        existing.copy(
+                            url = request.url,
+                            events = validEvents,
+                            secret = request.secret,
+                            enabled = request.enabled
+                        )
+                    )
                     call.respond(updated)
                 }
                 delete {
                     val id = call.parameters["webhookId"]?.toIntOrNull()
-                        ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid webhook ID")
+                        ?: return@delete call.respond(
+                            HttpStatusCode.BadRequest,
+                            "Invalid webhook ID"
+                        )
                     val deleted = webhookService.delete(id)
                     if (deleted) call.respond(HttpStatusCode.OK)
                     else call.respond(HttpStatusCode.NotFound, "Webhook not found")

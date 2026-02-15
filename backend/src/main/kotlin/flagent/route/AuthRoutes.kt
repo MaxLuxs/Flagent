@@ -3,14 +3,14 @@ package flagent.route
 import flagent.config.AppConfig
 import flagent.service.UserService
 import flagent.util.JwtUtils
-import io.ktor.http.*
-import org.mindrot.jbcrypt.BCrypt
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.post
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import org.mindrot.jbcrypt.BCrypt
 
 private val logger = KotlinLogging.logger {}
 
@@ -42,12 +42,18 @@ fun Routing.configureAuthRoutes(userService: UserService) {
         val reqEmail = req.email.trim()
         val reqPassword = req.password
         if (reqEmail.isBlank() || reqPassword.isBlank()) {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Email and password are required"))
+            call.respond(
+                HttpStatusCode.BadRequest,
+                mapOf("error" to "Email and password are required")
+            )
             return@post
         }
         val secret = AppConfig.jwtAuthSecret
         if (secret.isEmpty()) {
-            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "JWT secret not configured"))
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                mapOf("error" to "JWT secret not configured")
+            )
             return@post
         }
         val dbUser = userService.validatePassword(reqEmail, reqPassword)
@@ -56,14 +62,23 @@ fun Routing.configureAuthRoutes(userService: UserService) {
                 JwtUtils.createAdminToken(reqEmail, secret, AppConfig.jwtAuthUserClaim)
             } catch (e: Exception) {
                 logger.error(e) { "Failed to create admin token" }
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to create token"))
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Failed to create token")
+                )
                 return@post
             }
             val name = dbUser.name ?: reqEmail.substringBefore("@")
-            call.respond(HttpStatusCode.Created, LoginResponse(
-                token = token,
-                user = LoginUserResponse(id = dbUser.id.toString(), email = reqEmail, name = name)
-            ))
+            call.respond(
+                HttpStatusCode.Created, LoginResponse(
+                    token = token,
+                    user = LoginUserResponse(
+                        id = dbUser.id.toString(),
+                        email = reqEmail,
+                        name = name
+                    )
+                )
+            )
             return@post
         }
         val email = AppConfig.adminEmail
@@ -90,13 +105,18 @@ fun Routing.configureAuthRoutes(userService: UserService) {
             JwtUtils.createAdminToken(reqEmail, secret, AppConfig.jwtAuthUserClaim)
         } catch (e: Exception) {
             logger.error(e) { "Failed to create admin token" }
-            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to create token"))
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                mapOf("error" to "Failed to create token")
+            )
             return@post
         }
         val name = reqEmail.substringBefore("@")
-        call.respond(HttpStatusCode.Created, LoginResponse(
-            token = token,
-            user = LoginUserResponse(id = "admin", email = reqEmail, name = name)
-        ))
+        call.respond(
+            HttpStatusCode.Created, LoginResponse(
+                token = token,
+                user = LoginUserResponse(id = "admin", email = reqEmail, name = name)
+            )
+        )
     }
 }

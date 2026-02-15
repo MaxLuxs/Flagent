@@ -10,6 +10,10 @@ import io.ktor.server.response.*
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTVerificationException
+import java.security.KeyFactory
+import java.security.interfaces.RSAPublicKey
+import java.security.spec.X509EncodedKeySpec
+import java.util.Base64
 
 /**
  * Authentication middleware interface
@@ -19,16 +23,19 @@ interface AuthMiddleware {
 }
 
 /**
- * JWT Authentication middleware
+ * JWT Authentication middleware.
+ * Only runs when FLAGENT_JWT_AUTH_ENABLED=true. When disabled: no "jwt" provider is installed,
+ * and admin routes (which use authenticate("jwt")) are not registered — see Application.kt.
+ * This keeps /admin inaccessible unless JWT is explicitly configured with a secret.
  */
 fun Application.configureJWTAuth() {
     if (!AppConfig.jwtAuthEnabled) return
-    
+
     val secret = AppConfig.jwtAuthSecret
     if (secret.isEmpty()) {
         throw IllegalStateException("JWT_AUTH_SECRET is required when JWT_AUTH_ENABLED=true")
     }
-    
+
     val algorithm = when (AppConfig.jwtAuthSigningMethod) {
         "HS256" -> Algorithm.HMAC256(secret)
         "HS512" -> Algorithm.HMAC512(secret)
@@ -48,12 +55,12 @@ fun Application.configureJWTAuth() {
                     .replace(" ", "")
                 
                 // Base64 decode the key
-                val decoded = java.util.Base64.getDecoder().decode(publicKeyPEM)
+                val decoded = Base64.getDecoder().decode(publicKeyPEM)
                 
                 // Generate the PublicKey object using X509EncodedKeySpec
-                val keySpec = java.security.spec.X509EncodedKeySpec(decoded)
-                val keyFactory = java.security.KeyFactory.getInstance("RSA")
-                val publicKey = keyFactory.generatePublic(keySpec) as java.security.interfaces.RSAPublicKey
+                val keySpec = X509EncodedKeySpec(decoded)
+                val keyFactory = KeyFactory.getInstance("RSA")
+                val publicKey = keyFactory.generatePublic(keySpec) as RSAPublicKey
                 
                 // For verification, we pass public key and null for private key
                 Algorithm.RSA256(publicKey, null)
@@ -200,7 +207,12 @@ private fun hasSafePrefix(s: String, prefix: String): Boolean {
 /**
  * Helper function to check if path is whitelisted
  */
-fun isWhitelisted(path: String, prefixWhitelist: List<String>, exactWhitelist: List<String>, noTokenStatusCode: Int = 307): Boolean {
+fun isWhitelisted(
+    path: String,
+    prefixWhitelist: List<String>,
+    exactWhitelist: List<String>,
+    noTokenStatusCode: Int = 307
+): Boolean {
     // If we set to 401 unauthorized, let the client handles the 401 itself
     // Only exact whitelist paths are checked in this case
     if (noTokenStatusCode == 401) {

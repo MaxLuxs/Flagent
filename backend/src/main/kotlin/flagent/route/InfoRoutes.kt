@@ -4,9 +4,10 @@ import flagent.api.constants.ApiConstants
 import flagent.api.model.InfoResponse
 import flagent.application.EnterprisePresence
 import flagent.application.LicenseState
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 
 /**
  * Info endpoints - version and build information

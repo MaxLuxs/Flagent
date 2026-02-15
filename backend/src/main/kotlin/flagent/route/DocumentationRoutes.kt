@@ -1,10 +1,13 @@
 package flagent.route
 
 import flagent.api.constants.ApiConstants
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import mu.KotlinLogging
 import java.io.File
 import java.io.FileNotFoundException
@@ -19,7 +22,8 @@ private fun loadOpenApiSpec(): String {
         File(currentDir.parentFile?.parentFile, "docs/api/openapi.yaml")
     )
     return filePaths.firstOrNull { it.exists() }?.readText()
-        ?: ApiConstants::class.java.classLoader.getResourceAsStream("openapi/documentation.yaml")?.use { it.reader().readText() }
+        ?: ApiConstants::class.java.classLoader.getResourceAsStream("openapi/documentation.yaml")
+            ?.use { it.reader().readText() }
         ?: throw FileNotFoundException("OpenAPI spec not found on disk or classpath")
 }
 
@@ -121,56 +125,57 @@ fun Routing.configureDocumentationRoutes() {
 </body>
 </html>
         """.trimIndent()
-        
+
         call.respondText(
             swaggerUiHtml,
             ContentType.Text.Html,
             HttpStatusCode.OK
         )
     }
-    
+
     // GET /api/v1/openapi.yaml - OpenAPI specification in YAML format
     route(ApiConstants.API_BASE_PATH) {
-            get("/openapi.yaml") {
-                try {
-                    val content = loadOpenApiSpec()
-                    call.respondText(
-                        content,
-                        ContentType.parse("application/x-yaml"),
-                        HttpStatusCode.OK
-                    )
-                } catch (e: Exception) {
-                    logger.error(e) { "Failed to load OpenAPI specification" }
-                    call.respond(
-                        HttpStatusCode.InternalServerError,
-                        mapOf("message" to "Failed to load OpenAPI specification: ${e.message}")
-                    )
-                }
+        get("/openapi.yaml") {
+            try {
+                val content = loadOpenApiSpec()
+                call.respondText(
+                    content,
+                    ContentType.parse("application/x-yaml"),
+                    HttpStatusCode.OK
+                )
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to load OpenAPI specification" }
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("message" to "Failed to load OpenAPI specification: ${e.message}")
+                )
             }
-            
-            // GET /api/v1/openapi.json - OpenAPI specification in JSON format (optional)
-            get("/openapi.json") {
-                try {
-                    val yamlContent = loadOpenApiSpec()
-                    
-                    // Convert YAML to JSON using Jackson
-                    val yamlMapper = com.fasterxml.jackson.dataformat.yaml.YAMLMapper()
-                    val jsonMapper = com.fasterxml.jackson.databind.ObjectMapper()
-                    val jsonNode = yamlMapper.readTree(yamlContent)
-                    val jsonContent = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode)
-                    
-                    call.respondText(
-                        jsonContent,
-                        ContentType.Application.Json,
-                        HttpStatusCode.OK
-                    )
-                } catch (e: Exception) {
-                    logger.error(e) { "Failed to convert OpenAPI specification to JSON" }
-                    call.respond(
-                        HttpStatusCode.InternalServerError,
-                        mapOf("message" to "Failed to convert OpenAPI specification: ${e.message}")
-                    )
-                }
+        }
+
+        // GET /api/v1/openapi.json - OpenAPI specification in JSON format (optional)
+        get("/openapi.json") {
+            try {
+                val yamlContent = loadOpenApiSpec()
+
+                // Convert YAML to JSON using Jackson
+                val yamlMapper = com.fasterxml.jackson.dataformat.yaml.YAMLMapper()
+                val jsonMapper = com.fasterxml.jackson.databind.ObjectMapper()
+                val jsonNode = yamlMapper.readTree(yamlContent)
+                val jsonContent =
+                    jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode)
+
+                call.respondText(
+                    jsonContent,
+                    ContentType.Application.Json,
+                    HttpStatusCode.OK
+                )
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to convert OpenAPI specification to JSON" }
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("message" to "Failed to convert OpenAPI specification: ${e.message}")
+                )
             }
+        }
     }
 }

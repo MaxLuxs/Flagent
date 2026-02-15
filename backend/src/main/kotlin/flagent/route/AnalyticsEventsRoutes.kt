@@ -3,11 +3,14 @@ package flagent.route
 import flagent.api.constants.ApiConstants
 import flagent.repository.impl.AnalyticsEventRecord
 import flagent.service.AnalyticsEventsService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
 
@@ -43,7 +46,10 @@ fun Routing.configureAnalyticsEventsRoutes(
                 val tenantId = tenantIdProvider(call)
                 val body = call.receive<AnalyticsEventsBatchRequest>()
                 if (body.events.isEmpty()) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "events list is empty"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("error" to "events list is empty")
+                    )
                     return@post
                 }
                 val now = System.currentTimeMillis()
@@ -63,7 +69,10 @@ fun Routing.configureAnalyticsEventsRoutes(
                 call.respond(HttpStatusCode.OK, mapOf("accepted" to records.size))
             } catch (e: Exception) {
                 logger.error("Analytics events batch failed", e)
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Invalid request")))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("error" to (e.message ?: "Invalid request"))
+                )
             }
         }
 
@@ -81,13 +90,18 @@ fun Routing.configureAnalyticsEventsRoutes(
                         return@get
                     }
                 val topLimit = call.request.queryParameters["topLimit"]?.toIntOrNull() ?: 20
-                val timeBucketMs = call.request.queryParameters["timeBucketMs"]?.toLongOrNull() ?: 3600_000
+                val timeBucketMs =
+                    call.request.queryParameters["timeBucketMs"]?.toLongOrNull() ?: 3600_000
 
-                val overview = analyticsEventsService.getOverview(start, end, topLimit, timeBucketMs, tenantId)
+                val overview =
+                    analyticsEventsService.getOverview(start, end, topLimit, timeBucketMs, tenantId)
                 call.respond(HttpStatusCode.OK, overview)
             } catch (e: Exception) {
                 logger.error("Analytics overview failed", e)
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Overview failed"))
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Overview failed")
+                )
             }
         }
     }

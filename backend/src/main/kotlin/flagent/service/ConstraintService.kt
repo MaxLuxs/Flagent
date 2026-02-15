@@ -17,12 +17,15 @@ class ConstraintService(
     suspend fun findConstraintsBySegmentId(segmentId: Int): List<Constraint> {
         return constraintRepository.findBySegmentId(segmentId)
     }
-    
+
     suspend fun getConstraint(id: Int): Constraint? {
         return constraintRepository.findById(id)
     }
-    
-    suspend fun createConstraint(command: CreateConstraintCommand, updatedBy: String? = null): Constraint {
+
+    suspend fun createConstraint(
+        command: CreateConstraintCommand,
+        updatedBy: String? = null
+    ): Constraint {
         val constraint = Constraint(
             segmentId = command.segmentId,
             property = command.property,
@@ -30,55 +33,59 @@ class ConstraintService(
             value = command.value
         )
         constraint.validate()
-        
+
         // Get segment to know flagId
         val segment = segmentRepository.findById(constraint.segmentId)
             ?: throw IllegalArgumentException("error finding segmentID ${constraint.segmentId}")
-        
+
         val created = constraintRepository.create(constraint)
-        
+
         // Save flag snapshot after creating constraint
         flagSnapshotService?.saveFlagSnapshot(segment.flagId, updatedBy)
-        
+
         return created
     }
-    
-    suspend fun updateConstraint(constraintId: Int, command: PutConstraintCommand, updatedBy: String? = null): Constraint {
+
+    suspend fun updateConstraint(
+        constraintId: Int,
+        command: PutConstraintCommand,
+        updatedBy: String? = null
+    ): Constraint {
         val existingConstraint = constraintRepository.findById(constraintId)
             ?: throw IllegalArgumentException("error finding constraintID $constraintId")
-        
+
         val constraint = existingConstraint.copy(
             property = command.property,
             operator = command.operator,
             value = command.value
         )
         constraint.validate()
-        
+
         // Get segment to know flagId
         val segment = segmentRepository.findById(constraint.segmentId)
             ?: throw IllegalArgumentException("error finding segmentID ${constraint.segmentId}")
-        
+
         val updated = constraintRepository.update(constraint)
-        
+
         // Save flag snapshot after updating constraint
         flagSnapshotService?.saveFlagSnapshot(segment.flagId, updatedBy)
-        
+
         return updated
     }
-    
+
     suspend fun deleteConstraint(id: Int, updatedBy: String? = null) {
         // Get constraint to know segmentId
         val constraint = constraintRepository.findById(id)
             ?: throw IllegalArgumentException("error finding constraintID $id")
-        
+
         // Get segment to know flagId
         val segment = segmentRepository.findById(constraint.segmentId)
             ?: throw IllegalArgumentException("error finding segmentID ${constraint.segmentId}")
-        
+
         val flagId = segment.flagId
-        
+
         constraintRepository.delete(id)
-        
+
         // Save flag snapshot after deleting constraint
         flagSnapshotService?.saveFlagSnapshot(flagId, updatedBy)
     }

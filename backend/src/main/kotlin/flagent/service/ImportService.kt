@@ -5,14 +5,14 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.readValue
 import flagent.domain.repository.IFlagRepository
 import flagent.service.command.CreateConstraintCommand
-import flagent.service.import.FlagImportItem
-import flagent.service.import.FlagsImportFile
 import flagent.service.command.CreateFlagCommand
 import flagent.service.command.CreateSegmentCommand
 import flagent.service.command.CreateVariantCommand
 import flagent.service.command.DistributionItemCommand
 import flagent.service.command.PutDistributionsCommand
 import flagent.service.command.PutFlagCommand
+import flagent.service.import.FlagImportItem
+import flagent.service.import.FlagsImportFile
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 
@@ -29,8 +29,10 @@ class ImportService(
     private val constraintService: ConstraintService,
     private val flagRepository: IFlagRepository
 ) {
-    private val jsonMapper = ObjectMapper().registerModule(com.fasterxml.jackson.module.kotlin.kotlinModule())
-    private val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(com.fasterxml.jackson.module.kotlin.kotlinModule())
+    private val jsonMapper =
+        ObjectMapper().registerModule(com.fasterxml.jackson.module.kotlin.kotlinModule())
+    private val yamlMapper =
+        ObjectMapper(YAMLFactory()).registerModule(com.fasterxml.jackson.module.kotlin.kotlinModule())
 
     @Serializable
     data class ImportResult(
@@ -39,7 +41,11 @@ class ImportService(
         val errors: List<String> = emptyList()
     )
 
-    suspend fun importFromContent(format: String, content: String, updatedBy: String? = null): ImportResult {
+    suspend fun importFromContent(
+        format: String,
+        content: String,
+        updatedBy: String? = null
+    ): ImportResult {
         val flags = try {
             when (format.lowercase()) {
                 "yaml", "yml" -> yamlMapper.readValue<FlagsImportFile>(content).flags
@@ -90,13 +96,18 @@ class ImportService(
         if (flagItem.enabled) {
             flagService.setFlagEnabled(created.id, true, updatedBy)
         }
-        val variantKeys = flagItem.segments.flatMap { it.distributions.map { d -> d.variantKey } }.distinct()
+        val variantKeys =
+            flagItem.segments.flatMap { it.distributions.map { d -> d.variantKey } }.distinct()
         val explicitVariants = flagItem.variants.map { it.key }
         val allVariantKeys = (variantKeys + explicitVariants).distinct()
         val variantMap = mutableMapOf<String, Int>()
         for (vk in allVariantKeys) {
             val v = variantService.createVariant(
-                CreateVariantCommand(flagId = created.id, key = vk, attachment = flagItem.variants.find { it.key == vk }?.attachment),
+                CreateVariantCommand(
+                    flagId = created.id,
+                    key = vk,
+                    attachment = flagItem.variants.find { it.key == vk }?.attachment
+                ),
                 updatedBy
             )
             variantMap[vk] = v.id
@@ -111,17 +122,32 @@ class ImportService(
                 updatedBy
             )
             val distItems = segItem.distributions.mapNotNull { d ->
-                variantMap[d.variantKey]?.let { DistributionItemCommand(variantID = it, variantKey = d.variantKey, percent = d.percent) }
+                variantMap[d.variantKey]?.let {
+                    DistributionItemCommand(
+                        variantID = it,
+                        variantKey = d.variantKey,
+                        percent = d.percent
+                    )
+                }
             }
             if (distItems.isNotEmpty() && distItems.sumOf { it.percent } == 100) {
                 distributionService.updateDistributions(
-                    PutDistributionsCommand(flagId = created.id, segmentId = seg.id, distributions = distItems),
+                    PutDistributionsCommand(
+                        flagId = created.id,
+                        segmentId = seg.id,
+                        distributions = distItems
+                    ),
                     updatedBy
                 )
             }
             for (c in segItem.constraints) {
                 constraintService.createConstraint(
-                    CreateConstraintCommand(segmentId = seg.id, property = c.property, operator = c.operator, value = c.value),
+                    CreateConstraintCommand(
+                        segmentId = seg.id,
+                        property = c.property,
+                        operator = c.operator,
+                        value = c.value
+                    ),
                     updatedBy
                 )
             }
@@ -146,14 +172,19 @@ class ImportService(
         for (seg in existingSegments) {
             segmentService.deleteSegment(seg.id, updatedBy)
         }
-        val variantKeys = flagItem.segments.flatMap { it.distributions.map { d -> d.variantKey } }.distinct()
+        val variantKeys =
+            flagItem.segments.flatMap { it.distributions.map { d -> d.variantKey } }.distinct()
         val explicitVariants = flagItem.variants.map { it.key }
         val allVariantKeys = (variantKeys + explicitVariants).distinct()
         val variantMap = flag.variants.associateBy { it.key }.toMutableMap()
         for (vk in allVariantKeys) {
             if (vk !in variantMap) {
                 val v = variantService.createVariant(
-                    CreateVariantCommand(flagId = flagId, key = vk, attachment = flagItem.variants.find { it.key == vk }?.attachment),
+                    CreateVariantCommand(
+                        flagId = flagId,
+                        key = vk,
+                        attachment = flagItem.variants.find { it.key == vk }?.attachment
+                    ),
                     updatedBy
                 )
                 variantMap[vk] = v
@@ -169,17 +200,32 @@ class ImportService(
                 updatedBy
             )
             val distItems = segItem.distributions.mapNotNull { d ->
-                variantMap[d.variantKey]?.let { DistributionItemCommand(variantID = it.id, variantKey = d.variantKey, percent = d.percent) }
+                variantMap[d.variantKey]?.let {
+                    DistributionItemCommand(
+                        variantID = it.id,
+                        variantKey = d.variantKey,
+                        percent = d.percent
+                    )
+                }
             }
             if (distItems.isNotEmpty() && distItems.sumOf { it.percent } == 100) {
                 distributionService.updateDistributions(
-                    PutDistributionsCommand(flagId = flagId, segmentId = seg.id, distributions = distItems),
+                    PutDistributionsCommand(
+                        flagId = flagId,
+                        segmentId = seg.id,
+                        distributions = distItems
+                    ),
                     updatedBy
                 )
             }
             for (c in segItem.constraints) {
                 constraintService.createConstraint(
-                    CreateConstraintCommand(segmentId = seg.id, property = c.property, operator = c.operator, value = c.value),
+                    CreateConstraintCommand(
+                        segmentId = seg.id,
+                        property = c.property,
+                        operator = c.operator,
+                        value = c.value
+                    ),
                     updatedBy
                 )
             }

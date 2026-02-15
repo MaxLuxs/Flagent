@@ -4,6 +4,7 @@ import com.timgroup.statsd.NonBlockingStatsDClient
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder
 import flagent.config.AppConfig
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.install
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.response.respond
@@ -75,7 +76,7 @@ fun Application.configureStatsDMetrics() {
         .port(AppConfig.statsdPort.toInt())
         .build()
 
-    environment.monitor.subscribe(io.ktor.server.application.ApplicationStopped) {
+    environment.monitor.subscribe(ApplicationStopped) {
         statsdClient.close()
     }
 
