@@ -254,7 +254,9 @@ function emitSwift(tokens) {
   }
   lines.push('        public enum Dark {');
   for (const [swiftName, value] of darkEntries) {
-    const swiftVal = typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgba')) ? hexToSwift(value) : `"${(value + '').replace(/"/g, '\\"')}"`;
+    const swiftVal = typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgba'))
+      ? hexToSwift(value)
+      : `"${(value + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
     lines.push(`            public static let ${swiftName} = ${swiftVal}`);
   }
   lines.push('        }');
@@ -263,13 +265,13 @@ function emitSwift(tokens) {
     if (!name.startsWith('shadow.')) continue;
     const key = name.replace('shadow.', '');
     const swiftName = key === 'default' ? 'shadow' : key === 'hover' ? 'shadowHover' : 'shadow' + key.charAt(0).toUpperCase() + key.slice(1);
-    lines.push(`    public static let ${swiftName} = "${(value + '').replace(/"/g, '\\"')}"`);
+    lines.push(`    public static let ${swiftName} = "${(value + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
   }
   for (const [name, value] of walk(tokens)) {
     if (!name.startsWith('gradient.')) continue;
     const key = name.replace('gradient.', '');
     const swiftName = 'gradient' + key.charAt(0).toUpperCase() + key.slice(1);
-    lines.push(`    public static let ${swiftName} = "${(value + '').replace(/"/g, '\\"')}"`);
+    lines.push(`    public static let ${swiftName} = "${(value + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
   }
   lines.push('    public enum Spacing {');
   for (const [name, value] of walk(tokens)) {
