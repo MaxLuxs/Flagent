@@ -51,6 +51,20 @@ jobs:
       
       - name: Build with Gradle
         run: ./gradlew build --no-daemon -x test
+
+      - name: Wait for Postgres
+        run: |
+          for i in $(seq 1 30); do
+            if (echo >/dev/tcp/localhost/5432) 2>/dev/null; then
+              echo "Postgres is ready"
+              exit 0
+            fi
+            echo "Waiting for Postgres..."
+            sleep 1
+          done
+          echo "Postgres did not become ready in time"
+          exit 1
+        shell: bash
       
       - name: Run unit tests
         env:

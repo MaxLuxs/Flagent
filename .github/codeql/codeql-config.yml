@@ -1,8 +1,16 @@
-# CodeQL config: exclude generated/vendor docs from security scanning.
-# Swagger UI docs (docs/api-docs.html, backend/docs/index.html) are single-file
-# bundles of third-party libs (Bootstrap, marked.js, swagger-ui); CodeQL flags
-# patterns there (e.g. .html(), incomplete escape) that we do not control.
+# CodeQL config: exclude generated/vendor docs and build artifacts from security scanning.
+# Swagger UI docs (api-docs.html, api-reference.html, backend/docs/index.html) are
+# single-file bundles of third-party libs; CodeQL flags patterns we do not control.
+# Also exclude: e2e (localStorage for Playwright), docs/script.js, all build output
+# (frontend Kotlin/JS, javadoc search-page.js), and sample apps (demo code).
 name: "Flagent CodeQL config"
 paths-ignore:
   - "**/docs/api-docs.html"
   - "**/backend/docs/index.html"
+  - "**/docs/api-reference.html"
+  - "**/frontend/e2e/**"
+  - "**/docs/script.js"
+  - "**/frontend/build/**"
+  - "**/build/**"
+  - "**/javadoc/**"
+  - "**/samples/**"
