@@ -158,6 +158,12 @@
             baseUrl = e.target.value;
         });
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         window.evaluateFlag = async function() {
             const flagKey = document.getElementById('flagKey').value;
             const entityId = document.getElementById('entityId').value;
@@ -221,7 +227,7 @@
                 resultDiv.innerHTML = `
                     <div class="result error">
                         <h3>❌ Error</h3>
-                        <p>${error.message}</p>
+                        <p>${escapeHtml(String(error?.message ?? 'Unknown error'))}</p>
                     </div>
                 `;
             }
@@ -279,7 +285,7 @@
                 resultDiv.innerHTML = `
                     <div class="result error">
                         <h3>❌ Error</h3>
-                        <p>${error.message}</p>
+                        <p>${escapeHtml(String(error?.message ?? 'Unknown error'))}</p>
                     </div>
                 `;
             }
