@@ -140,8 +140,9 @@ compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", v
 compose-ui-mp = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 compose-material3-mp = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
 compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "compose" }
-compose-desktop-ui-test-junit4 = { module = "org.jetbrains.compose.desktop:desktop-junit4", version.ref = "compose" }
-compose-desktop-current-os = { module = "org.jetbrains.compose.desktop:desktop-currentOs", version.ref = "compose" }
+# Desktop test: use Maven Central artifacts (desktop-junit4/desktop-currentOs not published there)
+compose-desktop-ui-test-junit4 = { module = "org.jetbrains.compose.ui:ui-test-junit4", version.ref = "compose" }
+compose-desktop-current-os = { module = "org.jetbrains.compose.desktop:desktop-jvm", version.ref = "compose" }
 # Compose HTML
 compose-html-core = { module = "org.jetbrains.compose.html:html-core", version.ref = "compose" }
 compose-html-svg = { module = "org.jetbrains.compose.html:html-svg", version.ref = "compose" }
