@@ -54,7 +54,7 @@ jobs:
 
       - name: Wait for Postgres
         run: |
-          for i in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if (echo >/dev/tcp/localhost/5432) 2>/dev/null; then
               echo "Postgres is ready"
               exit 0
