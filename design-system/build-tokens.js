@@ -74,6 +74,11 @@ function cssVarName(tokenKey) {
   return '--flagent-' + tokenKey.replace(/\./g, '-');
 }
 
+/** Escape for double-quoted string literals (Kotlin/Swift/JS): backslash then quote. */
+function escapeForQuotedString(s) {
+  return (s + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 function emitCss(tokens) {
   const lines = ['/* Flagent Design Tokens — generated from tokens.json */', ''];
   const byTheme = { root: [], dark: [] };
@@ -95,15 +100,20 @@ function emitCss(tokens) {
   return lines.join('\n');
 }
 
+const PROTOTYPE_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 function setNested(obj, path, value) {
   const parts = path.split('.');
   let cur = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     const p = parts[i];
+    if (PROTOTYPE_POLLUTION_KEYS.has(p)) return;
     if (!(p in cur)) cur[p] = {};
     cur = cur[p];
   }
-  cur[parts[parts.length - 1]] = value;
+  const last = parts[parts.length - 1];
+  if (PROTOTYPE_POLLUTION_KEYS.has(last)) return;
+  cur[last] = value;
 }
 
 function emitTypeScript(tokens) {
@@ -147,19 +157,19 @@ function emitKotlin(tokens) {
       if (typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgba'))) {
         lines.push(`    val ${kotlinName} = Color(${hexToKotlin(value)})`);
       } else {
-        lines.push(`    val ${kotlinName} = "${(value + '').replace(/"/g, '\\"')}"`);
+        lines.push(`    val ${kotlinName} = "${escapeForQuotedString(value)}"`);
       }
       continue;
     }
     if (name.startsWith('shadow.')) {
       const key = parts[1];
       const shadowName = key === 'default' ? 'Shadow' : key === 'hover' ? 'ShadowHover' : 'Shadow' + toKotlinName(key);
-      lines.push(`    val ${shadowName} = "${(value + '').replace(/"/g, '\\"')}"`);
+      lines.push(`    val ${shadowName} = "${escapeForQuotedString(value)}"`);
       continue;
     }
     if (name.startsWith('gradient.')) {
       const kotlinName = 'Gradient' + toKotlinName(parts[1]);
-      lines.push(`    val ${kotlinName} = "${(value + '').replace(/"/g, '\\"')}"`);
+      lines.push(`    val ${kotlinName} = "${escapeForQuotedString(value)}"`);
       continue;
     }
   }
@@ -172,7 +182,7 @@ function emitKotlin(tokens) {
     if (typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgba'))) {
       lines.push(`        val ${kotlinName} = Color(${hexToKotlin(value)})`);
     } else {
-      lines.push(`        val ${kotlinName} = "${value}"`);
+      lines.push(`        val ${kotlinName} = "${escapeForQuotedString(value)}"`);
     }
   }
   lines.push('    }');
@@ -184,7 +194,7 @@ function emitKotlin(tokens) {
     if (typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgba'))) {
       lines.push(`        val ${kotlinName} = Color(${hexToKotlin(value)})`);
     } else {
-      lines.push(`        val ${kotlinName} = "${value}"`);
+      lines.push(`        val ${kotlinName} = "${escapeForQuotedString(value)}"`);
     }
   }
   lines.push('    }');
@@ -213,7 +223,7 @@ function emitKotlin(tokens) {
     if (!name.startsWith('typography.')) continue;
     const k = name.replace('typography.', '');
     const camel = k.charAt(0).toLowerCase() + k.slice(1);
-    lines.push(`        val ${camel} = "${value.replace(/"/g, '\\"')}"`);
+    lines.push(`        val ${camel} = "${escapeForQuotedString(value)}"`);
   }
   lines.push('    }');
   lines.push('}');
@@ -241,7 +251,7 @@ function emitSwift(tokens) {
       if (typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgba'))) {
         lines.push(`        public static let ${swiftName} = ${hexToSwift(value)}`);
       } else {
-        lines.push(`        public static let ${swiftName} = "${(value + '').replace(/"/g, '\\"')}"`);
+        lines.push(`        public static let ${swiftName} = "${escapeForQuotedString(value)}"`);
       }
     }
   }
@@ -256,7 +266,7 @@ function emitSwift(tokens) {
   for (const [swiftName, value] of darkEntries) {
     const swiftVal = typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgba'))
       ? hexToSwift(value)
-      : `"${(value + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+      : `"${escapeForQuotedString(value)}"`;
     lines.push(`            public static let ${swiftName} = ${swiftVal}`);
   }
   lines.push('        }');
@@ -265,13 +275,13 @@ function emitSwift(tokens) {
     if (!name.startsWith('shadow.')) continue;
     const key = name.replace('shadow.', '');
     const swiftName = key === 'default' ? 'shadow' : key === 'hover' ? 'shadowHover' : 'shadow' + key.charAt(0).toUpperCase() + key.slice(1);
-    lines.push(`    public static let ${swiftName} = "${(value + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
+    lines.push(`    public static let ${swiftName} = "${escapeForQuotedString(value)}"`);
   }
   for (const [name, value] of walk(tokens)) {
     if (!name.startsWith('gradient.')) continue;
     const key = name.replace('gradient.', '');
     const swiftName = 'gradient' + key.charAt(0).toUpperCase() + key.slice(1);
-    lines.push(`    public static let ${swiftName} = "${(value + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
+    lines.push(`    public static let ${swiftName} = "${escapeForQuotedString(value)}"`);
   }
   lines.push('    public enum Spacing {');
   for (const [name, value] of walk(tokens)) {
