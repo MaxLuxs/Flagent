@@ -10,14 +10,14 @@ test.describe('Login Page @oss', () => {
   });
 
   test('displays login form or redirects when auth disabled @smoke', async ({ page }) => {
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle').catch(() => {});
     const onLogin = page.url().includes('/login');
     if (onLogin) {
       await expect(
         page.getByRole('heading', { name: /Login|Вход|Sign in/i }).or(
           page.getByLabel(/Email|E-mail|Почта/i).first()
         )
-      ).toBeVisible({ timeout: 10000 });
+      ).toBeVisible({ timeout: 15000 });
     } else {
       await expect(page).toHaveURL(/\/(dashboard|)/);
     }

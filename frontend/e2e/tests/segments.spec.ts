@@ -12,9 +12,7 @@ test.describe('Segments Page @oss', () => {
     await page.waitForLoadState('networkidle').catch(() => {});
     await expect(page).toHaveURL(/\/segments/);
     await expect(
-      page.getByRole('heading', { name: /Segments|Сегменты/i }).or(
-        page.getByText(/Segments|Сегменты|flags with segments/i).first()
-      )
+      page.getByRole('heading', { name: /Segments|Сегменты/i })
     ).toBeVisible({ timeout: 15000 });
   });
 
