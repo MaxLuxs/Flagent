@@ -12,6 +12,19 @@ concurrency:
 jobs:
   unit_test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: flagent_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - name: Check out source code
         uses: actions/checkout@v4
@@ -40,6 +53,9 @@ jobs:
         run: ./gradlew build --no-daemon -x test
       
       - name: Run unit tests
+        env:
+          FLAGENT_DB_DBDRIVER: postgres
+          FLAGENT_DB_DBCONNECTIONSTR: jdbc:postgresql://localhost:5432/flagent_test?user=postgres&password=test
         run: ./gradlew :backend:test :shared:jvmTest --no-daemon
 
       - name: Design system hardcode check

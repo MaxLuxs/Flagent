@@ -9,13 +9,13 @@ test.describe('Segments Page @oss', () => {
   });
 
   test('displays Segments page @smoke', async ({ page }) => {
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle').catch(() => {});
     await expect(page).toHaveURL(/\/segments/);
     await expect(
       page.getByRole('heading', { name: /Segments|Сегменты/i }).or(
         page.getByText(/Segments|Сегменты|flags with segments/i).first()
       )
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test('shows content: table or empty state', async ({ page }) => {

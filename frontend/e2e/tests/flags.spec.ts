@@ -61,7 +61,9 @@ test.describe('Flags List - Toggle and Search @oss', () => {
 
     // Find the ON/OFF toggle in first row (label with checkbox, or cell with "ON"/"OFF" text)
     const firstRow = table.first();
-    const toggleCell = firstRow.locator('td').filter({ has: page.locator('label:has-text("ON"), label:has-text("OFF")') });
+    const toggleCell = firstRow
+      .locator('td')
+      .filter({ has: firstRow.locator('label:has-text("ON"), label:has-text("OFF")') });
     const toggleCheckbox = toggleCell.locator('input[type="checkbox"]').first();
 
     if ((await toggleCheckbox.count()) === 0) {

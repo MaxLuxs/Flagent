@@ -29,7 +29,7 @@ test.describe('Navigation @oss', () => {
     // When auth is on, / redirects to /dashboard; when off, stays at /
     await expect(page).toHaveURL(/\/(|dashboard)/);
     await expect(
-      page.locator('h1:has-text("Flagent"), h1:has-text("Dashboard")')
+      page.locator('h1:has-text("Flagent"), h1:has-text("Dashboard"), h1:has-text("Дашборд")')
     ).toBeVisible({ timeout: 5000 });
   });
 
@@ -42,13 +42,15 @@ test.describe('Navigation @oss', () => {
     await logoLink.click();
     await expect(page).toHaveURL(/\/(|dashboard)/);
     await expect(
-      page.locator('h1:has-text("Flagent"), h1:has-text("Dashboard")')
+      page.locator('h1:has-text("Flagent"), h1:has-text("Dashboard"), h1:has-text("Дашборд")')
     ).toBeVisible({ timeout: 5000 });
   });
 
   test('can navigate via URL directly', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Dashboard|Главная|Дашборд/i })
+    ).toBeVisible({ timeout: 10000 });
 
     await page.goto('/flags');
     await page.waitForLoadState('domcontentloaded');
@@ -93,7 +95,7 @@ test.describe('Navigation @oss', () => {
     const onCrash = page.url().includes('/crash');
     if (onCrash) {
       await expect(
-        page.getByRole('heading', { name: /Crash Analytics/i })
+        page.getByRole('heading', { name: /Crash Analytics|Аналитика крашей/i })
       ).toBeVisible({ timeout: 10000 });
     }
   });

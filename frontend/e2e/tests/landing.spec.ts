@@ -11,20 +11,20 @@ test.describe('Landing / Home Page @oss', () => {
 
   test('displays Flagent or Dashboard title @smoke', async ({ page }) => {
     await expect(
-      page.locator('h1, h2, h3').filter({ hasText: /Flagent|Dashboard|Главная/ }).first()
+      page.locator('h1, h2, h3').filter({ hasText: /Flagent|Dashboard|Главная|Дашборд/ }).first()
     ).toBeVisible({ timeout: 10000 });
   });
 
   test('has navigation to Dashboard and Flags', async ({ page }) => {
     await expect(
       page.getByRole('link', {
-        name: /Dashboard|Flags|Главная|Флаги|Home/i,
+        name: /Dashboard|Flags|Главная|Дашборд|Флаги|Home/i,
       }).first()
     ).toBeVisible({ timeout: 10000 });
   });
 
   test('navigates to Dashboard when Dashboard link clicked', async ({ page }) => {
-    const dashboardLink = page.getByRole('link', { name: /Dashboard|Главная/i }).first();
+    const dashboardLink = page.getByRole('link', { name: /Dashboard|Главная|Дашборд/i }).first();
     if ((await dashboardLink.count()) > 0) {
       await dashboardLink.click();
       await expect(page).toHaveURL(/\/dashboard/);

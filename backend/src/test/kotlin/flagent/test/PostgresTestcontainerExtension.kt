@@ -56,6 +56,11 @@ class PostgresTestcontainerExtension : BeforeAllCallback, AfterAllCallback {
 
     override fun beforeAll(context: ExtensionContext) {
         initCount++
+        val explicitJdbc = System.getenv("FLAGENT_DB_DBCONNECTIONSTR")
+        if (!explicitJdbc.isNullOrBlank() && explicitJdbc.trim().lowercase().startsWith("jdbc:postgresql")) {
+            Database.init()
+            return
+        }
         val c = getOrCreateContainer()
         if (c != null) {
             Database.initForTests(c.jdbcUrl, c.driverClassName)

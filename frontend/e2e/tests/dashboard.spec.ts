@@ -8,7 +8,7 @@ test.describe('Dashboard @oss', () => {
   test('displays Dashboard heading @smoke', async ({ page }) => {
     await page.waitForLoadState('networkidle').catch(() => {});
     await expect(
-      page.getByRole('heading', { name: /Dashboard|Главная/i })
+      page.getByRole('heading', { name: /Dashboard|Главная|Дашборд/i })
     ).toBeVisible({ timeout: 15000 });
   });
 
