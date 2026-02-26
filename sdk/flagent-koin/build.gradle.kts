@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     `maven-publish`
 }
 
@@ -15,15 +15,16 @@ repositories {
     google()
 }
 
-android {
-    compileSdk = 34
-    namespace = "com.flagent.koin"
-}
-
 kotlin {
     jvm()
     jvmToolchain(21)
-    androidTarget()
+    androidLibrary {
+        namespace = "com.flagent.koin"
+        compileSdk = libs.versions.android.compile.sdk.get().toInt()
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
     iosArm64()
     iosSimulatorArm64()
 

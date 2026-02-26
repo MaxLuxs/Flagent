@@ -5,7 +5,7 @@ plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.compose)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     `maven-publish`
 }
 
@@ -18,15 +18,16 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
-android {
-    compileSdk = 35
-    namespace = "com.flagent.debug.ui"
-}
-
 kotlin {
     jvm()
     jvmToolchain(21)
-    androidTarget()
+    androidLibrary {
+        namespace = "com.flagent.debug.ui"
+        compileSdk = 35
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
     iosArm64()
     iosSimulatorArm64()
 
@@ -37,11 +38,11 @@ kotlin {
                 implementation(project(":kotlin-enhanced"))
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.ui)
-                implementation(compose.animation)
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.material3.mp)
+                implementation(libs.compose.ui.mp)
+                implementation(libs.compose.animation)
             }
         }
         val commonTest by getting {
@@ -54,8 +55,8 @@ kotlin {
             dependencies {
                 implementation(libs.mockk)
                 implementation(libs.kotlinx.coroutines.test)
-                implementation(compose.desktop.uiTestJUnit4)
-                implementation(compose.desktop.currentOs)
+                implementation(libs.compose.desktop.current.os)
+                implementation(libs.compose.desktop.ui.test.junit4)
             }
         }
         val androidMain by getting { }
