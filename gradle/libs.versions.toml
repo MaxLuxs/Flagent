@@ -1,6 +1,6 @@
 [versions]
 # Kotlin (2.3.0 required for Kotlin/JS K2; 2.2.x has "Symbol for Any not found" / "Missing stdlib class")
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 
 # Ktor
 ktor = "3.4.0"
@@ -15,6 +15,7 @@ kotlinx-coroutines = "1.10.2"
 
 # Compose
 compose = "1.10.0"
+compose-material3 = "1.9.0"
 compose-bom = "2026.01.00"
 
 # Database Migrations
@@ -133,10 +134,18 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
-# Compose
+# Compose (JetBrains Multiplatform)
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-ui-mp = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-material3-mp = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "compose" }
+compose-desktop-ui-test-junit4 = { module = "org.jetbrains.compose.desktop:desktop-junit4", version.ref = "compose" }
+compose-desktop-current-os = { module = "org.jetbrains.compose.desktop:desktop-currentOs", version.ref = "compose" }
+# Compose HTML
 compose-html-core = { module = "org.jetbrains.compose.html:html-core", version.ref = "compose" }
 compose-html-svg = { module = "org.jetbrains.compose.html:html-svg", version.ref = "compose" }
+# AndroidX Compose (Android app)
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
@@ -224,6 +233,7 @@ kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.re
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "android-gradle-plugin" }
 ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
 dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency-check" }
 
