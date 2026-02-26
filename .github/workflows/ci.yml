@@ -130,6 +130,20 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       
+      - name: Wait for Postgres
+        run: |
+          for _ in $(seq 1 30); do
+            if (echo >/dev/tcp/localhost/5432) 2>/dev/null; then
+              echo "Postgres is ready"
+              exit 0
+            fi
+            echo "Waiting for Postgres..."
+            sleep 1
+          done
+          echo "Postgres did not become ready in time"
+          exit 1
+        shell: bash
+      
       - name: Run integration tests
         env:
           FLAGENT_DB_DBDRIVER: postgres
