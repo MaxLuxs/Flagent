@@ -174,16 +174,12 @@ tasks.test {
     }
     finalizedBy(tasks.jacocoTestReport)
     maxParallelForks = 1
-    // DB env: use Postgres when CI runs integration tests (-PincludeIntegrationTests); else SQLite in-memory
-    if (!project.hasProperty("includeIntegrationTests")) {
+    // DB env: respect existing FLAGENT_DB_* (e.g. CI Postgres service); otherwise SQLite in-memory
+    if (System.getenv("FLAGENT_DB_DBDRIVER").isNullOrBlank()) {
         environment("FLAGENT_DB_DBDRIVER", "sqlite3")
         environment("FLAGENT_DB_DBCONNECTIONSTR", ":memory:")
-    } else {
-        // Local integration tests: use SQLite in-memory when Postgres not configured
-        if (System.getenv("FLAGENT_DB_DBDRIVER").isNullOrBlank()) {
-            environment("FLAGENT_DB_DBDRIVER", "sqlite3")
-            environment("FLAGENT_DB_DBCONNECTIONSTR", ":memory:")
-        }
+    }
+    if (project.hasProperty("includeIntegrationTests")) {
         // Fast cache refresh for integration tests (eval needs fresh data after flag setup)
         environment("FLAGENT_EVALCACHE_REFRESHINTERVAL", "100ms")
     }

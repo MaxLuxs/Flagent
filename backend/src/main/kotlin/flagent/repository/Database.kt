@@ -123,12 +123,24 @@ object Database {
             maxLifetime = 1800000
         }
 
-        dataSource = HikariDataSource(config)
-        exposedDatabase = Database.connect(dataSource!!)
-
-        logger.info { "Connected to database: ${AppConfig.dbDriver}" }
-
-        runMigrations(jdbcUrl, dbDriver)
+        val maxAttempts = 1 + AppConfig.dbConnectionRetryAttempts.toInt()
+        var lastException: Exception? = null
+        for (attempt in 1..maxAttempts) {
+            try {
+                dataSource = HikariDataSource(config)
+                exposedDatabase = Database.connect(dataSource!!)
+                logger.info { "Connected to database: ${AppConfig.dbDriver}" }
+                runMigrations(jdbcUrl, dbDriver)
+                return
+            } catch (e: Exception) {
+                lastException = e
+                if (attempt < maxAttempts) {
+                    logger.warn(e) { "Database connection attempt $attempt/$maxAttempts failed, retrying in ${AppConfig.dbConnectionRetryDelay}..." }
+                    Thread.sleep(AppConfig.dbConnectionRetryDelay.inWholeMilliseconds)
+                }
+            }
+        }
+        throw lastException ?: IllegalStateException("Database init failed")
     }
 
     /**
