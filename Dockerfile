@@ -43,16 +43,16 @@ RUN ./gradlew :backend:installDist --no-daemon --stacktrace
 RUN ./gradlew :frontend:jsBrowserDevelopmentWebpack --no-daemon
 
 ######################################
-# Runtime stage
+# Runtime stage (Jammy: avoids Alpine libpng/gnutls CVEs in Trivy scan)
 ######################################
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-# Install runtime dependencies if needed
-RUN apk add --no-cache tzdata && \
-    addgroup -S appgroup && \
-    adduser -S appuser -G appgroup
+# Runtime deps: tzdata, wget for HEALTHCHECK; create non-root user
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata wget && \
+    groupadd -r appgroup && useradd -r -g appgroup appuser && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy built application from build stage
 COPY --from=build /app/backend/build/install/backend ./backend
@@ -78,11 +78,6 @@ ENV FLAGENT_JWT_AUTH_SECRET=dev-secret-min-32-chars-required-for-jwt
 
 # Expose port
 EXPOSE 18000
-
-# Health check (install wget for health check)
-USER root
-RUN apk add --no-cache wget
-USER appuser
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:18000/api/v1/health || exit 1
