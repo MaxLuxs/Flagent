@@ -277,6 +277,8 @@ Official SDKs available for multiple platforms. The Kotlin SDK is **full Kotlin 
 |----------|---------|--------|----------|
 | **Kotlin (KMP)** | [kotlin-client](sdk/kotlin) | ✅ Stable | Full API, JVM/Android/iOS/JS/Native |
 | **Kotlin Enhanced** | [kotlin-enhanced](sdk/kotlin-enhanced) | ✅ Stable | Client-side eval, real-time, KMP |
+| **Kotlin Debug UI** | [kotlin-debug-ui](sdk/kotlin-debug-ui) | ✅ Stable | Compose Multiplatform debug dashboard, JVM/Android/iOS |
+| **flagent-koin** | [flagent-koin](sdk/flagent-koin) | ✅ Stable | Koin DI module for Flagent, KMP |
 | **JavaScript/TypeScript** | [flagent-js](sdk/javascript) | ✅ Stable | Full API support, async/await |
 | **Swift** | [flagent-swift](sdk/swift) | ✅ Stable | Full API support, async/await |
 | **Python** | [flagent-python](sdk/python) | ✅ Stable | Full API support, asyncio |
@@ -315,7 +317,7 @@ dependencies {
 }
 ```
 
-Published artifacts: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases) (current: 0.1.6).
+Published artifacts: `shared` (KMP), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, `flagent-koin` (all Kotlin SDK modules publish JVM/Android/iOS/JS/Native variants where applicable). For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases) (current: 0.1.6).
 
 ### Server-Side Integration
 
