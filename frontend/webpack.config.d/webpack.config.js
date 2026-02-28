@@ -49,6 +49,11 @@
     config.optimization = config.optimization || {};
     config.optimization.splitChunks = false;
     config.optimization.minimize = false; // Disable minification to avoid terser errors
+
+    // Kotlin/JS bundle is large; avoid "asset size limit" / "entrypoint size limit" warnings.
+    config.performance = config.performance || {};
+    config.performance.maxEntrypointSize = 15 * 1024 * 1024;
+    config.performance.maxAssetSize = 15 * 1024 * 1024;
     
     // Disable source maps for production to avoid SourceMapDevToolPlugin errors
     if (config.devtool) {
