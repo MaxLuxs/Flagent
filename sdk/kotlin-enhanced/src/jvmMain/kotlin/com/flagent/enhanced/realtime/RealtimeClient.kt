@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.sse.sse
 import io.ktor.client.request.get
 import io.ktor.sse.ServerSentEvent
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -73,6 +74,7 @@ class RealtimeClient(
                     _connectionStatus.value = ConnectionStatus.Disconnected
                     logger.info { "SSE connection closed" }
                 } catch (e: Exception) {
+                    if (e is CancellationException) throw e
                     logger.error(e) { "SSE connection error: ${e.message}" }
                     _connectionStatus.value = ConnectionStatus.Error(e.message ?: "Unknown error")
                     if (!config.autoReconnect) break
