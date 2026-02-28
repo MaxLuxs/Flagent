@@ -208,9 +208,11 @@ class ExportService(
             }
             
             // Insert flags_tags junction table (must be after flags and tags due to FK)
+            var flagsTagsId = 1
             flags.forEach { flag ->
                 flag.tags.forEach { tag ->
                     FlagsTags.insert {
+                        it[id] = EntityID(flagsTagsId++, FlagsTags)
                         it[flagId] = flag.id
                         it[tagId] = tag.id
                     }
