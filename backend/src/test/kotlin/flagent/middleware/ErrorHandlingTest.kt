@@ -129,6 +129,39 @@ class ErrorHandlingTest {
         
         unmockkObject(AppConfig)
     }
+
+    @Test
+    fun testIllegalStateException_whenSentryEnabled_returns500() = testApplication {
+        mockkObject(AppConfig)
+        every { AppConfig.sentryEnabled } returns true
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            configureErrorHandling()
+            routing {
+                get("/test") { throw IllegalStateException("state error") }
+            }
+        }
+        val response = client.get("/test")
+        assertEquals(HttpStatusCode.InternalServerError, response.status)
+        unmockkObject(AppConfig)
+    }
+
+    @Test
+    fun testException_withNullMessage_returnsFallbackMessage() = testApplication {
+        mockkObject(AppConfig)
+        every { AppConfig.sentryEnabled } returns false
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            configureErrorHandling()
+            routing {
+                get("/test") { throw IllegalArgumentException(null as String?) }
+            }
+        }
+        val response = client.get("/test")
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Bad request"))
+        unmockkObject(AppConfig)
+    }
 }
 
 class CustomTestException(message: String) : RuntimeException(message)

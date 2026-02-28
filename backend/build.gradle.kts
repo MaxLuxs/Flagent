@@ -196,6 +196,8 @@ tasks.test {
     environment("FLAGENT_ADMIN_EMAIL", "admin@test.com")
     environment("FLAGENT_ADMIN_PASSWORD", "secret123")
     environment("FLAGENT_JWT_AUTH_SECRET", "test-secret-at-least-32-characters-long")
+    environment("FLAGENT_JWT_AUTH_ENABLED", "true")
+    environment("FLAGENT_JWT_AUTH_NO_TOKEN_STATUS_CODE", "401")
     // E2ETest creates tenant via POST /admin/tenants; when enterprise is present AdminAuth requires X-Admin-Key
     environment("FLAGENT_ADMIN_API_KEY", "test-admin-key")
     // When running E2E tests (-PincludeE2E), use noop recorder so Kafka is not required
