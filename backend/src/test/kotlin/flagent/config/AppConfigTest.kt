@@ -65,6 +65,7 @@ class AppConfigTest {
 
     @Test
     fun middlewareVerboseLoggerExcludeURLsIsList() {
+        @Suppress("USELESS_IS_CHECK") // Config type is List; test documents the contract
         assertTrue(AppConfig.middlewareVerboseLoggerExcludeURLs is List<*>)
     }
 

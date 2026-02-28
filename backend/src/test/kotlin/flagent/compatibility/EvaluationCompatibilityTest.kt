@@ -118,7 +118,7 @@ class EvaluationCompatibilityTest {
             assertNotNull(evalContext)
             val ctxObj = evalContext as? kotlinx.serialization.json.JsonObject
             assertNotNull(ctxObj)
-            assertTrue(ctxObj!!.containsKey("entityID"))
+            assertTrue(ctxObj.containsKey("entityID"))
             assertTrue(ctxObj.containsKey("entityType"))
             assertTrue(ctxObj.containsKey("entityContext"))
             assertEquals("user_123", ctxObj["entityID"]?.toString()?.trim('"'))
@@ -268,11 +268,11 @@ class EvaluationCompatibilityTest {
 
             val results = batchResult["evaluationResults"]?.let { it as? kotlinx.serialization.json.JsonArray }
             assertNotNull(results)
-            assertEquals(2, results!!.size)
+            assertEquals(2, results.size)
 
             val firstResult = results[0] as? kotlinx.serialization.json.JsonObject
             assertNotNull(firstResult)
-            assertTrue(firstResult!!.containsKey("flagID"))
+            assertTrue(firstResult.containsKey("flagID"))
             assertTrue(firstResult.containsKey("evalContext"))
         } finally {
             client.close()

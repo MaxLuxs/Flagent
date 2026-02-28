@@ -35,8 +35,8 @@ class ExportServiceTest {
     
     @BeforeTest
     fun setup() {
-        // Initialize in-memory database for testing
-        FlagentDatabase.init()
+        // Use in-memory SQLite so tests don't depend on CI Postgres; export logic is driver-agnostic
+        FlagentDatabase.initForTests("jdbc:sqlite::memory:", "org.sqlite.JDBC")
         
         // Create repositories
         flagRepository = FlagRepository()

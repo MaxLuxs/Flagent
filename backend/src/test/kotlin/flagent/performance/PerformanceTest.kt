@@ -102,7 +102,7 @@ class PerformanceTest {
                         flagKey = null,
                         entityID = entity["entityID"] as String,
                         entityType = null,
-                        entityContext = entity["entityContext"] as Map<String, Any>,
+                        entityContext = @Suppress("UNCHECKED_CAST") (entity["entityContext"] as Map<String, Any>),
                         enableDebug = false
                     )
                 }

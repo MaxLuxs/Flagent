@@ -91,8 +91,9 @@ class FirebaseAnalyticsReporterTest {
         reporter.close()
 
         assertEquals(1, requestCount)
-        assertTrue(capturedUrl?.contains("measurement_id=G-XXX") == true)
-        assertTrue(capturedUrl?.contains("api_secret=secret") == true)
+        val url = requireNotNull(capturedUrl) { "expected URL to be captured" }
+        assertTrue(url.contains("measurement_id=G-XXX"))
+        assertTrue(url.contains("api_secret=secret"))
     }
 
     @Test

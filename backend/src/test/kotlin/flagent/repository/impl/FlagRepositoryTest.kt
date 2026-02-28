@@ -199,7 +199,7 @@ class FlagRepositoryTest {
         assertEquals(5L, created.environmentId)
         val found = repository.findById(created.id)
         assertNotNull(found)
-        assertEquals(5L, found?.environmentId)
+        assertEquals(5L, found.environmentId)
     }
 
     @Test
@@ -215,7 +215,7 @@ class FlagRepositoryTest {
         assertEquals(20L, updated.environmentId)
         val found = repository.findById(created.id)
         assertNotNull(found)
-        assertEquals(20L, found?.environmentId)
+        assertEquals(20L, found.environmentId)
     }
     
     @Test
@@ -250,7 +250,7 @@ class FlagRepositoryTest {
         val restored = repository.restore(created.id)
         
         assertNotNull(restored)
-        assertEquals(created.id, restored?.id)
+        assertEquals(created.id, restored.id)
         
         val found = repository.findById(created.id)
         assertNotNull(found)
@@ -421,8 +421,8 @@ class FlagRepositoryTest {
         assertNull(repository.findById(created.id))
         val included = repository.findByIdIncludeDeleted(created.id)
         assertNotNull(included)
-        assertEquals(created.id, included?.id)
-        assertEquals("archived_flag", included?.key)
+        assertEquals(created.id, included.id)
+        assertEquals("archived_flag", included.key)
     }
     
     @Test
