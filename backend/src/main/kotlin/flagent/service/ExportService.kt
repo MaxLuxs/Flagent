@@ -58,9 +58,9 @@ class ExportService(
         tempFile.deleteOnExit()
         
         try {
-            // Create temporary SQLite database connection
+            // Single connection + busy_timeout to avoid SQLITE_BUSY when reading file after writes
             val tempDb = Database.connect(
-                url = "jdbc:sqlite:${tempFile.absolutePath}",
+                url = "jdbc:sqlite:${tempFile.absolutePath}?busy_timeout=5000",
                 driver = "org.sqlite.JDBC"
             )
             
@@ -80,8 +80,8 @@ class ExportService(
                 )
             }
             
-            // Export all flags with related data
-            exportFlags(tempDb)
+            // Export all flags with related data (clear snapshotId when not exporting snapshots)
+            exportFlags(tempDb, clearSnapshotIds = excludeSnapshots)
             
             // Export snapshots if not excluded
             if (!excludeSnapshots) {
@@ -101,7 +101,7 @@ class ExportService(
         }
     }
     
-    private suspend fun exportFlags(tempDb: Database) = withContext(Dispatchers.IO) {
+    private suspend fun exportFlags(tempDb: Database, clearSnapshotIds: Boolean = false) = withContext(Dispatchers.IO) {
         val flags = flagRepository.findAll(preload = true)
         
         suspendTransaction(tempDb) {
@@ -125,7 +125,7 @@ class ExportService(
                     it[createdBy] = flag.createdBy
                     it[updatedBy] = flag.updatedBy
                     it[enabled] = flag.enabled
-                    it[snapshotId] = flag.snapshotId
+                    it[snapshotId] = if (clearSnapshotIds) 0 else flag.snapshotId
                     it[notes] = flag.notes
                     it[dataRecordsEnabled] = flag.dataRecordsEnabled
                     it[entityType] = flag.entityType
