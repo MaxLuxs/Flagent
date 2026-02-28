@@ -44,11 +44,13 @@ object Database {
      */
     fun initForTests(jdbcUrl: String, driverClassName: String = "org.postgresql.Driver") {
         close()
+        val isInMemorySqlite = jdbcUrl.contains(":memory:", ignoreCase = true)
         val config = HikariConfig().apply {
             this.driverClassName = driverClassName
             this.jdbcUrl = jdbcUrl
-            maximumPoolSize = 2
-            minimumIdle = 1
+            // SQLite :memory: is per-connection; pool size 1 so all code sees the same DB
+            maximumPoolSize = if (isInMemorySqlite) 1 else 2
+            minimumIdle = if (isInMemorySqlite) 0 else 1
             connectionTimeout = 30000
         }
         dataSource = HikariDataSource(config)

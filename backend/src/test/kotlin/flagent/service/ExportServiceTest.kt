@@ -64,22 +64,19 @@ class ExportServiceTest {
         // Assert: Verify SQLite file is created and contains data
         assertTrue(sqliteBytes.isNotEmpty(), "SQLite export should return non-empty bytes")
         
-        // Verify by reading the SQLite file
+        // Verify by reading the SQLite file (busy_timeout for CI where SQLite can be briefly locked)
         val tempFile = File.createTempFile("test_export_", ".sqlite")
         try {
             tempFile.writeBytes(sqliteBytes)
-            
+            val url = "jdbc:sqlite:${tempFile.absolutePath}?busy_timeout=5000"
             val db = org.jetbrains.exposed.v1.jdbc.Database.connect(
-                url = "jdbc:sqlite:${tempFile.absolutePath}",
+                url = url,
                 driver = "org.sqlite.JDBC"
             )
-            
             transaction(db) {
                 val flagCount = Flags.selectAll().count()
                 assertEquals(1, flagCount, "Should export 1 flag")
-                
-                val exportedFlag = Flags.selectAll().where { Flags.id eq createdFlag.id }.firstOrNull()
-                assertNotNull(exportedFlag, "Exported flag should exist")
+                val exportedFlag = requireNotNull(Flags.selectAll().where { Flags.id eq createdFlag.id }.firstOrNull()) { "Exported flag should exist" }
                 assertEquals(createdFlag.key, exportedFlag[Flags.key], "Flag key should match")
                 assertEquals(createdFlag.description, exportedFlag[Flags.description], "Flag description should match")
             }
