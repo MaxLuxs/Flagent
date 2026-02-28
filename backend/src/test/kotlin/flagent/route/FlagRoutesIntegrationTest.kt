@@ -31,73 +31,58 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            // CREATE
-            val flagKey = "integration_test_flag_${System.currentTimeMillis()}"
-            val createResponse = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Integration test flag")
-                    put("key", flagKey)
-                }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.OK, createResponse.status)
-            val createdFlag = createResponse.bodyJsonObject()
-            val flagId = createdFlag.intOrNull("id") ?: error("Missing id")
-            assertTrue(flagId > 0)
-            assertEquals(flagKey, createdFlag.stringOrNull("key"))
-            assertEquals("Integration test flag", createdFlag.stringOrNull("description"))
-            assertEquals(false, createdFlag.booleanOrNull("enabled"))
-            
-            // READ - Get by ID
-            val getResponse = client.get("/api/v1/flags/$flagId")
-            assertEquals(HttpStatusCode.OK, getResponse.status)
-            val fetchedFlag = getResponse.bodyJsonObject()
-            assertEquals(flagId, fetchedFlag.intOrNull("id"))
-            
-            // UPDATE
-            val updateResponse = client.put("/api/v1/flags/$flagId") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Updated integration test flag")
-                    put("dataRecordsEnabled", true)
-                }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.OK, updateResponse.status)
-            val updatedFlag = updateResponse.bodyJsonObject()
-            assertEquals("Updated integration test flag", updatedFlag.stringOrNull("description"))
-            assertEquals(true, updatedFlag.booleanOrNull("dataRecordsEnabled"))
-            
-            // ENABLE
-            val enableResponse = client.put("/api/v1/flags/$flagId/enabled") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject { put("enabled", true) }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.OK, enableResponse.status)
-            val enabledFlag = enableResponse.bodyJsonObject()
-            assertEquals(true, enabledFlag.booleanOrNull("enabled"))
-            
-            // LIST - Verify flag appears in list
-            val listResponse = client.get("/api/v1/flags?enabled=true")
-            assertEquals(HttpStatusCode.OK, listResponse.status)
-            val flags = listResponse.bodyJsonArray()
-            assertTrue(flags.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flagId })
-            
-            // DELETE
-            val deleteResponse = client.delete("/api/v1/flags/$flagId")
-            assertEquals(HttpStatusCode.OK, deleteResponse.status)
-            
-            // Verify deleted - should return 404
-            val getDeletedResponse = client.get("/api/v1/flags/$flagId")
-            assertEquals(HttpStatusCode.NotFound, getDeletedResponse.status)
-            
-        } finally {
-            client.close()
+        // CREATE
+        val flagKey = "integration_test_flag_${System.currentTimeMillis()}"
+        val createResponse = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Integration test flag")
+                put("key", flagKey)
+            }.toString())
         }
+        assertEquals(HttpStatusCode.OK, createResponse.status)
+        val createdFlag = createResponse.bodyJsonObject()
+        val flagId = createdFlag.intOrNull("id") ?: error("Missing id")
+        assertTrue(flagId > 0)
+        assertEquals(flagKey, createdFlag.stringOrNull("key"))
+        assertEquals("Integration test flag", createdFlag.stringOrNull("description"))
+        assertEquals(false, createdFlag.booleanOrNull("enabled"))
+        // READ - Get by ID
+        val getResponse = client.get("/api/v1/flags/$flagId")
+        assertEquals(HttpStatusCode.OK, getResponse.status)
+        val fetchedFlag = getResponse.bodyJsonObject()
+        assertEquals(flagId, fetchedFlag.intOrNull("id"))
+        // UPDATE
+        val updateResponse = client.put("/api/v1/flags/$flagId") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Updated integration test flag")
+                put("dataRecordsEnabled", true)
+            }.toString())
+        }
+        assertEquals(HttpStatusCode.OK, updateResponse.status)
+        val updatedFlag = updateResponse.bodyJsonObject()
+        assertEquals("Updated integration test flag", updatedFlag.stringOrNull("description"))
+        assertEquals(true, updatedFlag.booleanOrNull("dataRecordsEnabled"))
+        // ENABLE
+        val enableResponse = client.put("/api/v1/flags/$flagId/enabled") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { put("enabled", true) }.toString())
+        }
+        assertEquals(HttpStatusCode.OK, enableResponse.status)
+        val enabledFlag = enableResponse.bodyJsonObject()
+        assertEquals(true, enabledFlag.booleanOrNull("enabled"))
+        // LIST - Verify flag appears in list
+        val listResponse = client.get("/api/v1/flags?enabled=true")
+        assertEquals(HttpStatusCode.OK, listResponse.status)
+        val flags = listResponse.bodyJsonArray()
+        assertTrue(flags.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flagId })
+        // DELETE
+        val deleteResponse = client.delete("/api/v1/flags/$flagId")
+        assertEquals(HttpStatusCode.OK, deleteResponse.status)
+        // Verify deleted - should return 404
+        val getDeletedResponse = client.get("/api/v1/flags/$flagId")
+        assertEquals(HttpStatusCode.NotFound, getDeletedResponse.status)
     }
     
     @Test
@@ -105,23 +90,16 @@ class FlagRoutesIntegrationTest {
         application {
             module()
         }
-        
         val client = createAuthenticatedClient()
-        
-        try {
-            val response = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject { put("description", "Flag without key") }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.OK, response.status)
-            val flag = response.bodyJsonObject()
-            val key = requireNotNull(flag.stringOrNull("key")) { "Missing key" }
-            assertTrue(key.isNotEmpty())
-            assertTrue(key.startsWith("k"))
-        } finally {
-            client.close()
+        val response = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { put("description", "Flag without key") }.toString())
         }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val flag = response.bodyJsonObject()
+        val key = requireNotNull(flag.stringOrNull("key")) { "Missing key" }
+        assertTrue(key.isNotEmpty())
+        assertTrue(key.startsWith("k"))
     }
     
     @Test
@@ -131,35 +109,25 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val response = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Simple boolean flag")
-                    put("key", "boolean_flag_${System.currentTimeMillis()}")
-                    put("template", "simple_boolean_flag")
-                }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.OK, response.status)
-            val flag = response.bodyJsonObject()
-            val flagId = flag.intOrNull("id") ?: error("Missing id")
-            
-            // Verify segments were created
-            val segmentsResponse = client.get("/api/v1/flags/$flagId/segments")
-            assertEquals(HttpStatusCode.OK, segmentsResponse.status)
-            val segments = segmentsResponse.bodyJsonArray()
-            assertEquals(1, segments.size)
-            
-            // Verify variants were created
-            val variantsResponse = client.get("/api/v1/flags/$flagId/variants")
-            assertEquals(HttpStatusCode.OK, variantsResponse.status)
-            val variants = variantsResponse.bodyJsonArray()
-            assertTrue(variants.any { (it as? JsonObject)?.stringOrNull("key") == "on" })
-        } finally {
-            client.close()
+        val response = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Simple boolean flag")
+                put("key", "boolean_flag_${System.currentTimeMillis()}")
+                put("template", "simple_boolean_flag")
+            }.toString())
         }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val flag = response.bodyJsonObject()
+        val flagId = flag.intOrNull("id") ?: error("Missing id")
+        val segmentsResponse = client.get("/api/v1/flags/$flagId/segments")
+        assertEquals(HttpStatusCode.OK, segmentsResponse.status)
+        val segments = segmentsResponse.bodyJsonArray()
+        assertEquals(1, segments.size)
+        val variantsResponse = client.get("/api/v1/flags/$flagId/variants")
+        assertEquals(HttpStatusCode.OK, variantsResponse.status)
+        val variants = variantsResponse.bodyJsonArray()
+        assertTrue(variants.any { (it as? JsonObject)?.stringOrNull("key") == "on" })
     }
     
     @Test
@@ -169,50 +137,35 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            // Create multiple flags
-            val ts = System.currentTimeMillis()
-            val flag1 = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject { put("description", "Enabled flag"); put("key", "enabled_flag_$ts") }.toString())
-            }.bodyJsonObject()
-            
-            val flag2 = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject { put("description", "Disabled flag"); put("key", "disabled_flag_$ts") }.toString())
-            }.bodyJsonObject()
-            
-            val flag1Id = flag1.intOrNull("id") ?: error("Missing id")
-            val flag2Id = flag2.intOrNull("id") ?: error("Missing id")
-            
-            // Enable flag1
-            client.put("/api/v1/flags/$flag1Id/enabled") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject { put("enabled", true) }.toString())
-            }
-            
-            // Test enabled filter
-            val enabledFlags = client.get("/api/v1/flags?enabled=true").bodyJsonArray()
-            assertTrue(enabledFlags.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flag1Id })
-            assertFalse(enabledFlags.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flag2Id })
-            
-            // Test key filter
-            val keyFiltered = client.get("/api/v1/flags?key=enabled_flag_$ts").bodyJsonArray()
-            assertEquals(1, keyFiltered.size)
-            assertEquals("enabled_flag_$ts", (keyFiltered[0] as? JsonObject)?.stringOrNull("key"))
-            
-            // Test descriptionLike filter
-            val descFiltered = client.get("/api/v1/flags?descriptionLike=Enabled").bodyJsonArray()
-            assertTrue(descFiltered.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flag1Id })
-            
-            // Test limit and offset
-            val limited = client.get("/api/v1/flags?limit=1&offset=0").bodyJsonArray()
-            assertEquals(1, limited.size)
-            
-        } finally {
-            client.close()
+        val ts = System.currentTimeMillis()
+        val flag1 = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { put("description", "Enabled flag"); put("key", "enabled_flag_$ts") }.toString())
+        }.bodyJsonObject()
+        val flag2 = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { put("description", "Disabled flag"); put("key", "disabled_flag_$ts") }.toString())
+        }.bodyJsonObject()
+        val flag1Id = flag1.intOrNull("id") ?: error("Missing id")
+        val flag2Id = flag2.intOrNull("id") ?: error("Missing id")
+        client.put("/api/v1/flags/$flag1Id/enabled") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { put("enabled", true) }.toString())
         }
+        // Test enabled filter
+        val enabledFlags = client.get("/api/v1/flags?enabled=true").bodyJsonArray()
+        assertTrue(enabledFlags.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flag1Id })
+        assertFalse(enabledFlags.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flag2Id })
+        // Test key filter
+        val keyFiltered = client.get("/api/v1/flags?key=enabled_flag_$ts").bodyJsonArray()
+        assertEquals(1, keyFiltered.size)
+        assertEquals("enabled_flag_$ts", (keyFiltered[0] as? JsonObject)?.stringOrNull("key"))
+        // Test descriptionLike filter
+        val descFiltered = client.get("/api/v1/flags?descriptionLike=Enabled").bodyJsonArray()
+        assertTrue(descFiltered.mapNotNull { (it as? JsonObject)?.intOrNull("id") }.any { it == flag1Id })
+        // Test limit and offset
+        val limited = client.get("/api/v1/flags?limit=1&offset=0").bodyJsonArray()
+        assertEquals(1, limited.size)
     }
     
     @Test
@@ -222,18 +175,11 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            // Try to update non-existent flag
-            val response = client.put("/api/v1/flags/99999") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject { put("description", "Test") }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.NotFound, response.status)
-        } finally {
-            client.close()
+        val response = client.put("/api/v1/flags/99999") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { put("description", "Test") }.toString())
         }
+        assertEquals(HttpStatusCode.NotFound, response.status)
     }
     
     @Test
@@ -243,20 +189,14 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val response = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Test flag")
-                    put("key", "invalid key with spaces!")
-                }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.BadRequest, response.status)
-        } finally {
-            client.close()
+        val response = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Test flag")
+                put("key", "invalid key with spaces!")
+            }.toString())
         }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
     }
     
     @Test
@@ -266,13 +206,8 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val response = client.get("/api/v1/flags/99999")
-            assertEquals(HttpStatusCode.NotFound, response.status)
-        } finally {
-            client.close()
-        }
+        val response = client.get("/api/v1/flags/99999")
+        assertEquals(HttpStatusCode.NotFound, response.status)
     }
     
     @Test
@@ -282,15 +217,10 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val response = client.get("/api/v1/flags?key=non_existent_flag_xyz")
-            assertEquals(HttpStatusCode.OK, response.status)
-            val flags = response.bodyJsonArray()
-            assertTrue(flags.isEmpty())
-        } finally {
-            client.close()
-        }
+        val response = client.get("/api/v1/flags?key=non_existent_flag_xyz")
+        assertEquals(HttpStatusCode.OK, response.status)
+        val flags = response.bodyJsonArray()
+        assertTrue(flags.isEmpty())
     }
     
     @Test
@@ -300,16 +230,11 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val response = client.get("/api/v1/flags")
-            assertEquals(HttpStatusCode.OK, response.status)
-            val totalCount = response.headers["X-Total-Count"]
-            assertNotNull(totalCount)
-            assertTrue(totalCount!!.toLongOrNull()!! >= 0)
-        } finally {
-            client.close()
-        }
+        val response = client.get("/api/v1/flags")
+        assertEquals(HttpStatusCode.OK, response.status)
+        val totalCount = response.headers["X-Total-Count"]
+        assertNotNull(totalCount)
+        assertTrue(totalCount!!.toLongOrNull()!! >= 0)
     }
     
     @Test
@@ -319,28 +244,22 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val ts = System.currentTimeMillis()
-            repeat(3) { i ->
-                client.post("/api/v1/flags") {
-                    contentType(ContentType.Application.Json)
-                    setBody(buildJsonObject {
-                        put("description", "Pagination test $i")
-                        put("key", "pag_test_${ts}_$i")
-                    }.toString())
-                }
+        val ts = System.currentTimeMillis()
+        repeat(3) { i ->
+            client.post("/api/v1/flags") {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject {
+                    put("description", "Pagination test $i")
+                    put("key", "pag_test_${ts}_$i")
+                }.toString())
             }
-            
-            val response = client.get("/api/v1/flags?limit=2&offset=0")
-            assertEquals(HttpStatusCode.OK, response.status)
-            val totalCount = response.headers["X-Total-Count"]!!.toLongOrNull()!!
-            assertTrue(totalCount >= 3)
-            val flags = response.bodyJsonArray()
-            assertTrue(flags.size <= 2)
-        } finally {
-            client.close()
         }
+        val response = client.get("/api/v1/flags?limit=2&offset=0")
+        assertEquals(HttpStatusCode.OK, response.status)
+        val totalCount = response.headers["X-Total-Count"]!!.toLongOrNull()!!
+        assertTrue(totalCount >= 3)
+        val flags = response.bodyJsonArray()
+        assertTrue(flags.size <= 2)
     }
     
     @Test
@@ -350,42 +269,34 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val ts = System.currentTimeMillis()
-            val flag1 = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Batch enable test 1")
-                    put("key", "batch_en_${ts}_1")
-                }.toString())
-            }.bodyJsonObject()
-            val flag2 = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Batch enable test 2")
-                    put("key", "batch_en_${ts}_2")
-                }.toString())
-            }.bodyJsonObject()
-            
-            val id1 = flag1.intOrNull("id") ?: error("Missing id")
-            val id2 = flag2.intOrNull("id") ?: error("Missing id")
-            
-            val batchResponse = client.put("/api/v1/flags/batch/enabled") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("ids", buildJsonArray { add(JsonPrimitive(id1)); add(JsonPrimitive(id2)) })
-                    put("enabled", true)
-                }.toString())
-            }
-            
-            assertEquals(HttpStatusCode.OK, batchResponse.status)
-            val updated = batchResponse.bodyJsonArray()
-            assertEquals(2, updated.size)
-            assertTrue(updated.all { (it as? JsonObject)?.booleanOrNull("enabled") == true })
-        } finally {
-            client.close()
+        val ts = System.currentTimeMillis()
+        val flag1 = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Batch enable test 1")
+                put("key", "batch_en_${ts}_1")
+            }.toString())
+        }.bodyJsonObject()
+        val flag2 = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Batch enable test 2")
+                put("key", "batch_en_${ts}_2")
+            }.toString())
+        }.bodyJsonObject()
+        val id1 = flag1.intOrNull("id") ?: error("Missing id")
+        val id2 = flag2.intOrNull("id") ?: error("Missing id")
+        val batchResponse = client.put("/api/v1/flags/batch/enabled") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("ids", buildJsonArray { add(JsonPrimitive(id1)); add(JsonPrimitive(id2)) })
+                put("enabled", true)
+            }.toString())
         }
+        assertEquals(HttpStatusCode.OK, batchResponse.status)
+        val updated = batchResponse.bodyJsonArray()
+        assertEquals(2, updated.size)
+        assertTrue(updated.all { (it as? JsonObject)?.booleanOrNull("enabled") == true })
     }
     
     @Test
@@ -395,19 +306,14 @@ class FlagRoutesIntegrationTest {
         }
         
         val client = createAuthenticatedClient()
-        
-        try {
-            val response = client.put("/api/v1/flags/batch/enabled") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("ids", buildJsonArray { })
-                    put("enabled", true)
-                }.toString())
-            }
-            assertEquals(HttpStatusCode.BadRequest, response.status)
-        } finally {
-            client.close()
+        val response = client.put("/api/v1/flags/batch/enabled") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("ids", buildJsonArray { })
+                put("enabled", true)
+            }.toString())
         }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
     }
 
     /** OSS: Archive (soft delete) then permanent delete removes flag; GET returns 404. */
@@ -417,25 +323,21 @@ class FlagRoutesIntegrationTest {
             module()
         }
         val client = createAuthenticatedClient()
-        try {
-            val ts = System.currentTimeMillis()
-            val createResp = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "To be permanently deleted")
-                    put("key", "perm_del_$ts")
-                }.toString())
-            }
-            assertEquals(HttpStatusCode.OK, createResp.status)
-            val flagId = createResp.bodyJsonObject().intOrNull("id") ?: error("Missing id")
-            client.delete("/api/v1/flags/$flagId")
-            val permResp = client.delete("/api/v1/flags/$flagId/permanent")
-            assertEquals(HttpStatusCode.OK, permResp.status)
-            val getResp = client.get("/api/v1/flags/$flagId")
-            assertEquals(HttpStatusCode.NotFound, getResp.status)
-        } finally {
-            client.close()
+        val ts = System.currentTimeMillis()
+        val createResp = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "To be permanently deleted")
+                put("key", "perm_del_$ts")
+            }.toString())
         }
+        assertEquals(HttpStatusCode.OK, createResp.status)
+        val flagId = createResp.bodyJsonObject().intOrNull("id") ?: error("Missing id")
+        client.delete("/api/v1/flags/$flagId")
+        val permResp = client.delete("/api/v1/flags/$flagId/permanent")
+        assertEquals(HttpStatusCode.OK, permResp.status)
+        val getResp = client.get("/api/v1/flags/$flagId")
+        assertEquals(HttpStatusCode.NotFound, getResp.status)
     }
 
     /** OSS: GET /flags?environmentId= returns only flags for that env or global (environmentId null). */
@@ -445,32 +347,28 @@ class FlagRoutesIntegrationTest {
             module()
         }
         val client = createAuthenticatedClient()
-        try {
-            val ts = System.currentTimeMillis()
-            val withEnv = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Flag for env 1")
-                    put("key", "env1_flag_$ts")
-                    put("environmentId", 1)
-                }.toString())
-            }.bodyJsonObject()
-            val globalKey = "global_flag_$ts"
-            client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Global flag")
-                    put("key", globalKey)
-                }.toString())
-            }
-            val listEnv1 = client.get("/api/v1/flags?environmentId=1").bodyJsonArray()
-            val ids = listEnv1.mapNotNull { (it as? JsonObject)?.intOrNull("id") }
-            assertTrue(ids.contains(withEnv.intOrNull("id")), "Filter envId=1 should include flag with environmentId=1")
-            val keys = listEnv1.mapNotNull { (it as? JsonObject)?.stringOrNull("key") }
-            assertTrue(keys.contains(globalKey), "Filter envId=1 should include global flags (env null)")
-        } finally {
-            client.close()
+        val ts = System.currentTimeMillis()
+        val withEnv = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Flag for env 1")
+                put("key", "env1_flag_$ts")
+                put("environmentId", 1)
+            }.toString())
+        }.bodyJsonObject()
+        val globalKey = "global_flag_$ts"
+        client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Global flag")
+                put("key", globalKey)
+            }.toString())
         }
+        val listEnv1 = client.get("/api/v1/flags?environmentId=1").bodyJsonArray()
+        val ids = listEnv1.mapNotNull { (it as? JsonObject)?.intOrNull("id") }
+        assertTrue(ids.contains(withEnv.intOrNull("id")), "Filter envId=1 should include flag with environmentId=1")
+        val keys = listEnv1.mapNotNull { (it as? JsonObject)?.stringOrNull("key") }
+        assertTrue(keys.contains(globalKey), "Filter envId=1 should include global flags (env null)")
     }
 
     /** OSS: includeArchived shows soft-deleted flags; restore brings them back. */
@@ -480,26 +378,22 @@ class FlagRoutesIntegrationTest {
             module()
         }
         val client = createAuthenticatedClient()
-        try {
-            val ts = System.currentTimeMillis()
-            val createResp = client.post("/api/v1/flags") {
-                contentType(ContentType.Application.Json)
-                setBody(buildJsonObject {
-                    put("description", "Archive restore test")
-                    put("key", "arch_restore_$ts")
-                }.toString())
-            }
-            assertEquals(HttpStatusCode.OK, createResp.status)
-            val flagId = createResp.bodyJsonObject().intOrNull("id") ?: error("Missing id")
-            client.delete("/api/v1/flags/$flagId")
-            val listArchived = client.get("/api/v1/flags?includeArchived=true").bodyJsonArray()
-            assertTrue(listArchived.any { (it as? JsonObject)?.intOrNull("id") == flagId })
-            val restoreResp = client.put("/api/v1/flags/$flagId/restore")
-            assertEquals(HttpStatusCode.OK, restoreResp.status)
-            val getResp = client.get("/api/v1/flags/$flagId")
-            assertEquals(HttpStatusCode.OK, getResp.status)
-        } finally {
-            client.close()
+        val ts = System.currentTimeMillis()
+        val createResp = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject {
+                put("description", "Archive restore test")
+                put("key", "arch_restore_$ts")
+            }.toString())
         }
+        assertEquals(HttpStatusCode.OK, createResp.status)
+        val flagId = createResp.bodyJsonObject().intOrNull("id") ?: error("Missing id")
+        client.delete("/api/v1/flags/$flagId")
+        val listArchived = client.get("/api/v1/flags?includeArchived=true").bodyJsonArray()
+        assertTrue(listArchived.any { (it as? JsonObject)?.intOrNull("id") == flagId })
+        val restoreResp = client.put("/api/v1/flags/$flagId/restore")
+        assertEquals(HttpStatusCode.OK, restoreResp.status)
+        val getResp = client.get("/api/v1/flags/$flagId")
+        assertEquals(HttpStatusCode.OK, getResp.status)
     }
 }

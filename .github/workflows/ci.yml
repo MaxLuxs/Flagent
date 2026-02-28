@@ -53,7 +53,8 @@ jobs:
         run: ./gradlew build --no-daemon -x test
 
       - name: Run unit tests
-        # Do not set FLAGENT_DB_* so backend tests use in-memory SQLite (avoids Postgres flakes in unit_test)
+        env:
+          FLAGENT_TEST_USE_SQLITE: "true"
         run: ./gradlew :backend:test :shared:jvmTest --no-daemon
 
       - name: Design system hardcode check

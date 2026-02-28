@@ -19,6 +19,8 @@ import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import java.io.File
 import java.time.LocalDateTime
 import java.util.*
@@ -56,15 +58,15 @@ class ExportService(
     suspend fun exportSQLite(excludeSnapshots: Boolean = false): ByteArray = withContext(Dispatchers.IO) {
         val tempFile = File.createTempFile("flagent_", ".sqlite")
         tempFile.deleteOnExit()
-        
+        val url = "jdbc:sqlite:${tempFile.absolutePath}?busy_timeout=5000&journal_mode=DELETE"
+        val dataSource = HikariDataSource(HikariConfig().apply {
+            jdbcUrl = url
+            driverClassName = "org.sqlite.JDBC"
+            maximumPoolSize = 1
+            minimumIdle = 0
+        })
         try {
-            // Single connection + busy_timeout to avoid SQLITE_BUSY when reading file after writes
-            val tempDb = Database.connect(
-                url = "jdbc:sqlite:${tempFile.absolutePath}?busy_timeout=5000",
-                driver = "org.sqlite.JDBC"
-            )
-            
-            // Create all tables in temporary database
+            val tempDb = Database.connect(dataSource)
             transaction(tempDb) {
                 SchemaUtils.create(
                     Flags,
@@ -79,25 +81,16 @@ class ExportService(
                     Users
                 )
             }
-            
-            // Export all flags with related data (clear snapshotId when not exporting snapshots)
             exportFlags(tempDb, clearSnapshotIds = excludeSnapshots)
-            
-            // Export snapshots if not excluded
             if (!excludeSnapshots) {
                 exportFlagSnapshots(tempDb)
             }
-            
-            // Export entity types
             exportFlagEntityTypes(tempDb)
-            
-            // Read file and return bytes
+            dataSource.close()
             tempFile.readBytes()
         } finally {
-            // Clean up temporary file
-            if (tempFile.exists()) {
-                tempFile.delete()
-            }
+            dataSource.close()
+            if (tempFile.exists()) tempFile.delete()
         }
     }
     

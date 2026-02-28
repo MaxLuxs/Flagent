@@ -44,19 +44,38 @@ fun kotlinx.serialization.json.JsonObject.booleanOrNull(key: String): Boolean? =
     this[key]?.jsonPrimitive?.content?.toBooleanStrictOrNull()
 
 /**
- * Creates an authenticated client for integration tests.
- * When enterprise is present, creates a tenant via POST /admin/tenants and uses its API key.
- * When enterprise is absent, returns a base client (no tenant auth required).
+ * Single-client wrapper so integration tests use one HttpClient (avoids "EmbeddedServer was stopped"
+ * when creating a second client via createClient).
  */
-suspend fun ApplicationTestBuilder.createAuthenticatedClient(): HttpClient {
-    val baseClient = createClient {
-        install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true })
-        }
-    }
+class AuthenticatedTestClient(
+    private val client: HttpClient,
+    private val apiKey: String?
+) {
+    suspend fun get(url: String, block: io.ktor.client.request.HttpRequestBuilder.() -> Unit = {}) =
+        client.get(url) { if (apiKey != null) header("X-API-Key", apiKey); block() }
+
+    suspend fun post(url: String, block: io.ktor.client.request.HttpRequestBuilder.() -> Unit = {}) =
+        client.post(url) { if (apiKey != null) header("X-API-Key", apiKey); block() }
+
+    suspend fun put(url: String, block: io.ktor.client.request.HttpRequestBuilder.() -> Unit = {}) =
+        client.put(url) { if (apiKey != null) header("X-API-Key", apiKey); block() }
+
+    suspend fun delete(url: String, block: io.ktor.client.request.HttpRequestBuilder.() -> Unit = {}) =
+        client.delete(url) { if (apiKey != null) header("X-API-Key", apiKey); block() }
+
+    /** No-op: test engine manages lifecycle; do not close the underlying client. */
+    fun close() {}
+}
+
+/**
+ * Creates an authenticated client for integration tests.
+ * Uses the test engine's client (no createClient) so the embedded server stays running.
+ * When enterprise is present, creates a tenant via POST /admin/tenants and returns a wrapper that adds X-API-Key.
+ */
+suspend fun ApplicationTestBuilder.createAuthenticatedClient(): AuthenticatedTestClient {
     val apiKey = try {
         val adminKey = System.getenv("FLAGENT_ADMIN_API_KEY")
-        val r = baseClient.post("/admin/tenants") {
+        val r = client.post("/admin/tenants") {
             contentType(ContentType.Application.Json)
             if (adminKey != null) header("X-Admin-Key", adminKey)
             setBody(
@@ -76,16 +95,5 @@ suspend fun ApplicationTestBuilder.createAuthenticatedClient(): HttpClient {
     } catch (_: Exception) {
         null
     }
-    return if (apiKey != null) {
-        createClient {
-            install(DefaultRequest) {
-                header("X-API-Key", apiKey)
-            }
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
-    } else {
-        baseClient
-    }
+    return AuthenticatedTestClient(client, apiKey)
 }

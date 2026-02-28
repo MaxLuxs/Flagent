@@ -56,8 +56,14 @@ class PostgresTestcontainerExtension : BeforeAllCallback, AfterAllCallback {
 
     override fun beforeAll(context: ExtensionContext) {
         initCount++
-        val explicitJdbc = System.getenv("FLAGENT_DB_DBCONNECTIONSTR")
-        if (!explicitJdbc.isNullOrBlank() && explicitJdbc.trim().lowercase().startsWith("jdbc:postgresql")) {
+        // CI: use in-memory SQLite so unit tests don't depend on Docker/Postgres
+        val useSqlite = System.getenv("FLAGENT_TEST_USE_SQLITE")?.trim()?.lowercase() in listOf("true", "1", "yes")
+        if (useSqlite) {
+            Database.initForTests("jdbc:sqlite::memory:", "org.sqlite.JDBC")
+            return
+        }
+        val explicitJdbc = System.getenv("FLAGENT_DB_DBCONNECTIONSTR")?.trim()?.lowercase()
+        if (!explicitJdbc.isNullOrBlank() && explicitJdbc.startsWith("jdbc:postgresql")) {
             Database.init()
             return
         }
