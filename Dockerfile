@@ -38,33 +38,22 @@ ENV GRADLE_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
 WORKDIR /app
 RUN chmod +x ./gradlew
 
-RUN ./gradlew :backend:installDist --no-daemon --stacktrace
+RUN ./gradlew :backend:installDist :backend:shadowJar --no-daemon --stacktrace
 
 RUN ./gradlew :frontend:jsBrowserDevelopmentWebpack --no-daemon
 
 ######################################
-# Runtime stage (Jammy: avoids Alpine libpng/gnutls CVEs in Trivy scan)
+# Runtime stage (distroless: no shell, wget, tar, libssh, pam, gnupg — reduces Trivy CVEs)
 ######################################
-FROM eclipse-temurin:21-jre-jammy
+FROM gcr.io/distroless/java21-debian12:nonroot
 
 WORKDIR /app
 
-# Runtime deps: tzdata, wget for HEALTHCHECK; create non-root user
-RUN apt-get update && apt-get install -y --no-install-recommends tzdata wget && \
-    groupadd -r appgroup && useradd -r -g appgroup appuser && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy built application from build stage
-COPY --from=build /app/backend/build/install/backend ./backend
+# Single fat JAR + static assets (no OS packages → no wget/tar/libssh/curl/gnupg CVEs)
+COPY --from=build /app/backend/build/libs/backend-*.jar ./backend.jar
 COPY --from=build /app/frontend/build/kotlin-webpack/js/developmentExecutable ./static
 
-# Set ownership
-RUN chown -R appuser:appgroup /app
-
-# Switch to non-root user
-USER appuser
-
-# Set default environment variables
+# Default environment variables
 ENV HOST=0.0.0.0
 ENV PORT=18000
 ENV FLAGENT_DB_DBDRIVER=sqlite3
@@ -76,11 +65,8 @@ ENV FLAGENT_ADMIN_EMAIL=admin@local
 ENV FLAGENT_ADMIN_PASSWORD=admin
 ENV FLAGENT_JWT_AUTH_SECRET=dev-secret-min-32-chars-required-for-jwt
 
-# Expose port
+# Expose port (health: use HTTP GET from orchestrator, e.g. k8s readinessProbe to /api/v1/health)
 EXPOSE 18000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:18000/api/v1/health || exit 1
-
-# Run the application
-CMD ["./backend/bin/backend"]
+# Distroless entrypoint is "java -jar"; CMD is the JAR path
+CMD ["/app/backend.jar"]

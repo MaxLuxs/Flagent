@@ -10,6 +10,14 @@ plugins {
     jacoco
 }
 
+// Force safe versions for transitive deps (CVEs)
+configurations.all {
+    resolutionStrategy {
+        force("org.apache.commons:commons-lang3:${libs.versions.commons.lang3.get()}") // CVE-2025-48924
+        force("org.mozilla:rhino:1.7.14.1") // CVE-2025-66453 (toFixed DoS); from swagger-parser -> json-schema-core
+    }
+}
+
 dependencyCheck {
     failBuildOnCVSS = 11f  // Don't fail on CVSS, only report
     failOnError = false    // Don't fail when NVD is unreachable (403, 429, etc.)

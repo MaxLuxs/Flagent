@@ -108,7 +108,7 @@ function setNested(obj, path, value) {
   for (let i = 0; i < parts.length - 1; i++) {
     const p = parts[i];
     if (PROTOTYPE_POLLUTION_KEYS.has(p)) return;
-    if (!(p in cur)) cur[p] = {};
+    if (!Object.prototype.hasOwnProperty.call(cur, p)) cur[p] = Object.create(null);
     cur = cur[p];
   }
   const last = parts[parts.length - 1];
@@ -117,7 +117,7 @@ function setNested(obj, path, value) {
 }
 
 function emitTypeScript(tokens) {
-  const flat = {};
+  const flat = Object.create(null);
   for (const [name, value] of walk(tokens)) {
     setNested(flat, name, value);
   }
