@@ -124,6 +124,8 @@ docker pull ghcr.io/maxluxs/flagent
 docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 ```
 
+Без переменных окружения используется SQLite-файл в контейнере (данные теряются при перезапуске). Для сохранения данных используйте volume (см. [README.md](README.md#option-2-docker-with-persistent-sqlite)).
+
 ### Docker Compose (с PostgreSQL)
 
 ```bash
@@ -179,97 +181,21 @@ dependencies {
 }
 ```
 
-Публикуемые артефакты: `shared` (KMP: root + `shared-jvm`, `shared-js`), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`. Для чтения используйте [GitHub PAT](https://github.com/settings/tokens) с правом `read:packages` (или `GITHUB_TOKEN` в CI). Версию замените на актуальную из [релизов](https://github.com/MaxLuxs/Flagent/releases).
+Публикуемые артефакты: `shared`, `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, `flagent-koin`, `flagent-java-client` (Maven), `flagent-spring-boot-starter`. Версию см. в [релизах](https://github.com/MaxLuxs/Flagent/releases). Чтение: [GitHub PAT](https://github.com/settings/tokens) с `read:packages` или `GITHUB_TOKEN` в CI.
 
-### Backend SDK (Доступны)
-- **[Kotlin SDK](sdk/kotlin)** - Type-safe Kotlin client + Enhanced вариант
-- **[JavaScript/TypeScript SDK](sdk/javascript)** - Node.js/Browser support + Enhanced вариант
-- **[Ktor Plugin](ktor-flagent)** - Интеграция первого класса для Ktor серверов
+### SDK (все стабильны)
+- **Backend:** [Kotlin](sdk/kotlin), [Kotlin Enhanced](sdk/kotlin-enhanced), [Java](sdk/java), [Spring Boot Starter](sdk/spring-boot-starter), [JavaScript/TS](sdk/javascript), [Ktor Plugin](ktor-flagent)
+- **Mobile:** [Swift](sdk/swift) + Swift Enhanced
+- **Другое:** [Python](sdk/python), [Go](sdk/go) + [Go Enhanced](sdk/go-enhanced)
 
-### Mobile SDK (Доступны)
-- **[Swift SDK](sdk/swift)** - iOS/macOS нативный клиент + Enhanced вариант
+### Debug UI
+- [Kotlin Debug UI](sdk/kotlin-debug-ui) · [Swift Debug UI](sdk/swift-debug-ui) · [JavaScript Debug UI](sdk/javascript-debug-ui)
 
-### Дополнительные SDK (Доступны)
-- **[Python SDK](sdk/python)** - Asyncio, типизированный client
-- **[Go SDK](sdk/go)** + **[Go Enhanced](sdk/go-enhanced)** - goroutines, client-side eval, SSE
-
-### Debug Tools (Доступны)
-- **[Kotlin Debug UI](sdk/kotlin-debug-ui)** - Встроенная панель отладки
-- **[Swift Debug UI](sdk/swift-debug-ui)** - Нативные SwiftUI инструменты отладки
-- **[JavaScript Debug UI](sdk/javascript-debug-ui)** - React-based консоль отладки
-
-## 🔧 Пример использования
-
-### Kotlin
-```kotlin
-val client = FlagentClient.create(
-    baseUrl = "http://localhost:18000/api/v1",
-    apiKey = "your-api-key"
-)
-
-// Простая проверка флага
-if (client.isEnabled("new_payment_flow")) {
-    newPaymentSystem.process()
-} else {
-    legacyPaymentSystem.process()
-}
-
-// A/B тестирование
-val variant = client.evaluate(
-    flagKey = "checkout_experiment",
-    entityContext = mapOf("user_id" to userId)
-)?.variant
-
-when (variant) {
-    "control" -> showOldCheckout()
-    "variant_a" -> showNewCheckoutA()
-    "variant_b" -> showNewCheckoutB()
-}
-```
-
-### JavaScript/TypeScript
-```javascript
-import { FlagentClient } from '@flagent/client';
-
-const client = new FlagentClient({
-  baseUrl: 'http://localhost:18000/api/v1',
-  apiKey: 'your-api-key'
-});
-
-// Простая проверка флага
-if (await client.isEnabled('new_payment_flow')) {
-  newPaymentSystem.process();
-} else {
-  legacyPaymentSystem.process();
-}
-```
-
-### Swift
-```swift
-let client = FlagentClient(
-    baseURL: "http://localhost:18000/api/v1",
-    apiKey: "your-api-key"
-)
-
-// Простая проверка флага
-if try await client.isEnabled("new_payment_flow") {
-    newPaymentSystem.process()
-} else {
-    legacyPaymentSystem.process()
-}
-```
+Примеры кода: [samples](samples/README.md) (Kotlin, Ktor, Spring Boot, Android, JS, Swift, Flutter и др.).
 
 ## 🤝 Участие в разработке
 
-Мы приветствуем вклад в проект! Пожалуйста, см. наше руководство по участию:
-
-1. Форкните репозиторий
-2. Создайте вашу feature ветку (`git checkout -b feature/amazing-feature`)
-3. Закоммитьте ваши изменения (`git commit -m 'Add some amazing feature'`)
-4. Запушьте в ветку (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
-
-Для более подробной информации, см. [Настройка разработки](README.md#development).
+Форк → ветка → правки (по [стилю кода](https://maxluxs.github.io/Flagent/guides/contributing.md)) → тесты → PR. Подробнее: [Contributing](https://maxluxs.github.io/Flagent/guides/contributing.md), [Development](README.md#development).
 
 ## 🌍 Локализация
 
@@ -281,41 +207,20 @@ Flagent полностью локализован для СНГ рынка:
 
 ## 📊 Roadmap
 
-См. наш детальный [Roadmap](docs/guides/roadmap.md) для полного видения проекта.
+- **Фаза 1 (Q1 2026):** ✅ Core, client-side eval, SSE, Python/Go/Java SDK, Spring Boot, Kotlin/Go Enhanced. 🚧 Документация, Helm.
+- **Фаза 2 (Q2–Q3):** ✅ Импорт/экспорт YAML/JSON. В планах: CLI, вебхуки, Edge Service.
+- **Фаза 3 (Q3–Q4):** ✅ Multi-tenancy, SSO, RBAC, Smart Rollout, Anomaly. В планах: audit logs.
 
-### Фаза 1: Foundation (Q1 2026)
-- ✅ Client-side evaluation (Go Enhanced, Kotlin Enhanced)
-- ✅ Real-time обновления (SSE) в Go Enhanced, Kotlin Enhanced
-- ✅ Python и Go SDK + Go Enhanced
-- 🚧 Kubernetes Helm чарты
-
-### Фаза 2: Community (Q2-Q3 2026)
-- ✅ Импорт/экспорт флагов в YAML/JSON (POST /import, настройки) — готово. CLI-скрипт есть; бинарник и вебхуки в планах.
-- Webhooks и интеграции
-- Edge Service для масштабирования
-
-### Фаза 3: Enterprise (Q3-Q4 2026)
-- ✅ Multi-tenancy (тенанты, API-ключи, X-Tenant-ID)
-- ✅ SSO (SAML + OAuth/OIDC, по тенанту)
-- ✅ RBAC (кастомные роли, проверки на API)
-- ✅ Smart Rollout и Anomaly Detection (на правилах/метриках)
-- Audit logs и соответствие (в планах)
+Детали: [Roadmap](docs/guides/roadmap.md).
 
 ## 📄 Лицензия
 
 Этот проект лицензирован под Apache License 2.0 - см. файл [LICENSE](LICENSE) для деталей.
 
-## 💬 Сообщество и поддержка
+## 💬 Поддержка
 
-- 💝 **[Поддержать проект](https://github.com/sponsors/MaxLuxs)** - Спонсорская поддержка разработки Flagent
-- 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Вопросы, баги, запросы функций
-- 📚 **[Документация](https://maxluxs.github.io/Flagent/guides/getting-started.ru.md)** - Руководства и API
-- 💻 **[Примеры](samples)** - Примеры кода и туториалы
-- 📧 **Поддержка:** max.developer.luxs@gmail.com
-
-## ⭐ Звезды
-
-Если вам нравится Flagent, поставьте звезду на GitHub! Это помогает другим разработчикам найти проект.
+- 📖 [Документация](https://maxluxs.github.io/Flagent/guides/getting-started.ru.md) · [Примеры](samples/README.md) · 🐛 [Issues](https://github.com/MaxLuxs/Flagent/issues)
+- 💝 [Спонсировать](https://github.com/sponsors/MaxLuxs) · 📧 max.developer.luxs@gmail.com
 
 ---
 

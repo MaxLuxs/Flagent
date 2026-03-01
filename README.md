@@ -282,6 +282,8 @@ Official SDKs available for multiple platforms. The Kotlin SDK is **full Kotlin 
 | **JavaScript/TypeScript** | [flagent-js](sdk/javascript) | ✅ Stable | Full API support, async/await |
 | **Swift** | [flagent-swift](sdk/swift) | ✅ Stable | Full API support, async/await |
 | **Python** | [flagent-python](sdk/python) | ✅ Stable | Full API support, asyncio |
+| **Java** | [flagent-java-client](sdk/java) | ✅ Stable | Full API support, Maven |
+| **Spring Boot** | [flagent-spring-boot-starter](sdk/spring-boot-starter) | ✅ Stable | Auto-configuration, Ktor/Java client |
 | **Go** | [flagent-go](sdk/go) | ✅ Stable | Full API support, goroutines |
 | **Go Enhanced** | [go-enhanced](sdk/go-enhanced) | ✅ Stable | Client-side eval, real-time updates |
 
@@ -317,7 +319,7 @@ dependencies {
 }
 ```
 
-Published artifacts: `shared` (KMP), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, `flagent-koin` (all Kotlin SDK modules publish JVM/Android/iOS/JS/Native variants where applicable). For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases) (current: 0.1.6).
+Published artifacts: `shared` (KMP), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, `flagent-koin`, `flagent-java-client` (Maven), `flagent-spring-boot-starter`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases).
 
 ### Server-Side Integration
 
@@ -343,6 +345,8 @@ docker pull ghcr.io/maxluxs/flagent
 docker run -d -p 18000:18000 ghcr.io/maxluxs/flagent
 ```
 
+Without env vars the backend uses SQLite file `flagent.sqlite` inside the container (data lost on restart). For persistent data use a volume — see [Quick Start → Option 2](#option-2-docker-with-persistent-sqlite) above.
+
 ### Docker Compose (with PostgreSQL)
 
 ```bash
@@ -364,29 +368,7 @@ See [Deployment Guide](https://maxluxs.github.io/Flagent/guides/deployment.md) f
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Flagent is built with love by developers, for developers.
-
-### How to Contribute
-
-1. **Fork the repository**
-2. **Create your feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes** - Follow our [code style guidelines](https://maxluxs.github.io/Flagent/guides/contributing.md)
-4. **Add tests** - Ensure your changes are well-tested
-5. **Commit your changes** (`git commit -m 'Add some amazing feature'`)
-6. **Push to the branch** (`git push origin feature/amazing-feature`)
-7. **Open a Pull Request**
-
-### Areas to Contribute
-
-- 🐛 **Bug Fixes** - Help us squash bugs
-- ✨ **New Features** - Implement features from our [roadmap](docs/guides/roadmap.md)
-- 📚 **Documentation** - Improve guides and examples
-- 🌍 **SDKs** - Add support for new languages
-- 🎨 **UI/UX** - Enhance the admin dashboard
-- ⚡ **Performance** - Optimize evaluation speed
-- 🧪 **Tests** - Increase test coverage
-
-For more details, see our [Contributing Guide](https://maxluxs.github.io/Flagent/guides/contributing.md) and [Development Setup](README.md#development).
+Fork → branch → change (follow [code style](https://maxluxs.github.io/Flagent/guides/contributing.md)) → add tests → PR. We welcome bug fixes, features from the [roadmap](docs/guides/roadmap.md), docs, and SDKs. See [Contributing Guide](https://maxluxs.github.io/Flagent/guides/contributing.md) and [Development](README.md#development).
 
 ## 📄 License
 
@@ -394,123 +376,26 @@ Flagent is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for
 
 ## 🗺️ Roadmap
 
-Flagent is evolving into a production-ready feature flag and experimentation platform. Our roadmap focuses on community needs and enterprise requirements.
+- **Phase 1 (Q1 2026):** ✅ Core flags, A/B, Admin UI, recorders, Python/Go/Java SDKs, Kotlin/Go Enhanced, SSE. 🚧 Docs.
+- **Phase 2 (Q2–Q3):** ✅ Import/export YAML/JSON, Java SDK, Spring Boot. Planned: CLI, webhooks, .NET SDK, Edge Service.
+- **Phase 3 (Q3–Q4):** ✅ Multi-tenancy, SSO, RBAC, Smart Rollout, Anomaly. Planned: audit logs, analytics.
+- **Phase 4 (2027+):** AI anomaly, predictive targeting, Terraform/K8s, SOC 2.
 
-### Phase 1: Foundation (Q1 2026) 
-**Goal**: Close critical gaps for production use
-- ✅ Core feature flags and A/B testing (DONE)
-- ✅ Admin UI and Debug Console (DONE)
-- ✅ Data recorders: Kafka, Kinesis, PubSub (DONE)
-- ✅ Python SDK with asyncio (DONE)
-- ✅ Go SDK (DONE)
-- ✅ Client-side evaluation in Go SDK (DONE)
-- ✅ Real-time updates (SSE) in Go SDK (DONE) ⭐ **NEW**
-- 🚧 Enhanced documentation
-
-**Target**: 100+ GitHub stars, 5+ production deployments
-
-### Phase 2: Community (Q2-Q3 2026)
-**Goal**: Build community and product-market fit
-- ✅ Import/export flags as YAML/JSON (POST /import, Settings) — done. CLI and git sync not yet.
-- CLI tool for automation
-- Webhooks and integrations (Slack, Datadog)
-- Java/.NET SDKs
-- Edge Service for SDK scaling
-- Debug UI for SDKs (Compose/SwiftUI/React)
-- Public performance benchmarks
-
-**Target**: 500+ stars, 20+ contributors, 50+ deployments
-
-### Phase 3: Enterprise (Q3-Q4 2026)
-**Goal**: Enterprise-ready features + SaaS launch
-- ✅ Multi-tenancy (tenants, API keys, X-Tenant-ID)
-- ✅ SSO (SAML + OAuth/OIDC, tenant-scoped)
-- ✅ RBAC (custom roles, permission checks on API)
-- ✅ Smart Rollout and Anomaly Detection (rules/metrics-based)
-- Audit logs and compliance (planned)
-- Advanced analytics dashboard
-
-**Target**: 2000+ stars, SaaS beta, 10+ paying customers
-
-### Phase 4: Scale (2027+)
-**Goal**: Market leadership
-- AI Anomaly Detection
-- Predictive Targeting
-- Terraform/Pulumi providers
-- Kubernetes Operator
-- SOC 2 compliance
-- Enterprise SLA guarantees
-
-**Target**: 5000+ stars, $50k MRR, 50+ enterprise customers
-
-See our [detailed roadmap](docs/guides/roadmap.md) for more information.
-
-## 🌟 Community & Support
-
-Join our growing community of developers building better feature flag systems!
-
-### Get Help
-
-- 💝 **[Sponsor the project](https://github.com/sponsors/MaxLuxs)** - Support Flagent development
-- 🐛 **[GitHub Issues](https://github.com/MaxLuxs/Flagent/issues)** - Ask questions, report bugs, or request features
-- 📚 **[Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md)** - Guides and API reference
-- 💻 **[Code Examples](samples)** - Real-world examples in Kotlin, Python, JavaScript, Swift, and Go
-- 🎯 **[Roadmap](docs/guides/roadmap.md)** - Our journey to becoming the best open-source feature flag platform
-
-### Stay Updated
-
-- ⭐ **Star us on GitHub** to stay updated with new releases
-- 👀 **Watch the repository** to get notified about issues and PRs
-- 🗣️ **Share your experience** - Blog posts, talks, and social media mentions are always appreciated!
-
-### Enterprise Support
-
-Need help deploying Flagent in production? Want custom features or SLA guarantees? We offer:
-
-- 🏢 **Professional Services** - Architecture review, deployment assistance, custom integrations
-- 🎓 **Training & Workshops** - Team training on feature flag best practices
-- 🔒 **Priority Support** - Faster response times and dedicated Slack channel
-- 🚀 **Managed Hosting** — Flagent Cloud (planned; not yet available)
-
-Contact: **max.developer.luxs@gmail.com**
+See [detailed roadmap](docs/guides/roadmap.md).
 
 ## 🎯 Use Cases
 
-- **Feature Flags** - Safe deployments with instant rollbacks
-- **A/B Testing** - Product optimization with statistical significance
-- **Gradual Rollouts** - Progressive feature releases with kill switches
-- **Dynamic Configuration** - Update settings without redeployment
-- **User Segmentation** - Target specific user groups with complex rules
-- **Kill Switches** - Emergency feature disable in production
-- **Multi-Variant Testing** - Test multiple variations simultaneously
-- **Canary Releases** - Test with subset of users before full rollout
+Feature flags & rollbacks, A/B testing, gradual rollouts, kill switches, user segmentation, dynamic config, canary releases. See [use cases guide](https://maxluxs.github.io/Flagent/guides/use-cases.md).
 
-## 📊 Performance & Scalability
+## 📊 Performance
 
-- **Low latency** - Evaluation API targets sub-10ms p99 (see [benchmarks](docs/performance/benchmarks.md))
-- **High throughput** - Load-tested with k6; run evaluation benchmarks locally (see [benchmarks](docs/performance/benchmarks.md))
-- **Horizontal scaling** - Stateless architecture supports multiple instances
-- **Modest memory** - Approximately 200MB typical base usage
-- **EvalCache with TTL** - Caching significantly reduces database load
-- **Deterministic bucketing** - Consistent user assignments using MurmurHash3
+Sub-10ms p99 evaluation, EvalCache with TTL, horizontal scaling. [Benchmarks](docs/performance/benchmarks.md).
 
-## 👥 Who's Using Flagent?
+## 🔗 Links & Support
 
-Flagent is trusted by teams building high-performance Kotlin applications:
-
-- 🚀 **Early Adopters** - Join our growing community of production users
-- 🔬 **Research Projects** - Used in academic and research environments
-- 🏢 **Internal Tools** - Powering feature flags for internal applications
-
-*Are you using Flagent in production? [Let us know](https://github.com/MaxLuxs/Flagent/issues) or email max.developer.luxs@gmail.com.*
-
-## 🔗 Links
-
-- 📖 **[Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md)**
-- 📖 **[API Reference](https://maxluxs.github.io/Flagent)**
-- 🐳 **[Container image (GHCR)](https://github.com/MaxLuxs/Flagent/pkgs/container/flagent)**
-- 📦 **[Releases](https://github.com/MaxLuxs/Flagent/releases)**
-- 🐛 **[Issues](https://github.com/MaxLuxs/Flagent/issues)**
+- 📖 [Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md) · [API Reference](https://maxluxs.github.io/Flagent) · [Samples](samples/README.md)
+- 🐳 [Container (GHCR)](https://github.com/MaxLuxs/Flagent/pkgs/container/flagent) · 📦 [Releases](https://github.com/MaxLuxs/Flagent/releases) · 🐛 [Issues](https://github.com/MaxLuxs/Flagent/issues)
+- 💝 [Sponsor](https://github.com/sponsors/MaxLuxs) · 📧 **Contact:** max.developer.luxs@gmail.com (support, professional services, Flagent Cloud when available)
 
 ---
 
