@@ -31,6 +31,18 @@ Yes! Flagent is open-source and licensed under Apache 2.0. You can use it for fr
 - **Clean Architecture** – DDD, testable, maintainable
 - **Open source** – Apache 2.0, self-hosted, no vendor lock-in
 
+### How does Flagent differ from LaunchDarkly (and others)?
+
+Flagent is **Kotlin-native**, **self-hosted first**, and **open source** (Apache 2.0). Unlike LaunchDarkly (SaaS, commercial), you run Flagent on your infrastructure and own your data. Feature set: feature flags, A/B experiments, gradual rollouts, kill switches, targeting, client-side evaluation (Kotlin Enhanced, Go Enhanced), optional crash-by-flag analytics. Enterprise adds SSO, RBAC, Smart Rollout, Anomaly Detection, on-premise. See [Pricing and editions](pricing-and-editions.md) for a full comparison.
+
+### Do I need my own server?
+
+**Self-hosted (Open Source):** Yes — you run Flagent yourself (Docker, Kubernetes, or from source). You need a server (or cluster) and a database (PostgreSQL, MySQL, or SQLite). No usage-based billing; full control and data residency. **Flagent Cloud (SaaS)** is planned but not yet available; when it launches, you’ll be able to use Flagent without running your own server. See [Pricing and editions](pricing-and-editions.md).
+
+### What's included in Enterprise?
+
+Enterprise adds: **SSO** (SAML, OAuth/OIDC), **RBAC** (custom roles and permissions), **multi-tenancy** and on-premise deployment, **Smart Rollout** (automated gradual rollout and rollback), **Anomaly Detection** (alerts and optional rollback), **crash-by-flag** analytics and integration with Anomaly, **dedicated support**, SLA, and custom development. Contact: max.developer.luxs@gmail.com. Full comparison: [Pricing and editions](pricing-and-editions.md).
+
 ## Installation & Deployment
 
 ### How do I get started with Flagent?

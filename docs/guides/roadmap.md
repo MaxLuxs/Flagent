@@ -2,7 +2,7 @@
 
 > [English](#english) · [Русский](#русский)
 
-**This document is the single source of truth for product development.** Use it for planning, prioritisation, and alignment. All “Done” items are verified against the codebase; “Planned” is ordered by priority.
+**This document is the single source of truth for product development.** Use it for planning, prioritisation, and alignment. See also PRD (internal/private docs) for vision, positioning, and monetisation directions. All “Done” items are verified against the codebase; “Planned” is ordered by priority.
 
 ---
 
@@ -24,7 +24,7 @@
 | **Data** | Data recorders: Kafka, Kinesis, PubSub. |
 | **Backend** | PostgreSQL, MySQL, SQLite; Docker, Docker Compose; CI/CD; [Helm chart](../../helm/flagent/). |
 | **Benchmarks** | k6 load tests (evaluation, metrics, anomaly) in [infrastructure/load-tests](../../infrastructure/load-tests/); [load-test workflow](https://github.com/MaxLuxs/Flagent/blob/main/.github/workflows/load-test.yml) in CI (report + PR comment); [benchmarks doc](../performance/benchmarks.md) (targets, run instructions); [tuning guide](../performance/tuning-guide.md). |
-| **SDKs** | Kotlin (KMP), Kotlin Enhanced (client-side eval, SSE), **flagent-koin** (Koin DI), JavaScript/TypeScript, Swift, Swift Enhanced, Python (asyncio), Go, Go Enhanced (client-side eval, SSE), Java, Spring Boot Starter; Dart, Flutter Enhanced; Ktor plugin; Debug UI (Kotlin, Swift, JS). |
+| **SDKs** | Kotlin (KMP), Kotlin Enhanced (client-side eval, SSE), **flagent-koin** (Koin DI), JavaScript/TypeScript, Swift, Swift Enhanced, Python (asyncio), Go, Go Enhanced (client-side eval, SSE), Java, Spring Boot Starter; Dart, Flutter Enhanced; Ktor plugin; Debug UI (Kotlin, Swift, JS). Gradle plugin: verify-flags, optional [strict flag keys](build-time-verification.md#scenario-b-strict-mode-only-flagkeys-or-flagkey) (generateFlagKeys, allowOnlyGeneratedOrAnnotated). |
 | **Import/export** | YAML/JSON import (POST /import) and export from Settings (OSS). |
 | **Webhooks** | **Outgoing:** configurable URLs for flag events (created/updated/deleted/enabled/disabled); any endpoint (e.g. Slack, Datadog) via Settings → Webhooks. **Incoming:** GitHub webhook — auto-create flag from PR branch name ([GitOps](gitops.md#github-webhook)). |
 | **MCP** | Model Context Protocol for AI assistants ([MCP guide](mcp.md)). |
@@ -80,7 +80,7 @@ Contributions and feature requests: [GitHub Issues](https://github.com/MaxLuxs/F
 
 ## Русский
 
-**Этот документ — единый источник правды для разработки продукта.** Используйте его для планирования, приоритизации и согласования. Все пункты «Сделано» проверены по кодовой базе; «В планах» упорядочено по приоритету.
+**Этот документ — единый источник правды для разработки продукта.** Используйте его для планирования, приоритизации и согласования. См. также PRD (внутренняя/приватная документация) — видение, позиционирование и направления монетизации. Все пункты «Сделано» проверены по кодовой базе; «В планах» упорядочено по приоритету.
 
 **Flagent** — первая Kotlin-native платформа для feature flags. Ниже: что **сделано** (Фаза 1, Q1 2026) и что **запланировано** по приоритету.
 
