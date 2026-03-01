@@ -24,6 +24,7 @@ include(":flagent-spring-boot-starter")
 include(":kotlin-enhanced")
 include(":kotlin-debug-ui")
 include(":flagent-koin")
+include(":flagent-annotations")
 
 // Android sample
 include(":android-sample")
@@ -32,6 +33,7 @@ include(":android-sample:app")
 // Standalone samples (Ktor, Kotlin, Spring Boot)
 include(":sample-ktor")
 include(":sample-kotlin")
+include(":sample-kotlin-strict-flags")
 include(":sample-spring-boot")
 
 // Enterprise module (optional submodule)
@@ -52,12 +54,14 @@ project(":flagent-spring-boot-starter").projectDir = file("sdk/spring-boot-start
 project(":kotlin-enhanced").projectDir = file("sdk/kotlin-enhanced")
 project(":kotlin-debug-ui").projectDir = file("sdk/kotlin-debug-ui")
 project(":flagent-koin").projectDir = file("sdk/flagent-koin")
+project(":flagent-annotations").projectDir = file("sdk/flagent-annotations")
 
 project(":android-sample").projectDir = file("samples/android")
 project(":android-sample:app").projectDir = file("samples/android/app")
 
 project(":sample-ktor").projectDir = file("samples/ktor")
 project(":sample-kotlin").projectDir = file("samples/kotlin")
+project(":sample-kotlin-strict-flags").projectDir = file("samples/kotlin-strict-flags")
 project(":sample-spring-boot").projectDir = file("samples/spring-boot")
 
 // Gradle plugin (use via includeBuild)

@@ -1,0 +1,5 @@
+flags:
+  - key: new_feature
+    description: Demo feature for strict mode sample
+  - key: demo_flag
+    description: Another key for FlagKeys generation
