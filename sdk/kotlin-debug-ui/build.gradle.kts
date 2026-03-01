@@ -57,6 +57,21 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.compose.desktop.current.os)
                 implementation(libs.compose.desktop.ui.test.junit4)
+                // Explicit Skiko AWT runtime for current OS/arch so native lib is on classpath (helps when display/xvfb available)
+                val os = System.getProperty("os.name").lowercase()
+                val arch = System.getProperty("os.arch").lowercase()
+                val skikoClassifier = when {
+                    os.contains("mac") && (arch == "aarch64" || arch == "arm64") -> "macos-arm64"
+                    os.contains("mac") -> "macos-x64"
+                    os.contains("linux") && (arch == "aarch64" || arch == "arm64") -> "linux-arm64"
+                    os.contains("linux") -> "linux-x64"
+                    os.contains("win") && (arch == "aarch64" || arch == "arm64") -> "windows-arm64"
+                    os.contains("win") -> "windows-x64"
+                    else -> null
+                }
+                if (skikoClassifier != null) {
+                    implementation("org.jetbrains.skiko:skiko-awt-runtime-$skikoClassifier:0.9.37.3")
+                }
             }
         }
         val androidMain by getting { }
@@ -79,9 +94,11 @@ tasks.withType<KotlinCompile>().configureEach {
 
 tasks.named<Test>("jvmTest") {
     useJUnit()
-    // Skiko/Compose Desktop UI tests require a display; they fail with LibraryLoadException on CI.
-    // GitHub Actions sets CI=true; skip this task so the pipeline stays green.
-    onlyIf { System.getenv("CI") != "true" }
+    // Skiko/Compose Desktop UI tests require a display. In CI they are either skipped (unit_test job)
+    // or run in the kotlin-debug-ui job with xvfb-run (FLAGENT_RUN_DEBUG_UI_TESTS=true).
+    onlyIf {
+        System.getenv("CI") != "true" || System.getenv("FLAGENT_RUN_DEBUG_UI_TESTS") == "true"
+    }
 }
 
 publishing {

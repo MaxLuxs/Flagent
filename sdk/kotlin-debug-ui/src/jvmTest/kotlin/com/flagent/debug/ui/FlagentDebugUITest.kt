@@ -1,7 +1,7 @@
 package com.flagent.debug.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import com.flagent.debug.ui.AssumeDisplayComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 class FlagentDebugUITest {
 
     @get:Rule
-    val rule = createComposeRule()
+    val rule = AssumeDisplayComposeRule()
 
     @Test
     fun `DebugScreen composes and shows title`() {

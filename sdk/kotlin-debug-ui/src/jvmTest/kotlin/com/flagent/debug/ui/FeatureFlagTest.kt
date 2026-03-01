@@ -4,7 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.junit4.createComposeRule
+import com.flagent.debug.ui.AssumeDisplayComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import com.flagent.client.models.EvalResult
 import com.flagent.enhanced.manager.FlagentManager
@@ -17,7 +17,7 @@ import kotlin.test.assertSame
 class FeatureFlagTest {
 
     @get:Rule
-    val rule = createComposeRule()
+    val rule = AssumeDisplayComposeRule()
 
     @Test
     fun `FlagentProvider provides manager to children`() {
