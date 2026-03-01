@@ -25,15 +25,20 @@ fun BlogPage() {
             minHeight(100.vh)
             overflow("hidden")
             paddingTop(80.px)
-            property(
-                "background",
-                FlagentTheme.GradientHero
-            )
-            property("background-size", "400% 400%")
-            property("animation", "morphGradient 20s ease infinite")
             property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
         }
     }) {
+        Div(attrs = {
+            style {
+                position(Position.Fixed)
+                property("inset", "0")
+                property("z-index", "0")
+                property("pointer-events", "none")
+                property("background", FlagentTheme.GradientHero)
+                property("background-size", "400% 400%")
+                property("animation", "morphGradient 20s ease infinite")
+            }
+        }) {}
         LandingBackgroundShapes()
         Div(attrs = {
             style {
@@ -117,7 +122,7 @@ fun BlogPage() {
                         fontSize(15.px)
                         fontWeight(600)
                     }
-                    // Newsletter: Coming soon — see internal/docs/tasks/TODO-plan.md
+                    // Newsletter: Coming soon — see internal/private docs
                     onClick { /* Coming soon — no backend yet */ }
                 }) {
                     Text("Subscribe")

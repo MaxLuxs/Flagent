@@ -3,6 +3,9 @@ package flagent.frontend.components.auth
 import androidx.compose.runtime.*
 import flagent.frontend.components.Icon
 import flagent.frontend.config.AppConfig
+import flagent.frontend.i18n.LocalizedStrings
+import flagent.frontend.navigation.Route
+import flagent.frontend.navigation.Router
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.AuthViewModel
@@ -10,6 +13,8 @@ import kotlinx.browser.window
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLInputElement
 
 /**
  * Login Form with animated background, decorative shapes, and glass-morphism card.
@@ -34,94 +39,98 @@ fun LoginForm(
             alignItems(AlignItems.Center)
             minHeight(100.vh)
             overflow("hidden")
-            property(
-                "background",
-                FlagentTheme.GradientHero
-            )
-            property("background-size", "400% 400%")
-            property("animation", "morphGradient 15s ease infinite")
         }
     }) {
-        // Dot grid pattern overlay
+        // Fixed background layer — no repaint on scroll
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("inset", "0")
-                property(
-                    "background-image",
-                    "radial-gradient(rgba(14, 165, 233, 0.15) 1px, transparent 1px)"
-                )
-                property("background-size", "32px 32px")
+                property("z-index", "0")
                 property("pointer-events", "none")
+                property("background", FlagentTheme.GradientHero)
+                property("background-size", "400% 400%")
+                property("animation", "morphGradient 15s ease infinite")
             }
         }) {}
-
-        // Floating decorative blobs
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
+                property("inset", "0")
+                property("z-index", "0")
+                property("pointer-events", "none")
+                property("background-image", "radial-gradient(rgba(14, 165, 233, 0.15) 1px, transparent 1px)")
+                property("background-size", "32px 32px")
+            }
+        }) {}
+        Div({
+            style {
+                position(Position.Fixed)
                 property("top", "10%")
                 property("right", "15%")
                 width(320.px)
                 height(320.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(14, 165, 233, 0.25) 0%, transparent 70%)")
                 property("animation", "float 12s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("bottom", "20%")
                 property("left", "10%")
                 width(280.px)
                 height(280.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(20, 184, 166, 0.2) 0%, transparent 70%)")
                 property("animation", "floatSlow 18s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("top", "50%")
                 property("left", "5%")
                 width(120.px)
                 height(120.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%)")
                 property("animation", "floatReverse 10s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("bottom", "10%")
                 property("right", "20%")
                 width(180.px)
                 height(180.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)")
                 property("animation", "float 14s ease-in-out infinite reverse")
-                property("pointer-events", "none")
             }
         }) {}
-
-        // Glow orbs
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("top", "-10%")
                 property("right", "-5%")
                 width(400.px)
                 height(400.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 60%)")
                 property("animation", "glowPulse 8s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
 
@@ -129,6 +138,7 @@ fun LoginForm(
         Div({
             style {
                 position(Position.Relative)
+                property("z-index", "1")
                 width(100.percent)
                 maxWidth(680.px)
                 margin(24.px)
@@ -154,7 +164,44 @@ fun LoginForm(
                     property("min-width", "260px")
                 }
             }) {
-                // Logo / title area (compact)
+                // Top: Back to site (first element in card)
+                Button({
+                    onClick {
+                        if (AppConfig.showMarketingLanding) {
+                            Router.navigateTo(Route.Home)
+                        } else {
+                            Router.navigateTo(Route.Dashboard)
+                        }
+                    }
+                    style {
+                        padding(8.px, 14.px)
+                        backgroundColor(Color.transparent)
+                        color(Color("rgba(255,255,255,0.8)"))
+                        border(1.px, LineStyle.Solid, Color("rgba(255,255,255,0.3)"))
+                        borderRadius(8.px)
+                        cursor("pointer")
+                        fontSize(13.px)
+                        fontWeight(500)
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(6.px)
+                        marginBottom(20.px)
+                        property("transition", "all 0.2s ease")
+                    }
+                    onMouseEnter {
+                        (it.target as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.1)"
+                        (it.target as HTMLElement).style.color = "white"
+                    }
+                    onMouseLeave {
+                        (it.target as HTMLElement).style.backgroundColor = "transparent"
+                        (it.target as HTMLElement).style.color = "rgba(255,255,255,0.8)"
+                    }
+                }) {
+                    Icon("arrow_back", size = 18.px, color = Color("rgba(255,255,255,0.8)"))
+                    Text(LocalizedStrings.backToSite)
+                }
+
+                // Header: logo + title
                 Div({
                     style {
                         display(DisplayStyle.Flex)
@@ -196,7 +243,7 @@ fun LoginForm(
                                 property("letter-spacing", "-0.02em")
                             }
                         }) {
-                            Text(flagent.frontend.i18n.LocalizedStrings.welcomeToFlagent)
+                            Text(LocalizedStrings.welcomeToFlagent)
                         }
                         P({
                             style {
@@ -205,7 +252,7 @@ fun LoginForm(
                                 margin(4.px, 0.px, 0.px, 0.px)
                             }
                         }) {
-                            Text(flagent.frontend.i18n.LocalizedStrings.signInToManage)
+                            Text(LocalizedStrings.signInToManage)
                         }
                     }
                 }
@@ -221,11 +268,11 @@ fun LoginForm(
                         marginBottom(8.px)
                     }
                 }) {
-                    Text(flagent.frontend.i18n.LocalizedStrings.emailLabel)
+                    Text(LocalizedStrings.emailLabel)
                 }
                 Input(InputType.Email) {
                     value(email.value)
-                    onInput { e -> email.value = (e.target as? org.w3c.dom.HTMLInputElement)?.value ?: "" }
+                    onInput { e -> email.value = e.target.value }
                     attr("placeholder", "you@example.com")
                     style {
                         width(100.percent)
@@ -239,12 +286,12 @@ fun LoginForm(
                         property("transition", "all 0.2s ease")
                     }
                     onFocus {
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(14, 165, 233, 0.6)")
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "0 0 0 3px rgba(14, 165, 233, 0.2)")
+                        (it.target as HTMLElement).style.setProperty("border-color", "rgba(14, 165, 233, 0.6)")
+                        (it.target as HTMLElement).style.setProperty("box-shadow", "0 0 0 3px rgba(14, 165, 233, 0.2)")
                     }
                     onBlur {
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(255,255,255,0.12)")
-                        (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "none")
+                        (it.target as HTMLElement).style.setProperty("border-color", "rgba(255,255,255,0.12)")
+                        (it.target as HTMLElement).style.setProperty("box-shadow", "none")
                     }
                 }
             }
@@ -260,7 +307,7 @@ fun LoginForm(
                         marginBottom(8.px)
                     }
                 }) {
-                    Text(flagent.frontend.i18n.LocalizedStrings.passwordLabel)
+                    Text(LocalizedStrings.passwordLabel)
                 }
                 Div(attrs = {
                     style {
@@ -269,7 +316,7 @@ fun LoginForm(
                 }) {
                     Input(if (passwordVisible.value) InputType.Text else InputType.Password) {
                         value(password.value)
-                        onInput { e -> password.value = (e.target as? org.w3c.dom.HTMLInputElement)?.value ?: "" }
+                        onInput { e -> password.value = e.target.value }
                         attr("placeholder", "••••••••")
                         style {
                             width(100.percent)
@@ -283,12 +330,12 @@ fun LoginForm(
                             property("transition", "all 0.2s ease")
                         }
                         onFocus {
-                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(14, 165, 233, 0.6)")
-                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "0 0 0 3px rgba(14, 165, 233, 0.2)")
+                            (it.target as HTMLElement).style.setProperty("border-color", "rgba(14, 165, 233, 0.6)")
+                            (it.target as HTMLElement).style.setProperty("box-shadow", "0 0 0 3px rgba(14, 165, 233, 0.2)")
                         }
                         onBlur {
-                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("border-color", "rgba(255,255,255,0.12)")
-                            (it.target as org.w3c.dom.HTMLElement).style.setProperty("box-shadow", "none")
+                            (it.target as HTMLElement).style.setProperty("border-color", "rgba(255,255,255,0.12)")
+                            (it.target as HTMLElement).style.setProperty("box-shadow", "none")
                         }
                     }
                     Button(attrs = {
@@ -308,10 +355,10 @@ fun LoginForm(
                         }
                         onClick { passwordVisible.value = !passwordVisible.value }
                         onMouseEnter {
-                            (it.target as org.w3c.dom.HTMLElement).style.color = "white"
+                            (it.target as HTMLElement).style.color = "white"
                         }
                         onMouseLeave {
-                            (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                            (it.target as HTMLElement).style.color = "rgba(255,255,255,0.6)"
                         }
                     }) {
                         Icon(if (passwordVisible.value) "visibility_off" else "visibility", size = 20.px, color = Color("rgba(255,255,255,0.6)"))
@@ -330,7 +377,7 @@ fun LoginForm(
             }) {
                 Input(InputType.Checkbox) {
                     checked(rememberMe.value)
-                    onInput { rememberMe.value = (it.target as? org.w3c.dom.HTMLInputElement)?.checked ?: false }
+                    onInput { rememberMe.value = it.target.checked }
                     style {
                         width(18.px)
                         height(18.px)
@@ -345,7 +392,7 @@ fun LoginForm(
                     }
                     onClick { rememberMe.value = !rememberMe.value }
                 }) {
-                    Text(flagent.frontend.i18n.LocalizedStrings.rememberMeLabel)
+                    Text(LocalizedStrings.rememberMeLabel)
                 }
             }
 
@@ -376,18 +423,18 @@ fun LoginForm(
                 }
                 if (!viewModel.isLoading) {
                     onMouseEnter {
-                        val el = it.target as org.w3c.dom.HTMLElement
+                        val el = it.target as HTMLElement
                         el.style.transform = "translateY(-1px)"
                         el.style.setProperty("box-shadow", "0 6px 20px rgba(14, 165, 233, 0.5)")
                     }
                     onMouseLeave {
-                        val el = it.target as org.w3c.dom.HTMLElement
+                        val el = it.target as HTMLElement
                         el.style.transform = "translateY(0)"
                         el.style.setProperty("box-shadow", "0 4px 14px rgba(14, 165, 233, 0.4)")
                     }
                 }
             }) {
-                Text(if (viewModel.isLoading) flagent.frontend.i18n.LocalizedStrings.signingIn else flagent.frontend.i18n.LocalizedStrings.signIn)
+                Text(if (viewModel.isLoading) LocalizedStrings.signingIn else LocalizedStrings.signIn)
             }
 
             viewModel.error?.let { error ->
@@ -440,14 +487,14 @@ fun LoginForm(
                         property("transition", "color 0.2s ease")
                     }
                     onMouseEnter {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.9)"
+                        (it.target as HTMLElement).style.color = "rgba(255,255,255,0.9)"
                     }
                     onMouseLeave {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                        (it.target as HTMLElement).style.color = "rgba(255,255,255,0.6)"
                     }
                 }) {
                     Icon("mail", size = 18.px, color = Color("rgba(255,255,255,0.6)"))
-                    Text(flagent.frontend.i18n.LocalizedStrings.supportLink)
+                    Text(LocalizedStrings.supportLink)
                 }
                 A(href = AppConfig.githubUrl, attrs = {
                     attr("target", "_blank")
@@ -462,14 +509,14 @@ fun LoginForm(
                         property("transition", "color 0.2s ease")
                     }
                     onMouseEnter {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.9)"
+                        (it.target as HTMLElement).style.color = "rgba(255,255,255,0.9)"
                     }
                     onMouseLeave {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                        (it.target as HTMLElement).style.color = "rgba(255,255,255,0.6)"
                     }
                 }) {
                     Icon("code", size = 18.px, color = Color("rgba(255,255,255,0.6)"))
-                    Text(flagent.frontend.i18n.LocalizedStrings.questionsAndGuides)
+                    Text(LocalizedStrings.questionsAndGuides)
                 }
                 A(href = AppConfig.docsUrl, attrs = {
                     attr("target", "_blank")
@@ -484,14 +531,14 @@ fun LoginForm(
                         property("transition", "color 0.2s ease")
                     }
                     onMouseEnter {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.9)"
+                        (it.target as HTMLElement).style.color = "rgba(255,255,255,0.9)"
                     }
                     onMouseLeave {
-                        (it.target as org.w3c.dom.HTMLElement).style.color = "rgba(255,255,255,0.6)"
+                        (it.target as HTMLElement).style.color = "rgba(255,255,255,0.6)"
                     }
                 }) {
                     Icon("menu_book", size = 18.px, color = Color("rgba(255,255,255,0.6)"))
-                    Text(flagent.frontend.i18n.LocalizedStrings.documentation)
+                    Text(LocalizedStrings.documentation)
                 }
             }
 
@@ -511,7 +558,7 @@ fun LoginForm(
                             textAlign("center")
                         }
                     }) {
-                        Text(flagent.frontend.i18n.LocalizedStrings.orSignInWithSso)
+                        Text(LocalizedStrings.orSignInWithSso)
                     }
                     Button({
                         onClick {
@@ -540,15 +587,15 @@ fun LoginForm(
                             property("transition", "all 0.2s ease")
                         }
                         onMouseEnter {
-                            val el = it.target as org.w3c.dom.HTMLElement
+                            val el = it.target as HTMLElement
                             el.style.backgroundColor = "rgba(14, 165, 233, 0.15)"
                         }
                         onMouseLeave {
-                            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent"
+                            (it.target as HTMLElement).style.backgroundColor = "transparent"
                         }
                     }) {
                         Icon("login", size = 18.px, color = FlagentTheme.PrimaryLight)
-                        Text(flagent.frontend.i18n.LocalizedStrings.loginWithSso)
+                        Text(LocalizedStrings.loginWithSso)
                     }
                 }
             }

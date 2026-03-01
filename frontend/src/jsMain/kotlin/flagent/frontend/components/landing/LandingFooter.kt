@@ -1,11 +1,16 @@
 package flagent.frontend.components.landing
 
 import androidx.compose.runtime.*
+import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalGlobalState
+import flagent.frontend.state.Notification
+import flagent.frontend.state.NotificationType
 import flagent.frontend.theme.FlagentTheme
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -16,6 +21,9 @@ import org.jetbrains.compose.web.dom.*
 @Composable
 fun LandingFooter() {
     val email = remember { mutableStateOf("") }
+    val globalState = LocalGlobalState.current
+    val scope = rememberCoroutineScope()
+    val subscribing = remember { mutableStateOf(false) }
 
     Div(attrs = {
         style {
@@ -49,7 +57,7 @@ fun LandingFooter() {
                         margin(0.px)
                     }
                 }) {
-                    Text("Flagent reduces the risk of releasing new features, drives innovation by streamlining software releases, and increases revenue by optimizing end-user experience.")
+                    Text("Flagent reduces release risk and drives innovation: ship behind flags, roll back in one click without redeploying, and run A/B tests with type-safe SDKs. Open source, self-host free.")
                 }
                 Div(attrs = {
                     style {
@@ -117,7 +125,7 @@ fun LandingFooter() {
                     "Documentation" to AppConfig.docsUrl,
                     "API Reference" to "${AppConfig.docsUrl}api-docs.html",
                     "GitHub" to AppConfig.githubUrl,
-                    "Roadmap" to "${AppConfig.docsUrl}guides/roadmap.md"
+                    "Roadmap" to "${AppConfig.docsUrl}#/guides/roadmap"
                 ))
                 FooterColumn("Product", listOf(
                     "Feature Flags" to Route.FlagsList.PATH,
@@ -174,23 +182,32 @@ fun LandingFooter() {
                                 color(Color.white)
                                 border(0.px)
                                 borderRadius(8.px)
-                                cursor("pointer")
+                                cursor(if (subscribing.value) "wait" else "pointer")
                                 fontSize(14.px)
                                 fontWeight(500)
                             }
-                            // Newsletter: Coming soon — wire to backend or Mailchimp/SendGrid when ready; see internal/docs/tasks/TODO-plan.md
-                            onClick { /* Coming soon — no backend yet */ }
-                        }) {
-                            Text("Subscribe")
-                        }
-                        Span(attrs = {
-                            style {
-                                marginLeft(8.px)
-                                fontSize(12.px)
-                                color(Color("rgba(255,255,255,0.6)"))
+                            onClick {
+                                val addr = email.value.trim()
+                                if (addr.isBlank()) {
+                                    globalState.addNotification(Notification(message = "Enter your email", type = NotificationType.WARNING))
+                                    return@onClick
+                                }
+                                subscribing.value = true
+                                scope.launch {
+                                    try {
+                                        ApiClient.subscribeNewsletter(addr)
+                                        globalState.addNotification(Notification(message = "Subscribed successfully", type = NotificationType.SUCCESS))
+                                        email.value = ""
+                                    } catch (e: Throwable) {
+                                        val msg = e.message?.takeIf { it.isNotBlank() } ?: "Subscription failed"
+                                        globalState.addNotification(Notification(message = msg, type = NotificationType.ERROR))
+                                    } finally {
+                                        subscribing.value = false
+                                    }
+                                }
                             }
                         }) {
-                            Text("(Coming soon)")
+                            Text(if (subscribing.value) "…" else "Subscribe")
                         }
                     }
                 }

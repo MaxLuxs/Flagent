@@ -29,9 +29,9 @@ enum class TooltipPosition {
 }
 
 /**
- * InfoTooltip component - shows information icon with tooltip on hover/click.
- * Uses z-index 10000 so it appears above Navbar (z-index 100) and modals.
- * Uses fixed positioning with viewport margin so it never goes under navigation.
+ * InfoTooltip component - shows information icon with tooltip on click.
+ * By default opens below the "!" button so it is not covered by other elements.
+ * Uses fixed positioning and high z-index so it appears above navbar and modals.
  */
 private const val TOOLTIP_WIDTH_PX = 320
 private const val TOOLTIP_OFFSET_PX = 8
@@ -41,7 +41,7 @@ fun InfoTooltip(
     title: String,
     description: String,
     details: String? = null,
-    preferredPosition: TooltipPosition = TooltipPosition.Top
+    preferredPosition: TooltipPosition = TooltipPosition.Bottom
 ) {
     val themeMode = LocalThemeMode.current
     val showTooltip = remember { mutableStateOf(false) }
@@ -141,18 +141,11 @@ fun InfoTooltip(
         
         if (showTooltip.value) {
             val pos = tooltipPosition.value
-            Div({
+            if (pos != null) Div({
                 style {
                     position(Position.Fixed)
-                    if (pos != null) {
-                        left(pos.first.px)
-                        top(pos.second.px)
-                    } else {
-                        left(50.percent)
-                        top(50.percent)
-                        property("transform", "translate(-50%, -50%)")
-                    }
-                    property("margin", "min(20px, 5vh) auto")
+                    left(pos.first.px)
+                    top(pos.second.px)
                     width(320.px)
                     maxWidth(90.vw)
                     maxHeight(80.vh)

@@ -1,7 +1,11 @@
 package flagent.frontend.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import flagent.frontend.i18n.LocalizedStrings
+import kotlinx.browser.document
+import org.w3c.dom.events.Event
+import org.w3c.dom.events.KeyboardEvent
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
@@ -46,6 +50,17 @@ fun Modal(
     content: @Composable () -> Unit
 ) {
     val themeMode = LocalThemeMode.current
+    DisposableEffect(Unit) {
+        val handler: (KeyboardEvent) -> Unit = { e ->
+            if (e.key == "Escape") {
+                e.preventDefault()
+                onClose()
+            }
+        }
+        val wrapped: (Event) -> Unit = { handler(it.unsafeCast<KeyboardEvent>()) }
+        document.addEventListener("keydown", wrapped)
+        onDispose { document.removeEventListener("keydown", wrapped) }
+    }
     Div({
         style {
             position(Position.Fixed)

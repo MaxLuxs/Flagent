@@ -70,8 +70,23 @@ object LocalizedStrings {
         else -> "Create Flag"
     }
     val createFirstFlag: String get() = when (currentLocale) {
-        "ru" -> "Создать первый флаг"
+        "ru" -> "Создай первый флаг"
         else -> "Create your first flag"
+    }
+
+    val emptyFlagsDescription: String get() = when (currentLocale) {
+        "ru" -> "Добавьте feature flag для управления выкаткой, A/B тестами и безопасного отката без деплоя."
+        else -> "Add a feature flag to control rollouts, run A/B tests, and roll back safely without redeploying."
+    }
+
+    val gettingStartedGuideLink: String get() = when (currentLocale) {
+        "ru" -> "Руководство: первый флаг"
+        else -> "Getting started guide"
+    }
+
+    val backToSite: String get() = when (currentLocale) {
+        "ru" -> "Назад на сайт"
+        else -> "Back to site"
     }
     
     val creating: String get() = when (currentLocale) {
@@ -781,6 +796,11 @@ object LocalizedStrings {
     val entityContextJsonWithColon: String get() = when (currentLocale) {
         "ru" -> "Контекст сущности (JSON):"
         else -> "Entity Context (JSON):"
+    }
+
+    val entityContextPlaceholderHint: String get() = when (currentLocale) {
+        "ru" -> "Пример: user_id, region, tier — для проверки сегментов и ограничений по контексту."
+        else -> "Example: user_id, region, tier — use for segment/constraint targeting by context."
     }
 
     val entitiesJsonArrayWithColon: String get() = when (currentLocale) {
@@ -1673,6 +1693,16 @@ object LocalizedStrings {
     val activeFlags: String get() = when (currentLocale) {
         "ru" -> "Активные флаги"
         else -> "Active flags"
+    }
+
+    val moreOftenWithFlags: String get() = when (currentLocale) {
+        "ru" -> "Чаще при включённых флагах"
+        else -> "More often with these flags enabled"
+    }
+
+    val disableFlag: String get() = when (currentLocale) {
+        "ru" -> "Выключить флаг"
+        else -> "Disable flag"
     }
     val cardsView: String get() = when (currentLocale) {
         "ru" -> "Карточки"

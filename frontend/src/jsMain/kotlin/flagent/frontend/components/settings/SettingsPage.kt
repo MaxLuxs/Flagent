@@ -289,7 +289,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                     Icon("content_copy", size = 16.px, color = Color.white)
                     Text(LocalizedStrings.mcpCopyUrl)
                 }
-                A(href = "${AppConfig.docsUrl}#/guides/mcp.md", attrs = {
+                A(href = AppConfig.docsUrlMcp, attrs = {
                     attr("target", "_blank")
                     attr("rel", "noopener noreferrer")
                     style {

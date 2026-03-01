@@ -12,7 +12,9 @@ import flagent.api.model.FlagResponse
 import flagent.api.model.TagResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.common.ConfirmDialog
+import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.FilterChip
+import flagent.frontend.components.common.SkeletonLoader
 import flagent.frontend.components.common.PageHeader
 import flagent.frontend.components.common.Pagination
 import flagent.frontend.components.flags.CreateFlagModal
@@ -78,6 +80,7 @@ import org.jetbrains.compose.web.css.style
 import org.jetbrains.compose.web.css.textAlign
 import org.jetbrains.compose.web.css.textDecoration
 import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.dom.A
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H3
@@ -1366,7 +1369,7 @@ fun FlagsList() {
         )
 
         if (loading.value) {
-            Spinner()
+            SkeletonLoader(height = 320.px)
         } else if (error.value != null) {
             val err = error.value!!
             val isTenantOrApiKeyError = err.contains("tenant", ignoreCase = true) ||
@@ -1426,6 +1429,36 @@ fun FlagsList() {
                 }
             }
         } else {
+            val hasActiveFiltersForEmpty = searchQuery.value.isNotBlank() || keyFilter.value.isNotBlank() ||
+                statusFilter.value != null || selectedTags.isNotEmpty() ||
+                quickFilterExperiments.value || quickFilterWithSegments.value
+            if (totalCount.value == 0L && !hasActiveFiltersForEmpty) {
+                EmptyState(
+                    icon = "flag",
+                    title = LocalizedStrings.createFirstFlag,
+                    description = LocalizedStrings.emptyFlagsDescription,
+                    actionLabel = LocalizedStrings.createFlag,
+                    onAction = { showCreateFlagModal.value = true }
+                )
+                Div({
+                    style {
+                        marginTop(16.px)
+                        textAlign("center")
+                    }
+                }) {
+                    A(href = "${AppConfig.docsUrl}#/guides/getting-started.md", attrs = {
+                        attr("target", "_blank")
+                        attr("rel", "noopener noreferrer")
+                        style {
+                            color(FlagentTheme.Primary)
+                            textDecoration("underline")
+                            fontSize(14.px)
+                        }
+                    }) {
+                        Text(LocalizedStrings.gettingStartedGuideLink)
+                    }
+                }
+            } else {
             val sortedFlags = remember(flags, sortColumn.value, sortAscending.value) {
                 var result = flags.toList()
                 sortColumn.value?.let { column ->
@@ -2153,6 +2186,7 @@ fun FlagsList() {
                     }
                 }
             }
+        }
         }
     }
 }

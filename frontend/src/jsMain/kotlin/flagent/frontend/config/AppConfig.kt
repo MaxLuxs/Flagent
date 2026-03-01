@@ -128,6 +128,12 @@ object AppConfig {
     /** Documentation URL (GitHub Pages, Docsify). */
     val docsUrl: String get() = "https://maxluxs.github.io/Flagent/docs.html"
 
+    /** Doc hash paths (append to docsUrl). */
+    val docsUrlMcp: String get() = "$docsUrl#/guides/mcp"
+    val docsUrlGitOps: String get() = "$docsUrl#/guides/gitops"
+    val docsUrlSdks: String get() = "$docsUrl#/sdks/README"
+    val docsUrlRealtime: String get() = "$docsUrl#/features/real-time-updates"
+
     /** Support email for login page and help. */
     val supportEmail: String by lazy {
         (js("window.ENV_SUPPORT_EMAIL") as? String)?.takeIf { it.isNotBlank() }
@@ -140,8 +146,14 @@ object AppConfig {
     }
     /** GitHub repository URL. */
     val githubUrl: String get() = "https://github.com/MaxLuxs/Flagent"
-    /** Blog URL (GitHub Discussions or external). */
-    val blogUrl: String get() = "https://github.com/MaxLuxs/Flagent/discussions"
+
+    /** Getting started doc (Quick start) — docs viewer with sidebar/nav. */
+    val gettingStartedUrl: String get() = "https://maxluxs.github.io/Flagent/docs.html#/guides/getting-started"
+
+    /** Enterprise contact email. */
+    val enterpriseContactEmail: String get() = "max.developer.luxs@gmail.com"
+    /** Blog URL (GitHub Pages or external). */
+    val blogUrl: String get() = "https://maxluxs.github.io/Flagent/blog/index.html"
 
     val isEnterprise: Boolean get() = edition == Edition.ENTERPRISE
     val isOpenSource: Boolean get() = edition == Edition.OPEN_SOURCE

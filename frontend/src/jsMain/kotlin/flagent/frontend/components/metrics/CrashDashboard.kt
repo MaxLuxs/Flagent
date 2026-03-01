@@ -53,6 +53,17 @@ fun CrashDashboard() {
     var reportsRefreshTrigger by remember { mutableStateOf(0) }
     var timeRange by remember { mutableStateOf("24h") }
     var groupByType by remember { mutableStateOf(false) }
+    var pendingDisableFlagId by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(pendingDisableFlagId) {
+        val id = pendingDisableFlagId ?: return@LaunchedEffect
+        try {
+            ApiClient.setFlagEnabled(id, false)
+            flags = ApiClient.getFlags().first
+            reportsRefreshTrigger++
+        } catch (_: Throwable) { }
+        pendingDisableFlagId = null
+    }
 
     val endTime = remember(timeRange) { (kotlin.js.Date().getTime() as Number).toLong() }
     val startTime = remember(timeRange) {
@@ -402,7 +413,7 @@ fun CrashDashboard() {
                                             if (selectedCrash?.id == crash.id) {
                                                 CrashStackSection(themeMode, crash.stackTrace)
                                                 crash.activeFlagKeys?.takeIf { it.isNotEmpty() }?.let { keys ->
-                                                    CrashActiveFlagsSection(themeMode, keys, flags)
+                                                    CrashActiveFlagsSection(themeMode, keys, flags) { pendingDisableFlagId = it }
                                                 }
                                             }
                                         }
@@ -464,7 +475,7 @@ fun CrashDashboard() {
                                 if (selectedCrash?.id == crash.id) {
                                     CrashStackSection(themeMode, crash.stackTrace)
                                     crash.activeFlagKeys?.takeIf { it.isNotEmpty() }?.let { keys ->
-                                        CrashActiveFlagsSection(themeMode, keys, flags)
+                                        CrashActiveFlagsSection(themeMode, keys, flags) { pendingDisableFlagId = it }
                                     }
                                 }
                             }
@@ -549,7 +560,12 @@ fun CrashDashboard() {
 }
 
 @Composable
-private fun CrashActiveFlagsSection(themeMode: ThemeMode, activeFlagKeys: List<String>, flags: List<FlagResponse>) {
+private fun CrashActiveFlagsSection(
+    themeMode: ThemeMode,
+    activeFlagKeys: List<String>,
+    flags: List<FlagResponse>,
+    onDisableFlag: (Int) -> Unit
+) {
     Div({
         style {
             marginTop(12.px)
@@ -564,33 +580,63 @@ private fun CrashActiveFlagsSection(themeMode: ThemeMode, activeFlagKeys: List<S
                 marginBottom(6.px)
             }
         }) {
-            Text(LocalizedStrings.activeFlags)
+            Text(LocalizedStrings.moreOftenWithFlags)
         }
         Div({
             style {
                 display(DisplayStyle.Flex)
                 flexWrap(FlexWrap.Wrap)
+                alignItems(AlignItems.Center)
                 gap(8.px)
             }
         }) {
             activeFlagKeys.forEach { key ->
                 val flag = flags.find { it.key == key }
                 if (flag != null) {
-                    A(href = Route.FlagDetail(flag.id).path(), attrs = {
+                    Div({
                         style {
+                            display(DisplayStyle.Flex)
+                            alignItems(AlignItems.Center)
+                            gap(6.px)
                             padding(6.px, 10.px)
-                            backgroundColor(FlagentTheme.Primary)
-                            color(Color.white)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
                             borderRadius(6.px)
-                            fontSize(12.px)
-                            textDecoration("none")
-                        }
-                        onClick { e ->
-                            e.preventDefault()
-                            Router.navigateTo(Route.FlagDetail(flag.id))
+                            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                         }
                     }) {
-                        Text(flag.key)
+                        A(href = Route.FlagDetail(flag.id).path(), attrs = {
+                            style {
+                                padding(2.px, 0.px)
+                                color(FlagentTheme.Primary)
+                                fontSize(12.px)
+                                fontWeight(600)
+                                textDecoration("none")
+                            }
+                            onClick { e ->
+                                e.preventDefault()
+                                Router.navigateTo(Route.FlagDetail(flag.id))
+                            }
+                        }) {
+                            Text(flag.key)
+                        }
+                        Button({
+                            onClick { e ->
+                                e.stopPropagation()
+                                onDisableFlag(flag.id)
+                            }
+                            style {
+                                padding(4.px, 8.px)
+                                fontSize(11.px)
+                                backgroundColor(FlagentTheme.Error)
+                                color(Color.white)
+                                border(0.px)
+                                borderRadius(4.px)
+                                cursor("pointer")
+                                fontWeight(600)
+                            }
+                        }) {
+                            Text(LocalizedStrings.disableFlag)
+                        }
                     }
                 } else {
                     Span({

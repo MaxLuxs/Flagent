@@ -257,6 +257,7 @@ fun LandingNavbar() {
                         fontSize(14.px)
                         padding(12.px, 0.px)
                     }
+                    onClick { menuOpen.value = false }
                 }) { Text("Blog") }
                 A(href = AppConfig.docsUrl, attrs = {
                     attr("target", "_blank")
@@ -267,6 +268,7 @@ fun LandingNavbar() {
                         fontSize(14.px)
                         padding(12.px, 0.px)
                     }
+                    onClick { menuOpen.value = false }
                 }) { Text("Docs") }
                 if (AppConfig.requiresAuth) {
                     Button(attrs = {

@@ -105,6 +105,9 @@ object ApiClient {
         val base = AppConfig.apiBaseUrl.trimEnd('/')
         return if (base.isEmpty()) path else "$base$path"
     }
+
+    /** Public path for newsletter (no API key). */
+    internal fun getNewsletterPath(): String = getAuthPath("/newsletter")
     
     private fun getApiKey(): String? {
         (js("window.ENV_API_KEY") as? String)?.takeIf { it.isNotBlank() }?.let { return it }
@@ -688,6 +691,18 @@ object ApiClient {
 
     suspend fun unblockAdminUser(id: Int): AdminUserResponse {
         return client.post(getAdminPath("/users/$id/unblock")).body()
+    }
+
+    // ========== Newsletter (public, no API key) ==========
+
+    /**
+     * Subscribe email to newsletter. On success returns; on 4xx/5xx throws (error message in exception).
+     */
+    suspend fun subscribeNewsletter(email: String) {
+        client.post(getNewsletterPath()) {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf("email" to email))
+        }
     }
 
     // ========== Metrics overview (global aggregates) ==========

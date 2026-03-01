@@ -9,6 +9,13 @@ import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
+/**
+ * Feature status (for maintainers):
+ * - ✅ 100% in OSS: implemented in backend/frontend/sdk, tests, used in production path.
+ * - 🔶 In OSS but partial: e.g. audit = registry only in core, full log in enterprise.
+ * - Enterprise-only: Anomaly, Smart Rollout, SSO, crash-by-flag, custom RBAC — in internal/flagent-enterprise.
+ * - SaaS/Pro/Enterprise "Yes" = planned; only self-hosted OSS is available today.
+ */
 /** Plan availability: yes, no, or limit text */
 private data class PlanAvailability(
     val openSource: String,
@@ -23,7 +30,7 @@ private data class FeatureRow(
 )
 
 private val FEATURE_COMPARISON = listOf(
-    // Flags and experiments
+    // Flags and experiments — ✅ all in OSS
     listOf(
         FeatureRow("Feature flags", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("A/B testing & experiments", PlanAvailability("Yes", "Yes", "Yes")),
@@ -34,38 +41,38 @@ private val FEATURE_COMPARISON = listOf(
         FeatureRow("Ktor plugin & REST API", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Admin UI & Debug Console", PlanAvailability("Yes", "Yes", "Yes")),
     ),
-    // Analytics
+    // Analytics — ✅ events + eval counts in OSS; advanced = enterprise
     listOf(
         FeatureRow("Analytics events (first_open, session_start, custom)", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Evaluation counts & core metrics", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Advanced analytics & insights (per-flag/variant)", PlanAvailability("No", "Yes", "Yes")),
         FeatureRow("Data recorders (Kafka, Kinesis, PubSub)", PlanAvailability("Yes", "Yes", "Yes")),
     ),
-    // Crash analytics
+    // Crash — ✅ ingestion + list in OSS; crash rate by flag + anomaly = enterprise
     listOf(
         FeatureRow("Crash reporting (ingestion, list, stack traces)", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Crash rate by flag & anomaly integration", PlanAvailability("No", "No", "Yes")),
     ),
-    // Automation and reliability
+    // Automation — enterprise only (internal/flagent-enterprise)
     listOf(
         FeatureRow("Anomaly detection & alerts", PlanAvailability("No", "No", "Yes")),
         FeatureRow("Smart rollout (auto-rollback)", PlanAvailability("No", "No", "Yes")),
     ),
-    // Integrations and hosting
+    // Integrations — ✅ Export/Import, Webhooks, SSE, MCP in OSS
     listOf(
         FeatureRow("Export / Import, Webhooks, Realtime (SSE), MCP", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Self-hosted deployment", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Managed cloud hosting", PlanAvailability("No", "Yes", "Yes")),
         FeatureRow("On-premise, multi-tenancy", PlanAvailability("No", "No", "Yes")),
     ),
-    // Security and control
+    // Security — JWT ✅; RBAC/SSO/Audit: basic in OSS, full in enterprise
     listOf(
         FeatureRow("Basic auth (JWT)", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("RBAC", PlanAvailability("Basic", "Basic", "Custom roles")),
         FeatureRow("SSO (SAML, OIDC)", PlanAvailability("No", "No", "Yes")),
         FeatureRow("Audit log", PlanAvailability("Basic", "Basic", "Advanced")),
     ),
-    // Support
+    // Support — community only in OSS
     listOf(
         FeatureRow("Community support", PlanAvailability("Yes", "Yes", "Yes")),
         FeatureRow("Priority support", PlanAvailability("No", "Yes", "Yes")),
@@ -97,15 +104,20 @@ fun PricingPage() {
             minHeight(100.vh)
             overflow("hidden")
             paddingTop(80.px)
-            property(
-                "background",
-                FlagentTheme.GradientHero
-            )
-            property("background-size", "400% 400%")
-            property("animation", "morphGradient 20s ease infinite")
             property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
         }
     }) {
+        Div(attrs = {
+            style {
+                position(Position.Fixed)
+                property("inset", "0")
+                property("z-index", "0")
+                property("pointer-events", "none")
+                property("background", FlagentTheme.GradientHero)
+                property("background-size", "400% 400%")
+                property("animation", "morphGradient 20s ease infinite")
+            }
+        }) {}
         LandingBackgroundShapes()
         Div(attrs = {
             style {
