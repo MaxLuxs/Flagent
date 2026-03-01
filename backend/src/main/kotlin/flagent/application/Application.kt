@@ -32,6 +32,7 @@ import flagent.route.configureFlagSnapshotRoutes
 import flagent.route.configureHealthRoutes
 import flagent.route.configureImportRoutes
 import flagent.route.configureInfoRoutes
+import flagent.route.configureNewsletterRoutes
 import flagent.route.configureProfilingRoutes
 import flagent.route.configureSegmentRoutes
 import flagent.route.configureTagRoutes
@@ -190,6 +191,7 @@ fun Application.module() {
         val routeConfig: Routing.() -> Unit = {
             configureHealthRoutes()
             configureAuthRoutes(services.userService)
+            configureNewsletterRoutes()
             configureInfoRoutes()
             configureEvaluationRoutes(services.evaluationService)
 
