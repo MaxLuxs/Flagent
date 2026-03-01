@@ -378,12 +378,7 @@ Flagent is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for
 
 ## 🗺️ Roadmap
 
-- **Phase 1 (Q1 2026):** ✅ Core flags, A/B, Admin UI, recorders, Python/Go/Java SDKs, Kotlin/Go Enhanced, SSE. 🚧 Docs.
-- **Phase 2 (Q2–Q3):** ✅ Import/export YAML/JSON, Java SDK, Spring Boot. Planned: CLI, webhooks, .NET SDK, Edge Service.
-- **Phase 3 (Q3–Q4):** ✅ Multi-tenancy, SSO, RBAC, Smart Rollout, Anomaly. Planned: audit logs, analytics.
-- **Phase 4 (2027+):** AI anomaly, predictive targeting, Terraform/K8s, SOC 2.
-
-See [detailed roadmap](docs/guides/roadmap.md).
+[Full roadmap](docs/guides/roadmap.md) — Phase 1 (Q1 2026) done (core, SDKs, import/export, Enterprise); Phase 2–4 planned (CLI, webhooks, .NET, Edge, audit, SaaS, AI, Terraform/K8s, SOC 2).
 
 ## 🎯 Use Cases
 

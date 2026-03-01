@@ -209,11 +209,7 @@ Flagent полностью локализован для СНГ рынка:
 
 ## 📊 Roadmap
 
-- **Фаза 1 (Q1 2026):** ✅ Core, client-side eval, SSE, Python/Go/Java SDK, Spring Boot, Kotlin/Go Enhanced. 🚧 Документация, Helm.
-- **Фаза 2 (Q2–Q3):** ✅ Импорт/экспорт YAML/JSON. В планах: CLI, вебхуки, Edge Service.
-- **Фаза 3 (Q3–Q4):** ✅ Multi-tenancy, SSO, RBAC, Smart Rollout, Anomaly. В планах: audit logs.
-
-Детали: [Roadmap](docs/guides/roadmap.md).
+[Полный roadmap](docs/guides/roadmap.md) — Фаза 1 (Q1 2026) сделана (ядро, SDK, импорт/экспорт, Enterprise); фазы 2–4 в планах (CLI, вебхуки, .NET, Edge, audit, SaaS, AI, Terraform/K8s, SOC 2).
 
 ## 📄 Лицензия
 
