@@ -63,6 +63,7 @@ jobs:
       - name: Backend E2E (explicit)
         env:
           FLAGENT_RECORDER_ENABLED: "false"
+          FLAGENT_TEST_USE_SQLITE: "true"
         run: ./gradlew :backend:test --no-daemon -PincludeE2E --tests "flagent.test.e2e.E2ETest"
       
       - name: Generate test coverage
