@@ -61,7 +61,9 @@ jobs:
         run: ./design-system/check-hardcode.sh
       
       - name: Backend E2E (explicit)
-        run: ./gradlew :backend:test --no-daemon --tests "flagent.test.e2e.E2ETest"
+        env:
+          FLAGENT_RECORDER_ENABLED: "false"
+        run: ./gradlew :backend:test --no-daemon -PincludeE2E --tests "flagent.test.e2e.E2ETest"
       
       - name: Generate test coverage
         run: ./gradlew :backend:jacocoTestReport --no-daemon
