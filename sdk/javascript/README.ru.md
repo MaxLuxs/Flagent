@@ -13,6 +13,8 @@ npm run build
 
 ## Установка
 
+Версию см. в корневом [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) или [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 Если пакет опубликован:
 
 ```bash

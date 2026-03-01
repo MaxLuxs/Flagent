@@ -8,7 +8,7 @@ Official client SDKs for Flagent. Use them to evaluate feature flags, run A/B te
 
 | SDK | Platforms | Install | Docs |
 |-----|-----------|--------|------|
-| **Kotlin** | JVM, Android | Gradle: `io.flagent:flagent-kotlin` | [SDKs page](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/kotlin) |
+| **Kotlin** | JVM, Android, KMP | Gradle: `com.flagent:kotlin-client` | [SDKs page](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/kotlin) |
 | **JavaScript/TS** | Browser, Node.js | npm: `@flagent/sdk-js` | [SDKs page](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/javascript) |
 | **Swift** | iOS, macOS | SPM / CocoaPods | [SDKs page](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/swift) |
 | **Python** | 3.8+ | pip: `flagent-sdk` | [SDKs page](../sdk.html) |
@@ -25,7 +25,7 @@ Android sample (Kotlin SDK): [samples/android](https://github.com/MaxLuxs/Flagen
 ## Quick links
 
 - [SDKs overview (install & usage per platform)](../sdk.html) — full list, dependencies, and code snippets.
-- [SDK integration examples](../examples/sdk-integration.md) — Ktor, Spring Boot, Kotlin, JavaScript, Swift.
+- [SDK integration examples](../examples/sdk-integration.md) — Ktor, Spring Boot, Kotlin, JavaScript, Swift. Spring Boot: `com.flagent:flagent-spring-boot-starter`.
 - [API Reference](../api-docs.html) — REST API (Swagger).
 - [OpenAPI spec](../api/openapi.yaml) — for code generation or custom clients.
 
@@ -38,7 +38,7 @@ Android sample (Kotlin SDK): [samples/android](https://github.com/MaxLuxs/Flagen
 
 ## Versions
 
-Backend and SDK dependency versions are defined in the repo root: `gradle/libs.versions.toml`. When integrating, use the same major versions as in that file for compatibility.
+Project version: root file `VERSION`. Sync to other formats (npm, pip, Go, etc.) via `./scripts/sync-version.sh`. See [Versioning](../guides/versioning.md).
 
 ## Need help?
 

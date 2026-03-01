@@ -2,6 +2,8 @@
 
 Java client for the Flagent API (feature flags, evaluation, health). Generated from the OpenAPI spec; uses Java 11+ `HttpClient` and Jackson.
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 ## Unified entry point from Java (recommended)
 
 For a single entry point with caching and `evaluate` / `isEnabled` / `evaluateBatch`, use the **Kotlin Enhanced** SDK from Java. It runs on the JVM and exposes a blocking API:

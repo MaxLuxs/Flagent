@@ -73,7 +73,7 @@ PostgreSQL (рекомендуется для production), MySQL, SQLite (тол
 
 ## SDK и интеграция
 
-Официальные SDK: Kotlin (JVM, Android, KMP), JavaScript/TypeScript (Node.js, браузер, React), Swift (iOS, macOS, tvOS). Есть Ktor-плагин (`ktor-flagent`) и Spring Boot Starter (`flagent-spring-boot-starter`). См. [Client SDKs](https://github.com/MaxLuxs/Flagent/blob/main/README.md#client-libraries).
+Официальные SDK: Kotlin (JVM, Android, KMP), JavaScript/TypeScript (Node.js, браузер, React), Swift (iOS, macOS, tvOS). Есть Ktor-плагин (`ktor-flagent`) и Spring Boot Starter (`flagent-spring-boot-starter`). См. [README — SDKs](https://github.com/MaxLuxs/Flagent/blob/main/README.md#-sdks).
 
 ## Производительность
 

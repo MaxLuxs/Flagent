@@ -12,6 +12,8 @@ Ktor плагин для функциональности Flagent - feature flag
 
 ## Установка
 
+Версию см. в корневом [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) или [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 Добавьте зависимость в `build.gradle.kts`:
 
 ```kotlin

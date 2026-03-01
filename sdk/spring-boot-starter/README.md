@@ -9,6 +9,8 @@ Auto-configuration for the Flagent Java client in Spring Boot. Registers `ApiCli
 
 ## Dependency
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 From the Flagent repo (when published to Maven):
 
 ```xml

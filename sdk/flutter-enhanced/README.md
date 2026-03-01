@@ -11,6 +11,8 @@ Enhanced Flutter/Dart client for Flagent API with caching and convenient API.
 
 ## Installation
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 ```yaml
 dependencies:
   flagent_enhanced:

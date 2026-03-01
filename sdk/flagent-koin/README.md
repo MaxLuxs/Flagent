@@ -4,6 +4,8 @@ Koin DI module for Flagent Kotlin client. Auto-configures `HttpClient`, `Evaluat
 
 ## Installation
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 ```kotlin
 dependencies {
     implementation("com.flagent:flagent-koin:0.1.6")

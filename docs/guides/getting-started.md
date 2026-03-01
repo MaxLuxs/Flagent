@@ -371,6 +371,8 @@ println(result.debugLogs) // See why flag matched or didn't match
 
 ## SDK Setup
 
+Use the version from the root [`VERSION`](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) file or [Releases](https://github.com/MaxLuxs/Flagent/releases). Examples below may show a specific version (e.g. `0.1.6`).
+
 ### Kotlin/Android
 
 ```kotlin

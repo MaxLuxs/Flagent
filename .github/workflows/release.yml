@@ -114,7 +114,7 @@ jobs:
         run: |
           ./gradlew build --no-daemon -x test
           ./gradlew :backend:distZip --no-daemon
-          ./gradlew :backend:jar :ktor-flagent:jar :kotlin-client:jar :kotlin-client:sourcesJar :kotlin-client:javadocJar :kotlin-enhanced:jvmJar :kotlin-debug-ui:jar :java-client:jar :java-client:sourcesJar :java-client:javadocJar :flagent-spring-boot-starter:jar :flagent-spring-boot-starter:sourcesJar --no-daemon
+          ./gradlew :backend:jar :ktor-flagent:jar :kotlin-client:jvmJar :kotlin-enhanced:jvmJar :kotlin-debug-ui:jvmJar :java-client:jar :java-client:sourcesJar :java-client:javadocJar :flagent-spring-boot-starter:jar :flagent-spring-boot-starter:sourcesJar --no-daemon
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

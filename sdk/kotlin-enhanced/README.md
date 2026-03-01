@@ -14,6 +14,8 @@ Enhanced Kotlin client library for Flagent API with caching, management, and con
 
 ## Installation
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 ```kotlin
 dependencies {
     implementation("com.flagent:kotlin-enhanced:0.1.6")

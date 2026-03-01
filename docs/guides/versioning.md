@@ -18,7 +18,7 @@
 # One-time after clone
 ./scripts/install-hooks.sh
 
-# On release
+# On release (replace 0.1.6 with the version you are releasing)
 echo "0.1.6" > VERSION
 ./scripts/sync-version.sh   # required
 git add -A

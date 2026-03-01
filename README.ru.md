@@ -181,6 +181,8 @@ dependencies {
 }
 ```
 
+Подставьте версию из корневого [`VERSION`](VERSION) или [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 Публикуемые артефакты: `shared`, `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, `flagent-koin`, `flagent-java-client` (Maven), `flagent-spring-boot-starter`. Версию см. в [релизах](https://github.com/MaxLuxs/Flagent/releases). Чтение: [GitHub PAT](https://github.com/settings/tokens) с `read:packages` или `GITHUB_TOKEN` в CI.
 
 ### SDK (все стабильны)

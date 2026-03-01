@@ -1,5 +1,7 @@
 # Использование Flagent SDK на Android и iOS
 
+Версию в примерах зависимостей см. в корневом [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) или [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 ## Решение
 
 - **Android**: Используйте [Kotlin SDK](./kotlin/) - работает нативно на Android через JVM

@@ -319,6 +319,8 @@ dependencies {
 }
 ```
 
+Replace the version with the value from root [`VERSION`](VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 Published artifacts: `shared` (KMP), `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, `flagent-koin`, `flagent-java-client` (Maven), `flagent-spring-boot-starter`. For public read use a [GitHub PAT](https://github.com/settings/tokens) with `read:packages` (or `GITHUB_TOKEN` in CI). Replace version with the [latest release](https://github.com/MaxLuxs/Flagent/releases).
 
 ### Server-Side Integration

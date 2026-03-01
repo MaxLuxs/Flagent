@@ -18,7 +18,7 @@
 # Один раз после клонирования
 ./scripts/install-hooks.sh
 
-# При релизе
+# При релизе (подставьте свою версию вместо 0.1.6)
 echo "0.1.6" > VERSION
 ./scripts/sync-version.sh   # обязательно
 git add -A

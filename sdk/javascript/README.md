@@ -1,4 +1,6 @@
-## @flagent/client@0.1.6
+## @flagent/client
+
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases). Example below uses `0.1.6`.
 
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 

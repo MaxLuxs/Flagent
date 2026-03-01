@@ -369,6 +369,8 @@ println(result.debugLogs) // Посмотреть, почему флаг сов�
 
 ## Настройка SDK
 
+Подставьте версию из корневого файла [`VERSION`](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) или [Releases](https://github.com/MaxLuxs/Flagent/releases). В примерах ниже может быть указана конкретная версия (например `0.1.6`).
+
 ### Kotlin/Android
 
 ```kotlin

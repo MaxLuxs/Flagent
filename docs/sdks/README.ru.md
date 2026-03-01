@@ -8,7 +8,7 @@
 
 | SDK | Платформы | Установка | Документация |
 |-----|-----------|----------|--------------|
-| **Kotlin** | JVM, Android | Gradle: `io.flagent:flagent-kotlin` | [SDKs](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/kotlin) |
+| **Kotlin** | JVM, Android, KMP | Gradle: `com.flagent:kotlin-client` | [SDKs](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/kotlin) |
 | **JavaScript/TS** | Браузер, Node.js | npm: `@flagent/sdk-js` | [SDKs](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/javascript) |
 | **Swift** | iOS, macOS | SPM / CocoaPods | [SDKs](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/swift) |
 | **Python** | 3.8+ | pip: `flagent-sdk` | [SDKs](../sdk.html) |
@@ -25,7 +25,7 @@ Android-пример (Kotlin): [samples/android](https://github.com/MaxLuxs/Flag
 ## Ссылки
 
 - [Обзор SDK (установка и использование)](../sdk.html)
-- [Примеры интеграции](../examples/sdk-integration.md) — Ktor, Spring Boot, Kotlin, JavaScript, Swift
+- [Примеры интеграции](../examples/sdk-integration.md) — Ktor, Spring Boot, Kotlin, JavaScript, Swift. Spring Boot: `com.flagent:flagent-spring-boot-starter`.
 - [API Reference](../api-docs.html) — REST API (Swagger)
 - [OpenAPI spec](../api/openapi.yaml) — для генерации кода или своих клиентов
 
@@ -38,7 +38,7 @@ Android-пример (Kotlin): [samples/android](https://github.com/MaxLuxs/Flag
 
 ## Версии
 
-Версии backend и SDK заданы в корне репозитория: `gradle/libs.versions.toml`. Для совместимости используйте те же мажорные версии.
+Версия проекта: корневой файл `VERSION`. Синхронизация в другие форматы: `./scripts/sync-version.sh`. См. [Versioning](../guides/versioning.md).
 
 ## Помощь
 

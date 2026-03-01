@@ -101,14 +101,14 @@ Visual debugging interface for flags and evaluations (to be fully implemented).
 
 ### Basic SDK
 
-The basic SDK (`com.flagent:flagent-kotlin-client`) provides direct API access:
+The basic SDK (`com.flagent:kotlin-client`) provides direct API access:
 - Simple and lightweight
 - No caching
 - Direct API calls every time
 
 ### Enhanced SDK
 
-The enhanced SDK (`com.flagent:flagent-kotlin-enhanced-client`) adds:
+The enhanced SDK (`com.flagent:kotlin-enhanced`) adds:
 - Automatic caching of evaluation results
 - Configurable cache TTL
 - Reduced API calls for better performance

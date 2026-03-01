@@ -4,6 +4,8 @@ Enhanced Swift client library for Flagent API with caching and a unified entry p
 
 ## Installation
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 Add to your `Package.swift`:
 
 ```swift

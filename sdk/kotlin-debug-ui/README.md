@@ -4,6 +4,8 @@ Debug UI library for Flagent Enhanced SDK using Compose Multiplatform.
 
 ## Installation
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 ```kotlin
 dependencies {
     implementation("com.flagent:kotlin-debug-ui:0.1.6")

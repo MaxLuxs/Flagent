@@ -4,6 +4,8 @@ Debug UI library for Flagent Enhanced SDK using SwiftUI.
 
 ## Installation
 
+Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
+
 Add to your `Package.swift`:
 
 ```swift

@@ -68,7 +68,7 @@ This sample uses Flagent Flutter SDK with local path dependencies:
 - `flagent_client` - Base Dart SDK (from OpenAPI)
 - `flagent_enhanced` - Enhanced SDK with caching
 
-For production, use published packages:
+For production, use published packages. Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION) or [Releases](https://github.com/MaxLuxs/Flagent/releases).
 
 ```yaml
 dependencies:
