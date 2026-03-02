@@ -368,7 +368,6 @@ private fun formatJsonValue(value: kotlinx.serialization.json.JsonElement): Stri
         is kotlinx.serialization.json.JsonArray -> {
             "[ ... ]"
         }
-        else -> value.toString()
     }
 }
 

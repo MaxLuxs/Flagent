@@ -235,5 +235,10 @@ object AppConfig {
             (js("window.ENV_FEATURE_CRASH_ANALYTICS") as? String)?.toBoolean()
                 ?: true
         }
+
+        /** Firebase integration settings tab (read-only status) */
+        val enableFirebaseSettings: Boolean by lazy {
+            (js("window.ENV_FEATURE_FIREBASE_SETTINGS") as? String)?.toBoolean() ?: true
+        }
     }
 }

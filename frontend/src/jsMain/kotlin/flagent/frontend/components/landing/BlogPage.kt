@@ -96,7 +96,7 @@ fun BlogPage() {
             }) {
                 Input(InputType.Email, attrs = {
                     value(email.value)
-                    onInput { email.value = (it.target as org.w3c.dom.HTMLInputElement).value }
+                    onInput { email.value = it.target.value }
                     style {
                         padding(14.px, 20.px)
                         width(280.px)

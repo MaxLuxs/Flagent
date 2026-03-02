@@ -5,6 +5,7 @@ import flagent.api.model.FlagResponse
 import flagent.api.model.SegmentResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
+import flagent.frontend.components.common.FilterChip
 import flagent.frontend.components.common.PageHeader
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
@@ -15,6 +16,7 @@ import flagent.frontend.util.ErrorHandler
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+import org.w3c.dom.HTMLSelectElement
 
 /**
  * Data class for a segment with its parent flag info (for list display).
@@ -35,6 +37,10 @@ fun SegmentsPage() {
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    var selectedFlagId by remember { mutableStateOf<Int?>(null) }
+    var groupByFlag by remember { mutableStateOf(false) }
+    var sortColumn by remember { mutableStateOf<String?>(null) }
+    var sortAscending by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -51,17 +57,48 @@ fun SegmentsPage() {
         isLoading = false
     }
 
-    val segmentsWithFlags: List<SegmentWithFlag> = remember(flags, searchQuery) {
-        val list = flags.flatMap { flag ->
+    val segmentsWithFlags: List<SegmentWithFlag> = remember(flags, searchQuery, selectedFlagId) {
+        var list = flags.flatMap { flag ->
             flag.segments.map { seg -> SegmentWithFlag(seg, flag) }
         }
+        selectedFlagId?.let { id -> list = list.filter { it.flag.id == id } }
         val q = searchQuery.trim().lowercase()
-        if (q.isEmpty()) list
-        else list.filter {
-            it.segment.description?.lowercase()?.contains(q) == true ||
-                it.flag.key.lowercase().contains(q) ||
-                it.segment.id.toString().contains(q)
+        if (q.isNotEmpty()) {
+            list = list.filter {
+                it.segment.description?.lowercase()?.contains(q) == true ||
+                    it.flag.key.lowercase().contains(q) ||
+                    it.segment.id.toString().contains(q)
+            }
         }
+        list
+    }
+
+    val sortedSegments = remember(segmentsWithFlags, sortColumn, sortAscending) {
+        var result = segmentsWithFlags
+        sortColumn?.let { col ->
+            result = when (col) {
+                "flagKey" -> result.sortedBy { it.flag.key }
+                "id" -> result.sortedBy { it.segment.id }
+                "description" -> result.sortedBy { it.segment.description ?: "" }
+                "rolloutPercent" -> result.sortedBy { it.segment.rolloutPercent }
+                "constraints" -> result.sortedBy { it.segment.constraints.size }
+                else -> result
+            }
+            if (!sortAscending) result = result.reversed()
+        }
+        result
+    }
+
+    val groupedByFlag = remember(sortedSegments, groupByFlag) {
+        if (!groupByFlag) null
+        else sortedSegments.groupBy { it.flag.id }.toList().associate { (flagId, list) ->
+            list.first().flag.key.ifBlank { "Flag #$flagId" } to list
+        }
+    }
+
+    fun sortBy(column: String) {
+        if (sortColumn == column) sortAscending = !sortAscending
+        else { sortColumn = column; sortAscending = true }
     }
 
     Div({
@@ -156,13 +193,13 @@ fun SegmentsPage() {
                     }
                 }) {
                     Text(
-                        if (searchQuery.isNotBlank())
+                        if (searchQuery.isNotBlank() || selectedFlagId != null)
                             LocalizedStrings.noSegmentsMatchSearch
                         else
                             LocalizedStrings.noSegmentsInProject
                     )
                 }
-                if (searchQuery.isNotBlank()) {
+                if (searchQuery.isNotBlank() || selectedFlagId != null) {
                     Button({
                         style {
                             marginTop(12.px)
@@ -174,7 +211,7 @@ fun SegmentsPage() {
                             cursor("pointer")
                             fontSize(14.px)
                         }
-                        onClick { searchQuery = "" }
+                        onClick { searchQuery = ""; selectedFlagId = null }
                     }) {
                         Text(LocalizedStrings.clearSearch)
                     }
@@ -217,10 +254,7 @@ fun SegmentsPage() {
                 }) {
                     Span({
                         classes("material-icons")
-                        style {
-                            fontSize(20.px)
-                            color(FlagentTheme.textLight(themeMode))
-                        }
+                        style { fontSize(20.px); color(FlagentTheme.textLight(themeMode)) }
                     }) { Text("search") }
                     Input(InputType.Text) {
                         value(searchQuery)
@@ -237,45 +271,282 @@ fun SegmentsPage() {
                         }
                     }
                 }
-                Span({
+                Select({
+                    attr("value", selectedFlagId?.toString() ?: "")
+                    onChange { event ->
+                        val v = event.target.value
+                        selectedFlagId = v.toIntOrNull()
+                    }
                     style {
-                        color(FlagentTheme.textLight(themeMode))
+                        padding(8.px, 12.px)
+                        borderRadius(6.px)
+                        border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                        color(FlagentTheme.text(themeMode))
                         fontSize(14.px)
+                        minWidth(160.px)
                     }
                 }) {
-                    Text("${segmentsWithFlags.size} ${LocalizedStrings.segments.lowercase()}")
+                    Option(value = "") { Text(LocalizedStrings.allFlags) }
+                    flags.forEach { f ->
+                        Option(value = f.id.toString()) {
+                            Text(f.key.ifBlank { "Flag #${f.id}" })
+                        }
+                    }
+                }
+                FilterChip(themeMode, LocalizedStrings.groupByFlag, groupByFlag, onClick = { groupByFlag = !groupByFlag })
+                Span({
+                    style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px) }
+                }) {
+                    Text("${sortedSegments.size} ${LocalizedStrings.segments.lowercase()}")
                 }
             }
 
-            Div({
-                style {
-                    backgroundColor(FlagentTheme.cardBg(themeMode))
-                    borderRadius(8.px)
-                    overflow("hidden")
-                    property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
-                }
-            }) {
-                Table({
-                    style {
-                        width(100.percent)
-                        property("border-collapse", "collapse")
-                    }
-                }) {
-                    Thead {
-                        Tr({
+            if (groupedByFlag != null) {
+                groupedByFlag.entries.forEach { (flagKeyLabel, list) ->
+                    Div({
+                        style { marginBottom(24.px) }
+                    }) {
+                        Div({
                             style {
+                                display(DisplayStyle.Flex)
+                                alignItems(AlignItems.Center)
+                                gap(8.px)
+                                marginBottom(12.px)
+                                padding(12.px, 16.px)
                                 backgroundColor(FlagentTheme.inputBg(themeMode))
-                                property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                                borderRadius(8.px)
+                                property("border-left", "4px solid ${FlagentTheme.Primary}")
                             }
                         }) {
-                            listOf(
-                                LocalizedStrings.flagKey,
-                                "ID",
-                                LocalizedStrings.description,
-                                LocalizedStrings.rolloutPercent,
-                                LocalizedStrings.constraints,
-                                LocalizedStrings.action
-                            ).forEach { h ->
+                            Icon("flag", size = 18.px, color = FlagentTheme.Primary)
+                            Text(flagKeyLabel)
+                            Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(13.px) } }) {
+                                Text(" (${list.size})")
+                            }
+                        }
+                        Div({
+                            style {
+                                backgroundColor(FlagentTheme.cardBg(themeMode))
+                                borderRadius(8.px)
+                                overflow("hidden")
+                                property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
+                            }
+                        }) {
+                            Table({
+                                style { width(100.percent); property("border-collapse", "collapse") }
+                            }) {
+                                Thead {
+                                    Tr({
+                                        style {
+                                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                                            property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                                        }
+                                    }) {
+                                        listOf(
+                                            LocalizedStrings.flagKey,
+                                            "ID",
+                                            LocalizedStrings.description,
+                                            LocalizedStrings.rolloutPercent,
+                                            LocalizedStrings.constraints,
+                                            LocalizedStrings.action
+                                        ).forEach { h ->
+                                            Th({
+                                                style {
+                                                    padding(10.px, 12.px)
+                                                    textAlign("left")
+                                                    fontSize(12.px)
+                                                    fontWeight(600)
+                                                    color(FlagentTheme.textLight(themeMode))
+                                                    property("text-transform", "uppercase")
+                                                }
+                                            }) { Text(h) }
+                                        }
+                                    }
+                                }
+                                Tbody {
+                                    list.forEach { (segment, flag) ->
+                                        Tr({
+                                            style {
+                                                property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                                                property("transition", "background-color 0.15s")
+                                            }
+                                            onMouseEnter { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = FlagentTheme.inputBg(themeMode).toString() }
+                                            onMouseLeave { (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent" }
+                                        }) {
+                                            Td({
+                                                style { padding(10.px, 12.px); fontSize(14.px); color(FlagentTheme.Primary); cursor("pointer") }
+                                                onClick { Router.navigateTo(Route.FlagDetail(flag.id)) }
+                                            }) { Text(flag.key.ifBlank { "Flag #${flag.id}" }) }
+                                            Td({ style { padding(10.px, 12.px); fontSize(14.px); color(FlagentTheme.textLight(themeMode)) } }) {
+                                                Text(segment.id.toString())
+                                            }
+                                            Td({
+                                                style {
+                                                    padding(10.px, 12.px)
+                                                    fontSize(14.px)
+                                                    property("max-width", "240px")
+                                                    property("overflow", "hidden")
+                                                    property("text-overflow", "ellipsis")
+                                                    property("white-space", "nowrap")
+                                                }
+                                            }) {
+                                                Text(segment.description?.ifBlank { "—" } ?: "—")
+                                            }
+                                            Td({ style { padding(10.px, 12.px); fontSize(14.px) } }) {
+                                                Text("${segment.rolloutPercent}%")
+                                            }
+                                            Td({ style { padding(10.px, 12.px); fontSize(14.px) } }) {
+                                                Text(segment.constraints.size.toString())
+                                            }
+                                            Td({ style { padding(10.px, 12.px) } }) {
+                                                Button({
+                                                    style {
+                                                        padding(6.px, 10.px)
+                                                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                                                        color(FlagentTheme.text(themeMode))
+                                                        border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                                        borderRadius(6.px)
+                                                        cursor("pointer")
+                                                        fontSize(12.px)
+                                                    }
+                                                    onClick { Router.navigateTo(Route.FlagDetail(flag.id)) }
+                                                }) {
+                                                    Icon("settings", size = 14.px)
+                                                    Text(" ${LocalizedStrings.edit}")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                Div({
+                    style {
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        borderRadius(8.px)
+                        overflow("hidden")
+                        property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
+                    }
+                }) {
+                    Table({
+                        style { width(100.percent); property("border-collapse", "collapse") }
+                    }) {
+                        Thead {
+                            Tr({
+                                style {
+                                    backgroundColor(FlagentTheme.inputBg(themeMode))
+                                    property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                                }
+                            }) {
+                                Th({
+                                    style {
+                                        padding(10.px, 12.px)
+                                        textAlign("left")
+                                        fontSize(12.px)
+                                        fontWeight(600)
+                                        color(FlagentTheme.textLight(themeMode))
+                                        property("text-transform", "uppercase")
+                                        cursor("pointer")
+                                    }
+                                    onClick { sortBy("flagKey") }
+                                }) {
+                                    Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                        Text(LocalizedStrings.flagKey)
+                                        if (sortColumn == "flagKey") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (sortAscending) "↑" else "↓")
+                                            }
+                                        }
+                                    }
+                                }
+                                Th({
+                                    style {
+                                        padding(10.px, 12.px)
+                                        textAlign("left")
+                                        fontSize(12.px)
+                                        fontWeight(600)
+                                        color(FlagentTheme.textLight(themeMode))
+                                        property("text-transform", "uppercase")
+                                        cursor("pointer")
+                                    }
+                                    onClick { sortBy("id") }
+                                }) {
+                                    Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                        Text("ID")
+                                        if (sortColumn == "id") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (sortAscending) "↑" else "↓")
+                                            }
+                                        }
+                                    }
+                                }
+                                Th({
+                                    style {
+                                        padding(10.px, 12.px)
+                                        textAlign("left")
+                                        fontSize(12.px)
+                                        fontWeight(600)
+                                        color(FlagentTheme.textLight(themeMode))
+                                        property("text-transform", "uppercase")
+                                        cursor("pointer")
+                                    }
+                                    onClick { sortBy("description") }
+                                }) {
+                                    Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                        Text(LocalizedStrings.description)
+                                        if (sortColumn == "description") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (sortAscending) "↑" else "↓")
+                                            }
+                                        }
+                                    }
+                                }
+                                Th({
+                                    style {
+                                        padding(10.px, 12.px)
+                                        textAlign("left")
+                                        fontSize(12.px)
+                                        fontWeight(600)
+                                        color(FlagentTheme.textLight(themeMode))
+                                        property("text-transform", "uppercase")
+                                        cursor("pointer")
+                                    }
+                                    onClick { sortBy("rolloutPercent") }
+                                }) {
+                                    Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                        Text(LocalizedStrings.rolloutPercent)
+                                        if (sortColumn == "rolloutPercent") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (sortAscending) "↑" else "↓")
+                                            }
+                                        }
+                                    }
+                                }
+                                Th({
+                                    style {
+                                        padding(10.px, 12.px)
+                                        textAlign("left")
+                                        fontSize(12.px)
+                                        fontWeight(600)
+                                        color(FlagentTheme.textLight(themeMode))
+                                        property("text-transform", "uppercase")
+                                        cursor("pointer")
+                                    }
+                                    onClick { sortBy("constraints") }
+                                }) {
+                                    Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                        Text(LocalizedStrings.constraints)
+                                        if (sortColumn == "constraints") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (sortAscending) "↑" else "↓")
+                                            }
+                                        }
+                                    }
+                                }
                                 Th({
                                     style {
                                         padding(10.px, 12.px)
@@ -285,12 +556,12 @@ fun SegmentsPage() {
                                         color(FlagentTheme.textLight(themeMode))
                                         property("text-transform", "uppercase")
                                     }
-                                }) { Text(h) }
+                                }) { Text(LocalizedStrings.action) }
                             }
                         }
                     }
                     Tbody {
-                        segmentsWithFlags.forEach { (segment, flag) ->
+                        sortedSegments.forEach { (segment, flag) ->
                             Tr({
                                 style {
                                     property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")

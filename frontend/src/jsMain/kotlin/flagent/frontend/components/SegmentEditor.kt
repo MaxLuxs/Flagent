@@ -130,7 +130,7 @@ fun SegmentEditor(flagId: Int, segmentId: Int? = null) {
                     Input(InputType.Range) {
                         value(rolloutPercent.value.toString())
                         onInput { event ->
-                            val inputValue = (event.target as org.w3c.dom.HTMLInputElement).value
+                            val inputValue = event.target.value
                             rolloutPercent.value = inputValue.toIntOrNull() ?: 0
                         }
                         attr("min", "0")

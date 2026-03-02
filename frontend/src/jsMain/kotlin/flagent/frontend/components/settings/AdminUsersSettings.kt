@@ -36,15 +36,15 @@ fun AdminUsersSettings(themeMode: ThemeMode) {
         scope.launch {
             loading.value = true
             error.value = null
-            try {
-                val (list, total) = ApiClient.getAdminUsers(limit = 50, offset = 0)
-                users.value = list
-                totalCount.value = total
-            } catch (e: Exception) {
-                error.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
-            } finally {
-                loading.value = false
-            }
+            ErrorHandler.withErrorHandling(
+                block = {
+                    val (list, total) = ApiClient.getAdminUsers(limit = 50, offset = 0)
+                    users.value = list
+                    totalCount.value = total
+                },
+                onError = { err -> error.value = ErrorHandler.getUserMessage(err) }
+            )
+            loading.value = false
         }
     }
 

@@ -9,6 +9,9 @@ import flagent.frontend.components.Icon
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
+import flagent.frontend.theme.AppGradientBackground
 import flagent.frontend.theme.FlagentTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -19,39 +22,29 @@ import org.jetbrains.compose.web.dom.*
  */
 @Composable
 fun MarketingLanding() {
+    val themeMode = LocalThemeMode.current
     LandingNavbar()
-    Div(attrs = {
-        classes("landing-page")
-        style {
-            position(Position.Relative)
-            minHeight(100.vh)
-            overflow("hidden")
-            paddingTop(80.px)
-            property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
-        }
-    }) {
-        // Fixed background layer — no repaint on scroll
+    AppGradientBackground(mode = themeMode) {
         Div(attrs = {
-            style {
-                position(Position.Fixed)
-                property("inset", "0")
-                property("z-index", "0")
-                property("pointer-events", "none")
-                property("background", FlagentTheme.GradientHero)
-                property("background-size", "400% 400%")
-                property("animation", "morphGradient 20s ease infinite")
-            }
-        }) {}
-        LandingBackgroundShapes()
-        Div(attrs = {
+            classes("landing-page")
             style {
                 position(Position.Relative)
-                padding(48.px, 24.px)
-                maxWidth(1100.px)
-                property("margin", "0 auto")
-                property("z-index", "1")
+                minHeight(100.vh)
+                overflow("hidden")
+                paddingTop(80.px)
+                property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
             }
         }) {
+            LandingBackgroundShapes(themeMode)
+            Div(attrs = {
+                style {
+                    position(Position.Relative)
+                    padding(48.px, 24.px)
+                    maxWidth(1100.px)
+                    property("margin", "0 auto")
+                    property("z-index", "1")
+                }
+            }) {
             Div(attrs = {
                 id("hero-section")
                 classes("reveal-on-scroll")
@@ -108,26 +101,32 @@ fun MarketingLanding() {
             }) {
                 EnterpriseSection()
             }
-        }
-        Div(attrs = {
-            style { position(Position.Relative); property("z-index", "1") }
-            classes("reveal-on-scroll")
-            attr("data-reveal", "true")
-        }) {
-            LandingFooter()
+            }
+            Div(attrs = {
+                style { position(Position.Relative); property("z-index", "1") }
+                classes("reveal-on-scroll")
+                attr("data-reveal", "true")
+            }) {
+                LandingFooter()
+            }
         }
     }
 }
 
 @Composable
-fun LandingBackgroundShapes() {
+fun LandingBackgroundShapes(themeMode: ThemeMode = ThemeMode.Dark) {
+    val isLight = themeMode == ThemeMode.Light
+    val dotOpacity = if (isLight) 0.06 else 0.12
+    val blob1 = if (isLight) "rgba(14, 165, 233, 0.09)" else "rgba(14, 165, 233, 0.2)"
+    val blob2 = if (isLight) "rgba(20, 184, 166, 0.08)" else "rgba(20, 184, 166, 0.18)"
+    val blob3 = if (isLight) "rgba(14, 165, 233, 0.07)" else "rgba(14, 165, 233, 0.15)"
     Div(attrs = {
         style {
             position(Position.Fixed)
             property("inset", "0")
             property("z-index", "0")
             property("pointer-events", "none")
-            property("background-image", "radial-gradient(rgba(14, 165, 233, 0.12) 1px, transparent 1px)")
+            property("background-image", "radial-gradient(rgba(14, 165, 233, $dotOpacity) 1px, transparent 1px)")
             property("background-size", "28px 28px")
         }
     }) {}
@@ -141,7 +140,7 @@ fun LandingBackgroundShapes() {
             borderRadius(50.percent)
             property("z-index", "0")
             property("pointer-events", "none")
-            property("background", "radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 65%)")
+            property("background", "radial-gradient(circle, $blob1 0%, transparent 65%)")
             property("animation", "float 14s ease-in-out infinite")
         }
     }) {}
@@ -155,7 +154,7 @@ fun LandingBackgroundShapes() {
             borderRadius(50.percent)
             property("z-index", "0")
             property("pointer-events", "none")
-            property("background", "radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, transparent 65%)")
+            property("background", "radial-gradient(circle, $blob2 0%, transparent 65%)")
             property("animation", "floatSlow 20s ease-in-out infinite")
         }
     }) {}
@@ -170,7 +169,7 @@ fun LandingBackgroundShapes() {
             borderRadius(50.percent)
             property("z-index", "0")
             property("pointer-events", "none")
-            property("background", "radial-gradient(ellipse, rgba(14, 165, 233, 0.15) 0%, transparent 70%)")
+            property("background", "radial-gradient(ellipse, $blob3 0%, transparent 70%)")
             property("animation", "glowPulse 10s ease-in-out infinite")
         }
     }) {}

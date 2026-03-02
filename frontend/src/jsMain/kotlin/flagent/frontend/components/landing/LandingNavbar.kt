@@ -5,6 +5,9 @@ import flagent.frontend.components.Icon
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
+import flagent.frontend.state.ThemeState
 import flagent.frontend.theme.FlagentTheme
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -22,6 +25,7 @@ fun LandingNavbar() {
     val isMobile = remember { mutableStateOf(false) }
     val activeLink = remember { mutableStateOf<String?>(null) }
     val route = Router.currentRoute
+    val themeMode = LocalThemeMode.current
 
     DisposableEffect(route) {
         val listener: (dynamic) -> Unit = {
@@ -222,6 +226,42 @@ fun LandingNavbar() {
                     }) {
                         Icon("code", size = 18.px, color = Color.white)
                         Text("GitHub")
+                    }
+                    Button(attrs = {
+                        style {
+                            padding(8.px, 10.px)
+                            backgroundColor(Color.transparent)
+                            color(Color("rgba(255,255,255,0.9)"))
+                            border(0.px)
+                            borderRadius(999.px)
+                            cursor("pointer")
+                            display(DisplayStyle.Flex)
+                            alignItems(AlignItems.Center)
+                            gap(6.px)
+                            fontSize(13.px)
+                            property("transition", "all 0.2s ease")
+                        }
+                        onClick { ThemeState.toggle() }
+                        onMouseEnter {
+                            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "rgba(15,23,42,0.4)"
+                        }
+                        onMouseLeave {
+                            (it.target as org.w3c.dom.HTMLElement).style.backgroundColor = "transparent"
+                        }
+                    }) {
+                        Icon(
+                            if (themeMode == ThemeMode.Dark) "light_mode" else "dark_mode",
+                            size = 18.px,
+                            color = FlagentTheme.Background
+                        )
+                        Span(attrs = {
+                            style {
+                                fontSize(12.px)
+                                color(Color("rgba(255,255,255,0.85)"))
+                            }
+                        }) {
+                            Text(if (themeMode == ThemeMode.Dark) "Light" else "Dark")
+                        }
                     }
                 }
             }

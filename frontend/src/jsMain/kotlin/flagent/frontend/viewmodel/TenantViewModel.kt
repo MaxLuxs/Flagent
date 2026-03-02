@@ -166,5 +166,6 @@ private fun TenantResponse.toTenant() = Tenant(
     key = key,
     name = name,
     plan = plan,
-    status = status
+    status = status,
+    createdAt = createdAt
 )

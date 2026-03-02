@@ -57,7 +57,10 @@ fun LandingFooter() {
                         margin(0.px)
                     }
                 }) {
-                    Text("Flagent reduces release risk and drives innovation: ship behind flags, roll back in one click without redeploying, and run A/B tests with type-safe SDKs. Open source, self-host free.")
+                    Text(
+                        "Flagent reduces release risk and drives innovation: ship behind flags, roll back in one click without redeploying, and run A/B tests with type-safe SDKs. " +
+                            "Open source, self-host free, with an OpenFeature-style Kotlin Multiplatform client when you want vendor-agnostic integration."
+                    )
                 }
                 Div(attrs = {
                     style {
@@ -160,7 +163,7 @@ fun LandingFooter() {
                     }) {
                         Input(InputType.Email, attrs = {
                             value(email.value)
-                            onInput { email.value = (it.target as org.w3c.dom.HTMLInputElement).value }
+                            onInput { email.value = it.target.value }
                             style {
                                 padding(10.px, 14.px)
                                 width(180.px)

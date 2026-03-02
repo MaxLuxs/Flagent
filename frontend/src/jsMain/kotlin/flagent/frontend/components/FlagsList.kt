@@ -14,9 +14,11 @@ import flagent.frontend.api.ApiClient
 import flagent.frontend.components.common.ConfirmDialog
 import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.FilterChip
-import flagent.frontend.components.common.SkeletonLoader
 import flagent.frontend.components.common.PageHeader
 import flagent.frontend.components.common.Pagination
+import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.components.common.ToggleSize
+import flagent.frontend.components.common.ToggleSwitch
 import flagent.frontend.components.flags.CreateFlagModal
 import flagent.frontend.config.AppConfig
 import flagent.frontend.i18n.LocalizedStrings
@@ -30,6 +32,7 @@ import flagent.frontend.state.Notification
 import flagent.frontend.state.NotificationType
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
+import flagent.frontend.util.triggerDownloadFromString
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
 import kotlinx.serialization.json.buildJsonArray
@@ -97,6 +100,7 @@ import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.dom.Th
 import org.jetbrains.compose.web.dom.Thead
 import org.jetbrains.compose.web.dom.Tr
+import org.w3c.dom.HTMLInputElement
 
 /**
  * FlagsList component - displays list of all flags
@@ -151,24 +155,24 @@ private fun FlagTableRow(
     }) {
         Td({
             style { padding(14.px, 12.px); textAlign("center"); width(40.px) }
-            onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
+            onClick { it.stopPropagation() }
         }) {
             Input(InputType.Checkbox) {
                 checked(flag.id in selectedIds)
                 onChange { event ->
-                    val input = (event.currentTarget as? org.w3c.dom.HTMLInputElement)
-                        ?: (event.target as? org.w3c.dom.HTMLInputElement)
-                    if (input != null) {
-                        if (input.checked) selectedIds.add(flag.id) else selectedIds.remove(flag.id)
-                    }
+                    val input = (event.currentTarget as? HTMLInputElement)
+                        ?: event.target
+                    if (input.checked) selectedIds.add(flag.id) else selectedIds.remove(flag.id)
                 }
                 style { cursor("pointer") }
             }
         }
-        Td({ style { padding(14.px, 12.px); textAlign("left"); maxWidth(320.px) } }) {
-            Div({ style { fontWeight("600"); fontSize(15.px); color(FlagentTheme.Primary); marginBottom(2.px); property("overflow", "hidden"); property("text-overflow", "ellipsis") } }) {
+        Td({ style { padding(14.px, 12.px); textAlign("left"); maxWidth(180.px); property("overflow", "hidden"); property("text-overflow", "ellipsis") } }) {
+            Div({ style { fontWeight("600"); fontSize(15.px); color(FlagentTheme.Primary) } }) {
                 Text(flag.key.ifBlank { "flag_${flag.id}" })
             }
+        }
+        Td({ style { padding(14.px, 12.px); textAlign("left"); maxWidth(280.px) } }) {
             if (flag.description.isNotBlank()) {
                 Div({ style { fontSize(13.px); color(FlagentTheme.textLight(themeMode)); marginBottom(6.px); property("display", "-webkit-box"); property("-webkit-line-clamp", "2"); property("-webkit-box-orient", "vertical"); overflow("hidden") } }) {
                     Text(flag.description)
@@ -225,9 +229,9 @@ private fun FlagTableRow(
         }
         Td({
             style { padding(14.px, 12.px); textAlign("center"); width(100.px) }
-            onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
+            onClick { it.stopPropagation() }
         }) {
-            Label(attrs = {
+            Div({
                 style {
                     display(DisplayStyle.Flex)
                     alignItems(AlignItems.Center)
@@ -243,16 +247,13 @@ private fun FlagTableRow(
                     property("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
                 }
             }) {
-                Input(InputType.Checkbox) {
-                    checked(flag.enabled)
-                    onChange { event ->
-                        // currentTarget = input (listener target); event.target can be Label when clicking "ON"/"OFF" text
-                        val input = (event.currentTarget as? org.w3c.dom.HTMLInputElement)
-                            ?: (event.target as? org.w3c.dom.HTMLInputElement)
-                        if (input != null) onToggleEnabled(flag.id, input.checked)
-                    }
-                    style { cursor("pointer"); width(14.px); margin(0.px) }
-                }
+                ToggleSwitch(
+                    checked = flag.enabled,
+                    onCheckedChange = { checked ->
+                        onToggleEnabled(flag.id, checked)
+                    },
+                    size = ToggleSize.Small
+                )
                 Text(if (flag.enabled) "ON" else "OFF")
             }
         }
@@ -278,7 +279,7 @@ private fun GroupedFlagsTableBody(
             }
         }) {
             Td({
-                attr("colspan", "7")
+                attr("colspan", "8")
                 style {
                     padding(12.px, 16.px)
                     fontWeight("600")
@@ -653,6 +654,25 @@ fun FlagsList() {
         }
     }
 
+    val pendingToggle = remember { mutableStateOf<Pair<Int, Boolean>?>(null) }
+    ConfirmDialog(
+        isOpen = pendingToggle.value != null,
+        title = LocalizedStrings.confirmToggleFlagTitle,
+        message = LocalizedStrings.confirmToggleFlagMessage,
+        confirmLabel = LocalizedStrings.confirmToggleFlagYes,
+        cancelLabel = LocalizedStrings.confirmToggleFlagNo,
+        onConfirm = {
+            pendingToggle.value?.let { (flagId, enabled) ->
+                onToggleEnabled(flagId, enabled)
+            }
+            pendingToggle.value = null
+        },
+        onCancel = { pendingToggle.value = null }
+    )
+    val onToggleWithConfirm: (Int, Boolean) -> Unit = { flagId, enabled ->
+        pendingToggle.value = Pair(flagId, enabled)
+    }
+
     val realtimeRefreshTrigger = remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -727,7 +747,9 @@ fun FlagsList() {
             subtitle = LocalizedStrings.featureFlagsSubtitle
         )
 
-        if (!loading.value && error.value == null && totalCount.value > 0) {
+        val effectiveTotalCount = if (totalCount.value > 0L) totalCount.value else flags.size.toLong()
+
+        if (!loading.value && error.value == null && effectiveTotalCount > 0L) {
             Div({
                 style {
                     fontSize(13.px)
@@ -739,7 +761,7 @@ fun FlagsList() {
                 }
             }) {
                 Icon("insights", size = 18.px, color = FlagentTheme.textLight(themeMode))
-                Text("${totalCount.value} ${LocalizedStrings.featureFlags.lowercase()}")
+                Text("$effectiveTotalCount ${LocalizedStrings.featureFlags.lowercase()}")
             }
         }
 
@@ -921,7 +943,10 @@ fun FlagsList() {
             CreateFlagModal(
                 onClose = { showCreateFlagModal.value = false },
                 onSelectTemplate = { template ->
-                    if (newFlagDescription.value.isNotBlank()) createFlag(template)
+                    if (newFlagDescription.value.isBlank()) {
+                        newFlagDescription.value = LocalizedStrings.createFlagTypeBooleanTitle
+                    }
+                    createFlag(template)
                 },
                 onSelectFullForm = { Router.navigateTo(Route.CreateFlag) }
             )
@@ -1353,6 +1378,44 @@ fun FlagsList() {
                         }) {
                             Text(LocalizedStrings.copyShareLink)
                         }
+                        Button({
+                            onClick {
+                                val list = flags
+                                val header = "id,key,description,tags,enabled,updatedBy,updatedAt"
+                                fun csvEscape(s: String): String {
+                                    val escaped = s.replace("\"", "\"\"")
+                                    return if (escaped.contains(',') || escaped.contains('"') || escaped.contains('\n')) "\"$escaped\"" else escaped
+                                }
+                                val rows = list.joinToString("\n") { f ->
+                                    listOf(
+                                        f.id.toString(),
+                                        csvEscape(f.key),
+                                        csvEscape(f.description),
+                                        csvEscape(f.tags.joinToString(";") { it.value }),
+                                        f.enabled.toString(),
+                                        csvEscape(f.updatedBy ?: ""),
+                                        csvEscape(f.updatedAt ?: "")
+                                    ).joinToString(",")
+                                }
+                                triggerDownloadFromString(
+                                    listOf(header, rows).joinToString("\n"),
+                                    "flags-export.csv",
+                                    "text/csv;charset=utf-8"
+                                )
+                                globalState.addNotification(Notification(message = LocalizedStrings.exportCsv + " (" + list.size + ")", type = NotificationType.SUCCESS))
+                            }
+                            style {
+                                padding(8.px, 14.px)
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                color(FlagentTheme.text(themeMode))
+                                border { width(1.px); style(LineStyle.Solid); color(FlagentTheme.cardBorder(themeMode)) }
+                                borderRadius(6.px)
+                                cursor("pointer")
+                                fontSize(13.px)
+                            }
+                        }) {
+                            Text(LocalizedStrings.exportCsv)
+                        }
                     }
                 }
             }
@@ -1432,7 +1495,7 @@ fun FlagsList() {
             val hasActiveFiltersForEmpty = searchQuery.value.isNotBlank() || keyFilter.value.isNotBlank() ||
                 statusFilter.value != null || selectedTags.isNotEmpty() ||
                 quickFilterExperiments.value || quickFilterWithSegments.value
-            if (totalCount.value == 0L && !hasActiveFiltersForEmpty) {
+            if (totalCount.value == 0L && flags.isEmpty() && !hasActiveFiltersForEmpty) {
                 EmptyState(
                     icon = "flag",
                     title = LocalizedStrings.createFirstFlag,
@@ -1458,8 +1521,10 @@ fun FlagsList() {
                         Text(LocalizedStrings.gettingStartedGuideLink)
                     }
                 }
-            } else {
-            val sortedFlags = remember(flags, sortColumn.value, sortAscending.value) {
+        } else {
+            // Compute sorted flags on every recomposition so that UI reacts
+            // when individual elements in the state list `flags` are updated.
+            val sortedFlags = run {
                 var result = flags.toList()
                 sortColumn.value?.let { column ->
                     result = when (column) {
@@ -1475,16 +1540,15 @@ fun FlagsList() {
                 result
             }
 
-            val groupedByTag = remember(sortedFlags, groupByTag.value) {
-                if (!groupByTag.value) null
-                else {
-                    val noTagsKey = "\u0000"
-                    sortedFlags
-                        .groupBy { f -> f.tags.firstOrNull()?.value ?: noTagsKey }
-                        .toList()
-                        .sortedBy { (k, _) -> if (k == noTagsKey) "zzz" else k }
-                        .associate { it.first to it.second }
-                }
+            val groupedByTag = if (!groupByTag.value) {
+                null
+            } else {
+                val noTagsKey = "\u0000"
+                sortedFlags
+                    .groupBy { f -> f.tags.firstOrNull()?.value ?: noTagsKey }
+                    .toList()
+                    .sortedBy { (k, _) -> if (k == noTagsKey) "zzz" else k }
+                    .associate { it.first to it.second }
             }
 
             if (sortedFlags.isEmpty()) {
@@ -1526,7 +1590,8 @@ fun FlagsList() {
                     }
                 }
             } else {
-                val totalPages = maxOf(1, ((totalCount.value + PAGE_SIZE - 1) / PAGE_SIZE).toInt())
+                val totalItemsForPagination = if (totalCount.value > 0L) totalCount.value else sortedFlags.size.toLong()
+                val totalPages = maxOf(1, ((totalItemsForPagination + PAGE_SIZE - 1) / PAGE_SIZE).toInt())
                 Div({
                     style {
                         backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -1569,14 +1634,55 @@ fun FlagsList() {
                                     Input(InputType.Checkbox) {
                                         checked(sortedFlags.isNotEmpty() && sortedFlags.all { it.id in selectedIds })
                                         onChange { event ->
-                                            if ((event.target as org.w3c.dom.HTMLInputElement).checked) {
+                                            if ((event.target as HTMLInputElement).checked) {
                                                 sortedFlags.forEach { selectedIds.add(it.id) }
                                             } else {
                                                 sortedFlags.forEach { selectedIds.remove(it.id) }
                                             }
                                         }
-                                        onClick { (it as org.w3c.dom.events.Event).stopPropagation() }
+                                        onClick { it.stopPropagation() }
                                         style { cursor("pointer") }
+                                    }
+                                }
+                                Th({
+                                    onClick { sortFlags("key") }
+                                    style {
+                                        padding(10.px, 12.px)
+                                        cursor("pointer")
+                                        property("user-select", "none")
+                                        fontWeight("600")
+                                        fontSize(13.px)
+                                        color(FlagentTheme.text(themeMode))
+                                        textAlign("left")
+                                        property("transition", "background-color 0.2s")
+                                    }
+                                    onMouseEnter {
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.inputBg(themeMode).toString()
+                                    }
+                                    onMouseLeave {
+                                        (it.target as org.w3c.dom.HTMLElement).style.backgroundColor =
+                                            FlagentTheme.inputBg(themeMode).toString()
+                                    }
+                                }) {
+                                    Span({
+                                        style {
+                                            display(DisplayStyle.Flex)
+                                            alignItems(AlignItems.Center)
+                                            gap(6.px)
+                                        }
+                                    }) {
+                                        Icon(
+                                            name = "key",
+                                            size = 16.px,
+                                            color = FlagentTheme.text(themeMode)
+                                        )
+                                        Text(LocalizedStrings.flagKey)
+                                        if (sortColumn.value == "key") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (sortAscending.value) "↑" else "↓")
+                                            }
+                                        }
                                     }
                                 }
                                 Th({
@@ -1770,7 +1876,7 @@ fun FlagsList() {
                                     themeMode = themeMode,
                                     selectedIds = selectedIds,
                                     selectedTags = selectedTags,
-                                    onToggleEnabled = onToggleEnabled
+                                    onToggleEnabled = onToggleWithConfirm
                                 )
                             } else {
                                 sortedFlags.forEachIndexed { index, flag ->
@@ -1780,7 +1886,7 @@ fun FlagsList() {
                                         themeMode = themeMode,
                                         selectedIds = selectedIds,
                                         selectedTags = selectedTags,
-                                        onToggleEnabled = onToggleEnabled
+                                        onToggleEnabled = onToggleWithConfirm
                                     )
                                 }
                             }
@@ -1808,7 +1914,7 @@ fun FlagsList() {
                             color(FlagentTheme.textLight(themeMode))
                         }
                     }) {
-                        Text("${totalCount.value} ${LocalizedStrings.featureFlags.lowercase()}")
+                        Text("$totalItemsForPagination ${LocalizedStrings.featureFlags.lowercase()}")
                     }
                     Pagination(
                         currentPage = currentPage.value,

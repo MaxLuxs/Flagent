@@ -9,6 +9,8 @@ import androidx.compose.runtime.remember
 import flagent.frontend.api.ApiClient
 import flagent.frontend.components.Icon
 import flagent.frontend.components.Slider
+import flagent.frontend.components.common.ToggleSize
+import flagent.frontend.components.common.ToggleSwitch
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
@@ -16,6 +18,9 @@ import flagent.api.constants.ConstraintOperators
 import flagent.api.model.FlagResponse
 import flagent.api.model.CreateFlagRequest
 import flagent.api.model.PutFlagRequest
+import flagent.frontend.components.anomaly.AnomalyAlertsList
+import flagent.frontend.components.metrics.MetricsDashboard
+import flagent.frontend.components.rollout.SmartRolloutConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
 import flagent.frontend.navigation.flagTabName
@@ -36,6 +41,7 @@ import org.jetbrains.compose.web.dom.*
 import org.jetbrains.compose.web.dom.H2
 import org.jetbrains.compose.web.dom.H3
 import org.jetbrains.compose.web.dom.H5
+import org.w3c.dom.HTMLElement
 
 /**
  * FlagEditor component - create/edit flag with tabs
@@ -103,12 +109,12 @@ fun FlagEditor(flagId: Int?) {
                     property("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
                 }
                 onMouseEnter {
-                    val element = it.target as org.w3c.dom.HTMLElement
+                    val element = it.target as HTMLElement
                     element.style.backgroundColor = FlagentTheme.NeutralLight.toString()
                     element.style.transform = "translateX(-2px)"
                 }
                 onMouseLeave {
-                    val element = it.target as org.w3c.dom.HTMLElement
+                    val element = it.target as HTMLElement
                     element.style.backgroundColor = FlagentTheme.Neutral.toString()
                     element.style.transform = "translateX(0)"
                 }
@@ -236,37 +242,25 @@ fun FlagEditor(flagId: Int?) {
                                 property("box-shadow", FlagentTheme.ShadowCard)
                             }
                         }) {
-                            Label(attrs = {
-                                style {
-                                    display(DisplayStyle.Flex)
-                                    alignItems(AlignItems.Center)
-                                    gap(10.px)
-                                    cursor("pointer")
-                                    color(Color.white)
-                                    fontWeight("600")
-                                    fontSize(15.px)
-                                }
-                            }) {
-                                Input(InputType.Checkbox) {
-                                    checked(f.enabled)
-                                    onChange { event ->
-                                        val checked = (event.target as org.w3c.dom.HTMLInputElement).checked
-                                        CoroutineScope(Dispatchers.Main).launch {
-                                            try {
-                                                val updated = ApiClient.setFlagEnabled(flagId!!, checked)
-                                                flag.value = updated
-                                            } catch (_: Exception) { }
+                            ToggleSwitch(
+                                checked = f.enabled,
+                                onCheckedChange = { checked ->
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        try {
+                                            val updated = ApiClient.setFlagEnabled(flagId!!, checked)
+                                            flag.value = updated
+                                        } catch (_: Exception) {
                                         }
                                     }
-                                    style { width(20.px); height(20.px); cursor("pointer") }
-                                }
-                                Icon(
-                                    name = if (f.enabled) "check_circle" else "cancel",
-                                    size = 22.px,
-                                    color = Color.white
-                                )
-                                Text(if (f.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled)
-                            }
+                                },
+                                size = ToggleSize.Medium
+                            )
+                            Icon(
+                                name = if (f.enabled) "check_circle" else "cancel",
+                                size = 22.px,
+                                color = Color.white
+                            )
+                            Text(if (f.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled)
                         }
                     }
                 }
@@ -282,7 +276,7 @@ fun FlagEditor(flagId: Int?) {
                     }
                 }) {
                     Button({
-                        onClick { Router.navigateTo(Route.FlagDetail(flagId!!), addToHistory = false) }
+                        onClick { Router.navigateTo(Route.FlagDetail(flagId), addToHistory = false) }
                         style {
                             padding(12.px, 24.px)
                             property("background-color", "transparent")
@@ -303,12 +297,12 @@ fun FlagEditor(flagId: Int?) {
                         }
                         onMouseEnter {
                             if (activeTab != "Config") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+                                (it.target as HTMLElement).style.color = FlagentTheme.Text.toString()
                             }
                         }
                         onMouseLeave {
                             if (activeTab != "Config") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
+                                (it.target as HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                             }
                         }
                     }) {
@@ -341,12 +335,12 @@ fun FlagEditor(flagId: Int?) {
                         }
                         onMouseEnter {
                             if (activeTab != "History") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+                                (it.target as HTMLElement).style.color = FlagentTheme.Text.toString()
                             }
                         }
                         onMouseLeave {
                             if (activeTab != "History") {
-                                (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
+                                (it.target as HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
                             }
                         }
                     }) {
@@ -379,9 +373,9 @@ fun FlagEditor(flagId: Int?) {
                 when (activeTab) {
                     "Config" -> FlagConfigTab(flag.value!!, flagId)
                     "History" -> FlagHistory(flagId)
-                    "Metrics" -> flagent.frontend.components.metrics.MetricsDashboard(flagId, metricsMetricType)
-                    "Rollout" -> flagent.frontend.components.rollout.SmartRolloutConfig(flagId)
-                    "Anomalies" -> flagent.frontend.components.anomaly.AnomalyAlertsList(flagId)
+                    "Metrics" -> MetricsDashboard(flagId, metricsMetricType)
+                    "Rollout" -> SmartRolloutConfig(flagId)
+                    "Anomalies" -> AnomalyAlertsList(flagId)
                     else -> FlagConfigTab(flag.value!!, flagId)
                 }
             }
@@ -409,13 +403,13 @@ private fun FlagEditorTabButton(themeMode: flagent.frontend.state.ThemeMode, lab
             alignItems(AlignItems.Center)
             gap(8.px)
             property("transition", "all 0.2s")
-            marginBottom(-2.px)
+            marginBottom((-2).px)
         }
         onMouseEnter {
-            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.Text.toString()
+            if (!isActive) (it.target as HTMLElement).style.color = FlagentTheme.Text.toString()
         }
         onMouseLeave {
-            if (!isActive) (it.target as org.w3c.dom.HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
+            if (!isActive) (it.target as HTMLElement).style.color = FlagentTheme.textLight(themeMode).toString()
         }
     }) {
         Icon(name = icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
@@ -549,7 +543,10 @@ private fun CreateFlagForm() {
  * Contains: Flag Settings, Variants, Segments, Debug Console, Delete Flag
  */
 @Composable
-private fun FlagConfigTab(flag: FlagResponse, flagId: Int) {
+private fun FlagConfigTab(
+    flag: FlagResponse,
+    flagId: Int
+) {
     val themeMode = LocalThemeMode.current
     val flagState = remember { mutableStateOf(flag) }
     val showMdEditor = remember { mutableStateOf(false) }
@@ -797,7 +794,7 @@ private fun FlagSettingsCard(
                     property("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
                 }
             }) {
-                Label(attrs = {
+                Div({
                     style {
                         display(DisplayStyle.Flex)
                         alignItems(AlignItems.Center)
@@ -807,18 +804,11 @@ private fun FlagSettingsCard(
                         fontWeight("600")
                     }
                 }) {
-                    Input(InputType.Checkbox) {
-                        checked(flag.enabled)
-                        onChange { event ->
-                            val checked = (event.target as org.w3c.dom.HTMLInputElement).checked
-                            setEnabled(checked)
-                        }
-                        style {
-                            width(18.px)
-                            height(18.px)
-                            cursor("pointer")
-                        }
-                    }
+                    ToggleSwitch(
+                        checked = flag.enabled,
+                        onCheckedChange = { checked -> setEnabled(checked) },
+                        size = ToggleSize.Medium
+                    )
                     Span({
                         style {
                             fontSize(16.px)
@@ -898,14 +888,14 @@ private fun FlagSettingsCard(
                 }
                 onMouseEnter {
                     if (!saving.value) {
-                        val element = it.target as org.w3c.dom.HTMLElement
+                        val element = it.target as HTMLElement
                         element.style.transform = "translateY(-1px)"
                         element.style.setProperty("box-shadow", "0 4px 6px ${FlagentTheme.ShadowHover}")
                     }
                 }
                 onMouseLeave {
                     if (!saving.value) {
-                        val element = it.target as org.w3c.dom.HTMLElement
+                        val element = it.target as HTMLElement
                         element.style.transform = "translateY(0)"
                         element.style.setProperty("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
                     }
@@ -968,10 +958,10 @@ private fun FlagSettingsCard(
                             property("transition", "border-color 0.2s")
                         }
                         onFocus {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
+                            (it.target as HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                         }
                         onBlur {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
+                            (it.target as HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                         }
                     }
                 }
@@ -986,7 +976,7 @@ private fun FlagSettingsCard(
                     paddingTop(28.px)
                 }
             }) {
-                Label(attrs = {
+                Div({
                     style {
                         display(DisplayStyle.Flex)
                         alignItems(AlignItems.Center)
@@ -995,16 +985,13 @@ private fun FlagSettingsCard(
                         whiteSpace("nowrap")
                     }
                 }) {
-                    Input(InputType.Checkbox) {
-                        checked(dataRecordsEnabled.value)
-                        onChange { event ->
-                            dataRecordsEnabled.value = (event.target as org.w3c.dom.HTMLInputElement).checked
-                        }
-                        style {
-                            cursor("pointer")
-                            flexShrink(0)
-                        }
-                    }
+                    ToggleSwitch(
+                        checked = dataRecordsEnabled.value,
+                        onCheckedChange = { checked ->
+                            dataRecordsEnabled.value = checked
+                        },
+                        size = ToggleSize.Small
+                    )
                     Text(LocalizedStrings.dataRecords)
                 }
             }
@@ -1060,10 +1047,10 @@ private fun FlagSettingsCard(
                             property("transition", "border-color 0.2s")
                         }
                         onFocus {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
+                            (it.target as HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                         }
                         onBlur {
-                            (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
+                            (it.target as HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                         }
                     }
                 }
@@ -1127,10 +1114,10 @@ private fun FlagSettingsCard(
                                     property("transition", "border-color 0.2s")
                                 }
                                 onFocus {
-                                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
+                                    (it.target as HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                                 }
                                 onBlur {
-                                    (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
+                                    (it.target as HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                                 }
                             }
                             // Autocomplete suggestions
@@ -1576,10 +1563,10 @@ private fun VariantsSection(
                         property("transition", "border-color 0.2s")
                     }
                     onFocus {
-                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
+                        (it.target as HTMLElement).style.borderColor = FlagentTheme.Primary.toString()
                     }
                     onBlur {
-                        (it.target as org.w3c.dom.HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
+                        (it.target as HTMLElement).style.borderColor = FlagentTheme.inputBorder(themeMode).toString()
                     }
                 }
                 Button({
@@ -1607,14 +1594,14 @@ private fun VariantsSection(
                     }
                     onMouseEnter {
                         if (!creating.value && newVariantKey.value.isNotBlank()) {
-                            val element = it.target as org.w3c.dom.HTMLElement
+                            val element = it.target as HTMLElement
                             element.style.transform = "translateY(-1px)"
                             element.style.setProperty("box-shadow", "0 4px 6px ${FlagentTheme.ShadowHover}")
                         }
                     }
                     onMouseLeave {
                         if (!creating.value && newVariantKey.value.isNotBlank()) {
-                            val element = it.target as org.w3c.dom.HTMLElement
+                            val element = it.target as HTMLElement
                             element.style.transform = "translateY(0)"
                             element.style.setProperty("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
                         }
@@ -1747,12 +1734,12 @@ private fun VariantCard(
             property("transition", "all 0.2s")
         }
         onMouseEnter {
-            val element = it.target as org.w3c.dom.HTMLElement
+            val element = it.target as HTMLElement
             element.style.setProperty("box-shadow", "0 2px 6px ${FlagentTheme.ShadowHover}")
             element.style.transform = "translateY(-2px)"
         }
         onMouseLeave {
-            val element = it.target as org.w3c.dom.HTMLElement
+            val element = it.target as HTMLElement
             element.style.setProperty("box-shadow", "0 1px 3px ${FlagentTheme.Shadow}")
             element.style.transform = "translateY(0)"
         }
@@ -2239,7 +2226,7 @@ private fun SegmentsSection(
                         Input(InputType.Range) {
                             value(newSegmentRollout.value.toString())
                             onInput { event ->
-                                newSegmentRollout.value = (event.target as org.w3c.dom.HTMLInputElement).value.toIntOrNull() ?: 50
+                                newSegmentRollout.value = event.target.value.toIntOrNull() ?: 50
                             }
                             attr("min", "0")
                             attr("max", "100")
@@ -2576,7 +2563,7 @@ private fun SegmentCard(
                     Input(InputType.Number) {
                         value(rolloutPercent.value.toString())
                         onInput { event ->
-                            rolloutPercent.value = (event.target as org.w3c.dom.HTMLInputElement).value.toIntOrNull() ?: 0
+                            rolloutPercent.value = event.target.value.toIntOrNull() ?: 0
                         }
                         attr("min", "0")
                         attr("max", "100")
@@ -2753,7 +2740,7 @@ private fun ConstraintsSection(
             }
             Select(attrs = {
                 onChange { event ->
-                    newConstraintOperator.value = (event.target as org.w3c.dom.HTMLSelectElement).value
+                    newConstraintOperator.value = event.target.value
                 }
                 attr("value", newConstraintOperator.value)
                 style {
@@ -2945,7 +2932,7 @@ private fun ConstraintRow(
             }
             Select(attrs = {
                 onChange { event ->
-                    operator.value = (event.target as org.w3c.dom.HTMLSelectElement).value
+                    operator.value = event.target.value
                 }
                 attr("value", operator.value)
                 style {
@@ -3158,12 +3145,12 @@ private fun DistributionCard(distribution: flagent.api.model.DistributionRespons
             property("transition", "transform 0.2s, box-shadow 0.2s")
         }
         onMouseEnter {
-            val element = it.target as org.w3c.dom.HTMLElement
+            val element = it.target as HTMLElement
             element.style.transform = "translateY(-2px)"
             element.style.setProperty("box-shadow", "0 4px 8px ${FlagentTheme.ShadowHover}")
         }
         onMouseLeave {
-            val element = it.target as org.w3c.dom.HTMLElement
+            val element = it.target as HTMLElement
             element.style.transform = "translateY(0)"
             element.style.setProperty("box-shadow", "0 2px 4px ${FlagentTheme.Shadow}")
         }
@@ -3329,7 +3316,7 @@ private fun DistributionEditDialog(
                             Input(InputType.Checkbox) {
                                 checked(distributions.containsKey(variant.id))
                                 onChange { event ->
-                                    val checked = (event.target as org.w3c.dom.HTMLInputElement).checked
+                                    val checked = event.target.checked
                                     if (checked) {
                                         distributions[variant.id] = distributions[variant.id] ?: 0
                                     } else {

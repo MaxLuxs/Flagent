@@ -72,6 +72,8 @@ fun ShellLayout(
 
     CommandBar(isOpen = commandBarOpen.value, onClose = { commandBarOpen.value = false })
 
+    val useHeroBackground = AppConfig.showMarketingLanding
+
     Div(attrs = {
         style {
             display(DisplayStyle.Flex)
@@ -79,7 +81,9 @@ fun ShellLayout(
             height(100.vh)
             property("max-height", "100vh")
             overflow("hidden")
-            backgroundColor(FlagentTheme.contentBg(themeMode))
+            if (!useHeroBackground) {
+                backgroundColor(FlagentTheme.contentBg(themeMode))
+            }
         }
     }) {
         Div(attrs = {
@@ -116,7 +120,9 @@ fun ShellLayout(
                         overflow("auto")
                         padding(20.px)
                         property("box-sizing", "border-box")
-                        backgroundColor(FlagentTheme.contentBg(themeMode))
+                        if (!useHeroBackground) {
+                            backgroundColor(FlagentTheme.contentBg(themeMode))
+                        }
                     }
                 }) {
                     Div({

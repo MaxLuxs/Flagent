@@ -94,24 +94,22 @@ fun CommandBar(
     val filteredFlags = if (hasQuery) {
         val q = query.lowercase().trim()
         flagItems.filter {
-            it is CommandBarItem.Flag && (
-                it.flag.key.lowercase().contains(q) ||
-                it.flag.description.lowercase().contains(q)
-            )
+            it.flag.key.lowercase().contains(q) ||
+                    it.flag.description.lowercase().contains(q)
         }
     } else emptyList()
 
     val filteredNav = if (hasQuery) {
         val q = query.lowercase().trim()
         navItems.filter {
-            it is CommandBarItem.Nav && it.label.lowercase().contains(q)
+            it.label.lowercase().contains(q)
         }
     } else navItems
 
     val filteredActions = if (hasQuery) {
         val q = query.lowercase().trim()
         quickActions.filter {
-            it is CommandBarItem.Action && it.label.lowercase().contains(q)
+            it.label.lowercase().contains(q)
         }
     } else quickActions
 

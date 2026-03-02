@@ -233,7 +233,7 @@ fun CrashDashboard() {
                 Input(InputType.Checkbox) {
                     id("crash-group-by")
                     checked(groupByType)
-                    onInput { groupByType = (it.target as? org.w3c.dom.HTMLInputElement)?.checked ?: false }
+                    onInput { groupByType = it.target.checked }
                 }
                 Label(attrs = {
                     attr("for", "crash-group-by")
