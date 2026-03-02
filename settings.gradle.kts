@@ -25,6 +25,7 @@ include(":kotlin-enhanced")
 include(":kotlin-debug-ui")
 include(":flagent-koin")
 include(":flagent-annotations")
+include(":kotlin-openfeature")
 
 // Android sample
 include(":android-sample")
@@ -55,6 +56,7 @@ project(":kotlin-enhanced").projectDir = file("sdk/kotlin-enhanced")
 project(":kotlin-debug-ui").projectDir = file("sdk/kotlin-debug-ui")
 project(":flagent-koin").projectDir = file("sdk/flagent-koin")
 project(":flagent-annotations").projectDir = file("sdk/flagent-annotations")
+project(":kotlin-openfeature").projectDir = file("sdk/kotlin-openfeature")
 
 project(":android-sample").projectDir = file("samples/android")
 project(":android-sample:app").projectDir = file("samples/android/app")
