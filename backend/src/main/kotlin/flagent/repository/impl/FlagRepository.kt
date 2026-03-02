@@ -108,8 +108,8 @@ class FlagRepository : IFlagRepository {
                 query = query.andWhere { Flags.projectId eq pid }
             }
             
-            // Order by id
-            query = query.orderBy(Flags.id, SortOrder.ASC)
+            // Order by id descending so newest flags appear first (page 1 shows recently created)
+            query = query.orderBy(Flags.id, SortOrder.DESC)
             
             // Apply limit and offset
             limit?.let {
