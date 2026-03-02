@@ -67,7 +67,8 @@ fun Dashboard(tenantViewModel: TenantViewModel? = null) {
             block = {
                 coroutineScope {
                     val flagsDeferred = async {
-                        val (loadedFlags, _) = ApiClient.getFlags()
+                        // preload=true нужен для подсчёта flagsWithSegments / flagsWithVariants на дашборде
+                        val (loadedFlags, _) = ApiClient.getFlags(preload = true)
                         loadedFlags
                     }
                     val alertsDeferred = anomalyViewModel?.let { vm -> async { vm.loadUnresolvedAlerts() } }
@@ -299,64 +300,65 @@ fun Dashboard(tenantViewModel: TenantViewModel? = null) {
                     }
                 } else if (metricsOverview != null) {
                 val overview = metricsOverview!!
-                if (overview.timeSeries.isNotEmpty() || overview.topFlags.isNotEmpty()) {
+                // Always show metrics card (header + period selector); charts or empty state inside
+                Div({
+                    style {
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        borderRadius(8.px)
+                        padding(16.px)
+                        property("box-shadow", FlagentTheme.ShadowCard)
+                        property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
+                        marginBottom(20.px)
+                    }
+                }) {
                     Div({
                         style {
-                            backgroundColor(FlagentTheme.cardBg(themeMode))
-                            borderRadius(8.px)
-                            padding(16.px)
-                            property("box-shadow", FlagentTheme.ShadowCard)
-                            property("border", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
-                            marginBottom(20.px)
+                            display(DisplayStyle.Flex)
+                            justifyContent(JustifyContent.SpaceBetween)
+                            alignItems(AlignItems.Center)
+                            marginBottom(12.px)
+                            flexWrap(org.jetbrains.compose.web.css.FlexWrap.Wrap)
+                            gap(8.px)
                         }
                     }) {
-                        Div({
+                        Span({
                             style {
-                                display(DisplayStyle.Flex)
-                                justifyContent(JustifyContent.SpaceBetween)
-                                alignItems(AlignItems.Center)
-                                marginBottom(12.px)
-                                flexWrap(org.jetbrains.compose.web.css.FlexWrap.Wrap)
-                                gap(8.px)
+                                fontSize(14.px)
+                                color(FlagentTheme.textLight(themeMode))
                             }
                         }) {
-                            Span({
-                                style {
-                                    fontSize(14.px)
-                                    color(FlagentTheme.textLight(themeMode))
-                                }
-                            }) {
-                                Text("${LocalizedStrings.totalEvaluationsLabel}: ${overview.totalEvaluations} · ${LocalizedStrings.uniqueFlagsLabel}: ${overview.uniqueFlags}")
-                                lastMetricsRefreshMs?.let { ts ->
-                                    val minAgo = ((currentTimeMillis() - ts) / 60_000).toInt().coerceAtLeast(0)
-                                    Text(" · ${LocalizedStrings.dataUpdatedMinutesAgo(minAgo)}")
-                                }
+                            Text("${LocalizedStrings.totalEvaluationsLabel}: ${overview.totalEvaluations} · ${LocalizedStrings.uniqueFlagsLabel}: ${overview.uniqueFlags}")
+                            lastMetricsRefreshMs?.let { ts ->
+                                val minAgo = ((currentTimeMillis() - ts) / 60_000).toInt().coerceAtLeast(0)
+                                Text(" · ${LocalizedStrings.dataUpdatedMinutesAgo(minAgo)}")
                             }
-                            Div({
-                                style { display(DisplayStyle.Flex); gap(8.px) }
-                            }) {
-                                listOf(
-                                    MetricsPeriod.P1H to LocalizedStrings.period1h,
-                                    MetricsPeriod.P24H to LocalizedStrings.period24h,
-                                    MetricsPeriod.P7D to LocalizedStrings.period7d
-                                ).forEach { (period, label) ->
-                                    Button({
-                                        style {
-                                            padding(6.px, 12.px)
-                                            fontSize(12.px)
-                                            borderRadius(6.px)
-                                            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
-                                            backgroundColor(if (metricsPeriod == period) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
-                                            color(if (metricsPeriod == period) Color.white else FlagentTheme.text(themeMode))
-                                            cursor("pointer")
-                                        }
-                                        onClick { metricsPeriod = period }
-                                    }) {
-                                        Text(label)
+                        }
+                        Div({
+                            style { display(DisplayStyle.Flex); gap(8.px) }
+                        }) {
+                            listOf(
+                                MetricsPeriod.P1H to LocalizedStrings.period1h,
+                                MetricsPeriod.P24H to LocalizedStrings.period24h,
+                                MetricsPeriod.P7D to LocalizedStrings.period7d
+                            ).forEach { (period, label) ->
+                                Button({
+                                    style {
+                                        padding(6.px, 12.px)
+                                        fontSize(12.px)
+                                        borderRadius(6.px)
+                                        border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                        backgroundColor(if (metricsPeriod == period) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                                        color(if (metricsPeriod == period) Color.white else FlagentTheme.text(themeMode))
+                                        cursor("pointer")
                                     }
+                                    onClick { metricsPeriod = period }
+                                }) {
+                                    Text(label)
                                 }
                             }
                         }
+                    }
+                    if (overview.timeSeries.isNotEmpty() || overview.topFlags.isNotEmpty()) {
                         Div({
                             style {
                                 display(DisplayStyle.Grid)
@@ -384,6 +386,17 @@ fun Dashboard(tenantViewModel: TenantViewModel? = null) {
                                     )
                                 }
                             }
+                        }
+                    } else {
+                        Div({
+                            style {
+                                padding(32.px)
+                                textAlign("center")
+                                color(FlagentTheme.textLight(themeMode))
+                                fontSize(14.px)
+                            }
+                        }) {
+                            Text(LocalizedStrings.noMetricsData)
                         }
                     }
                 }

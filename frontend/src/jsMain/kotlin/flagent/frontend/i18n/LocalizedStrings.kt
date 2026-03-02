@@ -2057,6 +2057,10 @@ object LocalizedStrings {
         "ru" -> "Email владельца"
         else -> "Owner Email"
     }
+    val tenantsOwnerHint: String get() = when (currentLocale) {
+        "ru" -> "Владелец, которого вы указываете при создании тенанта, становится первым tenant‑пользователем с правами OWNER и появится во вкладке «Роли» на странице настроек."
+        else -> "The owner email you specify when creating a tenant becomes the first tenant user with OWNER role and will appear in the Roles tab on the Settings page."
+    }
     val switchTenant: String get() = when (currentLocale) {
         "ru" -> "Переключить"
         else -> "Switch"
@@ -2279,12 +2283,16 @@ object LocalizedStrings {
         else -> "Roles & Permissions"
     }
     val manageRolesDescription: String get() = when (currentLocale) {
-        "ru" -> "Управление ролями и назначение прав пользователям."
-        else -> "Manage roles and assign permissions to users."
+        "ru" -> "Управление ролями и назначение прав tenant‑пользователям."
+        else -> "Manage roles and assign permissions to tenant users."
     }
     val availableRoles: String get() = when (currentLocale) {
         "ru" -> "Доступные роли"
         else -> "Available Roles"
+    }
+    val rolesTenantUsersHint: String get() = when (currentLocale) {
+        "ru" -> "На этой вкладке управляются роли tenant‑пользователей (владельцы и участники конкретного тенанта). Первый пользователь создаётся при создании тенанта (email владельца в форме), остальные обычно приходят из SSO или Enterprise‑приглашений."
+        else -> "This screen manages roles for tenant users (owners and members of a specific tenant). The first user is created when you create a tenant (owner email in the form); other users usually come from SSO or Enterprise invite flows."
     }
     val builtIn: String get() = when (currentLocale) {
         "ru" -> "Встроенная"
@@ -2305,6 +2313,10 @@ object LocalizedStrings {
     val adminUsersDescription: String get() = when (currentLocale) {
         "ru" -> "Управление учётными записями администраторов (вход в UI)."
         else -> "Manage admin user accounts (UI login)."
+    }
+    val adminUsersExtraHint: String get() = when (currentLocale) {
+        "ru" -> "Эти аккаунты входят в веб‑интерфейс Flagent и всегда имеют полный доступ к админке. Для разграничения доступа команд к данным конкретного тенанта используйте вкладку «Роли» (tenant‑пользователи и RBAC)."
+        else -> "These accounts sign in to the Flagent admin UI and always have full access. To control which teams can access data of a specific tenant, use the Roles tab (tenant users and RBAC)."
     }
     val addUser: String get() = when (currentLocale) {
         "ru" -> "Добавить пользователя"

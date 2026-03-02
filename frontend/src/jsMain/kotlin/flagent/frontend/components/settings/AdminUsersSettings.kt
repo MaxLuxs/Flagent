@@ -78,6 +78,13 @@ fun AdminUsersSettings(themeMode: ThemeMode) {
                 fontSize(14.px)
             }
         }) { Text(LocalizedStrings.adminUsersDescription) }
+        P({
+            style {
+                color(FlagentTheme.textLight(themeMode))
+                marginBottom(20.px)
+                fontSize(13.px)
+            }
+        }) { Text(LocalizedStrings.adminUsersExtraHint) }
 
         if (error.value != null) {
             Div({

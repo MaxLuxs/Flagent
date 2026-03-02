@@ -314,7 +314,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                 display(DisplayStyle.Flex)
                 justifyContent(JustifyContent.SpaceBetween)
                 alignItems(AlignItems.Center)
-                marginBottom(24.px)
+                marginBottom(8.px)
             }
         }) {
             H2({
@@ -345,6 +345,15 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
             }) {
                 Text(LocalizedStrings.createTenant)
             }
+        }
+        P({
+            style {
+                color(FlagentTheme.textLight(themeMode))
+                marginBottom(20.px)
+                fontSize(13.px)
+            }
+        }) {
+            Text(LocalizedStrings.tenantsOwnerHint)
         }
 
         val createdApiKey = remember { mutableStateOf<String?>(null) }
