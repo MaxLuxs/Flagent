@@ -7,6 +7,11 @@ import com.flagent.client.models.EvalContext
 import com.flagent.client.models.EvalResult
 import com.flagent.enhanced.manager.FlagentManager
 import com.flagent.sample.di.AppModule
+import com.flagent.openfeature.AttributeValue
+import com.flagent.openfeature.DefaultOpenFeatureClient
+import com.flagent.openfeature.EvaluationContext as OfEvaluationContext
+import com.flagent.openfeature.FlagentOpenFeatureConfig
+import com.flagent.openfeature.FlagentOpenFeatureProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +25,11 @@ sealed class EvaluationState {
     object Loading : EvaluationState()
     data class Success(val result: EvalResult, val fromCache: Boolean = false) : EvaluationState()
     data class Error(val message: String, val throwable: Throwable? = null) : EvaluationState()
+    data class OpenFeatureSuccess(
+        val enabled: Boolean,
+        val maxItems: Int,
+        val discount: Double
+    ) : EvaluationState()
 }
 
 class EvaluationViewModel : ViewModel() {
@@ -29,12 +39,21 @@ class EvaluationViewModel : ViewModel() {
     private var currentBaseUrl: String = ""
     private var evaluationApi: EvaluationApi? = null
     private var flagentManager: FlagentManager? = null
+    private var openFeatureClient: DefaultOpenFeatureClient? = null
     
     fun initialize(baseUrl: String) {
         if (currentBaseUrl != baseUrl) {
             currentBaseUrl = baseUrl
             evaluationApi = AppModule.getEvaluationApi(baseUrl)
             flagentManager = AppModule.getFlagentManager(baseUrl, com.flagent.enhanced.config.FlagentConfig())
+            openFeatureClient = DefaultOpenFeatureClient(
+                FlagentOpenFeatureProvider(
+                    FlagentOpenFeatureConfig(baseUrl = baseUrl) { api ->
+                        // Reuse the same auth as other SDKs if configured in AppModule in the future.
+                        // For now this sample uses default public dev settings.
+                    }
+                )
+            )
         }
     }
     
@@ -68,6 +87,65 @@ class EvaluationViewModel : ViewModel() {
             } catch (e: Exception) {
                 _state.value = EvaluationState.Error(
                     message = e.message ?: "Unknown error occurred",
+                    throwable = e
+                )
+            }
+        }
+    }
+
+    fun evaluateOpenFeatureLike(
+        flagKey: String,
+        entityID: String,
+        entityType: String? = null,
+        entityContext: Map<String, Any>? = null
+    ) {
+        val client = openFeatureClient
+        if (client == null) {
+            _state.value = EvaluationState.Error("OpenFeature client not initialized. Please configure base URL in settings.")
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = EvaluationState.Loading
+            try {
+                val ctx = OfEvaluationContext(
+                    targetingKey = entityID,
+                    attributes = (entityContext ?: emptyMap()).mapValues { (_, v) ->
+                        when (v) {
+                            is Boolean -> AttributeValue.BooleanValue(v)
+                            is Int -> AttributeValue.IntValue(v)
+                            is Long -> AttributeValue.IntValue(v.toInt())
+                            is Double -> AttributeValue.DoubleValue(v)
+                            is Float -> AttributeValue.DoubleValue(v.toDouble())
+                            else -> AttributeValue.StringValue(v.toString())
+                        }
+                    }
+                )
+
+                val enabled = client.getBooleanValue(
+                    key = flagKey,
+                    defaultValue = false,
+                    context = ctx
+                )
+                val maxItems = client.getIntValue(
+                    key = "cart_max_items",
+                    defaultValue = 20,
+                    context = ctx
+                )
+                val discount = client.getDoubleValue(
+                    key = "discount_rate",
+                    defaultValue = 0.0,
+                    context = ctx
+                )
+
+                _state.value = EvaluationState.OpenFeatureSuccess(
+                    enabled = enabled,
+                    maxItems = maxItems,
+                    discount = discount
+                )
+            } catch (e: Exception) {
+                _state.value = EvaluationState.Error(
+                    message = e.message ?: "Unknown error occurred (openfeature)",
                     throwable = e
                 )
             }
