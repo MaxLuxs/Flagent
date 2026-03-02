@@ -1,11 +1,17 @@
 package flagent.frontend.i18n
 
+import flagent.frontend.state.LanguageState
+
 /**
  * Localization strings for Flagent Frontend
  */
 object LocalizedStrings {
-    // Current locale (default: ru)
-    var currentLocale: String = "ru"
+    // Current locale, persisted via LanguageState (default: ru/en from storage)
+    var currentLocale: String
+        get() = LanguageState.current.value
+        set(value) {
+            LanguageState.set(value)
+        }
     
     // Navigation
     val home: String get() = when (currentLocale) {
@@ -107,6 +113,26 @@ object LocalizedStrings {
     val confirmDelete: String get() = when (currentLocale) {
         "ru" -> "Подтвердить удаление"
         else -> "Confirm Delete"
+    }
+
+    val confirmToggleFlagTitle: String get() = when (currentLocale) {
+        "ru" -> "Переключить флаг?"
+        else -> "Toggle flag?"
+    }
+
+    val confirmToggleFlagMessage: String get() = when (currentLocale) {
+        "ru" -> "Вы действительно хотите переключить статус флага (включить/выключить)?"
+        else -> "Do you really want to toggle this flag (enable/disable)?"
+    }
+
+    val confirmToggleFlagYes: String get() = when (currentLocale) {
+        "ru" -> "Да"
+        else -> "Yes"
+    }
+
+    val confirmToggleFlagNo: String get() = when (currentLocale) {
+        "ru" -> "Нет"
+        else -> "No"
     }
 
     val moreOptions: String get() = when (currentLocale) {
@@ -1304,6 +1330,10 @@ object LocalizedStrings {
         "ru" -> "Slack"
         else -> "Slack"
     }
+    val firebaseTab: String get() = when (currentLocale) {
+        "ru" -> "Firebase"
+        else -> "Firebase"
+    }
     val billingTab: String get() = when (currentLocale) {
         "ru" -> "Биллинг"
         else -> "Billing"
@@ -1340,6 +1370,22 @@ object LocalizedStrings {
         "ru" -> "Включённые функции"
         else -> "Enabled Features"
     }
+    val languageLabel: String get() = when (currentLocale) {
+        "ru" -> "Язык интерфейса"
+        else -> "Interface language"
+    }
+    val languageDescription: String get() = when (currentLocale) {
+        "ru" -> "Выберите язык UI. Настройка сохраняется в этом браузере."
+        else -> "Choose UI language. This setting is stored in this browser."
+    }
+    val languageRu: String get() = when (currentLocale) {
+        "ru" -> "Русский"
+        else -> "Russian"
+    }
+    val languageEn: String get() = when (currentLocale) {
+        "ru" -> "Английский"
+        else -> "English"
+    }
     val mcpSectionTitle: String get() = when (currentLocale) {
         "ru" -> "MCP (AI-ассистенты)"
         else -> "MCP (AI Assistants)"
@@ -1355,6 +1401,76 @@ object LocalizedStrings {
     val mcpDocsLinkText: String get() = when (currentLocale) {
         "ru" -> "Документация MCP"
         else -> "MCP documentation"
+    }
+
+    // Firebase settings
+    val firebaseSettingsTitle: String get() = when (currentLocale) {
+        "ru" -> "Интеграция Firebase"
+        else -> "Firebase integration"
+    }
+    val firebaseSettingsDescription: String get() = when (currentLocale) {
+        "ru" -> "Здесь отображается статус интеграции с Firebase Remote Config и Firebase Analytics. Настройки задаются через переменные окружения бэкенда."
+        else -> "Shows status of Firebase Remote Config and Firebase Analytics integration. Configuration is managed via backend environment variables."
+    }
+    val firebaseRcTitle: String get() = when (currentLocale) {
+        "ru" -> "Firebase Remote Config sync"
+        else -> "Firebase Remote Config sync"
+    }
+    val firebaseRcDescription: String get() = when (currentLocale) {
+        "ru" -> "Синхронит флаги Flagent в Firebase Remote Config, чтобы мобильные клиенты могли продолжать читать конфигурацию из Firebase."
+        else -> "Syncs Flagent flags to Firebase Remote Config so mobile clients can keep reading configuration from Firebase."
+    }
+    val firebaseAnalyticsTitle: String get() = when (currentLocale) {
+        "ru" -> "Firebase Analytics (GA4)"
+        else -> "Firebase Analytics (GA4)"
+    }
+    val firebaseAnalyticsDescription: String get() = when (currentLocale) {
+        "ru" -> "Отправляет события evaluation в GA4/Firebase Analytics по Measurement Protocol."
+        else -> "Sends evaluation events to GA4/Firebase Analytics via Measurement Protocol."
+    }
+    val firebaseProjectIdLabel: String get() = when (currentLocale) {
+        "ru" -> "Firebase project ID:"
+        else -> "Firebase project ID:"
+    }
+    val firebaseRcSyncIntervalLabel: String get() = when (currentLocale) {
+        "ru" -> "Интервал синка:"
+        else -> "Sync interval:"
+    }
+    val firebaseRcPrefixLabel: String get() = when (currentLocale) {
+        "ru" -> "Префикс параметров:"
+        else -> "Parameter prefix:"
+    }
+    val firebaseRcCredentialsLabel: String get() = when (currentLocale) {
+        "ru" -> "Credentials:"
+        else -> "Credentials:"
+    }
+    val firebaseMeasurementIdLabel: String get() = when (currentLocale) {
+        "ru" -> "Measurement ID:"
+        else -> "Measurement ID:"
+    }
+    val firebaseApiSecretLabel: String get() = when (currentLocale) {
+        "ru" -> "API Secret:"
+        else -> "API Secret:"
+    }
+    val configPresent: String get() = when (currentLocale) {
+        "ru" -> "сконфигурировано"
+        else -> "configured"
+    }
+    val configMissing: String get() = when (currentLocale) {
+        "ru" -> "не задано"
+        else -> "not set"
+    }
+    val firebaseConfigSectionTitle: String get() = when (currentLocale) {
+        "ru" -> "Настройка через переменные окружения"
+        else -> "Configuration via environment variables"
+    }
+    val firebaseConfigSectionDescription: String get() = when (currentLocale) {
+        "ru" -> "Изменить интеграцию Firebase можно только через переменные окружения бэкенда. Этот экран показывает текущий статус."
+        else -> "Firebase integration is configured only via backend environment variables. This screen shows the current status."
+    }
+    val firebaseDocsLinkText: String get() = when (currentLocale) {
+        "ru" -> "Документация по интеграции Firebase"
+        else -> "Firebase integration docs"
     }
     val billingTitle: String get() = when (currentLocale) {
         "ru" -> "Биллинг и подписка"
@@ -1590,6 +1706,15 @@ object LocalizedStrings {
         "ru" -> "Нет данных метрик за выбранный период"
         else -> "No metrics data for the selected period"
     }
+    /** Hint when Overview (evaluation metrics) is empty; events are on Events tab */
+    val analyticsOverviewEmptyHint: String get() = when (currentLocale) {
+        "ru" -> "Здесь — метрики по оценкам флагов (evaluations). События (first_open, screen_view) — на вкладке «События»."
+        else -> "This tab shows evaluation metrics. For event analytics (first_open, screen_view) open the Events tab."
+    }
+    val switchToEventsTab: String get() = when (currentLocale) {
+        "ru" -> "Перейти к событиям"
+        else -> "Go to Events"
+    }
     val metricsUnavailable: String get() = when (currentLocale) {
         "ru" -> "Метрики временно недоступны"
         else -> "Metrics temporarily unavailable"
@@ -1613,6 +1738,30 @@ object LocalizedStrings {
     val healthStatusOk: String get() = when (currentLocale) {
         "ru" -> "Система работает нормально"
         else -> "System operational"
+    }
+    val healthNoEvaluations: String get() = when (currentLocale) {
+        "ru" -> "Нет обращений к API за период"
+        else -> "No API calls in period"
+    }
+    fun healthAnomaliesCount(n: Int): String = when (currentLocale) {
+        "ru" -> "Есть $n аномалий"
+        else -> "$n anomalies"
+    }
+    fun dataUpdatedMinutesAgo(min: Int): String = when (currentLocale) {
+        "ru" -> "Данные обновлены $min мин назад"
+        else -> "Data updated $min min ago"
+    }
+    fun dashboardTenantLabel(tenantName: String): String = when (currentLocale) {
+        "ru" -> "Тенант: $tenantName"
+        else -> "Tenant: $tenantName"
+    }
+    fun crashesInPeriod(count: Int, periodLabel: String): String = when (currentLocale) {
+        "ru" -> "$count крашей за $periodLabel"
+        else -> "$count crashes in $periodLabel"
+    }
+    val openCrashDashboard: String get() = when (currentLocale) {
+        "ru" -> "Открыть Краши"
+        else -> "Open Crash"
     }
     val flagActivityOverPeriod: String get() = when (currentLocale) {
         "ru" -> "Активность флагов за период"
@@ -1723,6 +1872,10 @@ object LocalizedStrings {
     val noExperimentsChangeFilterHint: String get() = when (currentLocale) {
         "ru" -> "Выберите другой фильтр выше (Все / Включённые / Выключенные)"
         else -> "Select a different filter above (All / Enabled / Disabled)"
+    }
+    val searchExperimentsPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Поиск по ключу или описанию…"
+        else -> "Search by key or description…"
     }
     val filterAll: String get() = when (currentLocale) {
         "ru" -> "Все"
@@ -1928,9 +2081,22 @@ object LocalizedStrings {
         "ru" -> "По статусу"
         else -> "Group by status"
     }
+    val groupByFlag: String get() = when (currentLocale) {
+        "ru" -> "По флагу"
+        else -> "By flag"
+    }
+    val filterByFlagPlaceholder: String get() = when (currentLocale) {
+        "ru" -> "Флаг"
+        else -> "Flag"
+    }
     val actionsLabel: String get() = when (currentLocale) {
         "ru" -> "Действия"
         else -> "Actions"
+    }
+
+    val createdAtLabel: String get() = when (currentLocale) {
+        "ru" -> "Создан"
+        else -> "Created"
     }
 
     // Pagination (override if different from previous/next)
