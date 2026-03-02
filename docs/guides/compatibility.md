@@ -143,6 +143,11 @@ Supported operators for segment constraints:
 
 4. **SDK integration** – Use Flagent SDKs (Kotlin, Java, JavaScript, Swift, Python, Go) or direct HTTP calls.
 
+5. **OpenFeature-style client** – For Kotlin Multiplatform you can use the
+   `kotlin-openfeature` module, which exposes an OpenFeature-like API and
+   internally talks to the same `/api/v1/evaluation` endpoint via the
+   generated Kotlin client.
+
 ### Example: cURL Evaluation
 
 ```bash
@@ -162,3 +167,19 @@ curl -X POST http://localhost:18000/api/v1/evaluation \
 - [OpenAPI Specification](../api/openapi.yaml)
 - [Getting Started](getting-started.md)
 - [Examples](../examples/README.md)
+
+## OpenFeature and standardization
+
+Flagent is compatible with the OpenFeature model of evaluation: a provider
+interface, evaluation context, and typed flag values. The
+`kotlin-openfeature` KMP module provides an OpenFeature-like client that
+adapts requests to Flagent's `/evaluation` endpoint and maps responses into
+typed results (`boolean`, `string`, `int`, `double`, and JSON object).
+
+This makes it easier to:
+
+- share client code between different feature flag backends,
+- migrate to or from Flagent while keeping application code close to the
+  OpenFeature specification (`https://openfeature.dev/`),
+- keep Kotlin clients vendor-agnostic at the call-site level while
+  delegating evaluation to Flagent.

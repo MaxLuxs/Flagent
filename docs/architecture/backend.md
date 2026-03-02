@@ -73,6 +73,10 @@ Return result
 DataRecorder (async)
 ```
 
+The same `/api/v1/evaluation` endpoint is also used by the
+OpenFeature-like Kotlin Multiplatform client (`kotlin-openfeature`), which
+adapts the OpenFeature evaluation model to this HTTP API.
+
 ## Caching
 
 - **EvalCache**: In-memory cache of all flags

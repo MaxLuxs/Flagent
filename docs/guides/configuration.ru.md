@@ -355,6 +355,8 @@ FLAGENT_FIREBASE_ANALYTICS_CLIENT_ID_KEY=client_id
 
 **Требуется:** Передавать `app_instance_id` (Firebase app) или `client_id` (web) в `entityContext` при evaluation, чтобы события привязывались к пользователю в GA4.
 
+При включённом UI админки вы можете посмотреть текущий статус интеграции Firebase (только для чтения) в разделе **Settings → Firebase**.
+
 ## Примеры файлов конфигурации
 
 ### Разработка

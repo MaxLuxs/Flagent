@@ -1,6 +1,9 @@
 <div align="center">
   <p><strong>English</strong> | <a href="README.ru.md">Русский</a></p>
   <h1>Flagent</h1>
+  <p>
+    <img src="docs/assets/flagent.png" alt="Flagent logo" width="160">
+  </p>
   <p><strong>Ship Features Safely. Experiment Confidently.</strong></p>
   <p>The first Kotlin-native feature flag platform: type-safe, coroutine-first flags and experimentation; optional Smart Rollout and anomaly detection (Enterprise).</p>
   
@@ -308,6 +311,7 @@ Official SDKs available for multiple platforms. The Kotlin SDK is **full Kotlin 
 | **Kotlin Enhanced** | [kotlin-enhanced](sdk/kotlin-enhanced) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Client-side eval, real-time, KMP |
 | **Kotlin Debug UI** | [kotlin-debug-ui](sdk/kotlin-debug-ui) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Compose Multiplatform debug dashboard, JVM/Android/iOS |
 | **flagent-koin** | [flagent-koin](sdk/flagent-koin) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Koin DI module for Flagent, KMP |
+| **Kotlin OpenFeature-like** | [kotlin-openfeature](sdk/kotlin-openfeature) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ⚙️ Experimental | OpenFeature-style KMP client backed by Flagent evaluation API |
 | **Java** | [java](sdk/java) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API support, Maven |
 | **Spring Boot** | [spring-boot-starter](sdk/spring-boot-starter) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Auto-configuration, Ktor/Java client |
 | **JavaScript/TypeScript** | [javascript](sdk/javascript) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API support, async/await |

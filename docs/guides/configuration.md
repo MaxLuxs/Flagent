@@ -379,6 +379,8 @@ FLAGENT_FIREBASE_ANALYTICS_CLIENT_ID_KEY=client_id
 
 **Required:** Pass `app_instance_id` (Firebase app) or `client_id` (web) in `entityContext` when evaluating so events attach to the correct user in GA4.
 
+When the admin UI is enabled, you can see a read-only summary of the current Firebase integration status in **Settings → Firebase**.
+
 ## Analytics Retention
 
 Control retention of analytics events (Firebase-level: first_open, session_start, screen_view, custom).

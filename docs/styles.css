@@ -130,6 +130,21 @@ body::before {
     align-items: center;
 }
 
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.logo::before {
+    content: '';
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    background: url("assets/flagent.png") center/contain no-repeat;
+    box-shadow: var(--shadow-md);
+}
+
 .logo-text {
     font-size: 1.5rem;
     font-weight: 700;

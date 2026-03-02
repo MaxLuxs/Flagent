@@ -123,6 +123,27 @@ val result = client.evaluate(flagKey = "my_first_flag", entityID = "user123")
 if (result.variantKey == "enabled") { /* feature is on */ }
 ```
 
+**Optional: OpenFeature-like KMP client:**
+
+If you prefer an OpenFeature-style API, use the multiplatform `kotlin-openfeature`
+module on top of the same backend:
+
+```kotlin
+val provider = FlagentOpenFeatureProvider(
+    FlagentOpenFeatureConfig(baseUrl = "http://localhost:18000/api/v1")
+)
+val ofClient = DefaultOpenFeatureClient(provider)
+
+val enabled = ofClient.getBooleanValue(
+    key = "my_first_flag",
+    defaultValue = false,
+    context = EvaluationContext(targetingKey = "user123")
+)
+```
+
+See `sdk/kotlin-openfeature/README.md` and the Android sample (`samples/android`)
+for a full example of this integration.
+
 **Verify in Debug Console:** Open [Debug Console](frontend-ui.md#evaluation--debug-console) in the UI (sidebar → Debug Console), enter flag key `my_first_flag` and entity ID `user123`, then click Evaluate.
 
 ---
