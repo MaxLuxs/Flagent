@@ -3,12 +3,12 @@ package flagent.application
 import flagent.api.EnterpriseConfigurator
 import flagent.config.AppConfig
 import flagent.mcp.configureMcpRoutes
-import flagent.middleware.configureBasicAuth
+import flagent.middleware.addBasicProvider
+import flagent.middleware.addHeaderProvider
+import flagent.middleware.addJwtProvider
 import flagent.middleware.configureCompression
 import flagent.middleware.configureCookieAuth
 import flagent.middleware.configureErrorHandling
-import flagent.middleware.configureHeaderAuth
-import flagent.middleware.configureJWTAuth
 import flagent.middleware.configureLogging
 import flagent.middleware.configureNewRelic
 import flagent.middleware.configurePrometheusMetrics
@@ -40,12 +40,14 @@ import flagent.route.configureVariantRoutes
 import flagent.route.configureWebhookRoutes
 import flagent.route.integration.configureIntegrationWebhookRoutes
 import flagent.route.realtimeRoutes
+import flagent.route.configureIntegrationFirebaseRoutes
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
 import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.staticFiles
@@ -112,9 +114,12 @@ private fun Application.configurePlugins() {
     configureLogging()
     configureSentry()
     configureNewRelic()
-    configureJWTAuth()
-    configureBasicAuth()
-    configureHeaderAuth()
+    install(Authentication) {
+        addJwtProvider()
+        addBasicProvider()
+        addHeaderProvider()
+        ServiceLoader.load(EnterpriseConfigurator::class.java).firstOrNull()?.configureAuthentication(this)
+    }
     configureCookieAuth()
     configurePrometheusMetrics()
     configureStatsDMetrics()
@@ -214,9 +219,44 @@ fun Application.module() {
                 configureImportRoutes(services.importService)
                 configureWebhookRoutes(services.webhookService)
                 configureIntegrationWebhookRoutes(services.flagService)
-                // Admin user management (/admin/users) only when JWT auth is enabled — otherwise no route, no exposure
+                // Admin user management (/admin/users) and admin integrations only when JWT auth is enabled — otherwise no route, no exposure
                 if (AppConfig.jwtAuthEnabled) {
                     configureAdminUserRoutes(services.userService)
+                    configureIntegrationFirebaseRoutes()
+                } else {
+                    // When JWT is disabled, /admin/* returns 404 with clear message so UI shows it instead of generic "Resource not found"
+                    route("/admin") {
+                        route("{...}") {
+                            get {
+                                call.respondText(
+                                    """{"error":"Admin user management is not enabled. Set FLAGENT_JWT_AUTH_ENABLED=true and configure FLAGENT_JWT_AUTH_SECRET (min 32 chars)."}""",
+                                    ContentType.Application.Json,
+                                    HttpStatusCode.NotFound
+                                )
+                            }
+                            post {
+                                call.respondText(
+                                    """{"error":"Admin user management is not enabled. Set FLAGENT_JWT_AUTH_ENABLED=true and configure FLAGENT_JWT_AUTH_SECRET (min 32 chars)."}""",
+                                    ContentType.Application.Json,
+                                    HttpStatusCode.NotFound
+                                )
+                            }
+                            put {
+                                call.respondText(
+                                    """{"error":"Admin user management is not enabled. Set FLAGENT_JWT_AUTH_ENABLED=true and configure FLAGENT_JWT_AUTH_SECRET (min 32 chars)."}""",
+                                    ContentType.Application.Json,
+                                    HttpStatusCode.NotFound
+                                )
+                            }
+                            delete {
+                                call.respondText(
+                                    """{"error":"Admin user management is not enabled. Set FLAGENT_JWT_AUTH_ENABLED=true and configure FLAGENT_JWT_AUTH_SECRET (min 32 chars)."}""",
+                                    ContentType.Application.Json,
+                                    HttpStatusCode.NotFound
+                                )
+                            }
+                        }
+                    }
                 }
 
                 if (!EnterprisePresence.enterpriseEnabled && services.coreMetricsService != null) {

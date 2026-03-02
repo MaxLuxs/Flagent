@@ -3,6 +3,7 @@ package flagent.application
 import flagent.api.EnterpriseBackendContext
 import flagent.api.EnterpriseConfigurator
 import io.ktor.server.application.Application
+import io.ktor.server.auth.AuthenticationConfig
 import io.ktor.server.routing.Routing
 
 /**
@@ -14,6 +15,10 @@ class DefaultEnterpriseConfigurator : EnterpriseConfigurator {
     }
 
     override fun configureRoutes(routing: Routing, context: EnterpriseBackendContext) {
+        // No-op: enterprise module not loaded
+    }
+
+    override fun configureAuthentication(config: AuthenticationConfig) {
         // No-op: enterprise module not loaded
     }
 }

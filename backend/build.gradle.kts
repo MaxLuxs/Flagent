@@ -149,6 +149,8 @@ tasks.register<JavaExec>("runDev") {
     environment("FLAGENT_ADMIN_EMAIL", "admin@local")
     environment("FLAGENT_ADMIN_PASSWORD", "admin")
     environment("FLAGENT_JWT_AUTH_SECRET", "dev-secret-at-least-32-characters-long")
+    // Enable JWT auth so /admin/users and admin login work in dev run
+    environment("FLAGENT_JWT_AUTH_ENABLED", "true")
     environment("FLAGENT_ADMIN_API_KEY", "dev-admin-key")
 }
 

@@ -125,7 +125,10 @@ object AppConfig {
             )
     val corsExposedHeaders: List<String> =
         System.getenv("FLAGENT_CORS_EXPOSED_HEADERS")?.split(",")?.map { it.trim() }
-            ?: listOf("WWW-Authenticate")
+            ?: listOf(
+                "WWW-Authenticate",
+                "X-Total-Count"
+            )
     val corsMaxAge: Int = System.getenv("FLAGENT_CORS_MAX_AGE")?.toIntOrNull() ?: 600
 
     // Sentry
