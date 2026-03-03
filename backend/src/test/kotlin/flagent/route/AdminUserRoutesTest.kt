@@ -2,12 +2,13 @@ package flagent.route
 
 import flagent.domain.entity.User
 import flagent.domain.repository.IUserRepository
-import flagent.middleware.configureJWTAuth
+import flagent.middleware.addJwtProvider
 import flagent.service.UserService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.Authentication
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import io.ktor.serialization.kotlinx.json.*
@@ -43,7 +44,9 @@ class AdminUserRoutesTest {
         val userService = createUserServiceWithAdminUser()
         application {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
-            configureJWTAuth()
+            install(Authentication) {
+                addJwtProvider()
+            }
             routing {
                 configureAuthRoutes(userService)
                 configureAdminUserRoutes(userService)
@@ -69,7 +72,9 @@ class AdminUserRoutesTest {
         val userService = createUserServiceWithAdminUser()
         application {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
-            configureJWTAuth()
+            install(Authentication) {
+                addJwtProvider()
+            }
             routing {
                 configureAuthRoutes(userService)
                 configureAdminUserRoutes(userService)
@@ -92,7 +97,9 @@ class AdminUserRoutesTest {
         val userService = createUserServiceWithAdminUser()
         application {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
-            configureJWTAuth()
+            install(Authentication) {
+                addJwtProvider()
+            }
             routing { configureAdminUserRoutes(userService) }
         }
         val response = client.get("/admin/users")
@@ -104,7 +111,9 @@ class AdminUserRoutesTest {
         val userService = createUserServiceWithAdminUser()
         application {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
-            configureJWTAuth()
+            install(Authentication) {
+                addJwtProvider()
+            }
             routing {
                 configureAuthRoutes(userService)
                 configureAdminUserRoutes(userService)
@@ -127,7 +136,9 @@ class AdminUserRoutesTest {
         val userService = createUserServiceWithAdminUser()
         application {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
-            configureJWTAuth()
+            install(Authentication) {
+                addJwtProvider()
+            }
             routing {
                 configureAuthRoutes(userService)
                 configureAdminUserRoutes(userService)
