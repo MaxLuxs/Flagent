@@ -1,6 +1,6 @@
 # Frontend Architecture
 
-> [English](frontend.md) | [Русский](frontend.ru.md)
+> [English](frontend.md)
 
 ## Overview
 

@@ -1,6 +1,6 @@
 # Real-Time Updates (SSE)
 
-> [English](real-time-updates.md) | [Русский](real-time-updates.ru.md)
+> [English](real-time-updates.md)
 
 ## Overview
 

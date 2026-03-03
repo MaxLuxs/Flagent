@@ -41,53 +41,53 @@ Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature
 
 ## Guides
 
-| Topic | EN | RU |
-|-------|----|----|
-| Getting Started | [Guide](guides/getting-started.md) | [Русский](guides/getting-started.ru.md) |
-| Configuration | [Guide](guides/configuration.md) | [Русский](guides/configuration.ru.md) |
-| Deployment | [Guide](guides/deployment.md) | [Русский](guides/deployment.ru.md) |
-| Versioning | [Guide](guides/versioning.md) | [Русский](guides/versioning.ru.md) |
-| Compatibility | [Guide](guides/compatibility.md) | — |
-| FAQ | [Guide](guides/faq.md) | [Русский](guides/faq.ru.md) |
-| MCP (AI Assistants) | [Guide](guides/mcp.md) | [Русский](guides/mcp.ru.md) |
-| Use Cases | [Guide](guides/use-cases.md) | [Русский](guides/use-cases.ru.md) |
-| GitOps | [Guide](guides/gitops.md) | [Русский](guides/gitops.ru.md) |
-| Preview Environments | [Guide](guides/preview-environments.md) | [Русский](guides/preview-environments.ru.md) |
-| Trunk-Based Development | [Guide](guides/trunk-based-development.md) | [Русский](guides/trunk-based-development.ru.md) |
-| Build-Time Verification | [Guide](guides/build-time-verification.md) | [Русский](guides/build-time-verification.ru.md) |
-| Declarative UI | [Guide](guides/declarative-ui.md) | — |
-| VS Code Extension | [Guide](guides/vscode-extension.md) | [Русский](guides/vscode-extension.ru.md) |
-| Publishing | [Guide](guides/publishing.md) | [Русский](guides/publishing.ru.md) |
-| Roadmap | [Guide](guides/roadmap.md) | — |
-| Contributing | [Guide](guides/contributing.md) | — |
+| Topic | EN |
+|------------|-----|
+| Getting Started | [Guide](guides/getting-started.md) |
+| Configuration | [Guide](guides/configuration.md) |
+| Deployment | [Guide](guides/deployment.md) |
+| Versioning | [Guide](guides/versioning.md) |
+| Compatibility | [Guide](guides/compatibility.md) |
+| FAQ | [Guide](guides/faq.md) |
+| MCP (AI Assistants) | [Guide](guides/mcp.md) |
+| Use Cases | [Guide](guides/use-cases.md) |
+| GitOps | [Guide](guides/gitops.md) |
+| Preview Environments | [Guide](guides/preview-environments.md) |
+| Trunk-Based Development | [Guide](guides/trunk-based-development.md) |
+| Build-Time Verification | [Guide](guides/build-time-verification.md) |
+| Declarative UI | [Guide](guides/declarative-ui.md) |
+| VS Code Extension | [Guide](guides/vscode-extension.md) |
+| Publishing | [Guide](guides/publishing.md) |
+| Roadmap | [Guide](guides/roadmap.md) |
+| Contributing | [Guide](guides/contributing.md) |
 
 ---
 
 ## API & Examples
 
-| Resource | Link | Русский |
-|----------|------|---------|
-| OpenAPI Spec | [api/openapi.yaml](api/openapi.yaml) | — |
-| Endpoints Reference | [api/endpoints.md](api/endpoints.md) | [Русский](api/endpoints.ru.md) |
-| SDKs Overview | [sdks/README.md](sdks/README.md) | [Русский](sdks/README.ru.md) |
-| **Examples** | [examples/README.md](examples/README.md) · [Русский](examples/README.ru.md) | — |
-| **SDK Integration** | [examples/sdk-integration.md](examples/sdk-integration.md) — Ktor, Spring, Kotlin, JS, Swift | — |
-| Tutorial: Gradual Rollout | [tutorials/gradual-rollout.md](tutorials/gradual-rollout.md) | — |
+| Resource | Link |
+|----------|------|
+| OpenAPI Spec | [api/openapi.yaml](api/openapi.yaml) |
+| Endpoints Reference | [api/endpoints.md](api/endpoints.md) |
+| SDKs Overview | [sdks/README.md](sdks/README.md) |
+| **Examples** | [examples/README.md](examples/README.md) |
+| **SDK Integration** | [examples/sdk-integration.md](examples/sdk-integration.md) — Ktor, Spring, Kotlin, JS, Swift |
+| Tutorial: Gradual Rollout | [tutorials/gradual-rollout.md](tutorials/gradual-rollout.md) |
 
 ---
 
 ## Architecture & Features
 
-| Topic | Link | Русский |
-|-------|------|---------|
-| Backend | [architecture/backend.md](architecture/backend.md) | [Русский](architecture/backend.ru.md) |
-| Frontend | [architecture/frontend.md](architecture/frontend.md) | [Русский](architecture/frontend.ru.md) |
-| Evaluation Spec | [architecture/evaluation-spec.md](architecture/evaluation-spec.md) | [Русский](architecture/evaluation-spec.ru.md) |
-| Offline-First SDK | [features/offline-first-sdk.md](features/offline-first-sdk.md) | [Русский](features/offline-first-sdk.ru.md) |
-| Performance Optimizations | [features/performance-optimizations.md](features/performance-optimizations.md) | [Русский](features/performance-optimizations.ru.md) |
-| Real-Time Updates | [features/real-time-updates.md](features/real-time-updates.md) | [Русский](features/real-time-updates.ru.md) |
-| Benchmarks | [performance/benchmarks.md](performance/benchmarks.md) | [Русский](performance/benchmarks.ru.md) |
-| Tuning | [performance/tuning-guide.md](performance/tuning-guide.md) | [Русский](performance/tuning-guide.ru.md) |
+| Topic | Link |
+|-------|------|
+| Backend | [architecture/backend.md](architecture/backend.md) |
+| Frontend | [architecture/frontend.md](architecture/frontend.md) |
+| Evaluation Spec | [architecture/evaluation-spec.md](architecture/evaluation-spec.md) |
+| Offline-First SDK | [features/offline-first-sdk.md](features/offline-first-sdk.md) |
+| Performance Optimizations | [features/performance-optimizations.md](features/performance-optimizations.md) |
+| Real-Time Updates | [features/real-time-updates.md](features/real-time-updates.md) |
+| Benchmarks | [performance/benchmarks.md](performance/benchmarks.md) |
+| Tuning | [performance/tuning-guide.md](performance/tuning-guide.md) |
 
 ---
 

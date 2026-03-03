@@ -1,6 +1,6 @@
 # Performance Tuning Guide
 
-> [English](tuning-guide.md) | [Русский](tuning-guide.ru.md)
+> [English](tuning-guide.md)
 
 Guide to tuning Flagent performance based on load testing results.
 
