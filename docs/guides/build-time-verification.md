@@ -1,7 +1,5 @@
 # Build-Time Verification
 
-> [English](build-time-verification.md)
-
 Gradle plugin verifies that flag keys used in code exist in Flagent (via API or local file). Optionally, strict mode allows only keys from generated constants or `@FlagKey` annotations.
 
 ## Installation

@@ -1,7 +1,5 @@
 # Performance Optimizations
 
-> [English](performance-optimizations.md)
-
 ## Overview
 
 Flagent provides a range of performance optimizations for maximum evaluation speed and scalability. These optimizations make Flagent ready for high load and many concurrent requests.

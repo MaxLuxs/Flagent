@@ -1,7 +1,5 @@
 # Real-Time Updates (SSE)
 
-> [English](real-time-updates.md)
-
 ## Overview
 
 Flagent supports real-time flag updates via Server-Sent Events (SSE). Clients receive updates when flags change, without polling or restarting the application.

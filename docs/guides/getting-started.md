@@ -1,7 +1,5 @@
 # Getting Started with Flagent
 
-> [English](getting-started.md)
-
 Welcome to Flagent! This guide will help you get started with feature flags and experimentation in less than 10 minutes.
 
 ## What is Flagent?

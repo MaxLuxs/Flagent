@@ -1,7 +1,5 @@
 # API Endpoints
 
-> [English](endpoints.md)
-
 ## Base Path
 
 All API endpoints use the base path `/api/v1`.

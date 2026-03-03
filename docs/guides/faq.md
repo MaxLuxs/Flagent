@@ -1,7 +1,5 @@
 # Frequently Asked Questions (FAQ)
 
-> [English](faq.md)
-
 Common questions about Flagent and their answers.
 
 ## General Questions

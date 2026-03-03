@@ -1,7 +1,5 @@
 # Evaluation Benchmarks
 
-> [English](benchmarks.md)
-
 Performance benchmarks for the evaluation API (`POST /api/v1/evaluation`).
 
 ## Target Metrics
