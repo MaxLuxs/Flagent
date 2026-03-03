@@ -1,7 +1,5 @@
 # GitOps with Flagent
 
-> [English](gitops.md)
-
 Flagent supports GitOps: flag configuration lives in the repository and syncs via CI/CD.
 
 ## Overview
