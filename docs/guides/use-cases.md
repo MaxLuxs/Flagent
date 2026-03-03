@@ -1,7 +1,5 @@
 # Use Cases
 
-> [English](use-cases.md)
-
 Flagent can be used in various scenarios to improve software delivery, experimentation, and user experience. Here are some common use cases and real-world examples.
 
 ## Feature Flags for Safe Deployments
