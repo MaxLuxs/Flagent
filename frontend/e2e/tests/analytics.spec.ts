@@ -53,6 +53,13 @@ test.describe('Analytics Page with seeded data @oss', () => {
     await page.goto('/analytics');
     await page.waitForLoadState('domcontentloaded');
 
+    const overviewTab = page.getByRole('button', {
+      name: /Overview|Обзор/i,
+    });
+    if ((await overviewTab.count()) > 0) {
+      await overviewTab.click();
+    }
+
     await expect(
       page.getByText(/Total evaluations|Всего оценок/i)
     ).toBeVisible({ timeout: 10000 });
@@ -74,7 +81,17 @@ test.describe('Analytics Page with seeded data @oss', () => {
 
     await page.goto('/analytics');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByText(/Total evaluations|Всего оценок/i)).toBeVisible({
+
+    const overviewTab = page.getByRole('button', {
+      name: /Overview|Обзор/i,
+    });
+    if ((await overviewTab.count()) > 0) {
+      await overviewTab.click();
+    }
+
+    await expect(
+      page.getByText(/Total evaluations|Всего оценок/i)
+    ).toBeVisible({
       timeout: 15000,
     });
 
@@ -93,7 +110,17 @@ test.describe('Analytics Page with seeded data @oss', () => {
 
     await page.goto('/analytics');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByText(/Total evaluations|Всего оценок/i)).toBeVisible({
+
+    const overviewTab = page.getByRole('button', {
+      name: /Overview|Обзор/i,
+    });
+    if ((await overviewTab.count()) > 0) {
+      await overviewTab.click();
+    }
+
+    await expect(
+      page.getByText(/Total evaluations|Всего оценок/i)
+    ).toBeVisible({
       timeout: 15000,
     });
 

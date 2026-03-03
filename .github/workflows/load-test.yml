@@ -72,7 +72,7 @@ jobs:
         env:
           PORT: 8000
           FLAGENT_DB_DBDRIVER: postgresql
-          FLAGENT_DB_DBCONNECTIONSTR: postgresql://flagent:flagent@localhost:5432/flagent
+          FLAGENT_DB_DBCONNECTIONSTR: jdbc:postgresql://localhost:5432/flagent?user=flagent&password=flagent
         run: |
           ./gradlew :backend:run --no-daemon &
           echo $! > flagent.pid
