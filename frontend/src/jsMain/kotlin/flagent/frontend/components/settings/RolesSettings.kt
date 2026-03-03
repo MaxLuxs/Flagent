@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.RoleResponse
 import flagent.frontend.api.TenantUserResponse
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
