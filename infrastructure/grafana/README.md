@@ -1,7 +1,5 @@
 # Grafana Dashboards for Flagent
 
-> [English](README.md) | [Русский](README.ru.md)
-
 Ready-to-use Grafana dashboards for monitoring AI-Powered Rollouts.
 
 ## Quick Start

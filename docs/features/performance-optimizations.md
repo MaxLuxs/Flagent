@@ -1,6 +1,6 @@
 # Performance Optimizations
 
-> [English](performance-optimizations.md) | [Русский](performance-optimizations.ru.md)
+> [English](performance-optimizations.md)
 
 ## Overview
 

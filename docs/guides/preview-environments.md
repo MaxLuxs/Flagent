@@ -1,6 +1,6 @@
 # Preview Environments
 
-> [English](preview-environments.md) | [Русский](preview-environments.ru.md)
+> [English](preview-environments.md)
 
 Configure feature flags for preview/PR environments (Vercel, Netlify, Cloudflare Pages).
 

@@ -1,5 +1,5 @@
 <div align="center">
-  <p><strong>English</strong> | <a href="README.ru.md">Русский</a></p>
+  <p><strong>English</strong></p>
   <h1>Flagent</h1>
   <p>
     <img src="docs/assets/flagent.png" alt="Flagent logo" width="160">

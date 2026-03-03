@@ -1,6 +1,6 @@
 # API Endpoints
 
-> [English](endpoints.md) | [Русский](endpoints.ru.md)
+> [English](endpoints.md)
 
 ## Base Path
 

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-> [English](deployment.md) | [Русский](deployment.ru.md)
+> [English](deployment.md)
 
 This guide covers deploying Flagent in various environments, from local development to production.
 

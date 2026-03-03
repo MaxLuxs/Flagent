@@ -1,6 +1,6 @@
 # Project version (single source)
 
-> [English](versioning.md) | [Русский](versioning.ru.md)
+> [English](versioning.md)
 
 **Single source of truth:** root file `VERSION` (one line, e.g. `0.1.0`).
 

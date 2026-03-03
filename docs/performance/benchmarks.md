@@ -1,6 +1,6 @@
 # Evaluation Benchmarks
 
-> [English](benchmarks.md) | [Русский](benchmarks.ru.md)
+> [English](benchmarks.md)
 
 Performance benchmarks for the evaluation API (`POST /api/v1/evaluation`).
 

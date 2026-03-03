@@ -1,6 +1,6 @@
 # Offline-First SDK
 
-> [English](offline-first-sdk.md) | [Русский](offline-first-sdk.ru.md)
+> [English](offline-first-sdk.md)
 
 ## Overview
 

@@ -1,7 +1,5 @@
 # Flagent Samples
 
-> [English](README.md) | [Русский](README.ru.md)
-
 This folder contains sample applications demonstrating Flagent SDK and plugins for various platforms and programming languages.
 
 ## Available Samples

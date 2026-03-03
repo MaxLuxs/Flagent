@@ -1,6 +1,6 @@
 # Backend Architecture (Ktor)
 
-> [English](backend.md) | [Русский](backend.ru.md)
+> [English](backend.md)
 
 ## Overview
 

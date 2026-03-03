@@ -1,7 +1,5 @@
 # Flagent SDK Clients
 
-> [English](README.md) | [Русский](README.ru.md)
-
 Client libraries (SDK) for Flagent API - a feature flagging, A/B testing and dynamic configuration microservice.
 
 ## Available SDKs

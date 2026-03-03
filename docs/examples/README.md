@@ -1,7 +1,5 @@
 # Flagent Usage Examples
 
-> [English](README.md) | [Русский](README.ru.md)
-
 **In this section:**
 - **API & Ktor** — REST API, flags, segments, evaluation (below)
 - **SDK Integration** — [Ktor, Spring Boot, Kotlin, JavaScript, Swift](sdk-integration.md) — code samples for each platform
