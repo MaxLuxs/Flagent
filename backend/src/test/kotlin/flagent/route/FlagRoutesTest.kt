@@ -14,6 +14,8 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlin.test.*
 import kotlinx.serialization.json.*
 
@@ -292,5 +294,226 @@ class FlagRoutesTest {
         } finally {
             Database.close()
         }
+    }
+
+    @Test
+    fun `GET flag by id invalid returns 400`() = testApplication {
+        val flagService = mockk<FlagService>(relaxed = true)
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+        val resp = client.get("/api/v1/flags/notanum")
+        assertEquals(HttpStatusCode.BadRequest, resp.status)
+    }
+
+    @Test
+    fun `GET flag by id returns 404 when not found`() = testApplication {
+        val flagService = mockk<FlagService>()
+        coEvery { flagService.getFlag(42) } returns null
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+
+        val resp = client.get("/api/v1/flags/42")
+        assertEquals(HttpStatusCode.NotFound, resp.status)
+    }
+
+    @Test
+    fun `POST flags maps IllegalArgumentException to 400`() = testApplication {
+        val flagService = mockk<FlagService>()
+        coEvery { flagService.createFlag(any(), any()) } throws IllegalArgumentException("invalid key")
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+
+        val resp = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"description":"bad","key":""}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, resp.status)
+        assertTrue(resp.bodyAsText().contains("invalid key"))
+    }
+
+    @Test
+    fun `POST flags maps generic exception to 500`() = testApplication {
+        val flagService = mockk<FlagService>()
+        coEvery { flagService.createFlag(any(), any()) } throws RuntimeException("boom")
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+
+        val resp = client.post("/api/v1/flags") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"description":"x","key":"k"}""")
+        }
+        assertEquals(HttpStatusCode.InternalServerError, resp.status)
+        assertTrue(resp.bodyAsText().contains("boom"))
+    }
+
+    @Test
+    fun `PUT flags with invalid id returns 400`() = testApplication {
+        val flagService = mockk<FlagService>(relaxed = true)
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+        val resp = client.put("/api/v1/flags/notanum") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"description":"d"}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, resp.status)
+    }
+
+    @Test
+    fun `PUT flags returns 404 when flag not found`() = testApplication {
+        val flagService = mockk<FlagService>()
+        coEvery { flagService.getFlag(10) } returns null
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+
+        val resp = client.put("/api/v1/flags/10") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"description":"d"}""")
+        }
+        assertEquals(HttpStatusCode.NotFound, resp.status)
+    }
+
+    @Test
+    fun `PUT flag enabled with invalid id returns 400`() = testApplication {
+        val flagService = mockk<FlagService>(relaxed = true)
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+        val resp = client.put("/api/v1/flags/notanum/enabled") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"enabled":true}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, resp.status)
+    }
+
+    @Test
+    fun `PUT flag enabled returns 404 when flag not found`() = testApplication {
+        val flagService = mockk<FlagService>()
+        coEvery { flagService.setFlagEnabled(10, any(), any()) } returns null
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+
+        val resp = client.put("/api/v1/flags/10/enabled") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"enabled":true}""")
+        }
+        assertEquals(HttpStatusCode.NotFound, resp.status)
+    }
+
+    @Test
+    fun `PUT flag restore with invalid id returns 400`() = testApplication {
+        val flagService = mockk<FlagService>(relaxed = true)
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+        val resp = client.put("/api/v1/flags/notanum/restore")
+        assertEquals(HttpStatusCode.BadRequest, resp.status)
+    }
+
+    @Test
+    fun `PUT flag restore returns 404 when not found`() = testApplication {
+        val flagService = mockk<FlagService>()
+        coEvery { flagService.restoreFlag(10) } returns null
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+
+        val resp = client.put("/api/v1/flags/10/restore")
+        assertEquals(HttpStatusCode.NotFound, resp.status)
+    }
+
+    @Test
+    fun `DELETE flag permanent with invalid id returns 400`() = testApplication {
+        val flagService = mockk<FlagService>(relaxed = true)
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+        val resp = client.delete("/api/v1/flags/notanum/permanent")
+        assertEquals(HttpStatusCode.BadRequest, resp.status)
+    }
+
+    @Test
+    fun `DELETE flag permanent returns 404 when not found`() = testApplication {
+        val flagService = mockk<FlagService>()
+        coEvery { flagService.getFlagIncludeDeleted(10) } returns null
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureFlagRoutes(flagService)
+            }
+        }
+
+        val resp = client.delete("/api/v1/flags/10/permanent")
+        assertEquals(HttpStatusCode.NotFound, resp.status)
     }
 }
