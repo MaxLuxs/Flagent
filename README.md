@@ -49,7 +49,7 @@
 
 **Flagent** is a modern, production-ready feature flag and experimentation platform built with **Kotlin/Ktor**. The first Kotlin-native solution in the feature flags ecosystem, combining type-safety, coroutines, and clean architecture for high-performance feature management. Enterprise build adds multi-tenancy, SSO, RBAC, Smart Rollout and anomaly detection.
 
-**Problem → Solution:** Teams need to ship features safely, run A/B tests, and roll back instantly without redeploys. Flagent gives you feature flags, experiments, gradual rollouts, kill switches, and optional crash-by-flag analytics in one self-hosted or (planned) cloud platform — with Kotlin-native SDKs and a single UI.
+**Problem -> Solution:** Teams need to ship features safely, run A/B tests, and roll back instantly without redeploys. Flagent gives you feature flags, experiments, gradual rollouts, kill switches, and optional crash-by-flag analytics in one self-hosted or (planned) cloud platform — with Kotlin-native SDKs and a single UI.
 
 **Full landing (product overview, pricing, CTA):** When running Flagent with the marketing landing enabled (`ENV_SHOW_LANDING=true`), open the app root (e.g. `http://localhost:18000`). See also [Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md) and [Pricing & editions](docs/guides/pricing-and-editions.md).
 
