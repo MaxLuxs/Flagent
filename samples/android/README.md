@@ -9,6 +9,8 @@ Sample Android application demonstrating the usage of Flagent SDK for feature fl
 - **Caching** - Enhanced SDK provides automatic caching of evaluation results
 - **Debug UI** - Visual debugging interface for flags and evaluations
 - **Settings** - Configure API base URL, cache settings, and authentication
+- **OpenFeature-like client** - Demonstrates the `kotlin-openfeature` KMP client
+  and how it maps Flagent evaluations into an OpenFeature-style API
 
 ## Requirements
 
@@ -67,6 +69,17 @@ The result will show:
 - Flag and segment information
 - Debug log (if enabled)
 - Cache indicator (for Enhanced SDK)
+
+The screen also contains an **OpenFeature-like** section that uses the
+`kotlin-openfeature` KMP module:
+
+- Boolean flag: `new_android_ui`
+- Integer config: `cart_max_items` (value read from `variantAttachment.value`)
+- Double config: `discount_rate` (value read from `variantAttachment.value`)
+
+These flags are seeded automatically by `./scripts/seed-demo-data.sh`,
+so after seeding and starting the backend the Android sample will show
+meaningful values out of the box.
 
 ### Batch Evaluation Screen
 

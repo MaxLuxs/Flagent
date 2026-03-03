@@ -19,10 +19,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.encodeToString
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+
+private val prettyJson = Json { prettyPrint = true }
+private val lenientJson = Json { ignoreUnknownKeys = true }
 
 /**
  * DebugConsole component - console for testing evaluation
@@ -179,9 +185,13 @@ fun DebugConsole(initialFlagKey: String? = null) {
 private fun SingleEvaluationSection(initialFlagKey: String?) {
     val themeMode = LocalThemeMode.current
     val flagKey = remember { mutableStateOf(initialFlagKey ?: "") }
-    val entityID = remember { mutableStateOf("a1234") }
-    val entityType = remember { mutableStateOf("report") }
-    val entityContextJson = remember { mutableStateOf("{\n  \"hello\": \"world\"\n}") }
+    val entityID = remember { mutableStateOf("user_123") }
+    val entityType = remember { mutableStateOf("user") }
+    val entityContextJson = remember { mutableStateOf("""{
+  "user_id": "user_123",
+  "region": "EU",
+  "tier": "premium"
+}""") }
     val enableDebug = remember { mutableStateOf(true) }
     val result = remember { mutableStateOf<String?>(null) }
     val loading = remember { mutableStateOf(false) }
@@ -195,8 +205,8 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
     
     fun formatJson(json: String): String {
         return try {
-            val jsonObj = Json.parseToJsonElement(json) as? kotlinx.serialization.json.JsonObject
-            Json { prettyPrint = true }.encodeToString(jsonObj)
+            val element = Json.parseToJsonElement(json)
+            prettyJson.encodeToString(JsonElement.serializer(), element)
         } catch (e: Exception) {
             json
         }
@@ -236,8 +246,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                             try {
                                 val context = try {
                                     if (entityContextJson.value.isNotBlank()) {
-                                        val json = Json { ignoreUnknownKeys = true }
-                                        val jsonObj = json.parseToJsonElement(entityContextJson.value) as? kotlinx.serialization.json.JsonObject
+                                        val jsonObj = lenientJson.parseToJsonElement(entityContextJson.value) as? JsonObject
                                         jsonObj?.entries?.associate { entry ->
                                             entry.key to entry.value.toString().trim('"')
                                         }
@@ -378,6 +387,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                     TextArea {
                         value(entityContextJson.value)
                         onInput { event -> entityContextJson.value = event.value }
+                        attr("placeholder", "{\"user_id\": \"...\", \"region\": \"EU\", \"tier\": \"premium\"}")
                         style {
                             width(100.percent)
                             padding(10.px)
@@ -394,6 +404,16 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                             borderRadius(3.px)
                         }
                     }
+                    Span({
+                        style {
+                            display(DisplayStyle.Block)
+                            fontSize(11.px)
+                            color(FlagentTheme.textLight(themeMode))
+                            marginTop(4.px)
+                        }
+                    }) {
+                        Text(LocalizedStrings.entityContextPlaceholderHint)
+                    }
                 }
                 Div({
                     style {
@@ -407,7 +427,7 @@ private fun SingleEvaluationSection(initialFlagKey: String?) {
                         Input(InputType.Checkbox) {
                             checked(enableDebug.value)
                             onChange { event ->
-                                enableDebug.value = (event.target as org.w3c.dom.HTMLInputElement).checked
+                                enableDebug.value = event.target.checked
                             }
                             style {
                                 cursor("pointer")
@@ -527,8 +547,8 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
     
     fun formatJson(json: String): String {
         return try {
-            val jsonObj = Json.parseToJsonElement(json)
-            Json { prettyPrint = true }.encodeToString(jsonObj)
+            val element = Json.parseToJsonElement(json)
+            prettyJson.encodeToString(JsonElement.serializer(), element)
         } catch (e: Exception) {
             json
         }
@@ -568,15 +588,14 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                             try {
                                 // Parse entities
                                 val entities = try {
-                                    val json = Json { ignoreUnknownKeys = true }
-                                    val entitiesList = json.parseToJsonElement(entitiesJson.value) as? kotlinx.serialization.json.JsonArray
+                                    val entitiesList = lenientJson.parseToJsonElement(entitiesJson.value) as? JsonArray
                                     entitiesList?.mapNotNull { element ->
-                                        val obj = element as? kotlinx.serialization.json.JsonObject
+                                        val obj = element as? JsonObject
                                         obj?.let {
                                             val entityID = it["entityID"]?.toString()?.trim('"')
                                             val entityType = it["entityType"]?.toString()?.trim('"')
                                             val entityContext = it["entityContext"]?.let { ctx ->
-                                                (ctx as? kotlinx.serialization.json.JsonObject)?.entries?.associate { entry ->
+                                                (ctx as? JsonObject)?.entries?.associate { entry ->
                                                     entry.key to entry.value.toString().trim('"')
                                                 }
                                             }
@@ -719,7 +738,7 @@ private fun BatchEvaluationSection(initialFlagKey: String?) {
                         Input(InputType.Checkbox) {
                             checked(enableDebug.value)
                             onChange { event ->
-                                enableDebug.value = (event.target as org.w3c.dom.HTMLInputElement).checked
+                                enableDebug.value = event.target.checked
                             }
                             style {
                                 cursor("pointer")

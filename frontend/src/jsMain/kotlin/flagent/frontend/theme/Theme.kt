@@ -122,6 +122,20 @@ object FlagentTheme {
         ThemeMode.Light -> Color(v("color-light-infoBg"))
     }
 
+    /**
+     * Hero gradient depending on ThemeMode.
+     *
+     * Dark: dedicated GradientHero (deep dark background).
+     * Light: subtle vertical light gradient based on light background tokens.
+     */
+    fun heroGradient(mode: ThemeMode): String = when (mode) {
+        ThemeMode.Dark -> GradientHero
+        ThemeMode.Light -> "linear-gradient(180deg, " +
+            "${cssVar("color-light-background")} 0%, " +
+            "${cssVar("color-light-backgroundAlt")} 40%, " +
+            "${cssVar("color-light-backgroundDark")} 100%)"
+    }
+
     /** CSS variable string for use in property("border", "1px solid ${FlagentTheme.cssVar(\"color-dark-cardBorder\")}") etc. */
     fun cssVar(suffix: String) = "var(--flagent-$suffix)"
 }

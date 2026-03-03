@@ -49,6 +49,7 @@ fun EvaluationScreen(
     var entityID by remember { mutableStateOf("user1") }
     var entityType by remember { mutableStateOf("user") }
     var entityContextJson by remember { mutableStateOf("{\"region\": \"US\", \"tier\": \"premium\"}") }
+    var openFeatureFlagKey by remember { mutableStateOf("new_android_ui") }
 
     Column(
         modifier = Modifier
@@ -135,6 +136,41 @@ fun EvaluationScreen(
             Text("Evaluate (Enhanced SDK)")
         }
 
+        Divider()
+
+        Text(
+            text = "OpenFeature-like evaluation",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "Uses kotlin-openfeature KMP client on top of Flagent HTTP evaluation.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        OutlinedTextField(
+            value = openFeatureFlagKey,
+            onValueChange = { openFeatureFlagKey = it },
+            label = { Text("Feature flag key (boolean)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Button(
+            onClick = {
+                viewModel.evaluateOpenFeatureLike(
+                    flagKey = openFeatureFlagKey.ifBlank { "new_android_ui" },
+                    entityID = entityID.ifBlank { "user1" },
+                    entityType = entityType.ifBlank { "user" },
+                    entityContext = parseContextMapOrNull(entityContextJson)
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = state !is EvaluationState.Loading
+        ) {
+            Text("Evaluate (OpenFeature-like)")
+        }
+
         when (val s = state) {
             is EvaluationState.Success -> {
                 Card(
@@ -178,6 +214,40 @@ fun EvaluationScreen(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
+                    }
+                }
+            }
+            is EvaluationState.OpenFeatureSuccess -> {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "OpenFeature-like result",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = "Enabled: ${s.enabled}",
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = "Max items: ${s.maxItems}",
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = "Discount: ${s.discount}",
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     }
                 }
             }

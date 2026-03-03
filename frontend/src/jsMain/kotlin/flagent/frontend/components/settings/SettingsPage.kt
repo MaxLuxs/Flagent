@@ -11,6 +11,7 @@ import flagent.frontend.config.Edition
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
+import flagent.frontend.state.LanguageState
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
@@ -79,6 +80,9 @@ fun SettingsPage() {
                 }
             }
             SettingsTab(themeMode, LocalizedStrings.generalTab, "settings", activeTab == "general") { activeTab = "general" }
+            if (AppConfig.Features.enableFirebaseSettings) {
+                SettingsTab(themeMode, LocalizedStrings.firebaseTab, "cloud", activeTab == "firebase") { activeTab = "firebase" }
+            }
             if (AppConfig.Features.enableSso) {
                 SettingsTab(themeMode, LocalizedStrings.ssoProvidersTab, "security", activeTab == "sso") { activeTab = "sso" }
             }
@@ -106,6 +110,7 @@ fun SettingsPage() {
         }) {
         when (activeTab) {
             "general" -> GeneralSettings(themeMode)
+            "firebase" -> if (AppConfig.Features.enableFirebaseSettings) FirebaseSettings(themeMode)
             "sso" -> if (AppConfig.Features.enableSso) SsoSettings(themeMode)
             "slack" -> if (AppConfig.Features.enableSlack) SlackSettings(themeMode)
             "billing" -> if (AppConfig.Features.enableBilling) BillingSettings(themeMode)
@@ -167,23 +172,73 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
             Text(LocalizedStrings.generalSettings)
         }
         
-        SettingItem(themeMode,
+        SettingItem(
+            themeMode,
             title = LocalizedStrings.apiBaseUrl,
             description = LocalizedStrings.apiBaseUrlDesc,
             value = AppConfig.apiBaseUrl
         )
-        
-        SettingItem(themeMode,
+
+        SettingItem(
+            themeMode,
             title = LocalizedStrings.debugMode,
             description = LocalizedStrings.debugModeDesc,
             value = if (AppConfig.debugMode) LocalizedStrings.enabled else LocalizedStrings.disabled
         )
-        
-        SettingItem(themeMode,
+
+        SettingItem(
+            themeMode,
             title = LocalizedStrings.apiTimeout,
             description = LocalizedStrings.apiTimeoutDesc,
             value = "${AppConfig.apiTimeout}ms"
         )
+
+        val currentLocale by LanguageState.current
+        Div({
+            style {
+                marginBottom(20.px)
+                paddingBottom(20.px)
+                property("border-bottom", "1px solid ${FlagentTheme.inputBorder(themeMode)}")
+            }
+        }) {
+            Div({
+                style {
+                    fontWeight("500")
+                    marginBottom(4.px)
+                    color(FlagentTheme.text(themeMode))
+                }
+            }) {
+                Text(LocalizedStrings.languageLabel)
+            }
+            Div({
+                style {
+                    fontSize(14.px)
+                    color(FlagentTheme.textLight(themeMode))
+                    marginBottom(8.px)
+                }
+            }) {
+                Text(LocalizedStrings.languageDescription)
+            }
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    gap(8.px)
+                }
+            }) {
+                LanguageOptionButton(
+                    themeMode = themeMode,
+                    label = LocalizedStrings.languageRu,
+                    isActive = currentLocale == "ru",
+                    onClick = { LanguageState.set("ru") }
+                )
+                LanguageOptionButton(
+                    themeMode = themeMode,
+                    label = LocalizedStrings.languageEn,
+                    isActive = currentLocale == "en",
+                    onClick = { LanguageState.set("en") }
+                )
+            }
+        }
         
         if (AppConfig.Features.enableMultiTenancy) {
             Div({
@@ -289,7 +344,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                     Icon("content_copy", size = 16.px, color = Color.white)
                     Text(LocalizedStrings.mcpCopyUrl)
                 }
-                A(href = "${AppConfig.docsUrl}#/guides/mcp.md", attrs = {
+                A(href = AppConfig.docsUrlMcp, attrs = {
                     attr("target", "_blank")
                     attr("rel", "noopener noreferrer")
                     style {
@@ -349,6 +404,30 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LanguageOptionButton(
+    themeMode: flagent.frontend.state.ThemeMode,
+    label: String,
+    isActive: Boolean,
+    onClick: () -> Unit
+) {
+    Button({
+        style {
+            padding(8.px, 14.px)
+            borderRadius(999.px)
+            border(1.px, LineStyle.Solid, if (isActive) FlagentTheme.Primary else FlagentTheme.inputBorder(themeMode))
+            backgroundColor(if (isActive) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+            color(if (isActive) Color.white else FlagentTheme.text(themeMode))
+            cursor("pointer")
+            fontSize(13.px)
+            fontWeight(if (isActive) "600" else "500")
+        }
+        onClick { onClick() }
+    }) {
+        Text(label)
     }
 }
 

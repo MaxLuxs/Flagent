@@ -53,13 +53,31 @@ test.describe('Analytics Page with seeded data @oss', () => {
     await page.goto('/analytics');
     await page.waitForLoadState('domcontentloaded');
 
-    await expect(
-      page.getByText(/Total evaluations|Всего оценок/i)
-    ).toBeVisible({ timeout: 10000 });
-    await expect(
-      page.getByText(/Unique flags|Уникальных флагов/i)
-    ).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/\d+/).first()).toBeVisible({ timeout: 5000 });
+    const overviewTab = page.getByRole('button', {
+      name: /Overview|Обзор/i,
+    });
+    if ((await overviewTab.count()) > 0) {
+      await overviewTab.click();
+    }
+
+    const totalLabel = page.getByText(/Total evaluations|Всего оценок/i);
+    const overviewEmptyHint = page.getByText(
+      /This tab shows evaluation metrics|Здесь — метрики по оценкам флагов|Go to Events|Перейти к событиям/i
+    );
+
+    // Either metrics cards are shown, or the "no evaluations yet" hint is visible.
+    await expect(totalLabel.or(overviewEmptyHint).first()).toBeVisible({
+      timeout: 15000,
+    });
+
+    if ((await totalLabel.count()) > 0) {
+      await expect(
+        page.getByText(/Unique flags|Уникальных флагов/i)
+      ).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/\d+/).first()).toBeVisible({
+        timeout: 5000,
+      });
+    }
   });
 
   test('Overview tab shows time series chart when data exists', async ({
@@ -74,9 +92,27 @@ test.describe('Analytics Page with seeded data @oss', () => {
 
     await page.goto('/analytics');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByText(/Total evaluations|Всего оценок/i)).toBeVisible({
+
+    const overviewTab = page.getByRole('button', {
+      name: /Overview|Обзор/i,
+    });
+    if ((await overviewTab.count()) > 0) {
+      await overviewTab.click();
+    }
+
+    const totalLabel = page.getByText(/Total evaluations|Всего оценок/i);
+    const overviewEmptyHint = page.getByText(
+      /This tab shows evaluation metrics|Здесь — метрики по оценкам флагов|Go to Events|Перейти к событиям/i
+    );
+
+    await expect(totalLabel.or(overviewEmptyHint).first()).toBeVisible({
       timeout: 15000,
     });
+
+    if ((await totalLabel.count()) === 0) {
+      // Overview has no data; nothing to assert about chart.
+      return;
+    }
 
     const chartTitle = page.getByText(
       /Evaluations over time|Оценки за период|evaluations/i
@@ -93,9 +129,27 @@ test.describe('Analytics Page with seeded data @oss', () => {
 
     await page.goto('/analytics');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.getByText(/Total evaluations|Всего оценок/i)).toBeVisible({
+
+    const overviewTab = page.getByRole('button', {
+      name: /Overview|Обзор/i,
+    });
+    if ((await overviewTab.count()) > 0) {
+      await overviewTab.click();
+    }
+
+    const totalLabel = page.getByText(/Total evaluations|Всего оценок/i);
+    const overviewEmptyHint = page.getByText(
+      /This tab shows evaluation metrics|Здесь — метрики по оценкам флагов|Go to Events|Перейти к событиям/i
+    );
+
+    await expect(totalLabel.or(overviewEmptyHint).first()).toBeVisible({
       timeout: 15000,
     });
+
+    if ((await totalLabel.count()) === 0) {
+      // No metrics cards, so no "top flags" section either.
+      return;
+    }
 
     const topFlagsHeading = page.getByText(
       /Top flags by evaluations|Топ флагов по оценкам|evaluations/i

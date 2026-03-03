@@ -1,15 +1,15 @@
 <div align="center">
   <p><strong>English</strong> | <a href="README.ru.md">Русский</a></p>
   <h1>Flagent</h1>
-  <p><strong>The First Kotlin-Native Feature Flag Platform</strong></p>
-  <p>Type-safe, coroutine-first feature flags and experimentation; optional Smart Rollout and anomaly detection (Enterprise)</p>
+  <p>
+    <img src="docs/assets/flagent.png" alt="Flagent logo" width="160">
+  </p>
+  <p><strong>Ship Features Safely. Experiment Confidently.</strong></p>
+  <p>The first Kotlin-native feature flag platform: type-safe, coroutine-first flags and experimentation; optional Smart Rollout and anomaly detection (Enterprise).</p>
   
   <p>
     <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+">
       <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI">
-    </a>
-    <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml?query=branch%3Amain+">
-      <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml/badge.svg?branch=main" alt="CI (Swift)">
     </a>
     <a href="https://codecov.io/gh/MaxLuxs/Flagent">
       <img src="https://codecov.io/gh/MaxLuxs/Flagent/branch/main/graph/badge.svg" alt="Code Coverage">
@@ -48,6 +48,10 @@
 ---
 
 **Flagent** is a modern, production-ready feature flag and experimentation platform built with **Kotlin/Ktor**. The first Kotlin-native solution in the feature flags ecosystem, combining type-safety, coroutines, and clean architecture for high-performance feature management. Enterprise build adds multi-tenancy, SSO, RBAC, Smart Rollout and anomaly detection.
+
+**Problem → Solution:** Teams need to ship features safely, run A/B tests, and roll back instantly without redeploys. Flagent gives you feature flags, experiments, gradual rollouts, kill switches, and optional crash-by-flag analytics in one self-hosted or (planned) cloud platform — with Kotlin-native SDKs and a single UI.
+
+**Full landing (product overview, pricing, CTA):** When running Flagent with the marketing landing enabled (`ENV_SHOW_LANDING=true`), open the app root (e.g. `http://localhost:18000`). See also [Documentation](https://maxluxs.github.io/Flagent/guides/getting-started.md) and [Pricing & editions](docs/guides/pricing-and-editions.md).
 
 **Project status:** Flagent is in **active development**; we ship updates regularly. **Flagent Cloud (SaaS)** is planned but not yet launched. We welcome [sponsors](https://github.com/sponsors/MaxLuxs) and community support — see [Roadmap](docs/guides/roadmap.md).
 
@@ -119,6 +123,14 @@ open http://localhost:18000
 ```
 
 See [docker-compose.yml](docker-compose.yml) for PostgreSQL setup.
+
+### Screenshots
+
+| Dashboard | Flags list | Debug Console |
+|-----------|------------|---------------|
+| ![Dashboard](docs/assets/screenshots/screenshot-dashboard.png) | ![Flags list](docs/assets/screenshots/screenshot-flags-list.png) | ![Debug Console](docs/assets/screenshots/screenshot-debug-console.png) |
+| **Experiments (A/B)** | **Create Flag** | **Pricing** |
+| ![Experiments](docs/assets/screenshots/screenshot-experiments.png) | ![Create Flag](docs/assets/screenshots/screenshot-create-flag.png) | ![Pricing](docs/assets/screenshots/screenshot-pricing.png) |
 
 ### Environment Variables
 
@@ -231,7 +243,24 @@ Backend serves the UI from `frontend/build/dist/js/developmentExecutable` when p
 flagent/
 ├── backend/          # Ktor backend (Clean Architecture)
 ├── frontend/         # Compose for Web UI
-├── sdk/              # Client SDKs (Kotlin, JS, Swift, Python, Go)
+├── sdk/              # Client SDKs
+│   ├── kotlin/       # Kotlin (KMP) base client
+│   ├── kotlin-enhanced/   # Client-side eval, SSE
+│   ├── kotlin-debug-ui/  # Compose debug dashboard
+│   ├── flagent-koin/     # Koin DI module
+│   ├── java/         # Java client
+│   ├── spring-boot-starter/
+│   ├── javascript/   # JS/TS base
+│   ├── javascript-enhanced/
+│   ├── javascript-debug-ui/
+│   ├── swift/        # Swift base
+│   ├── swift-enhanced/
+│   ├── swift-debug-ui/
+│   ├── python/
+│   ├── go/
+│   ├── go-enhanced/
+│   ├── dart/         # Dart base
+│   └── flutter-enhanced/
 ├── ktor-flagent/     # Ktor plugin
 └── docs/guides/roadmap.md   # Development roadmap
 ```
@@ -273,19 +302,28 @@ export PORT=18000
 
 Official SDKs available for multiple platforms. The Kotlin SDK is **full Kotlin Multiplatform (KMP)**: `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, and `flagent-koin` support JVM, Android, iOS, JS, and Native (linuxX64, mingwX64, macosX64).
 
-| Language | Package | Status | Features |
-|----------|---------|--------|----------|
-| **Kotlin (KMP)** | [kotlin-client](sdk/kotlin) | ✅ Stable | Full API, JVM/Android/iOS/JS/Native |
-| **Kotlin Enhanced** | [kotlin-enhanced](sdk/kotlin-enhanced) | ✅ Stable | Client-side eval, real-time, KMP |
-| **Kotlin Debug UI** | [kotlin-debug-ui](sdk/kotlin-debug-ui) | ✅ Stable | Compose Multiplatform debug dashboard, JVM/Android/iOS |
-| **flagent-koin** | [flagent-koin](sdk/flagent-koin) | ✅ Stable | Koin DI module for Flagent, KMP |
-| **JavaScript/TypeScript** | [flagent-js](sdk/javascript) | ✅ Stable | Full API support, async/await |
-| **Swift** | [flagent-swift](sdk/swift) | ✅ Stable | Full API support, async/await |
-| **Python** | [flagent-python](sdk/python) | ✅ Stable | Full API support, asyncio |
-| **Java** | [flagent-java-client](sdk/java) | ✅ Stable | Full API support, Maven |
-| **Spring Boot** | [flagent-spring-boot-starter](sdk/spring-boot-starter) | ✅ Stable | Auto-configuration, Ktor/Java client |
-| **Go** | [flagent-go](sdk/go) | ✅ Stable | Full API support, goroutines |
-| **Go Enhanced** | [go-enhanced](sdk/go-enhanced) | ✅ Stable | Client-side eval, real-time updates |
+| Language | Package | CI | Status | Features |
+|----------|---------|:--:|--------|----------|
+| **Kotlin (KMP)** | [kotlin](sdk/kotlin) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API, JVM/Android/iOS/JS/Native |
+| **Kotlin Enhanced** | [kotlin-enhanced](sdk/kotlin-enhanced) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Client-side eval, real-time, KMP |
+| **Kotlin Debug UI** | [kotlin-debug-ui](sdk/kotlin-debug-ui) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Compose Multiplatform debug dashboard, JVM/Android/iOS |
+| **flagent-koin** | [flagent-koin](sdk/flagent-koin) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Koin DI module for Flagent, KMP |
+| **Kotlin OpenFeature-like** | [kotlin-openfeature](sdk/kotlin-openfeature) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ⚙️ Experimental | OpenFeature-style KMP client backed by Flagent evaluation API |
+| **Java** | [java](sdk/java) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API support, Maven |
+| **Spring Boot** | [spring-boot-starter](sdk/spring-boot-starter) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Auto-configuration, Ktor/Java client |
+| **JavaScript/TypeScript** | [javascript](sdk/javascript) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API support, async/await |
+| **JavaScript Enhanced** | [javascript-enhanced](sdk/javascript-enhanced) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Caching, convenient API |
+| **JavaScript Debug UI** | [javascript-debug-ui](sdk/javascript-debug-ui) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | React debug UI for Web |
+| **Swift** | [swift](sdk/swift) | [![CI Swift](https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml) | ✅ Stable | Full API support, async/await |
+| **Swift Enhanced** | [swift-enhanced](sdk/swift-enhanced) | [![CI Swift](https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml) | ✅ Stable | Caching, convenient API |
+| **Swift Debug UI** | [swift-debug-ui](sdk/swift-debug-ui) | [![CI Swift](https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci-swift.yml) | ✅ Stable | SwiftUI debug UI for iOS |
+| **Python** | [python](sdk/python) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API support, asyncio |
+| **Go** | [go](sdk/go) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API support, goroutines |
+| **Go Enhanced** | [go-enhanced](sdk/go-enhanced) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Client-side eval, real-time updates |
+| **Dart** | [dart](sdk/dart) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Full API support, Flutter/iOS/Android/Web |
+| **Flutter Enhanced** | [flutter-enhanced](sdk/flutter-enhanced) | [![CI](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml) | ✅ Stable | Caching, convenient API |
+
+**CI:** Kotlin/Java/JS/Go/Python/Dart SDKs are built (and tested where applicable) in [ci.yml](.github/workflows/ci.yml). Swift SDKs use [ci-swift.yml](.github/workflows/ci-swift.yml). **Coverage:** [Codecov](https://codecov.io/gh/MaxLuxs/Flagent) (backend); per-SDK coverage badges planned.
 
 ### Add as dependency (Kotlin/JVM)
 
@@ -367,6 +405,12 @@ cd Flagent
 ```
 
 See [Deployment Guide](https://maxluxs.github.io/Flagent/guides/deployment.md) for production setup.
+
+## 📌 Repository
+
+**GitHub topics** (set in repo settings): `feature-flags`, `kotlin`, `kotlin-multiplatform`, `ab-testing`, `experimentation`, `launchdarkly-alternative`, `crash-reporting`, `feature-toggle`.
+
+**Releases:** See [Releases](https://github.com/MaxLuxs/Flagent/releases) for versions and release notes. For the next release, see [Contributing](https://maxluxs.github.io/Flagent/guides/contributing.md) or internal release checklist.
 
 ## 🤝 Contributing
 

@@ -2,6 +2,7 @@ package flagent.frontend.components.analytics
 
 import androidx.compose.runtime.*
 import flagent.api.model.FlagResponse
+import flagent.api.model.TagResponse
 import flagent.frontend.api.AnalyticsOverviewResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.GlobalMetricsOverviewResponse
@@ -44,9 +45,15 @@ fun AnalyticsPage() {
     var analyticsOverviewPrevious by remember { mutableStateOf<AnalyticsOverviewResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
-    var activeTab by remember { mutableStateOf("overview") }
+    var activeTab by remember { mutableStateOf("events") }
     var timeRange by remember { mutableStateOf("24h") }
     var compareWithPrevious by remember { mutableStateOf(false) }
+    var flagsSearchQuery by remember { mutableStateOf("") }
+    var flagsStatusFilter by remember { mutableStateOf<Boolean?>(null) }
+    val flagsSelectedTags = remember { mutableStateListOf<String>() }
+    val flagsAvailableTagsState = remember { mutableStateOf<List<TagResponse>>(emptyList()) }
+    var flagsSortColumn by remember { mutableStateOf<String?>(null) }
+    var flagsSortAscending by remember { mutableStateOf(true) }
 
     var isLoadingEvents by remember { mutableStateOf(false) }
 
@@ -61,7 +68,12 @@ fun AnalyticsPage() {
 
     LaunchedEffect(Unit) {
         ErrorHandler.withErrorHandling(
-            block = { flags = ApiClient.getFlags().first },
+            block = {
+                flags = ApiClient.getFlags().first
+                try {
+                    flagsAvailableTagsState.value = ApiClient.getTags()
+                } catch (_: Throwable) { /* ignore */ }
+            },
             onError = { err -> error = ErrorHandler.getUserMessage(err) }
         )
     }
@@ -204,7 +216,7 @@ fun AnalyticsPage() {
                     Input(InputType.Checkbox) {
                         id("analytics-compare")
                         checked(compareWithPrevious)
-                        onInput { compareWithPrevious = (it.target as? org.w3c.dom.HTMLInputElement)?.checked ?: false }
+                        onInput { compareWithPrevious = it.target.checked }
                     }
                     Label(attrs = {
                         attr("for", "analytics-compare")
@@ -247,6 +259,43 @@ fun AnalyticsPage() {
                 Text(error!!)
             }
         } else if (hasOverview && activeTab == "overview") {
+            val ov = overview!!
+            val overviewEmpty = ov.totalEvaluations == 0L && ov.timeSeries.isEmpty()
+            if (overviewEmpty) {
+                Div({
+                    style {
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        borderRadius(8.px)
+                        padding(24.px)
+                        property("box-shadow", FlagentTheme.ShadowCard)
+                    }
+                }) {
+                    P({
+                        style {
+                            color(FlagentTheme.text(themeMode))
+                            fontSize(14.px)
+                            margin(0.px)
+                            marginBottom(12.px)
+                        }
+                    }) {
+                        Text(LocalizedStrings.analyticsOverviewEmptyHint)
+                    }
+                    Button({
+                        style {
+                            padding(8.px, 16.px)
+                            backgroundColor(FlagentTheme.Primary)
+                            color(Color.white)
+                            border(0.px)
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontSize(14.px)
+                        }
+                        onClick { activeTab = "events" }
+                    }) {
+                        Text(LocalizedStrings.switchToEventsTab)
+                    }
+                }
+            } else {
             Div({
                 style {
                     display(DisplayStyle.Flex)
@@ -379,6 +428,7 @@ fun AnalyticsPage() {
                         }
                     }
                 }
+            }
             }
         } else if (activeTab == "events") {
             if (isLoadingEvents) {
@@ -571,6 +621,183 @@ fun AnalyticsPage() {
                 overview?.topFlags?.associate { it.flagId to it.evaluationCount } ?: emptyMap()
             }
             val showEvaluations = AppConfig.Features.enableMetrics && overview != null
+            val filteredFlags = remember(flags, flagsSearchQuery, flagsStatusFilter, flagsSelectedTags) {
+                var list = flags
+                flagsStatusFilter?.let { status -> list = list.filter { it.enabled == status } }
+                val q = flagsSearchQuery.trim().lowercase()
+                if (q.isNotEmpty()) {
+                    list = list.filter { f ->
+                        f.key.lowercase().contains(q) || f.description.lowercase().contains(q)
+                    }
+                }
+                if (flagsSelectedTags.isNotEmpty()) {
+                    list = list.filter { f -> f.tags.any { it.value in flagsSelectedTags } }
+                }
+                list
+            }
+            val sortedFlags = remember(filteredFlags, flagsSortColumn, flagsSortAscending) {
+                var result = filteredFlags
+                flagsSortColumn?.let { col ->
+                    result = when (col) {
+                        "key" -> result.sortedBy { it.key }
+                        "description" -> result.sortedBy { it.description }
+                        "status" -> result.sortedBy { it.enabled }
+                        "segments" -> result.sortedBy { it.segments.size }
+                        "variants" -> result.sortedBy { it.variants.size }
+                        "evaluations" -> result.sortedBy { evalCountByFlagId[it.id] ?: 0L }
+                        "updatedAt" -> result.sortedBy { it.updatedAt ?: "" }
+                        else -> result
+                    }
+                    if (!flagsSortAscending) result = result.reversed()
+                }
+                result
+            }
+            fun sortByFlags(column: String) {
+                if (flagsSortColumn == column) flagsSortAscending = !flagsSortAscending
+                else { flagsSortColumn = column; flagsSortAscending = true }
+            }
+            val hasFlagsFilters = flagsSearchQuery.isNotBlank() || flagsStatusFilter != null || flagsSelectedTags.isNotEmpty()
+
+            if (sortedFlags.isEmpty() && hasFlagsFilters) {
+                Div({
+                    style {
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        borderRadius(8.px)
+                        padding(40.px)
+                        property("box-shadow", FlagentTheme.ShadowCard)
+                        textAlign("center")
+                    }
+                }) {
+                    Icon("search_off", size = 48.px, color = FlagentTheme.textLight(themeMode))
+                    P({
+                        style {
+                            marginTop(16.px)
+                            color(FlagentTheme.text(themeMode))
+                            fontSize(16.px)
+                        }
+                    }) {
+                        Text(LocalizedStrings.noFlags)
+                    }
+                    Button({
+                        style {
+                            marginTop(12.px)
+                            padding(8.px, 16.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
+                            border(0.px)
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontSize(14.px)
+                        }
+                        onClick {
+                            flagsSearchQuery = ""
+                            flagsStatusFilter = null
+                            flagsSelectedTags.clear()
+                        }
+                    }) {
+                        Text(LocalizedStrings.clearFilters)
+                    }
+                }
+            } else {
+            Div({
+                style {
+                    marginBottom(16.px)
+                    display(DisplayStyle.Flex)
+                    flexWrap(FlexWrap.Wrap)
+                    alignItems(AlignItems.Center)
+                    gap(12.px)
+                }
+            }) {
+                Div({
+                    style {
+                        display(DisplayStyle.Flex)
+                        alignItems(AlignItems.Center)
+                        gap(8.px)
+                        flex(1)
+                        property("min-width", "200px")
+                    }
+                }) {
+                    Span({
+                        classes("material-icons")
+                        style { fontSize(20.px); color(FlagentTheme.textLight(themeMode)) }
+                    }) { Text("search") }
+                    Input(InputType.Text) {
+                        value(flagsSearchQuery)
+                        onInput { event -> flagsSearchQuery = event.value }
+                        attr("placeholder", LocalizedStrings.searchExperimentsPlaceholder)
+                        style {
+                            flex(1)
+                            padding(8.px, 12.px)
+                            borderRadius(6.px)
+                            border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
+                            fontSize(14.px)
+                        }
+                    }
+                }
+                listOf(
+                    null to LocalizedStrings.filterAll,
+                    true to LocalizedStrings.enabled,
+                    false to LocalizedStrings.disabled
+                ).forEach { (status, label) ->
+                    Button({
+                        style {
+                            padding(6.px, 12.px)
+                            fontSize(13.px)
+                            borderRadius(6.px)
+                            border(1.px, LineStyle.Solid, if (flagsStatusFilter == status) FlagentTheme.Primary else FlagentTheme.cardBorder(themeMode))
+                            backgroundColor(if (flagsStatusFilter == status) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                            color(if (flagsStatusFilter == status) Color.white else FlagentTheme.text(themeMode))
+                            cursor("pointer")
+                        }
+                        onClick { flagsStatusFilter = status }
+                    }) {
+                        Text(label)
+                    }
+                }
+                flagsSelectedTags.forEach { tagValue: String ->
+                    Span({
+                        style {
+                            display(DisplayStyle.Flex)
+                            alignItems(AlignItems.Center)
+                            gap(4.px)
+                            padding(6.px, 10.px)
+                            backgroundColor(FlagentTheme.PrimaryLight)
+                            color(FlagentTheme.PrimaryDark)
+                            borderRadius(16.px)
+                            fontSize(12.px)
+                            cursor("pointer")
+                        }
+                        onClick { flagsSelectedTags.remove(tagValue) }
+                    }) {
+                        Text(tagValue)
+                        Icon("close", size = 14.px, color = FlagentTheme.PrimaryDark)
+                    }
+                }
+                flagsAvailableTagsState.value.filter { it.value !in flagsSelectedTags }.take(8).forEach { tag ->
+                    Span({
+                        style {
+                            display(DisplayStyle.InlineBlock)
+                            padding(6.px, 10.px)
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
+                            border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                            borderRadius(16.px)
+                            fontSize(12.px)
+                            cursor("pointer")
+                        }
+                        onClick { flagsSelectedTags.add(tag.value) }
+                    }) {
+                        Text("+ ${tag.value}")
+                    }
+                }
+                Span({
+                    style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px); marginLeft(8.px) }
+                }) {
+                    Text("${sortedFlags.size} ${LocalizedStrings.featureFlags.lowercase()}")
+                }
+            }
             Div({
                 style {
                     backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -594,16 +821,156 @@ fun AnalyticsPage() {
                                 property("border-bottom", "1px solid ${FlagentTheme.cardBorder(themeMode)}")
                             }
                         }) {
-                            listOf(
-                                "Key",
-                                LocalizedStrings.description,
-                                LocalizedStrings.status,
-                                LocalizedStrings.segments,
-                                LocalizedStrings.variants,
-                                if (showEvaluations) "Evaluations" else null,
-                                LocalizedStrings.updatedAtUtc,
-                                if (AppConfig.Features.enableMetrics) LocalizedStrings.action else null
-                            ).filterNotNull().forEach { h ->
+                            Th({
+                                style {
+                                    padding(10.px, 12.px)
+                                    textAlign("left")
+                                    fontSize(12.px)
+                                    fontWeight(600)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    property("text-transform", "uppercase")
+                                    cursor("pointer")
+                                }
+                                onClick { sortByFlags("key") }
+                            }) {
+                                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                    Text(LocalizedStrings.flagKey)
+                                    if (flagsSortColumn == "key") {
+                                        Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                            Text(if (flagsSortAscending) "↑" else "↓")
+                                        }
+                                    }
+                                }
+                            }
+                            Th({
+                                style {
+                                    padding(10.px, 12.px)
+                                    textAlign("left")
+                                    fontSize(12.px)
+                                    fontWeight(600)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    property("text-transform", "uppercase")
+                                    cursor("pointer")
+                                }
+                                onClick { sortByFlags("description") }
+                            }) {
+                                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                    Text(LocalizedStrings.description)
+                                    if (flagsSortColumn == "description") {
+                                        Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                            Text(if (flagsSortAscending) "↑" else "↓")
+                                        }
+                                    }
+                                }
+                            }
+                            Th({
+                                style {
+                                    padding(10.px, 12.px)
+                                    textAlign("left")
+                                    fontSize(12.px)
+                                    fontWeight(600)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    property("text-transform", "uppercase")
+                                    cursor("pointer")
+                                }
+                                onClick { sortByFlags("status") }
+                            }) {
+                                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                    Text(LocalizedStrings.status)
+                                    if (flagsSortColumn == "status") {
+                                        Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                            Text(if (flagsSortAscending) "↑" else "↓")
+                                        }
+                                    }
+                                }
+                            }
+                            Th({
+                                style {
+                                    padding(10.px, 12.px)
+                                    textAlign("left")
+                                    fontSize(12.px)
+                                    fontWeight(600)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    property("text-transform", "uppercase")
+                                    cursor("pointer")
+                                }
+                                onClick { sortByFlags("segments") }
+                            }) {
+                                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                    Text(LocalizedStrings.segments)
+                                    if (flagsSortColumn == "segments") {
+                                        Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                            Text(if (flagsSortAscending) "↑" else "↓")
+                                        }
+                                    }
+                                }
+                            }
+                            Th({
+                                style {
+                                    padding(10.px, 12.px)
+                                    textAlign("left")
+                                    fontSize(12.px)
+                                    fontWeight(600)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    property("text-transform", "uppercase")
+                                    cursor("pointer")
+                                }
+                                onClick { sortByFlags("variants") }
+                            }) {
+                                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                    Text(LocalizedStrings.variants)
+                                    if (flagsSortColumn == "variants") {
+                                        Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                            Text(if (flagsSortAscending) "↑" else "↓")
+                                        }
+                                    }
+                                }
+                            }
+                            if (showEvaluations) {
+                                Th({
+                                    style {
+                                        padding(10.px, 12.px)
+                                        textAlign("left")
+                                        fontSize(12.px)
+                                        fontWeight(600)
+                                        color(FlagentTheme.textLight(themeMode))
+                                        property("text-transform", "uppercase")
+                                        cursor("pointer")
+                                    }
+                                    onClick { sortByFlags("evaluations") }
+                                }) {
+                                    Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                        Text("Evaluations")
+                                        if (flagsSortColumn == "evaluations") {
+                                            Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                                Text(if (flagsSortAscending) "↑" else "↓")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Th({
+                                style {
+                                    padding(10.px, 12.px)
+                                    textAlign("left")
+                                    fontSize(12.px)
+                                    fontWeight(600)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    property("text-transform", "uppercase")
+                                    cursor("pointer")
+                                }
+                                onClick { sortByFlags("updatedAt") }
+                            }) {
+                                Span({ style { display(DisplayStyle.Flex); alignItems(AlignItems.Center); gap(4.px) } }) {
+                                    Text(LocalizedStrings.updatedAtUtc)
+                                    if (flagsSortColumn == "updatedAt") {
+                                        Span({ style { fontSize(12.px); color(FlagentTheme.Primary) } }) {
+                                            Text(if (flagsSortAscending) "↑" else "↓")
+                                        }
+                                    }
+                                }
+                            }
+                            if (AppConfig.Features.enableMetrics) {
                                 Th({
                                     style {
                                         padding(10.px, 12.px)
@@ -613,12 +980,12 @@ fun AnalyticsPage() {
                                         color(FlagentTheme.textLight(themeMode))
                                         property("text-transform", "uppercase")
                                     }
-                                }) { Text(h) }
+                                }) { Text(LocalizedStrings.action) }
                             }
                         }
                     }
                     Tbody {
-                        flags.forEach { flag ->
+                        sortedFlags.forEach { flag ->
                             val evalCount = evalCountByFlagId[flag.id]
                             val onRowClick: () -> Unit = {
                                 if (AppConfig.Features.enableMetrics) {
@@ -735,6 +1102,7 @@ fun AnalyticsPage() {
                 }
             }
         }
+    }
     }
 }
 

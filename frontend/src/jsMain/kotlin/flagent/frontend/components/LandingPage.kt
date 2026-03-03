@@ -20,109 +20,120 @@ fun LandingPage() {
             position(Position.Relative)
             minHeight(100.vh)
             overflow("hidden")
-            property(
-                "background",
-                FlagentTheme.GradientHero
-            )
-            property("background-size", "400% 400%")
-            property("animation", "morphGradient 20s ease infinite")
             property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
         }
     }) {
-        // Dot grid pattern
+        // Fixed background layer — no repaint on scroll
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("inset", "0")
+                property("z-index", "0")
+                property("pointer-events", "none")
+                property(
+                    "background",
+                    FlagentTheme.GradientHero
+                )
+                property("background-size", "400% 400%")
+                property("animation", "morphGradient 20s ease infinite")
+            }
+        }) {}
+        Div({
+            style {
+                position(Position.Fixed)
+                property("inset", "0")
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property(
                     "background-image",
                     "radial-gradient(rgba(14, 165, 233, 0.12) 1px, transparent 1px)"
                 )
                 property("background-size", "28px 28px")
-                property("pointer-events", "none")
             }
         }) {}
-
-        // Floating blobs
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("top", "-8%")
                 property("right", "-3%")
                 width(450.px)
                 height(450.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 65%)")
                 property("animation", "float 14s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("bottom", "-12%")
                 property("left", "-6%")
                 width(500.px)
                 height(500.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, transparent 65%)")
                 property("animation", "floatSlow 20s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("top", "35%")
                 property("right", "12%")
                 width(140.px)
                 height(140.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%)")
                 property("animation", "floatReverse 11s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("top", "15%")
                 property("left", "8%")
                 width(100.px)
                 height(100.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(20, 184, 166, 0.12) 0%, transparent 70%)")
                 property("animation", "float 9s ease-in-out infinite reverse")
-                property("pointer-events", "none")
             }
         }) {}
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("bottom", "25%")
                 property("right", "5%")
                 width(200.px)
                 height(200.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%)")
                 property("animation", "floatSlow 16s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
-
-        // Glow orb
         Div({
             style {
-                position(Position.Absolute)
+                position(Position.Fixed)
                 property("top", "-15%")
                 property("left", "50%")
                 property("transform", "translateX(-50%)")
                 width(600.px)
                 height(400.px)
                 borderRadius(50.percent)
+                property("z-index", "0")
+                property("pointer-events", "none")
                 property("background", "radial-gradient(ellipse, rgba(14, 165, 233, 0.15) 0%, transparent 70%)")
                 property("animation", "glowPulse 10s ease-in-out infinite")
-                property("pointer-events", "none")
             }
         }) {}
 
@@ -184,7 +195,7 @@ fun LandingPage() {
                         property("margin", "0 auto 40px")
                     }
                 }) {
-                    Text("Feature flags, A/B testing, and dynamic configuration. Manage flags, run experiments, and roll out changes safely.")
+                    Text("Feature flags, A/B testing, and dynamic configuration. Roll back in one click — without redeploying.")
                 }
 
                 // CTA buttons - Sign in is primary when auth required

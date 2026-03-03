@@ -67,6 +67,7 @@ dependencies {
     implementation(project(":kotlin-enhanced"))
     implementation(project(":kotlin-debug-ui"))
     implementation(project(":flagent-koin"))
+    implementation(project(":kotlin-openfeature"))
 
     implementation(libs.koin.android)
 

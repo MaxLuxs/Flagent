@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import flagent.frontend.components.auth.LoginForm
 import flagent.frontend.components.common.NotificationToast
 import flagent.frontend.components.landing.BlogPage
+import flagent.frontend.components.landing.LandingBackgroundShapes
 import flagent.frontend.components.landing.MarketingLanding
 import flagent.frontend.components.landing.PricingPage
 import flagent.frontend.config.AppConfig
@@ -13,6 +14,7 @@ import flagent.frontend.state.BackendOnboardingState
 import flagent.frontend.state.GlobalState
 import flagent.frontend.state.LocalGlobalState
 import flagent.frontend.state.LocalThemeMode
+import flagent.frontend.state.ThemeMode
 import flagent.frontend.state.ThemeState
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.AppLogger
@@ -109,8 +111,8 @@ fun App() {
             is Route.Settings -> Route.Settings.PATH
             is Route.Tenants -> Route.Tenants.PATH
             is Route.Projects -> Route.Projects.PATH
-            is Route.ProjectDetail -> (route as Route.ProjectDetail).path()
-            is Route.ApplicationDetail -> (route as Route.ApplicationDetail).path()
+            is Route.ProjectDetail -> route.path()
+            is Route.ApplicationDetail -> route.path()
             is Route.Login -> Route.Home.PATH
         }
         sessionStorage.setItem(AUTH_RETURN_URL_KEY, returnPath)
@@ -169,9 +171,20 @@ private fun AppShell(
         style {
             property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif")
             minHeight(100.vh)
-            backgroundColor(FlagentTheme.contentBg(themeMode))
+            if (AppConfig.showMarketingLanding) {
+                property("background", FlagentTheme.heroGradient(themeMode))
+                if (themeMode == ThemeMode.Dark) {
+                    property("background-size", "400% 400%")
+                    property("animation", "morphGradient 20s ease infinite")
+                }
+            } else {
+                backgroundColor(FlagentTheme.contentBg(themeMode))
+            }
         }
     }) {
+        if (AppConfig.showMarketingLanding) {
+            LandingBackgroundShapes(themeMode)
+        }
         NotificationToast(
             notifications = globalState.notifications,
             onDismiss = { id -> globalState.removeNotification(id) }
@@ -185,7 +198,7 @@ private fun AppShell(
             when (val r = Router.currentRoute) {
                 is Route.Home -> LandingPage()
                 is Route.FlagsList -> FlagsList()
-                is Route.Dashboard -> Dashboard()
+                is Route.Dashboard -> Dashboard(tenantViewModel = vm)
                 is Route.Experiments -> flagent.frontend.components.experiments.ExperimentsPage()
                 is Route.Segments -> flagent.frontend.components.segments.SegmentsPage()
                 is Route.Analytics -> flagent.frontend.components.analytics.AnalyticsPage()

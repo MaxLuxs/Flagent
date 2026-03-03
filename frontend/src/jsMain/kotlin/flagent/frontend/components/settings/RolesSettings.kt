@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.RoleResponse
 import flagent.frontend.api.TenantUserResponse
+import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.ErrorHandler
@@ -50,19 +51,29 @@ fun RolesSettings(themeMode: flagent.frontend.state.ThemeMode) {
             style {
                 fontSize(20.px)
                 fontWeight("600")
-                marginBottom(20.px)
+                marginBottom(12.px)
                 color(FlagentTheme.text(themeMode))
             }
         }) {
-            Text("Roles & Permissions")
+            Text(LocalizedStrings.rolesAndPermissions)
+        }
+        P({
+            style {
+                color(FlagentTheme.textLight(themeMode))
+                marginBottom(8.px)
+                fontSize(14.px)
+            }
+        }) {
+            Text(LocalizedStrings.manageRolesDescription)
         }
         P({
             style {
                 color(FlagentTheme.textLight(themeMode))
                 marginBottom(20.px)
+                fontSize(13.px)
             }
         }) {
-            Text("Manage roles and assign permissions to users.")
+            Text(LocalizedStrings.rolesTenantUsersHint)
         }
         if (error.value != null) {
             Div({

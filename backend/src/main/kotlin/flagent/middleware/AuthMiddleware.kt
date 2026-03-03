@@ -24,26 +24,24 @@ interface AuthMiddleware {
 
 /**
  * JWT Authentication middleware.
- * Only runs when FLAGENT_JWT_AUTH_ENABLED=true. When disabled: no "jwt" provider is installed,
- * and admin routes (which use authenticate("jwt")) are not registered — see Application.kt.
- * This keeps /admin inaccessible unless JWT is explicitly configured with a secret.
+ * Provider is added via addJwtProvider() from the single install(Authentication) in Application.kt.
  */
 fun Application.configureJWTAuth() {
-    if (!AppConfig.jwtAuthEnabled) return
+    // No-op: auth providers are registered in Application.kt single install(Authentication) block
+}
 
+/** Adds JWT provider to the given Authentication config. Used from single install(Authentication) in Application.kt. */
+fun io.ktor.server.auth.AuthenticationConfig.addJwtProvider() {
+    if (!AppConfig.jwtAuthEnabled) return
     val secret = AppConfig.jwtAuthSecret
     if (secret.isEmpty()) {
         throw IllegalStateException("JWT_AUTH_SECRET is required when JWT_AUTH_ENABLED=true")
     }
-
     val algorithm = when (AppConfig.jwtAuthSigningMethod) {
         "HS256" -> Algorithm.HMAC256(secret)
         "HS512" -> Algorithm.HMAC512(secret)
         "RS256" -> {
-            // For RS256, secret contains RSA public key in PEM format
-            // For verification, we only need the public key
             try {
-                // Remove PEM headers and footers, and all whitespace
                 val publicKeyPEM = secret
                     .replace("-----BEGIN PUBLIC KEY-----", "")
                     .replace("-----END PUBLIC KEY-----", "")
@@ -53,16 +51,10 @@ fun Application.configureJWTAuth() {
                     .replace("\n", "")
                     .replace("\r", "")
                     .replace(" ", "")
-                
-                // Base64 decode the key
                 val decoded = Base64.getDecoder().decode(publicKeyPEM)
-                
-                // Generate the PublicKey object using X509EncodedKeySpec
                 val keySpec = X509EncodedKeySpec(decoded)
                 val keyFactory = KeyFactory.getInstance("RSA")
                 val publicKey = keyFactory.generatePublic(keySpec) as RSAPublicKey
-                
-                // For verification, we pass public key and null for private key
                 Algorithm.RSA256(publicKey, null)
             } catch (e: Exception) {
                 throw IllegalArgumentException("Failed to parse RSA public key for RS256: ${e.message}", e)
@@ -70,105 +62,82 @@ fun Application.configureJWTAuth() {
         }
         else -> throw IllegalArgumentException("Unsupported JWT signing method: ${AppConfig.jwtAuthSigningMethod}")
     }
-    
-    install(Authentication) {
-        jwt("jwt") {
-            realm = AppConfig.jwtAuthNoTokenRedirectURL
-            verifier(
-                JWT.require(algorithm)
-                    .build()
+    jwt("jwt") {
+        realm = AppConfig.jwtAuthNoTokenRedirectURL
+        verifier(JWT.require(algorithm).build())
+        skipWhen { call ->
+            val path = call.request.path()
+            isWhitelisted(
+                path = path,
+                prefixWhitelist = AppConfig.jwtAuthPrefixWhitelistPaths,
+                exactWhitelist = AppConfig.jwtAuthExactWhitelistPaths,
+                noTokenStatusCode = AppConfig.jwtAuthNoTokenStatusCode
             )
-            skipWhen { call ->
-                // Skip authentication if path is whitelisted
-                val path = call.request.path()
-                isWhitelisted(
-                    path = path,
-                    prefixWhitelist = AppConfig.jwtAuthPrefixWhitelistPaths,
-                    exactWhitelist = AppConfig.jwtAuthExactWhitelistPaths,
-                    noTokenStatusCode = AppConfig.jwtAuthNoTokenStatusCode
-                )
+        }
+        validate { credential ->
+            try {
+                val userClaim = credential.payload.getClaim(AppConfig.jwtAuthUserClaim)?.asString()
+                if (userClaim != null) JWTPrincipal(credential.payload) else null
+            } catch (e: JWTVerificationException) {
+                null
             }
-            validate { credential ->
-                try {
-                    val userClaim = credential.payload.getClaim(AppConfig.jwtAuthUserClaim)?.asString()
-                    if (userClaim != null) {
-                        JWTPrincipal(credential.payload)
-                    } else {
-                        null
-                    }
-                } catch (e: JWTVerificationException) {
-                    null
-                }
-            }
-            challenge { defaultScheme, realm ->
-                when (AppConfig.jwtAuthNoTokenStatusCode) {
-                    307 -> {
-                        call.respondRedirect(AppConfig.jwtAuthNoTokenRedirectURL)
-                    }
-                    else -> {
-                        call.respond(
-                            HttpStatusCode.Unauthorized,
-                            mapOf("error" to "Not authorized")
-                        )
-                    }
-                }
+        }
+        challenge { _, _ ->
+            when (AppConfig.jwtAuthNoTokenStatusCode) {
+                307 -> call.respondRedirect(AppConfig.jwtAuthNoTokenRedirectURL)
+                else -> call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Not authorized"))
             }
         }
     }
 }
 
 /**
- * Basic Authentication middleware
+ * Basic Authentication middleware. Provider added via addBasicProvider() from Application.kt.
  */
 fun Application.configureBasicAuth() {
+    // No-op: see install(Authentication) in Application.kt
+}
+
+/** Adds Basic auth provider to the given Authentication config. */
+fun io.ktor.server.auth.AuthenticationConfig.addBasicProvider() {
     if (!AppConfig.basicAuthEnabled) return
-    
     val username = AppConfig.basicAuthUsername
     val password = AppConfig.basicAuthPassword
-    
     if (username.isEmpty() || password.isEmpty()) {
         throw IllegalStateException("BASIC_AUTH_USERNAME and BASIC_AUTH_PASSWORD are required when BASIC_AUTH_ENABLED=true")
     }
-    
-    install(Authentication) {
-        basic("basic") {
-            realm = "Flagent"
-            skipWhen { call ->
-                // Skip authentication if path is whitelisted
-                val path = call.request.path()
-                isWhitelisted(
-                    path = path,
-                    prefixWhitelist = AppConfig.basicAuthPrefixWhitelistPaths,
-                    exactWhitelist = AppConfig.basicAuthExactWhitelistPaths,
-                    noTokenStatusCode = 401 // Basic auth always uses 401
-                )
-            }
-            validate { credentials ->
-                if (credentials.name == username && credentials.password == password) {
-                    UserIdPrincipal(credentials.name)
-                } else {
-                    null
-                }
-            }
+    basic("basic") {
+        realm = "Flagent"
+        skipWhen { call ->
+            val path = call.request.path()
+            isWhitelisted(
+                path = path,
+                prefixWhitelist = AppConfig.basicAuthPrefixWhitelistPaths,
+                exactWhitelist = AppConfig.basicAuthExactWhitelistPaths,
+                noTokenStatusCode = 401
+            )
+        }
+        validate { credentials ->
+            if (credentials.name == username && credentials.password == password) {
+                UserIdPrincipal(credentials.name)
+            } else null
         }
     }
 }
 
 /**
- * Header Authentication middleware
+ * Header Authentication middleware. Provider added via addHeaderProvider() from Application.kt.
  */
 fun Application.configureHeaderAuth() {
+    // No-op: see install(Authentication) in Application.kt
+}
+
+/** Adds Header (bearer) auth provider to the given Authentication config. */
+fun io.ktor.server.auth.AuthenticationConfig.addHeaderProvider() {
     if (!AppConfig.headerAuthEnabled) return
-    
-    install(Authentication) {
-        bearer("header") {
-            realm = "Flagent"
-            authenticate { credential ->
-                // Extract user from header field
-                // In real implementation, you might want to validate the token
-                UserIdPrincipal(credential.token)
-            }
-        }
+    bearer("header") {
+        realm = "Flagent"
+        authenticate { credential -> UserIdPrincipal(credential.token) }
     }
 }
 

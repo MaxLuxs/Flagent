@@ -1,6 +1,7 @@
 package com.flagent.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import java.io.File
@@ -30,9 +31,36 @@ abstract class FlagentExtension constructor(@org.gradle.api.tasks.Internal val p
      */
     abstract val failOnUnknown: Property<Boolean>
 
+    // --- generateFlagKeys ---
+
+    /**
+     * Output directory for generated FlagKeys.kt. Default: build/generated/sources/flagent/flagKeys
+     */
+    abstract val flagKeysOutputDir: DirectoryProperty
+
+    /**
+     * Format of generated file: "object" (const vals) or "enum". Default: "object"
+     */
+    abstract val flagKeysFormat: Property<String>
+
+    /**
+     * Package name for the generated class. Default: "flagent.generated" or project group + ".generated"
+     */
+    abstract val flagKeysPackage: Property<String>
+
+    /**
+     * When true, build fails if code uses raw string in isEnabled("...")/evaluate("...");
+     * only keys from generated FlagKeys or @FlagKey are allowed.
+     */
+    abstract val allowOnlyGeneratedOrAnnotated: Property<Boolean>
+
     init {
         baseUrl.convention("http://localhost:18000")
         apiKey.convention("")
         failOnUnknown.convention(true)
+        flagKeysOutputDir.convention(project.layout.buildDirectory.dir("generated/sources/flagent/flagKeys"))
+        flagKeysFormat.convention("object")
+        flagKeysPackage.convention("flagent.generated")
+        allowOnlyGeneratedOrAnnotated.convention(false)
     }
 }

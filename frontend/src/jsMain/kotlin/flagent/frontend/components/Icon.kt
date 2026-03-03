@@ -2,9 +2,11 @@ package flagent.frontend.components
 
 import androidx.compose.runtime.Composable
 import flagent.frontend.theme.FlagentTheme
+import org.jetbrains.compose.web.attributes.AttrsScopeBuilder
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
+import org.w3c.dom.HTMLElement
 
 /**
  * Material Icon component with smooth animations
@@ -19,7 +21,7 @@ fun Icon(
     size: CSSSizeValue<CSSUnit.px> = 24.px,
     color: CSSColorValue? = null,
     animated: Boolean = false,
-    attrs: (org.jetbrains.compose.web.attributes.AttrsBuilder<org.w3c.dom.HTMLElement>) -> Unit = {}
+    attrs: (AttrsScopeBuilder<HTMLElement>) -> Unit = {}
 ) {
     Span({
         classes("material-icons")
@@ -33,15 +35,15 @@ fun Icon(
         }
         if (animated) {
             onMouseEnter {
-                val element = it.target as org.w3c.dom.HTMLElement
+                val element = it.target as HTMLElement
                 element.style.transform = "scale(1.15) rotate(5deg)"
             }
             onMouseLeave {
-                val element = it.target as org.w3c.dom.HTMLElement
+                val element = it.target as HTMLElement
                 element.style.transform = "scale(1) rotate(0deg)"
             }
         }
-        attrs.invoke(this.unsafeCast<org.jetbrains.compose.web.attributes.AttrsBuilder<org.w3c.dom.HTMLElement>>())
+        attrs.invoke(this.unsafeCast<AttrsScopeBuilder<HTMLElement>>())
     }) {
         Text(name)
     }

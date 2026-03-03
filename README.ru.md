@@ -2,6 +2,8 @@
 
 # Flagent
 
+**Ship Features Safely. Experiment Confidently.** — первый Kotlin-native сервис feature flags: type-safe, coroutine-first флаги и эксперименты; опционально Smart Rollout и обнаружение аномалий (Enterprise).
+
 <p align="center">
     <a href="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml?query=branch%3Amain+" target="_blank">
         <img src="https://github.com/MaxLuxs/Flagent/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI">
@@ -21,6 +23,10 @@
 </p>
 
 **Flagent** — современная production-ready платформа для feature flags и экспериментов на **Kotlin/Ktor**. Первое Kotlin-native решение в экосистеме feature flags: type-safety, coroutines, чистая архитектура. Сборка Enterprise добавляет мультитенантность, SSO, RBAC, Smart Rollout и обнаружение аномалий.
+
+**Проблема → Решение:** Командам нужно безопасно выкатывать фичи, проводить A/B тесты и откатываться без редеплоя. Flagent даёт feature flags, эксперименты, постепенные раскаты, kill switches и опциональную аналитику крашей по флагам в одной self-hosted или (в планах) облачной платформе — с Kotlin-native SDK и единым UI.
+
+**Полный лендинг (обзор продукта, тарифы, CTA):** При запуске Flagent с включённым маркетинговым лендингом (`ENV_SHOW_LANDING=true`) откройте корень приложения (например `http://localhost:18000`). См. также [Документация](https://maxluxs.github.io/Flagent/guides/getting-started.ru.md) и [Тарифы и издания](docs/guides/pricing-and-editions.md).
 
 ## 🎯 Почему Flagent?
 
@@ -56,6 +62,14 @@ open http://localhost:18000
 ```
 
 Настройте admin auth через `FLAGENT_ADMIN_EMAIL`, `FLAGENT_ADMIN_PASSWORD`, `FLAGENT_JWT_AUTH_SECRET`. См. [docs/guides/configuration.md](docs/guides/configuration.md).
+
+### Скриншоты
+
+| Дашборд | Список флагов | Debug Console |
+|---------|----------------|---------------|
+| ![Дашборд](docs/assets/screenshots/screenshot-dashboard.png) | ![Список флагов](docs/assets/screenshots/screenshot-flags-list.png) | ![Debug Console](docs/assets/screenshots/screenshot-debug-console.png) |
+| **Эксперименты (A/B)** | **Создание флага** | **Тарифы** |
+| ![Эксперименты](docs/assets/screenshots/screenshot-experiments.png) | ![Создание флага](docs/assets/screenshots/screenshot-create-flag.png) | ![Тарифы](docs/assets/screenshots/screenshot-pricing.png) |
 
 ## ✨ Ключевые возможности
 
@@ -97,7 +111,24 @@ open http://localhost:18000
 flagent/
 ├── backend/          # Ktor backend (Clean Architecture)
 ├── frontend/         # Compose for Web UI
-├── sdk/              # Client SDKs (Kotlin, JS, Swift, Python, Go)
+├── sdk/              # Клиентские SDK
+│   ├── kotlin/       # Kotlin (KMP) базовый клиент
+│   ├── kotlin-enhanced/   # Client-side eval, SSE
+│   ├── kotlin-debug-ui/  # Compose debug-панель
+│   ├── flagent-koin/     # Koin DI модуль
+│   ├── java/         # Java клиент
+│   ├── spring-boot-starter/
+│   ├── javascript/   # JS/TS базовый
+│   ├── javascript-enhanced/
+│   ├── javascript-debug-ui/
+│   ├── swift/        # Swift базовый
+│   ├── swift-enhanced/
+│   ├── swift-debug-ui/
+│   ├── python/
+│   ├── go/
+│   ├── go-enhanced/
+│   ├── dart/         # Dart базовый
+│   └── flutter-enhanced/
 ├── ktor-flagent/     # Ktor plugin
 └── docs/guides/roadmap.md   # Roadmap разработки
 ```
@@ -186,14 +217,24 @@ dependencies {
 Публикуемые артефакты: `shared`, `ktor-flagent`, `kotlin-client`, `kotlin-enhanced`, `kotlin-debug-ui`, `flagent-koin`, `flagent-java-client` (Maven), `flagent-spring-boot-starter`. Версию см. в [релизах](https://github.com/MaxLuxs/Flagent/releases). Чтение: [GitHub PAT](https://github.com/settings/tokens) с `read:packages` или `GITHUB_TOKEN` в CI.
 
 ### SDK (все стабильны)
-- **Backend:** [Kotlin](sdk/kotlin), [Kotlin Enhanced](sdk/kotlin-enhanced), [Java](sdk/java), [Spring Boot Starter](sdk/spring-boot-starter), [JavaScript/TS](sdk/javascript), [Ktor Plugin](ktor-flagent)
-- **Mobile:** [Swift](sdk/swift) + Swift Enhanced
-- **Другое:** [Python](sdk/python), [Go](sdk/go) + [Go Enhanced](sdk/go-enhanced)
+- **Kotlin:** [kotlin](sdk/kotlin), [kotlin-enhanced](sdk/kotlin-enhanced), [flagent-koin](sdk/flagent-koin)
+- **JVM:** [java](sdk/java), [spring-boot-starter](sdk/spring-boot-starter)
+- **JS/TS:** [javascript](sdk/javascript), [javascript-enhanced](sdk/javascript-enhanced)
+- **Swift:** [swift](sdk/swift), [swift-enhanced](sdk/swift-enhanced)
+- **Python:** [python](sdk/python) · **Go:** [go](sdk/go), [go-enhanced](sdk/go-enhanced)
+- **Dart/Flutter:** [dart](sdk/dart), [flutter-enhanced](sdk/flutter-enhanced)
+- **Сервер:** [Ktor Plugin](ktor-flagent)
 
 ### Debug UI
 - [Kotlin Debug UI](sdk/kotlin-debug-ui) · [Swift Debug UI](sdk/swift-debug-ui) · [JavaScript Debug UI](sdk/javascript-debug-ui)
 
 Примеры кода: [samples](samples/README.md) (Kotlin, Ktor, Spring Boot, Android, JS, Swift, Flutter и др.).
+
+## 📌 Репозиторий
+
+**GitHub topics** (настраиваются в настройках репозитория): `feature-flags`, `kotlin`, `kotlin-multiplatform`, `ab-testing`, `experimentation`, `launchdarkly-alternative`, `crash-reporting`, `feature-toggle`.
+
+**Релизы:** см. [Releases](https://github.com/MaxLuxs/Flagent/releases). Чеклист к релизу — [Contributing](https://maxluxs.github.io/Flagent/guides/contributing.md) или внутренняя документация.
 
 ## 🤝 Участие в разработке
 

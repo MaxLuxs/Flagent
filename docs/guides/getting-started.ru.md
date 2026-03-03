@@ -77,7 +77,13 @@ http://localhost:18000
 - Email: `admin@local`
 - Пароль: `admin`
 
+После входа вы увидите дашборд и список флагов.
+
+![Список флагов](../assets/screenshots/screenshot-flags-list.png)
+
 ### 3. Создать первый флаг
+
+![Создание флага](../assets/screenshots/screenshot-create-flag.png)
 
 1. Нажмите кнопку **"Создать флаг"**
 2. Введите данные флага:
@@ -93,70 +99,185 @@ http://localhost:18000
    - **Процент**: 100%
 6. Нажать **"Сохранить"**
 
-### 4. Оценить из вашего приложения
+### 4. Быстрый старт по платформам
 
-Выберите ваш язык:
+Оцените флаг из приложения. Выберите платформу (якоря): [Kotlin](#kotlin) · [Ktor](#ktor) · [Spring Boot](#spring-boot) · [JavaScript](#javascript) · [Python](#python) · [Swift](#swift) · [Go](#go) · [Dart / Flutter](#dart--flutter).
 
-**Kotlin:**
+---
+
+#### Kotlin
+
+**Установка:**
+```kotlin
+dependencies {
+    implementation("com.flagent:kotlin-client:0.1.6")  // версия из VERSION или Releases
+}
+```
+
+**Минимальный код (инициализация + оценка):**
 ```kotlin
 val client = FlagentClient.create(baseUrl = "http://localhost:18000/api/v1")
+val result = client.evaluate(flagKey = "my_first_flag", entityID = "user123")
+if (result.variantKey == "enabled") { /* функция включена */ }
+```
 
-val result = client.evaluate(
-    flagKey = "my_first_flag",
-    entityID = "user123"
-)
+**Проверь в Debug Console:** откройте [Debug Console](frontend-ui.md#evaluation--debug-console) в UI (сайдбар → Debug Console), введите ключ флага `my_first_flag` и entity ID `user123`, нажмите Evaluate.
 
-if (result.variantKey == "enabled") {
-    // Функция включена
+---
+
+#### Ktor
+
+**Установка:**
+```kotlin
+implementation("com.flagent:ktor-flagent:0.1.6")
+```
+
+**Минимальный код:**
+```kotlin
+// Application.kt
+installFlagent {
+    flagentBaseUrl = "http://localhost:18000"
+    enableEvaluation = true
 }
+// В роуте:
+val client = call.application.getFlagentClient()
+val result = client?.evaluate(EvaluationRequest(flagKey = "my_first_flag", entityID = "user123"))
 ```
 
-**Python:**
-```python
-from flagent import FlagentClient
+**Проверь в Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): ключ `my_first_flag`, entity ID `user123` → Evaluate.
 
-client = FlagentClient(base_url="http://localhost:18000/api/v1")
-result = await client.evaluate(flag_key="my_first_flag", entity_id="user123")
+---
 
-if result.is_enabled():
-    # Функция включена
+#### Spring Boot
+
+**Установка:**
+```kotlin
+implementation("com.flagent:flagent-spring-boot-starter:0.1.6")
 ```
 
-**JavaScript:**
+**Минимальный код (например в контроллере):**
+```java
+@Autowired EvaluationApi flagentFacade;
+// ...
+EvalResult r = flagentFacade.evaluate(new EvalContext().flagKey("my_first_flag").entityID("user123"));
+```
+
+**Проверь в Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) — введите `my_first_flag` и `user123`, затем Evaluate.
+
+---
+
+#### JavaScript
+
+**Установка:**
+```bash
+npm install @flagent/client
+```
+
+**Минимальный код:**
 ```javascript
 import { FlagentClient } from '@flagent/client';
-
-const client = new FlagentClient({
-  baseUrl: 'http://localhost:18000/api/v1'
-});
-
-const result = await client.evaluate({
-  flagKey: 'my_first_flag',
-  entityID: 'user123'
-});
-
-if (result.variantKey === 'enabled') {
-  // Функция включена
-}
+const client = new FlagentClient({ baseUrl: 'http://localhost:18000/api/v1' });
+const result = await client.evaluate({ flagKey: 'my_first_flag', entityID: 'user123' });
+if (result.variantKey === 'enabled') { /* функция включена */ }
 ```
 
-**Swift:**
+**Проверь в Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): ключ `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Python
+
+**Установка:**
+```bash
+pip install flagent-python-client
+```
+
+**Минимальный код (async):**
+```python
+import asyncio
+from flagent import create_client
+
+async def main():
+    client = create_client("http://localhost:18000/api/v1")
+    result = await client.evaluate(flag_key="my_first_flag", entity_id="user123")
+    if result.is_enabled():  # или result.variant_key == "enabled"
+        pass  # функция включена
+    await client.close()
+asyncio.run(main())
+```
+
+**Проверь в Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): ключ `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Swift
+
+**Установка (Swift Package Manager):**
+```swift
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.6")
+```
+
+**Минимальный код:**
 ```swift
 let client = FlagentClient(baseURL: "http://localhost:18000/api/v1")
-
-let result = try await client.evaluate(
-    flagKey: "my_first_flag",
-    entityID: "user123"
-)
-
-if result.variantKey == "enabled" {
-    // Функция включена
-}
+let result = try await client.evaluate(flagKey: "my_first_flag", entityID: "user123")
+if result.variantKey == "enabled" { /* функция включена */ }
 ```
+
+**Проверь в Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) — ключ `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Go
+
+**Установка:**
+```bash
+go get github.com/MaxLuxs/Flagent/sdk/go
+```
+
+**Минимальный код:**
+```go
+client, _ := flagent.NewClient("http://localhost:18000/api/v1")
+result, _ := client.Evaluate(ctx, &flagent.EvaluationContext{
+    FlagKey:  flagent.StringPtr("my_first_flag"),
+    EntityID: flagent.StringPtr("user123"),
+})
+if result.IsEnabled() { /* функция включена */ }
+```
+
+**Проверь в Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): ключ `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Dart / Flutter
+
+**Установка (Flutter Enhanced — рекомендуется):**
+```yaml
+# pubspec.yaml
+dependencies:
+  flagent_enhanced:
+    git:
+      url: https://github.com/MaxLuxs/Flagent.git
+      path: sdk/flutter-enhanced
+```
+Либо базовый Dart-клиент с pub.dev: `flagent_client: ^0.1.6`.
+
+**Минимальный код (Flutter Enhanced):**
+```dart
+import 'package:flagent_enhanced/flagent_enhanced.dart';
+
+final client = Flagent.create(baseUrl: 'http://localhost:18000/api/v1');
+final result = await client.evaluate(flagKey: 'my_first_flag', entityID: 'user123');
+if (result.variantKey == 'enabled') { /* функция включена */ }
+```
+
+**Проверь в Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): ключ `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
 
 ### 5. Протестировать флаг
 
-Запустите ваше приложение и убедитесь, что оценка флага работает!
+Запустите приложение и убедитесь, что оценка флага работает. **Проверьте результат в [Debug Console](frontend-ui.md#evaluation--debug-console)** (UI → Debug Console): введите тот же ключ флага и entity ID, чтобы увидеть вариант и причину без повторного деплоя.
 
 ## Основные концепции
 

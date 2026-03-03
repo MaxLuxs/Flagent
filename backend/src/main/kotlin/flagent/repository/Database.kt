@@ -22,6 +22,7 @@ import flagent.repository.tables.FlagEntityTypes
 import flagent.repository.tables.FlagSnapshots
 import flagent.repository.tables.Flags
 import flagent.repository.tables.FlagsTags
+import flagent.repository.tables.NewsletterSubscribers
 import flagent.repository.tables.Segments
 import flagent.repository.tables.Tags
 import flagent.repository.tables.Users
@@ -72,6 +73,7 @@ object Database {
                 SchemaUtils.createMissingTablesAndColumns(
                     Flags, Segments, Variants, Constraints, Distributions,
                     Tags, FlagsTags, FlagSnapshots, FlagEntityTypes, Webhooks,
+                    NewsletterSubscribers,
                     Users, EvaluationEvents, AnalyticsEvents, CrashReports
                 )
             }
@@ -175,6 +177,7 @@ object Database {
                     FlagSnapshots,
                     FlagEntityTypes,
                     Webhooks,
+                    NewsletterSubscribers,
                     Users,
                     EvaluationEvents,
                     AnalyticsEvents,

@@ -190,6 +190,17 @@ object CrashReports : LongIdTable("crash_reports") {
 }
 
 /**
+ * Newsletter subscribers (landing footer sign-up). Public endpoint, no API key.
+ */
+object NewsletterSubscribers : IntIdTable("newsletter_subscribers") {
+    val email = varchar("email", 255)
+    val createdAt = datetime("created_at")
+    init {
+        uniqueIndex("idx_newsletter_email", email)
+    }
+}
+
+/**
  * Users table (admin users for UI login).
  */
 object Users : IntIdTable("users") {

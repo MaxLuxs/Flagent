@@ -25,6 +25,26 @@ abstract class VerifyFlagsTask : DefaultTask() {
     fun verify() {
         val ext = extension.get()
         val files = project.fileTree(mapOf("dir" to "src", "include" to listOf("**/*.kt", "**/*.java"))).files
+
+        if (ext.allowOnlyGeneratedOrAnnotated.get()) {
+            val annotationKeys = FlagKeyScanner.scanKeysFromAnnotations(files)
+            val generatedKeys = try {
+                val dir = ext.flagKeysOutputDir.get().asFile
+                FlagKeyScanner.loadKeysFromGeneratedFile(java.io.File(dir, "FlagKeys.kt"))
+            } catch (_: Exception) {
+                emptySet<String>()
+            }
+            val allowedKeys = annotationKeys + generatedKeys
+            val rawKeys = FlagKeyScanner.scanKeysFromRawStrings(files)
+            if (rawKeys.isNotEmpty()) {
+                throw org.gradle.api.GradleException(
+                    "verifyFlags (allowOnlyGeneratedOrAnnotated=true): raw string literals in isEnabled(\"...\") / evaluate(\"...\") are not allowed. " +
+                        "Use FlagKeys.* or @FlagKey constants. Forbidden usages: ${rawKeys.sorted().joinToString(", ")}"
+                )
+            }
+            logger.lifecycle("verifyFlags: strict mode OK (all keys from FlagKeys or @FlagKey)")
+        }
+
         val codeKeys = FlagKeyScanner.scanSourceFiles(files)
         if (codeKeys.isEmpty()) {
             logger.lifecycle("verifyFlags: no flag keys found in source code")

@@ -1,6 +1,7 @@
 package flagent.api
 
 import io.ktor.server.application.Application
+import io.ktor.server.auth.AuthenticationConfig
 import io.ktor.server.routing.Routing
 
 /**
@@ -22,4 +23,10 @@ interface EnterpriseConfigurator {
      * @param context Backend context for DB and core dependencies
      */
     fun configureRoutes(routing: Routing, context: EnterpriseBackendContext)
+
+    /**
+     * Add enterprise auth providers (e.g. SSO JWT bearer) to the single Authentication plugin.
+     * Called from core during install(Authentication). No-op when enterprise is not present.
+     */
+    fun configureAuthentication(config: AuthenticationConfig) {}
 }

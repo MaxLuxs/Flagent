@@ -79,7 +79,13 @@ http://localhost:18000
 - Email: `admin@local`
 - Password: `admin`
 
+After login you will see the dashboard and the flags list.
+
+![Flags list](../assets/screenshots/screenshot-flags-list.png)
+
 ### 3. Create Your First Flag
+
+![Create Flag](../assets/screenshots/screenshot-create-flag.png)
 
 1. Click **"Create Flag"** button
 2. Enter flag details:
@@ -95,70 +101,207 @@ http://localhost:18000
    - **Percent**: 100%
 6. Click **"Save"**
 
-### 4. Evaluate from Your App
+### 4. Quick start by platform
 
-Choose your language:
+Evaluate the flag from your app. Pick your platform (anchors): [Kotlin](#kotlin) · [Ktor](#ktor) · [Spring Boot](#spring-boot) · [JavaScript](#javascript) · [Python](#python) · [Swift](#swift) · [Go](#go) · [Dart / Flutter](#dart--flutter).
 
-**Kotlin:**
+---
+
+#### Kotlin
+
+**Install:**
+```kotlin
+dependencies {
+    implementation("com.flagent:kotlin-client:0.1.6")  // use version from VERSION or Releases
+}
+```
+
+**Minimal code (init + evaluate):**
 ```kotlin
 val client = FlagentClient.create(baseUrl = "http://localhost:18000/api/v1")
+val result = client.evaluate(flagKey = "my_first_flag", entityID = "user123")
+if (result.variantKey == "enabled") { /* feature is on */ }
+```
 
-val result = client.evaluate(
-    flagKey = "my_first_flag",
-    entityID = "user123"
+**Optional: OpenFeature-like KMP client:**
+
+If you prefer an OpenFeature-style API, use the multiplatform `kotlin-openfeature`
+module on top of the same backend:
+
+```kotlin
+val provider = FlagentOpenFeatureProvider(
+    FlagentOpenFeatureConfig(baseUrl = "http://localhost:18000/api/v1")
 )
+val ofClient = DefaultOpenFeatureClient(provider)
 
-if (result.variantKey == "enabled") {
-    // Feature is enabled
+val enabled = ofClient.getBooleanValue(
+    key = "my_first_flag",
+    defaultValue = false,
+    context = EvaluationContext(targetingKey = "user123")
+)
+```
+
+See `sdk/kotlin-openfeature/README.md` and the Android sample (`samples/android`)
+for a full example of this integration.
+
+**Verify in Debug Console:** Open [Debug Console](frontend-ui.md#evaluation--debug-console) in the UI (sidebar → Debug Console), enter flag key `my_first_flag` and entity ID `user123`, then click Evaluate.
+
+---
+
+#### Ktor
+
+**Install:**
+```kotlin
+implementation("com.flagent:ktor-flagent:0.1.6")
+```
+
+**Minimal code:**
+```kotlin
+// Application.kt
+installFlagent {
+    flagentBaseUrl = "http://localhost:18000"
+    enableEvaluation = true
 }
+// In a route:
+val client = call.application.getFlagentClient()
+val result = client?.evaluate(EvaluationRequest(flagKey = "my_first_flag", entityID = "user123"))
 ```
 
-**Python:**
-```python
-from flagent import FlagentClient
+**Verify in Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): flag key `my_first_flag`, entity ID `user123` → Evaluate.
 
-client = FlagentClient(base_url="http://localhost:18000/api/v1")
-result = await client.evaluate(flag_key="my_first_flag", entity_id="user123")
+---
 
-if result.is_enabled():
-    # Feature is enabled
+#### Spring Boot
+
+**Install:**
+```kotlin
+implementation("com.flagent:flagent-spring-boot-starter:0.1.6")
 ```
 
-**JavaScript:**
+**Minimal code (e.g. in a controller):**
+```java
+@Autowired EvaluationApi flagentFacade;
+// ...
+EvalResult r = flagentFacade.evaluate(new EvalContext().flagKey("my_first_flag").entityID("user123"));
+// r.getVariantKey(), r.getEnabled(), etc.
+```
+
+**Verify in Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) — enter `my_first_flag` and `user123`, then Evaluate.
+
+---
+
+#### JavaScript
+
+**Install:**
+```bash
+npm install @flagent/client
+```
+
+**Minimal code:**
 ```javascript
 import { FlagentClient } from '@flagent/client';
-
-const client = new FlagentClient({
-  baseUrl: 'http://localhost:18000/api/v1'
-});
-
-const result = await client.evaluate({
-  flagKey: 'my_first_flag',
-  entityID: 'user123'
-});
-
-if (result.variantKey === 'enabled') {
-  // Feature is enabled
-}
+const client = new FlagentClient({ baseUrl: 'http://localhost:18000/api/v1' });
+const result = await client.evaluate({ flagKey: 'my_first_flag', entityID: 'user123' });
+if (result.variantKey === 'enabled') { /* feature is on */ }
 ```
 
-**Swift:**
+**Verify in Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): flag key `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Python
+
+**Install:**
+```bash
+pip install flagent-python-client
+```
+
+**Minimal code (async):**
+```python
+import asyncio
+from flagent import create_client
+
+async def main():
+    client = create_client("http://localhost:18000/api/v1")
+    result = await client.evaluate(flag_key="my_first_flag", entity_id="user123")
+    if result.is_enabled():  # or result.variant_key == "enabled"
+        pass  # feature is on
+    await client.close()
+asyncio.run(main())
+```
+
+**Verify in Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): flag key `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Swift
+
+**Install (Swift Package Manager):**
+```swift
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.6")
+```
+
+**Minimal code:**
 ```swift
 let client = FlagentClient(baseURL: "http://localhost:18000/api/v1")
-
-let result = try await client.evaluate(
-    flagKey: "my_first_flag",
-    entityID: "user123"
-)
-
-if result.variantKey == "enabled" {
-    // Feature is enabled
-}
+let result = try await client.evaluate(flagKey: "my_first_flag", entityID: "user123")
+if result.variantKey == "enabled" { /* feature is on */ }
 ```
+
+**Verify in Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) — flag key `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Go
+
+**Install:**
+```bash
+go get github.com/MaxLuxs/Flagent/sdk/go
+```
+
+**Minimal code:**
+```go
+client, _ := flagent.NewClient("http://localhost:18000/api/v1")
+result, _ := client.Evaluate(ctx, &flagent.EvaluationContext{
+    FlagKey:  flagent.StringPtr("my_first_flag"),
+    EntityID: flagent.StringPtr("user123"),
+})
+if result.IsEnabled() { /* feature is on */ }
+```
+
+**Verify in Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): flag key `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
+
+#### Dart / Flutter
+
+**Install (Flutter Enhanced — recommended):**
+```yaml
+# pubspec.yaml
+dependencies:
+  flagent_enhanced:
+    git:
+      url: https://github.com/MaxLuxs/Flagent.git
+      path: sdk/flutter-enhanced
+```
+Or base Dart client from pub.dev: `flagent_client: ^0.1.6`.
+
+**Minimal code (Flutter Enhanced):**
+```dart
+import 'package:flagent_enhanced/flagent_enhanced.dart';
+
+final client = Flagent.create(baseUrl: 'http://localhost:18000/api/v1');
+final result = await client.evaluate(flagKey: 'my_first_flag', entityID: 'user123');
+if (result.variantKey == 'enabled') { /* feature is on */ }
+```
+
+**Verify in Debug Console:** [Debug Console](frontend-ui.md#evaluation--debug-console) (UI → Debug Console): flag key `my_first_flag`, entity ID `user123` → Evaluate.
+
+---
 
 ### 5. Test Your Flag
 
-Run your app and verify that the flag evaluation works!
+Run your app and confirm the flag evaluates as expected. **Verify the result in the [Debug Console](frontend-ui.md#evaluation--debug-console)** (UI → Debug Console): enter the same flag key and entity ID to see the variant and reason without deploying again.
 
 ## Core Concepts
 

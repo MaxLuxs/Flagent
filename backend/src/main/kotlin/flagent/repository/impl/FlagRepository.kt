@@ -108,8 +108,8 @@ class FlagRepository : IFlagRepository {
                 query = query.andWhere { Flags.projectId eq pid }
             }
             
-            // Order by id
-            query = query.orderBy(Flags.id, SortOrder.ASC)
+            // Order by id descending so newest flags appear first (page 1 shows recently created)
+            query = query.orderBy(Flags.id, SortOrder.DESC)
             
             // Apply limit and offset
             limit?.let {
@@ -252,89 +252,119 @@ class FlagRepository : IFlagRepository {
         }
     }
 
-    override suspend fun findByTags(tags: List<String>): List<Flag> = withContext(Dispatchers.IO) {
-        Database.transaction {
-            val tagIds = Tags.selectAll().where { Tags.value inList tags }
-                .map { it[Tags.id].value }
-            
-            if (tagIds.isEmpty()) return@transaction emptyList()
-            
-            FlagsTags
-                .select(FlagsTags.flagId)
-                .where { FlagsTags.tagId inList tagIds }
-                .map { it[FlagsTags.flagId] }
-                .distinct()
-                .mapNotNull { flagId -> findById(flagId) }
-        }
-    }
-    
-    override suspend fun create(flag: Flag): Flag = withContext(Dispatchers.IO) {
-        Database.transaction {
-            val id = Flags.insert {
-                it[key] = flag.key
-                it[description] = flag.description
-                it[createdBy] = flag.createdBy
-                it[updatedBy] = flag.updatedBy
-                it[enabled] = flag.enabled
-                it[snapshotId] = flag.snapshotId
-                it[notes] = flag.notes
-                it[dataRecordsEnabled] = flag.dataRecordsEnabled
-                it[entityType] = flag.entityType
-                flag.environmentId?.let { eid -> it[environmentId] = eid }
-                flag.projectId?.let { pid -> it[projectId] = pid }
-                it[dependsOn] = serializeDependsOn(flag.dependsOn)
-                it[createdAt] = java.time.LocalDateTime.now()
-            }[Flags.id].value
-            
-            flag.copy(id = id)
-        }
-    }
-    
-    override suspend fun update(flag: Flag): Flag = withContext(Dispatchers.IO) {
-        Database.transaction {
-            Flags.update({ Flags.id eq flag.id }) {
-                it[key] = flag.key
-                it[description] = flag.description
-                it[updatedBy] = flag.updatedBy
-                it[enabled] = flag.enabled
-                it[snapshotId] = flag.snapshotId
-                it[notes] = flag.notes
-                it[dataRecordsEnabled] = flag.dataRecordsEnabled
-                it[entityType] = flag.entityType
-                it[environmentId] = flag.environmentId
-                it[projectId] = flag.projectId
-                it[dependsOn] = serializeDependsOn(flag.dependsOn)
-                it[updatedAt] = java.time.LocalDateTime.now()
-            }
-            
-            flag
-        }
-    }
-    
-    override suspend fun delete(id: Int): Unit = withContext(Dispatchers.IO) {
-        Database.transaction {
-            Flags.update({ Flags.id eq id }) {
-                it[deletedAt] = java.time.LocalDateTime.now()
+    override suspend fun findByTags(tags: List<String>): List<Flag> =
+        withContext(Dispatchers.IO) {
+            Database.transaction {
+                val tagIds = Tags.selectAll().where { Tags.value inList tags }
+                    .map { it[Tags.id].value }
+
+                if (tagIds.isEmpty()) return@transaction emptyList()
+
+                FlagsTags
+                    .select(FlagsTags.flagId)
+                    .where { FlagsTags.tagId inList tagIds }
+                    .map { it[FlagsTags.flagId] }
+                    .distinct()
+                    .mapNotNull { flagId -> findById(flagId) }
             }
         }
-        Unit
-    }
     
-    override suspend fun restore(id: Int): Flag? = withContext(Dispatchers.IO) {
-        Database.transaction {
-            Flags.update({ Flags.id eq id }) {
-                it[deletedAt] = null
+    override suspend fun create(flag: Flag): Flag =
+        withContext(Dispatchers.IO) {
+            Database.transaction {
+                val id = Flags.insert {
+                    it[key] = flag.key
+                    it[description] = flag.description
+                    it[createdBy] = flag.createdBy
+                    it[updatedBy] = flag.updatedBy
+                    it[enabled] = flag.enabled
+                    it[snapshotId] = flag.snapshotId
+                    it[notes] = flag.notes
+                    it[dataRecordsEnabled] = flag.dataRecordsEnabled
+                    it[entityType] = flag.entityType
+                    flag.environmentId?.let { eid -> it[environmentId] = eid }
+                    flag.projectId?.let { pid -> it[projectId] = pid }
+                    it[dependsOn] = serializeDependsOn(flag.dependsOn)
+                    it[createdAt] = java.time.LocalDateTime.now()
+                }[Flags.id].value
+
+                flag.copy(id = id)
             }
-            findById(id)
         }
-    }
+
+    override suspend fun update(flag: Flag): Flag =
+        withContext(Dispatchers.IO) {
+            Database.transaction {
+                Flags.update({ Flags.id eq flag.id }) {
+                    it[key] = flag.key
+                    it[description] = flag.description
+                    it[updatedBy] = flag.updatedBy
+                    it[enabled] = flag.enabled
+                    it[snapshotId] = flag.snapshotId
+                    it[notes] = flag.notes
+                    it[dataRecordsEnabled] = flag.dataRecordsEnabled
+                    it[entityType] = flag.entityType
+                    it[environmentId] = flag.environmentId
+                    it[projectId] = flag.projectId
+                    it[dependsOn] = serializeDependsOn(flag.dependsOn)
+                    it[updatedAt] = java.time.LocalDateTime.now()
+                }
+
+                flag
+            }
+        }
     
-    override suspend fun permanentDelete(id: Int): Unit = withContext(Dispatchers.IO) {
-        Database.transaction {
-            Flags.deleteWhere { Flags.id eq id }
+    override suspend fun delete(id: Int): Unit =
+        withContext(Dispatchers.IO) {
+            Database.transaction {
+                Flags.update({ Flags.id eq id }) {
+                    it[deletedAt] = java.time.LocalDateTime.now()
+                }
+            }
+            Unit
         }
-        Unit
-    }
+
+    override suspend fun restore(id: Int): Flag? =
+        withContext(Dispatchers.IO) {
+            Database.transaction {
+                Flags.update({ Flags.id eq id }) {
+                    it[deletedAt] = null
+                }
+                findById(id)
+            }
+        }
+
+    override suspend fun permanentDelete(id: Int): Unit =
+        withContext(Dispatchers.IO) {
+            Database.transaction {
+                Flags.deleteWhere { Flags.id eq id }
+            }
+            Unit
+        }
+
+    override suspend fun batchSetEnabled(
+        ids: List<Int>,
+        enabled: Boolean,
+        updatedBy: String?
+    ): List<Flag> =
+        withContext(Dispatchers.IO) {
+            if (ids.isEmpty()) return@withContext emptyList()
+
+            Database.transaction {
+                // Update in a single statement for consistency and to minimize connection usage.
+                Flags.update({ (Flags.id inList ids) and (Flags.deletedAt.isNull()) }) {
+                    it[Flags.enabled] = enabled
+                    it[Flags.updatedBy] = updatedBy
+                    it[Flags.updatedAt] = java.time.LocalDateTime.now()
+                }
+
+                Flags
+                    .selectAll()
+                    .where { (Flags.id inList ids) and (Flags.deletedAt.isNull()) }
+                    .orderBy(Flags.id, SortOrder.ASC)
+                    .map { row -> mapRowToFlag(row) }
+            }
+        }
     
     private fun mapRowToFlag(row: ResultRow): Flag {
         val flagId = row[Flags.id].value

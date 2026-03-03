@@ -91,7 +91,7 @@ fun Slider(
                 id(sliderId)
                 value(value.toString())
                 onInput { event ->
-                    val inputValue = (event.target as org.w3c.dom.HTMLInputElement).value.toIntOrNull() ?: min
+                    val inputValue = event.target.value.toIntOrNull() ?: min
                     onValueChange(inputValue.coerceIn(min, max))
                 }
                 attr("min", min.toString())
@@ -173,7 +173,7 @@ fun Slider(
                 justifyContent(JustifyContent.SpaceBetween)
                 fontSize(11.px)
                 color(FlagentTheme.textLight(themeMode))
-                marginTop(-4.px)
+                marginTop((-4).px)
             }
         }) {
             Span { Text("$min%") }

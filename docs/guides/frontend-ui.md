@@ -43,12 +43,25 @@ Segments are reusable; multiple flags can use the same segment.
 
 Use experiments for A/B tests and gradual rollouts.
 
+![Experiments](../assets/screenshots/screenshot-experiments.png)
+
 ### Evaluation / Debug Console
 
 - **Single evaluation** — enter flag key, entity ID, and optional context; see the evaluated variant and reason.
 - **Batch** — evaluate multiple flags for one entity in one request.
 
 Use this to verify that targeting and distributions behave as expected before releasing.
+
+![Debug Console](../assets/screenshots/screenshot-debug-console.png)
+
+#### How to test a flag without deploying
+
+You can check which variant a user would get and why, without running your app in production:
+
+1. **Open Debug Console** — in the sidebar click **Debug** (or go to **UI → Debug Console**). The Single evaluation tab is selected by default.
+2. **Enter flag key and entity** — in **Flag Key** type the key of the flag (e.g. `new_checkout_flow`). In **Entity ID** enter an identifier for the user or session (e.g. `user_123`). Optionally set **Entity type** (e.g. `user`, `report`).
+3. **Optional: set context** — in **Entity Context (JSON)** add attributes used by your segments (e.g. `user_id`, `region`, `tier`). Example: `{"user_id": "user_123", "region": "EU", "tier": "premium"}`. This lets you test segment and constraint rules.
+4. **Evaluate** — click **POST /api/v1/evaluation**. The **Response** area shows the assigned variant, reason, and (if debug is enabled) evaluation details. Use this to confirm targeting and rollout before releasing.
 
 ### Analytics
 

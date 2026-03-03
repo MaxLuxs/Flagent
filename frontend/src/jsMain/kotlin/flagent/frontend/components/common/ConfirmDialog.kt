@@ -30,19 +30,6 @@ fun ConfirmDialog(
                 width(100.percent)
             }
         }) {
-            // Title
-            H3({
-                style {
-                    fontSize(18.px)
-                    fontWeight(600)
-                    color(FlagentTheme.text(themeMode))
-                    margin(0.px)
-                    marginBottom(16.px)
-                }
-            }) {
-                Text(title)
-            }
-
             // Optional error (e.g. delete failed)
             errorMessage?.let { err ->
                 Div({

@@ -1,7 +1,11 @@
 package flagent.frontend.components.flags
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import flagent.frontend.components.Icon
+import kotlinx.browser.document
+import org.w3c.dom.events.Event
+import org.w3c.dom.events.KeyboardEvent
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.state.ThemeMode
@@ -22,6 +26,17 @@ fun CreateFlagModal(
     onSelectFullForm: () -> Unit
 ) {
     val themeMode = LocalThemeMode.current
+    DisposableEffect(Unit) {
+        val handler: (KeyboardEvent) -> Unit = { e ->
+            if (e.key == "Escape") {
+                e.preventDefault()
+                onClose()
+            }
+        }
+        val wrapped: (Event) -> Unit = { handler(it.unsafeCast<KeyboardEvent>()) }
+        document.addEventListener("keydown", wrapped)
+        onDispose { document.removeEventListener("keydown", wrapped) }
+    }
     Div({
         style {
             position(Position.Fixed)
@@ -50,6 +65,7 @@ fun CreateFlagModal(
                 borderRadius(12.px)
                 width(100.percent)
                 property("max-width", "520px")
+                margin(24.px)
                 border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
                 property("box-shadow", FlagentTheme.ShadowModal)
             }

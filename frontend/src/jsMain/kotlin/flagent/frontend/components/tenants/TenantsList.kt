@@ -92,6 +92,17 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
     val planFilter = remember { mutableStateOf<String?>(null) }
     val statusFilter = remember { mutableStateOf<String?>(null) }
     val groupBy = remember { mutableStateOf<GroupByOption>(GroupByOption.None) }
+    val sortColumn = remember { mutableStateOf<String?>(null) }
+    val sortAscending = remember { mutableStateOf(true) }
+
+    fun sortTenants(column: String) {
+        if (sortColumn.value == column) {
+            sortAscending.value = !sortAscending.value
+        } else {
+            sortColumn.value = column
+            sortAscending.value = true
+        }
+    }
 
     val filteredTenants =
         remember(viewModel.tenants, searchQuery.value, planFilter.value, statusFilter.value) {
@@ -106,13 +117,32 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                 }
         }
 
-    val groupedTenants = remember(filteredTenants, groupBy.value) {
+    val sortedTenants =
+        remember(filteredTenants, sortColumn.value, sortAscending.value) {
+            var result = filteredTenants.toList()
+            sortColumn.value?.let { column ->
+                result = when (column) {
+                    "name" -> result.sortedBy { it.name.lowercase() }
+                    "key" -> result.sortedBy { it.key.lowercase() }
+                    "plan" -> result.sortedBy { it.plan }
+                    "status" -> result.sortedBy { it.status }
+                    "createdAt" -> result.sortedBy { it.createdAt }
+                    else -> result
+                }
+                if (!sortAscending.value) {
+                    result = result.reversed()
+                }
+            }
+            result
+        }
+
+    val groupedTenants = remember(sortedTenants, groupBy.value) {
         when (groupBy.value) {
-            is GroupByOption.None -> listOf("" to filteredTenants)
-            is GroupByOption.ByPlan -> filteredTenants.groupBy { it.plan }.toList()
+            is GroupByOption.None -> listOf("" to sortedTenants)
+            is GroupByOption.ByPlan -> sortedTenants.groupBy { it.plan }.toList()
                 .sortedBy { it.first }
 
-            is GroupByOption.ByStatus -> filteredTenants.groupBy { it.status }.toList()
+            is GroupByOption.ByStatus -> sortedTenants.groupBy { it.status }.toList()
                 .sortedBy { it.first }
         }
     }
@@ -247,7 +277,8 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                         key = response.key,
                                         name = response.name,
                                         plan = response.plan,
-                                        status = response.status
+                                        status = response.status,
+                                        createdAt = response.createdAt
                                     )
                                     viewModel.storeApiKeyForTenant(tenant.id, key)
                                     viewModel.switchTenant(tenant)
@@ -283,7 +314,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                 display(DisplayStyle.Flex)
                 justifyContent(JustifyContent.SpaceBetween)
                 alignItems(AlignItems.Center)
-                marginBottom(24.px)
+                marginBottom(8.px)
             }
         }) {
             H2({
@@ -314,6 +345,15 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
             }) {
                 Text(LocalizedStrings.createTenant)
             }
+        }
+        P({
+            style {
+                color(FlagentTheme.textLight(themeMode))
+                marginBottom(20.px)
+                fontSize(13.px)
+            }
+        }) {
+            Text(LocalizedStrings.tenantsOwnerHint)
         }
 
         val createdApiKey = remember { mutableStateOf<String?>(null) }
@@ -567,9 +607,30 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 fontWeight(600)
                                 color(FlagentTheme.textLight(themeMode))
                                 textTransform("uppercase")
+                                cursor("pointer")
+                                property("user-select", "none")
                             }
+                            onClick { sortTenants("name") }
                         }) {
-                            Text(LocalizedStrings.nameLabel)
+                            Span({
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    alignItems(AlignItems.Center)
+                                    gap(6.px)
+                                }
+                            }) {
+                                Text(LocalizedStrings.nameLabel)
+                                if (sortColumn.value == "name") {
+                                    Span({
+                                        style {
+                                            fontSize(12.px)
+                                            color(FlagentTheme.Primary)
+                                        }
+                                    }) {
+                                        Text(if (sortAscending.value) "↑" else "↓")
+                                    }
+                                }
+                            }
                         }
                         Th({
                             style {
@@ -579,9 +640,30 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 fontWeight(600)
                                 color(FlagentTheme.TextLight)
                                 textTransform("uppercase")
+                                cursor("pointer")
+                                property("user-select", "none")
                             }
+                            onClick { sortTenants("key") }
                         }) {
-                            Text(LocalizedStrings.keyColumn)
+                            Span({
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    alignItems(AlignItems.Center)
+                                    gap(6.px)
+                                }
+                            }) {
+                                Text(LocalizedStrings.keyColumn)
+                                if (sortColumn.value == "key") {
+                                    Span({
+                                        style {
+                                            fontSize(12.px)
+                                            color(FlagentTheme.Primary)
+                                        }
+                                    }) {
+                                        Text(if (sortAscending.value) "↑" else "↓")
+                                    }
+                                }
+                            }
                         }
                         Th({
                             style {
@@ -591,9 +673,30 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 fontWeight(600)
                                 color(FlagentTheme.TextLight)
                                 textTransform("uppercase")
+                                cursor("pointer")
+                                property("user-select", "none")
                             }
+                            onClick { sortTenants("plan") }
                         }) {
-                            Text(LocalizedStrings.plan)
+                            Span({
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    alignItems(AlignItems.Center)
+                                    gap(6.px)
+                                }
+                            }) {
+                                Text(LocalizedStrings.plan)
+                                if (sortColumn.value == "plan") {
+                                    Span({
+                                        style {
+                                            fontSize(12.px)
+                                            color(FlagentTheme.Primary)
+                                        }
+                                    }) {
+                                        Text(if (sortAscending.value) "↑" else "↓")
+                                    }
+                                }
+                            }
                         }
                         Th({
                             style {
@@ -603,9 +706,63 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 fontWeight(600)
                                 color(FlagentTheme.TextLight)
                                 textTransform("uppercase")
+                                cursor("pointer")
+                                property("user-select", "none")
                             }
+                            onClick { sortTenants("status") }
                         }) {
-                            Text(LocalizedStrings.status)
+                            Span({
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    alignItems(AlignItems.Center)
+                                    gap(6.px)
+                                }
+                            }) {
+                                Text(LocalizedStrings.status)
+                                if (sortColumn.value == "status") {
+                                    Span({
+                                        style {
+                                            fontSize(12.px)
+                                            color(FlagentTheme.Primary)
+                                        }
+                                    }) {
+                                        Text(if (sortAscending.value) "↑" else "↓")
+                                    }
+                                }
+                            }
+                        }
+                        Th({
+                            style {
+                                textAlign("left")
+                                padding(12.px)
+                                fontSize(12.px)
+                                fontWeight(600)
+                                color(FlagentTheme.TextLight)
+                                textTransform("uppercase")
+                                cursor("pointer")
+                                property("user-select", "none")
+                            }
+                            onClick { sortTenants("createdAt") }
+                        }) {
+                            Span({
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    alignItems(AlignItems.Center)
+                                    gap(6.px)
+                                }
+                            }) {
+                                Text(LocalizedStrings.createdAtLabel)
+                                if (sortColumn.value == "createdAt") {
+                                    Span({
+                                        style {
+                                            fontSize(12.px)
+                                            color(FlagentTheme.Primary)
+                                        }
+                                    }) {
+                                        Text(if (sortAscending.value) "↑" else "↓")
+                                    }
+                                }
+                            }
                         }
                         Th({
                             style {
@@ -631,7 +788,7 @@ fun TenantsList(tenantViewModel: TenantViewModel? = null) {
                                 }
                             }) {
                                 Td({
-                                    attr("colspan", "5")
+                                    attr("colspan", "6")
                                     style {
                                         padding(10.px, 12.px)
                                         fontSize(12.px)
@@ -701,6 +858,10 @@ private fun TenantRow(
         }
         Td({ style { padding(12.px); fontSize(14.px); color(FlagentTheme.textLight(themeMode)) } }) {
             Text(tenant.status)
+        }
+        Td({ style { padding(12.px); fontSize(14.px); color(FlagentTheme.textLight(themeMode)) } }) {
+            val createdDate = tenant.createdAt.takeIf { it.length >= 10 }?.take(10) ?: tenant.createdAt
+            Text(createdDate)
         }
         Td({ style { padding(12.px); textAlign("right") } }) {
             Div({

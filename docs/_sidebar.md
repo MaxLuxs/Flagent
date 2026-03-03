@@ -23,12 +23,12 @@
   * [Publishing](guides/publishing.md)
   * [Frontend UI](guides/frontend-ui.md)
   * [Roadmap](guides/roadmap.md)
-  * [Tasks: Status & Next](tasks/status.md)
   * [Contributing](guides/contributing.md)
   * [Testing](guides/testing.md)
 
 * **API & SDKs**
   * [SDKs Overview](sdks/README.md)
+  * [Какой SDK выбрать](guides/sdk-selection.md)
   * [OpenAPI Spec](api/openapi.yaml)
   * [Endpoints](api/endpoints.md)
   * [SDK Integration](examples/sdk-integration.md)

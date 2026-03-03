@@ -105,6 +105,9 @@ object ApiClient {
         val base = AppConfig.apiBaseUrl.trimEnd('/')
         return if (base.isEmpty()) path else "$base$path"
     }
+
+    /** Public path for newsletter (no API key). */
+    internal fun getNewsletterPath(): String = getAuthPath("/newsletter")
     
     private fun getApiKey(): String? {
         (js("window.ENV_API_KEY") as? String)?.takeIf { it.isNotBlank() }?.let { return it }
@@ -690,6 +693,18 @@ object ApiClient {
         return client.post(getAdminPath("/users/$id/unblock")).body()
     }
 
+    // ========== Newsletter (public, no API key) ==========
+
+    /**
+     * Subscribe email to newsletter. On success returns; on 4xx/5xx throws (error message in exception).
+     */
+    suspend fun subscribeNewsletter(email: String) {
+        client.post(getNewsletterPath()) {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf("email" to email))
+        }
+    }
+
     // ========== Metrics overview (global aggregates) ==========
 
     /**
@@ -789,6 +804,20 @@ object ApiClient {
         }
         return client.get(url).body()
     }
+
+    // ========== Integrations (Firebase) ==========
+
+    /**
+     * Get Firebase integration status (Remote Config sync + Analytics).
+     * Admin-only route protected by JWT or Admin API key.
+     */
+    suspend fun getFirebaseStatus(): FirebaseStatusResponse {
+        return client.get(getAdminPath("/integrations/firebase/status")) {
+            if (getAuthToken() == null) {
+                getAdminApiKey()?.let { header(ADMIN_API_KEY_HEADER, it) }
+            }
+        }.body()
+    }
 }
 
 @Serializable
@@ -855,3 +884,25 @@ data class ApplicationCreateRequest(val name: String, val key: String, val platf
 
 @Serializable
 data class InstanceCreateRequest(val environmentId: Long, val name: String)
+
+@Serializable
+data class FirebaseRcStatusResponse(
+    val enabled: Boolean,
+    val projectId: String? = null,
+    val syncIntervalSeconds: Long,
+    val parameterPrefix: String,
+    val hasCredentials: Boolean
+)
+
+@Serializable
+data class FirebaseAnalyticsStatusResponse(
+    val enabled: Boolean,
+    val measurementId: String? = null,
+    val hasApiSecret: Boolean
+)
+
+@Serializable
+data class FirebaseStatusResponse(
+    val firebaseRc: FirebaseRcStatusResponse,
+    val firebaseAnalytics: FirebaseAnalyticsStatusResponse
+)

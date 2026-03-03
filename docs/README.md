@@ -118,6 +118,5 @@ docs/
 ├── features/           # SDK features
 ├── performance/        # Benchmarks, tuning
 ├── tutorials/         # Step-by-step tutorials
-├── tasks/             # Redirect to internal docs (see tasks/README.md)
 └── gh_pages/          # Landing (index.html) for GitHub Pages
 ```

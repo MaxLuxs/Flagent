@@ -41,17 +41,15 @@ test.describe('Flag Editor - Full Flow @oss', () => {
     await firstRow.click();
     await page.waitForLoadState('domcontentloaded');
 
-    // Use checkbox near Enabled/Disabled label (avoids DebugConsole/other checkboxes)
-    const enabledSwitch = page
-      .locator('label')
-      .filter({ hasText: /Enabled|Disabled/ })
-      .locator('input[type="checkbox"]')
-      .first();
+    // New FlagEditor uses ARIA switch instead of checkbox
+    const enabledSwitch = page.getByRole('switch').first();
     await expect(enabledSwitch).toBeVisible({ timeout: 5000 });
-    const wasChecked = await enabledSwitch.isChecked();
+    const wasChecked = (await enabledSwitch.getAttribute('aria-checked')) === 'true';
     await enabledSwitch.click();
-    // Wait for API to complete and UI to update (checkbox is controlled by server state)
-    await expect(enabledSwitch).toBeChecked({ checked: !wasChecked, timeout: 10000 });
+    // Wait for API to complete and UI to update (switch is controlled by server state)
+    await expect(enabledSwitch).toHaveAttribute('aria-checked', wasChecked ? 'false' : 'true', {
+      timeout: 10000,
+    });
   });
 
   test('can edit description and save', async ({ page }) => {

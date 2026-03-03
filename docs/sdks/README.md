@@ -6,21 +6,48 @@ Official client SDKs for Flagent. Use them to evaluate feature flags, run A/B te
 
 ## Overview
 
+### Base SDKs (OpenAPI-generated)
+
 | SDK | Platforms | Install | Docs |
 |-----|-----------|--------|------|
-| **Kotlin** | JVM, Android, KMP | Gradle: `com.flagent:kotlin-client` | [SDKs page](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/kotlin) |
-| **JavaScript/TS** | Browser, Node.js | npm: `@flagent/sdk-js` | [SDKs page](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/javascript) |
-| **Swift** | iOS, macOS | SPM / CocoaPods | [SDKs page](../sdk.html) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/swift) |
-| **Python** | 3.8+ | pip: `flagent-sdk` | [SDKs page](../sdk.html) |
-| **Go** | Go 1.18+ | `go get` | [SDKs page](../sdk.html) |
-| **Java** | JVM, Android | Maven/Gradle | [SDKs page](../sdk.html) |
-| **Dart/Flutter** | Flutter | pub.dev | [SDKs page](../sdk.html) |
+| **Kotlin** | JVM, Android, KMP | Gradle: `com.flagent:kotlin-client` | [sdk/kotlin](https://github.com/MaxLuxs/Flagent/tree/main/sdk/kotlin) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/kotlin) |
+| **JavaScript/TS** | Browser, Node.js | npm: `@flagent/sdk-js` | [sdk/javascript](https://github.com/MaxLuxs/Flagent/tree/main/sdk/javascript) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/javascript) |
+| **Swift** | iOS, macOS | SPM / CocoaPods | [sdk/swift](https://github.com/MaxLuxs/Flagent/tree/main/sdk/swift) · [Sample](https://github.com/MaxLuxs/Flagent/tree/main/samples/swift) |
+| **Python** | 3.8+ | pip: `flagent-sdk` | [sdk/python](https://github.com/MaxLuxs/Flagent/tree/main/sdk/python) |
+| **Go** | Go 1.18+ | `go get` | [sdk/go](https://github.com/MaxLuxs/Flagent/tree/main/sdk/go) |
+| **Java** | JVM, Android | Maven/Gradle | [sdk/java](https://github.com/MaxLuxs/Flagent/tree/main/sdk/java) |
+| **Dart** | Flutter, Web | pub.dev | [sdk/dart](https://github.com/MaxLuxs/Flagent/tree/main/sdk/dart) |
+
+### Enhanced SDKs (caching, offline, client-side eval where available)
+
+| SDK | Features |
+|-----|----------|
+| **Kotlin Enhanced** [sdk/kotlin-enhanced](https://github.com/MaxLuxs/Flagent/tree/main/sdk/kotlin-enhanced) | Client-side eval, SSE real-time |
+| **JavaScript Enhanced** [sdk/javascript-enhanced](https://github.com/MaxLuxs/Flagent/tree/main/sdk/javascript-enhanced) | Caching, convenient API |
+| **Swift Enhanced** [sdk/swift-enhanced](https://github.com/MaxLuxs/Flagent/tree/main/sdk/swift-enhanced) | Caching |
+| **Go Enhanced** [sdk/go-enhanced](https://github.com/MaxLuxs/Flagent/tree/main/sdk/go-enhanced) | Client-side eval, SSE |
+| **Flutter Enhanced** [sdk/flutter-enhanced](https://github.com/MaxLuxs/Flagent/tree/main/sdk/flutter-enhanced) | Caching |
+
+### Other server / DI
+
+| SDK | Description |
+|-----|-------------|
+| **flagent-koin** [sdk/flagent-koin](https://github.com/MaxLuxs/Flagent/tree/main/sdk/flagent-koin) | Koin DI module (KMP) |
+| **Spring Boot Starter** [sdk/spring-boot-starter](https://github.com/MaxLuxs/Flagent/tree/main/sdk/spring-boot-starter) | Auto-configuration for Spring Boot |
+
+### Debug UI (optional)
+
+| SDK | Platforms |
+|-----|-----------|
+| **Kotlin Debug UI** [sdk/kotlin-debug-ui](https://github.com/MaxLuxs/Flagent/tree/main/sdk/kotlin-debug-ui) | Compose Multiplatform (JVM/Android/iOS) |
+| **Swift Debug UI** [sdk/swift-debug-ui](https://github.com/MaxLuxs/Flagent/tree/main/sdk/swift-debug-ui) | SwiftUI (iOS) |
+| **JavaScript Debug UI** [sdk/javascript-debug-ui](https://github.com/MaxLuxs/Flagent/tree/main/sdk/javascript-debug-ui) | React (Web) |
 
 Android sample (Kotlin SDK): [samples/android](https://github.com/MaxLuxs/Flagent/tree/main/samples/android).
 
-- **Base SDKs** — generated from OpenAPI; typed API client.
-- **Enhanced SDKs** — native implementation with caching, offline support, and simpler APIs where available.
-- **Debug UI** — optional Compose/UI libraries for local debugging (e.g. Kotlin, JS).
+## Which SDK to use
+
+See **[Which SDK to choose](../guides/sdk-selection.md)** for a table and short guide: Kotlin vs Kotlin Enhanced vs Ktor vs Spring Boot vs JS vs Swift vs Go, when to use server-side vs client-side evaluation, and recommended entry points (`Flagent.builder()`, `Flagent.create()`, `NewFlagent()`).
 
 ## Quick links
 
