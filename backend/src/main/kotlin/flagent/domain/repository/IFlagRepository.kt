@@ -45,4 +45,14 @@ interface IFlagRepository {
 
     /** Permanently deletes the flag row (and cascade). Use after archive (soft delete). */
     suspend fun permanentDelete(id: Int)
+
+    /**
+     * Atomically enable/disable multiple flags by IDs.
+     * Returns only flags that existed and were updated; missing IDs are ignored.
+     */
+    suspend fun batchSetEnabled(
+        ids: List<Int>,
+        enabled: Boolean,
+        updatedBy: String? = null
+    ): List<Flag>
 }

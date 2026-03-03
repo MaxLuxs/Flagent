@@ -290,7 +290,18 @@ class FlagService(
         enabled: Boolean,
         updatedBy: String? = null
     ): List<Flag> {
-        return ids.mapNotNull { id -> setFlagEnabled(id, enabled, updatedBy) }
+        if (ids.isEmpty()) return emptyList()
+        val updatedFlags = flagRepository.batchSetEnabled(ids, enabled, updatedBy)
+
+        // Preserve side effects (snapshots, events, webhooks) for each updated flag,
+        // same as sequential setFlagEnabled() would do.
+        updatedFlags.forEach { flag ->
+            flagSnapshotService?.saveFlagSnapshot(flag.id, updatedBy)
+            eventBus?.publishFlagToggled(flag.id.toLong(), flag.key, enabled)
+            webhookService?.dispatchFlagToggled(flag.id, enabled)
+        }
+
+        return updatedFlags
     }
 
     /**

@@ -72,7 +72,7 @@ export default defineConfig({
         cwd: '../..',
         url: `${BACKEND_URL}/api/v1/health`,
         timeout: 180_000,
-        reuseExistingServer: false,
+        reuseExistingServer: true,
         env: {
           ...process.env,
           FLAGENT_EVALCACHE_REFRESHINTERVAL: '100ms',

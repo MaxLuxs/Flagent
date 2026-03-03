@@ -608,18 +608,19 @@ class FlagServiceTest {
         val flag2 = Flag(id = 2, key = "flag2", description = "Test", enabled = false)
         val enabled1 = flag1.copy(enabled = true)
         val enabled2 = flag2.copy(enabled = true)
-        
-        coEvery { flagRepository.findById(1) } returns flag1
-        coEvery { flagRepository.findById(2) } returns flag2
-        coEvery { flagRepository.update(match { it.id == 1 && it.enabled }) } returns enabled1
-        coEvery { flagRepository.update(match { it.id == 2 && it.enabled }) } returns enabled2
+
+        coEvery {
+            flagRepository.batchSetEnabled(listOf(1, 2), true, "test-user")
+        } returns listOf(enabled1, enabled2)
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
         val result = flagService.batchSetEnabled(listOf(1, 2), true, "test-user")
         
         assertEquals(2, result.size)
         assertTrue(result.all { it.enabled })
-        coVerify { flagRepository.update(any()) }
+        coVerify(exactly = 1) {
+            flagRepository.batchSetEnabled(listOf(1, 2), true, "test-user")
+        }
         coVerify(exactly = 2) { flagSnapshotService.saveFlagSnapshot(any(), any()) }
     }
     
@@ -627,10 +628,10 @@ class FlagServiceTest {
     fun testBatchSetEnabled_SkipsNotFound() = runBlocking {
         val flag1 = Flag(id = 1, key = "flag1", description = "Test", enabled = false)
         val enabled1 = flag1.copy(enabled = true)
-        
-        coEvery { flagRepository.findById(1) } returns flag1
-        coEvery { flagRepository.findById(999) } returns null
-        coEvery { flagRepository.update(match { it.id == 1 && it.enabled }) } returns enabled1
+
+        coEvery {
+            flagRepository.batchSetEnabled(listOf(1, 999), true, "test-user")
+        } returns listOf(enabled1)
         coEvery { flagSnapshotService.saveFlagSnapshot(any(), any()) } just Runs
         
         val result = flagService.batchSetEnabled(listOf(1, 999), true, "test-user")
@@ -638,6 +639,8 @@ class FlagServiceTest {
         assertEquals(1, result.size)
         assertEquals(1, result[0].id)
         assertTrue(result[0].enabled)
-        coVerify(exactly = 1) { flagRepository.update(any()) }
+        coVerify(exactly = 1) {
+            flagRepository.batchSetEnabled(listOf(1, 999), true, "test-user")
+        }
     }
 }
