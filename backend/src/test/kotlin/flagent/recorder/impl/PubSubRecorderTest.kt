@@ -1,8 +1,16 @@
 package flagent.recorder.impl
 
+import com.google.api.core.ApiFuture
+import com.google.cloud.pubsub.v1.Publisher
+import com.google.pubsub.v1.PubsubMessage
+import flagent.config.AppConfig
 import flagent.recorder.DataRecordFrame
 import flagent.service.EvalContext
 import flagent.service.EvalResult
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -108,15 +116,57 @@ class PubSubRecorderTest {
             assertTrue(frame.output().isNotEmpty())
         }
     }
-    
-    // Note: Testing actual record() and recordBatch() methods requires:
-    // 1. Mocking Publisher (complex due to Google Cloud library structure)
-    // 2. Using Pub/Sub Emulator for local testing
-    // 3. Integration tests with real Pub/Sub topic
-    // 
-    // For now, these tests verify the DataRecordFrame creation logic,
-    // which is the core logic that can be tested without Pub/Sub infrastructure.
-    // 
-    // Batch processing logic is tested by verifying that multiple frames can be created
-    // and that each frame produces valid output.
+
+    @Test
+    fun record_publishesMessage_andWaitsForIdWhenVerbose() = runBlocking {
+        val result = createTestEvalResult()
+
+        val publisher = mockk<Publisher>()
+        val future = mockk<ApiFuture<String>>()
+
+        every { publisher.publish(any<PubsubMessage>()) } returns future
+        every { future.get(any(), any()) } returns "message-id-1"
+
+        mockkObject(AppConfig)
+        every { AppConfig.recorderPubsubProjectID } returns "proj"
+        every { AppConfig.recorderPubsubTopicName } returns "topic"
+        every { AppConfig.recorderPubsubKeyFile } returns ""
+        every { AppConfig.recorderFrameOutputMode } returns "payload_string"
+        every { AppConfig.recorderPubsubVerbose } returns true
+        every { AppConfig.recorderPubsubVerboseCancelTimeout } returns kotlin.time.Duration.parse("1s")
+
+        val recorder = PubSubRecorder(
+            projectId = "proj",
+            topicName = "topic",
+            keyFile = "",
+            publisher = publisher
+        )
+
+        recorder.record(result)
+    }
+
+    @Test
+    fun record_handlesPublishExceptionWithoutThrowing() = runBlocking {
+        val result = createTestEvalResult()
+
+        val publisher = mockk<Publisher>()
+        every { publisher.publish(any<PubsubMessage>()) } throws RuntimeException("boom")
+
+        mockkObject(AppConfig)
+        every { AppConfig.recorderPubsubProjectID } returns "proj"
+        every { AppConfig.recorderPubsubTopicName } returns "topic"
+        every { AppConfig.recorderPubsubKeyFile } returns ""
+        every { AppConfig.recorderFrameOutputMode } returns "payload_string"
+        every { AppConfig.recorderPubsubVerbose } returns false
+        every { AppConfig.recorderPubsubVerboseCancelTimeout } returns kotlin.time.Duration.parse("1s")
+
+        val recorder = PubSubRecorder(
+            projectId = "proj",
+            topicName = "topic",
+            keyFile = "",
+            publisher = publisher
+        )
+
+        recorder.record(result)
+    }
 }

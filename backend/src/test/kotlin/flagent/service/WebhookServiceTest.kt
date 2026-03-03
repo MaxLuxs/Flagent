@@ -4,9 +4,16 @@ import flagent.domain.entity.Webhook
 import flagent.domain.entity.WebhookEvents
 import flagent.domain.repository.IFlagRepository
 import flagent.domain.repository.IWebhookRepository
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -76,5 +83,125 @@ class WebhookServiceTest {
         coEvery { repo.delete(999, null) } returns false
         val service = WebhookService(repo)
         assertTrue(!service.delete(999))
+    }
+
+    @Test
+    fun dispatchSync_sendsPostWithHeaders_andNoSignatureWhenSecretMissing() = runTest {
+        var capturedMethod: HttpMethod? = null
+        var capturedUrl: String? = null
+        var capturedEvent: String? = null
+        var capturedSignature: String? = null
+
+        val engine = MockEngine { request ->
+            capturedMethod = request.method
+            capturedUrl = request.url.toString()
+            capturedEvent = request.headers["X-Flagent-Event"]
+            capturedSignature = request.headers["X-Flagent-Signature"]
+            respond(
+                content = ByteReadChannel("""{"ok":true}"""),
+                status = HttpStatusCode.OK
+            )
+        }
+        val client = HttpClient(engine)
+
+        val repo = mockk<IWebhookRepository>()
+        coEvery { repo.findByEvent(WebhookEvents.FLAG_CREATED, null) } returns listOf(
+            Webhook(id = 1, url = "https://example.com/hook", events = listOf(WebhookEvents.FLAG_CREATED))
+        )
+
+        val service = WebhookService(
+            webhookRepository = repo,
+            flagRepository = null,
+            tenantId = null,
+            httpClient = client
+        )
+
+        val payload = WebhookPayload(event = WebhookEvents.FLAG_CREATED, flagDeletedData = null, flagData = null)
+        service.dispatchSync(WebhookEvents.FLAG_CREATED, payload)
+
+        assertEquals(HttpMethod.Post, capturedMethod)
+        assertEquals("https://example.com/hook", capturedUrl)
+        assertEquals(WebhookEvents.FLAG_CREATED, capturedEvent)
+        assertNull(capturedSignature)
+    }
+
+    @Test
+    fun dispatchSync_includesHmacSignatureWhenSecretConfigured() = runTest {
+        var capturedSignature: String? = null
+
+        val engine = MockEngine { request ->
+            capturedSignature = request.headers["X-Flagent-Signature"]
+            respond(
+                content = ByteReadChannel("""{"ok":true}"""),
+                status = HttpStatusCode.OK
+            )
+        }
+        val client = HttpClient(engine)
+
+        val secret = "topsecret"
+        val webhook = Webhook(
+            id = 1,
+            url = "https://example.com/hook",
+            events = listOf(WebhookEvents.FLAG_UPDATED),
+            secret = secret
+        )
+
+        val repo = mockk<IWebhookRepository>()
+        coEvery { repo.findByEvent(WebhookEvents.FLAG_UPDATED, null) } returns listOf(webhook)
+
+        val service = WebhookService(
+            webhookRepository = repo,
+            flagRepository = null,
+            tenantId = null,
+            httpClient = client
+        )
+
+        val payload = WebhookPayload(event = WebhookEvents.FLAG_UPDATED, flagDeletedData = null, flagData = null)
+        service.dispatchSync(WebhookEvents.FLAG_UPDATED, payload)
+
+        assertTrue(capturedSignature != null && capturedSignature!!.startsWith("sha256="))
+    }
+
+    @Test
+    fun dispatchSync_retriesOnFailure_andStopsOnSuccess() = runTest {
+        var callCount = 0
+
+        val engine = MockEngine { _ ->
+            callCount++
+            if (callCount < 3) {
+                throw RuntimeException("transient error")
+            }
+            respond(
+                content = ByteReadChannel("""{"ok":true}"""),
+                status = HttpStatusCode.OK
+            )
+        }
+        val client = HttpClient(engine)
+
+        val webhook = Webhook(
+            id = 1,
+            url = "https://example.com/hook",
+            events = listOf(WebhookEvents.FLAG_DELETED)
+        )
+
+        val repo = mockk<IWebhookRepository>()
+        coEvery { repo.findByEvent(WebhookEvents.FLAG_DELETED, null) } returns listOf(webhook)
+
+        val service = WebhookService(
+            webhookRepository = repo,
+            flagRepository = null,
+            tenantId = null,
+            httpClient = client
+        )
+
+        val payload = WebhookPayload(
+            event = WebhookEvents.FLAG_DELETED,
+            flagDeletedData = WebhookFlagDeletedData(flagId = 1, flagKey = "flag_a"),
+            flagData = null
+        )
+
+        service.dispatchSync(WebhookEvents.FLAG_DELETED, payload)
+
+        assertEquals(3, callCount)
     }
 }

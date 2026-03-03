@@ -35,13 +35,20 @@ private val logger = KotlinLogging.logger {}
 class WebhookService(
     private val webhookRepository: IWebhookRepository,
     private val flagRepository: IFlagRepository? = null,
-    private val tenantId: String? = null
+    private val tenantId: String? = null,
+    private val httpClient: HttpClient = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                    encodeDefaults = true
+                }
+            )
+        }
+    },
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 ) {
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
-    private val httpClient = HttpClient(CIO) {
-        install(ContentNegotiation) { json(json) }
-    }
 
     suspend fun create(webhook: Webhook): Webhook =
         webhookRepository.create(webhook.copy(tenantId = webhook.tenantId ?: tenantId))
@@ -56,10 +63,17 @@ class WebhookService(
      */
     fun dispatch(event: String, payload: WebhookPayload) {
         scope.launch {
-            val webhooks = webhookRepository.findByEvent(event, tenantId)
-            webhooks.forEach { webhook ->
-                launch { dispatchToWebhook(webhook, event, payload) }
-            }
+            dispatchSync(event, payload)
+        }
+    }
+
+    /**
+     * Dispatch webhook event synchronously (used in tests and internal flows).
+     */
+    suspend fun dispatchSync(event: String, payload: WebhookPayload) {
+        val webhooks = webhookRepository.findByEvent(event, tenantId)
+        webhooks.forEach { webhook ->
+            dispatchToWebhook(webhook, event, payload)
         }
     }
 

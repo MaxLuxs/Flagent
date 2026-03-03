@@ -28,45 +28,9 @@ private val logger = KotlinLogging.logger {}
 class KafkaRecorder(
     private val topic: String = AppConfig.recorderKafkaTopic,
     private val brokers: String = AppConfig.recorderKafkaBrokers,
-    private val partitionKeyEnabled: Boolean = AppConfig.recorderKafkaPartitionKeyEnabled
+    private val partitionKeyEnabled: Boolean = AppConfig.recorderKafkaPartitionKeyEnabled,
+    private val producer: KafkaProducer<String, ByteArray> = createProducer(brokers)
 ) : DataRecorder {
-    private val producer: KafkaProducer<String, ByteArray>
-    
-    init {
-        val props = Properties().apply {
-            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers)
-            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java.name)
-            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-            put(ProducerConfig.COMPRESSION_TYPE_CONFIG, getCompressionType(AppConfig.recorderKafkaCompressionCodec))
-            put(ProducerConfig.ACKS_CONFIG, AppConfig.recorderKafkaRequiredAcks.toString())
-            put(ProducerConfig.RETRIES_CONFIG, AppConfig.recorderKafkaRetryMax)
-            put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, AppConfig.recorderKafkaMaxOpenReqs)
-            put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, AppConfig.recorderKafkaIdempotent)
-            put(ProducerConfig.BATCH_SIZE_CONFIG, 16384)
-            put(ProducerConfig.LINGER_MS_CONFIG, AppConfig.recorderKafkaFlushFrequency.inWholeMilliseconds.toInt())
-        }
-        
-        // Configure TLS if needed
-        if (AppConfig.recorderKafkaCertFile.isNotEmpty() && AppConfig.recorderKafkaKeyFile.isNotEmpty()) {
-            configureTLS(props)
-        }
-        
-        // Configure SASL if needed
-        if (AppConfig.recorderKafkaSASLUsername.isNotEmpty() && AppConfig.recorderKafkaSASLPassword.isNotEmpty()) {
-            props.put("security.protocol", "SASL_SSL")
-            props.put("sasl.mechanism", "PLAIN")
-            props.put("sasl.jaas.config", 
-                "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                "username=\"${AppConfig.recorderKafkaSASLUsername}\" " +
-                "password=\"${AppConfig.recorderKafkaSASLPassword}\";")
-        }
-        
-        producer = KafkaProducer(props)
-        
-        // Log errors in background
-        // Note: KafkaProducer doesn't have a direct error callback in Java client
-        // Errors are typically handled via Future callbacks
-    }
     
     override suspend fun record(result: EvalResult) {
         withContext(Dispatchers.IO) {
@@ -108,39 +72,77 @@ class KafkaRecorder(
         )
     }
     
-    /**
-     * Get compression type from codec number
-     */
-    private fun getCompressionType(codec: Int): String {
-        return when (codec) {
-            1 -> "gzip"
-            2 -> "snappy"
-            3 -> "lz4"
-            4 -> "zstd"
-            else -> "none"
-        }
-    }
-    
-    /**
-     * Configure TLS for Kafka producer
-     */
-    private fun configureTLS(props: Properties) {
-        try {
-            if (AppConfig.recorderKafkaSimpleSSL) {
-                // Simple SSL without certificate verification
-                props.put("security.protocol", "SSL")
-                if (!AppConfig.recorderKafkaVerifySSL) {
-                    // Note: In production, you should properly configure SSL context
-                    // This is a simplified version
-                }
-            } else {
-                // Full TLS with certificates
-                props.put("security.protocol", "SSL")
-                // Load certificates and configure SSL context
-                // This is a simplified version - in production, use proper certificate loading
+    companion object {
+        /**
+         * Create Kafka producer with configuration derived from [AppConfig] and [brokers].
+         * Separated for easier testing (allows injecting a mock producer).
+         */
+        internal fun createProducer(brokers: String): KafkaProducer<String, ByteArray> {
+            val props = Properties().apply {
+                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers)
+                put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java.name)
+                put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
+                put(ProducerConfig.COMPRESSION_TYPE_CONFIG, getCompressionType(AppConfig.recorderKafkaCompressionCodec))
+                put(ProducerConfig.ACKS_CONFIG, AppConfig.recorderKafkaRequiredAcks.toString())
+                put(ProducerConfig.RETRIES_CONFIG, AppConfig.recorderKafkaRetryMax)
+                put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, AppConfig.recorderKafkaMaxOpenReqs)
+                put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, AppConfig.recorderKafkaIdempotent)
+                put(ProducerConfig.BATCH_SIZE_CONFIG, 16384)
+                put(ProducerConfig.LINGER_MS_CONFIG, AppConfig.recorderKafkaFlushFrequency.inWholeMilliseconds.toInt())
             }
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to configure TLS for Kafka" }
+
+            // Configure TLS if needed
+            if (AppConfig.recorderKafkaCertFile.isNotEmpty() && AppConfig.recorderKafkaKeyFile.isNotEmpty()) {
+                configureTLS(props)
+            }
+
+            // Configure SASL if needed
+            if (AppConfig.recorderKafkaSASLUsername.isNotEmpty() && AppConfig.recorderKafkaSASLPassword.isNotEmpty()) {
+                props.put("security.protocol", "SASL_SSL")
+                props.put("sasl.mechanism", "PLAIN")
+                props.put(
+                    "sasl.jaas.config",
+                    "org.apache.kafka.common.security.plain.PlainLoginModule required " +
+                        "username=\"${AppConfig.recorderKafkaSASLUsername}\" " +
+                        "password=\"${AppConfig.recorderKafkaSASLPassword}\";"
+                )
+            }
+
+            return KafkaProducer(props)
+        }
+
+        /**
+         * Get compression type from codec number
+         */
+        private fun getCompressionType(codec: Int): String {
+            return when (codec) {
+                1 -> "gzip"
+                2 -> "snappy"
+                3 -> "lz4"
+                4 -> "zstd"
+                else -> "none"
+            }
+        }
+
+        /**
+         * Configure TLS for Kafka producer
+         */
+        internal fun configureTLS(props: Properties) {
+            try {
+                if (AppConfig.recorderKafkaSimpleSSL) {
+                    // Simple SSL without certificate verification
+                    props.put("security.protocol", "SSL")
+                    if (!AppConfig.recorderKafkaVerifySSL) {
+                        // In production, SSL context should be configured properly.
+                    }
+                } else {
+                    // Full TLS with certificates
+                    props.put("security.protocol", "SSL")
+                    // Certificate loading omitted in this simplified implementation.
+                }
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to configure TLS for Kafka" }
+            }
         }
     }
     

@@ -1,9 +1,22 @@
 package flagent.recorder.impl
 
+import flagent.config.AppConfig
 import flagent.recorder.DataRecordFrame
 import flagent.service.EvalContext
 import flagent.service.EvalResult
+import io.mockk.Called
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import org.apache.kafka.clients.producer.Callback
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
+import java.util.concurrent.Future
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -106,12 +119,76 @@ class KafkaRecorderTest {
         val partitionKey = frame.getPartitionKey()
         assertEquals("", partitionKey)
     }
-    
-    // Note: Testing actual record() and recordBatch() methods requires:
-    // 1. Mocking KafkaProducer (complex due to final classes)
-    // 2. Using EmbeddedKafka (requires additional dependencies)
-    // 3. Integration tests with real Kafka instance
-    // 
-    // For now, these tests verify the DataRecordFrame creation logic,
-    // which is the core logic that can be tested without Kafka infrastructure.
+
+    @Test
+    fun record_sendsMessage_andLogsOnSuccessWhenVerbose() = runBlocking {
+        val result = createTestEvalResult()
+
+        val producer = mockk<KafkaProducer<String, ByteArray>>()
+        val future = mockk<Future<RecordMetadata>>()
+        val metadata = mockk<RecordMetadata>()
+
+        every { metadata.topic() } returns "test-topic"
+        every { metadata.partition() } returns 0
+        every { producer.send(any<ProducerRecord<String, ByteArray>>(), any()) } answers {
+            val callback = secondArg<Callback>()
+            callback.onCompletion(metadata, null)
+            future
+        }
+
+        mockkObject(AppConfig)
+        every { AppConfig.recorderKafkaTopic } returns "test-topic"
+        every { AppConfig.recorderKafkaBrokers } returns "localhost:9092"
+        every { AppConfig.recorderKafkaPartitionKeyEnabled } returns true
+        every { AppConfig.recorderKafkaEncrypted } returns false
+        every { AppConfig.recorderKafkaEncryptionKey } returns ""
+        every { AppConfig.recorderFrameOutputMode } returns "payload_string"
+        every { AppConfig.recorderKafkaVerbose } returns true
+
+        val recorder = KafkaRecorder(
+            topic = "test-topic",
+            brokers = "localhost:9092",
+            partitionKeyEnabled = true,
+            producer = producer
+        )
+
+        recorder.record(result)
+
+        verify { producer.send(any<ProducerRecord<String, ByteArray>>(), any()) }
+    }
+
+    @Test
+    fun record_logsErrorWhenCallbackReceivesException() = runBlocking {
+        val result = createTestEvalResult()
+
+        val producer = mockk<KafkaProducer<String, ByteArray>>()
+        val future = mockk<Future<RecordMetadata>>()
+
+        every { producer.send(any<ProducerRecord<String, ByteArray>>(), any()) } answers {
+            val callback = secondArg<Callback>()
+            callback.onCompletion(null, RuntimeException("boom"))
+            future
+        }
+
+        mockkObject(AppConfig)
+        every { AppConfig.recorderKafkaTopic } returns "test-topic"
+        every { AppConfig.recorderKafkaBrokers } returns "localhost:9092"
+        every { AppConfig.recorderKafkaPartitionKeyEnabled } returns false
+        every { AppConfig.recorderKafkaEncrypted } returns false
+        every { AppConfig.recorderKafkaEncryptionKey } returns ""
+        every { AppConfig.recorderFrameOutputMode } returns "payload_string"
+        every { AppConfig.recorderKafkaVerbose } returns false
+
+        val recorder = KafkaRecorder(
+            topic = "test-topic",
+            brokers = "localhost:9092",
+            partitionKeyEnabled = false,
+            producer = producer
+        )
+
+        // Should not throw even if callback receives exception
+        recorder.record(result)
+
+        verify { producer.send(any<ProducerRecord<String, ByteArray>>(), any()) }
+    }
 }

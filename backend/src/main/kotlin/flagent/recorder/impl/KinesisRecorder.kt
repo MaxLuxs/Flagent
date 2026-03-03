@@ -21,12 +21,12 @@ private val logger = KotlinLogging.logger {}
  */
 class KinesisRecorder(
     private val streamName: String = AppConfig.recorderKinesisStreamName,
-    private val region: Region = Region.US_EAST_1 // Default region, should be configurable
-) : DataRecorder {
+    private val region: Region = Region.US_EAST_1, // Default region, should be configurable
     private val kinesisClient: KinesisClient = KinesisClient.builder()
         .region(region)
         .credentialsProvider(DefaultCredentialsProvider.create())
         .build()
+) : DataRecorder {
 
     override suspend fun record(result: EvalResult) {
         withContext(Dispatchers.IO) {
