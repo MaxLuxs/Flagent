@@ -108,6 +108,9 @@ object ApiClient {
 
     /** Public path for newsletter (no API key). */
     internal fun getNewsletterPath(): String = getAuthPath("/newsletter")
+
+    /** Public signup path (no API key). */
+    internal fun getPublicSignupPath(path: String): String = getAuthPath("/public/signup$path")
     
     private fun getApiKey(): String? {
         (js("window.ENV_API_KEY") as? String)?.takeIf { it.isNotBlank() }?.let { return it }
@@ -123,6 +126,23 @@ object ApiClient {
 
     private fun getTenantId(): String? =
         localStorage.getItem("current_tenant")?.takeIf { it.isNotBlank() }
+
+    // ========== Public signup (SaaS) ==========
+
+    suspend fun publicSignup(request: PublicSignupRequest): PublicSignupResponse {
+        return client.post(getPublicSignupPath("")) {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun verifySignup(token: String): MagicLinkVerifyResponse {
+        return client.get(getPublicSignupPath("/verify")) {
+            url {
+                parameters.append("token", token)
+            }
+        }.body()
+    }
 
     /**
      * Admin login (email/password). Returns token and user. Throws on 401.
@@ -588,6 +608,19 @@ object ApiClient {
         return client.post(getSsoPath("")) {
             contentType(ContentType.Application.Json)
             setBody(request)
+        }.body()
+    }
+
+    // ========== Public Google OAuth callback (SaaS) ==========
+
+    private fun getPublicGoogleOAuthPath(path: String): String = getAuthPath("/public/oauth/google$path")
+
+    suspend fun completeGoogleSignup(code: String, state: String?): MagicLinkVerifyResponse {
+        return client.get(getPublicGoogleOAuthPath("/callback")) {
+            url {
+                parameters.append("code", code)
+                state?.takeIf { it.isNotBlank() }?.let { parameters.append("state", it) }
+            }
         }.body()
     }
     

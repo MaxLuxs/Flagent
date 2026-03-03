@@ -1,13 +1,16 @@
 package flagent.frontend.components.settings
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.SlackStatusResponse
 import flagent.frontend.components.Icon
 import flagent.frontend.components.export.ExportPanel
-import flagent.frontend.components.settings.ImportPanel
 import flagent.frontend.config.AppConfig
-import flagent.frontend.config.Edition
 import flagent.frontend.i18n.LocalizedStrings
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
@@ -18,17 +21,56 @@ import flagent.frontend.util.ErrorHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.*
+import org.jetbrains.compose.web.css.AlignItems
+import org.jetbrains.compose.web.css.Color
+import org.jetbrains.compose.web.css.DisplayStyle
+import org.jetbrains.compose.web.css.FlexWrap
+import org.jetbrains.compose.web.css.JustifyContent
+import org.jetbrains.compose.web.css.LineStyle
+import org.jetbrains.compose.web.css.alignItems
+import org.jetbrains.compose.web.css.backgroundColor
+import org.jetbrains.compose.web.css.border
+import org.jetbrains.compose.web.css.borderRadius
+import org.jetbrains.compose.web.css.color
+import org.jetbrains.compose.web.css.cursor
+import org.jetbrains.compose.web.css.display
+import org.jetbrains.compose.web.css.flex
+import org.jetbrains.compose.web.css.flexShrink
+import org.jetbrains.compose.web.css.flexWrap
+import org.jetbrains.compose.web.css.fontFamily
+import org.jetbrains.compose.web.css.fontSize
+import org.jetbrains.compose.web.css.fontWeight
+import org.jetbrains.compose.web.css.gap
+import org.jetbrains.compose.web.css.justifyContent
+import org.jetbrains.compose.web.css.margin
+import org.jetbrains.compose.web.css.marginBottom
+import org.jetbrains.compose.web.css.marginTop
+import org.jetbrains.compose.web.css.padding
+import org.jetbrains.compose.web.css.paddingBottom
+import org.jetbrains.compose.web.css.paddingTop
+import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.css.textAlign
+import org.jetbrains.compose.web.css.textDecoration
+import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.dom.A
+import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.Code
+import org.jetbrains.compose.web.dom.Div
+import org.jetbrains.compose.web.dom.H2
+import org.jetbrains.compose.web.dom.H3
+import org.jetbrains.compose.web.dom.P
+import org.jetbrains.compose.web.dom.Span
+import org.jetbrains.compose.web.dom.Text
 
 /**
- * Settings Page - настройки приложения
+ * Settings Page
  */
 @Composable
 fun SettingsPage() {
     val themeMode = LocalThemeMode.current
     var activeTab by remember { mutableStateOf("general") }
-    
+
     Div({
         style {
             padding(0.px)
@@ -79,28 +121,86 @@ fun SettingsPage() {
                     Text(if (AppConfig.isEnterprise) "ENTERPRISE" else "OPEN SOURCE")
                 }
             }
-            SettingsTab(themeMode, LocalizedStrings.generalTab, "settings", activeTab == "general") { activeTab = "general" }
+            SettingsTab(
+                themeMode,
+                LocalizedStrings.generalTab,
+                "settings",
+                activeTab == "general"
+            ) { activeTab = "general" }
             if (AppConfig.Features.enableFirebaseSettings) {
-                SettingsTab(themeMode, LocalizedStrings.firebaseTab, "cloud", activeTab == "firebase") { activeTab = "firebase" }
+                SettingsTab(
+                    themeMode,
+                    LocalizedStrings.firebaseTab,
+                    "cloud",
+                    activeTab == "firebase"
+                ) { activeTab = "firebase" }
             }
             if (AppConfig.Features.enableSso) {
-                SettingsTab(themeMode, LocalizedStrings.ssoProvidersTab, "security", activeTab == "sso") { activeTab = "sso" }
+                SettingsTab(
+                    themeMode,
+                    LocalizedStrings.ssoProvidersTab,
+                    "security",
+                    activeTab == "sso"
+                ) { activeTab = "sso" }
             }
             if (AppConfig.Features.enableSlack) {
-                SettingsTab(themeMode, LocalizedStrings.slackTab, "notifications", activeTab == "slack") { activeTab = "slack" }
+                SettingsTab(
+                    themeMode,
+                    LocalizedStrings.slackTab,
+                    "notifications",
+                    activeTab == "slack"
+                ) { activeTab = "slack" }
             }
             if (AppConfig.Features.enableBilling) {
-                SettingsTab(themeMode, LocalizedStrings.billingTab, "payment", activeTab == "billing") { activeTab = "billing" }
+                SettingsTab(
+                    themeMode,
+                    LocalizedStrings.billingTab,
+                    "payment",
+                    activeTab == "billing"
+                ) { activeTab = "billing" }
             }
-            SettingsTab(themeMode, "Webhooks", "webhook", activeTab == "webhooks") { activeTab = "webhooks" }
-            SettingsTab(themeMode, "Export", "download", activeTab == "export") { activeTab = "export" }
-            SettingsTab(themeMode, "Import", "upload", activeTab == "import") { activeTab = "import" }
-            SettingsTab(themeMode, LocalizedStrings.adminUsersTab, "person", activeTab == "users") { activeTab = "users" }
+            SettingsTab(
+                themeMode,
+                LocalizedStrings.webhooks,
+                "webhook",
+                activeTab == "webhooks"
+            ) {
+                activeTab = "webhooks"
+            }
+            SettingsTab(
+                themeMode,
+                LocalizedStrings.exportData,
+                "download",
+                activeTab == "export"
+            ) {
+                activeTab = "export"
+            }
+            SettingsTab(
+                themeMode,
+                LocalizedStrings.importFlags,
+                "upload",
+                activeTab == "import"
+            ) {
+                activeTab = "import"
+            }
+            SettingsTab(
+                themeMode,
+                LocalizedStrings.adminUsersTab,
+                "person",
+                activeTab == "users"
+            ) { activeTab = "users" }
             if (AppConfig.Features.enableRbac) {
-                SettingsTab(themeMode, "Roles", "security", activeTab == "roles") { activeTab = "roles" }
+                SettingsTab(
+                    themeMode,
+                    LocalizedStrings.rolesAndPermissions,
+                    "security",
+                    activeTab == "roles"
+                ) {
+                    activeTab = "roles"
+                }
             }
         }
-        
+
         // Tab content
         Div({
             style {
@@ -108,24 +208,33 @@ fun SettingsPage() {
                 property("min-width", "0")
             }
         }) {
-        when (activeTab) {
-            "general" -> GeneralSettings(themeMode)
-            "firebase" -> if (AppConfig.Features.enableFirebaseSettings) FirebaseSettings(themeMode)
-            "sso" -> if (AppConfig.Features.enableSso) SsoSettings(themeMode)
-            "slack" -> if (AppConfig.Features.enableSlack) SlackSettings(themeMode)
-            "billing" -> if (AppConfig.Features.enableBilling) BillingSettings(themeMode)
-            "webhooks" -> WebhooksSettings()
-            "export" -> ExportPanel()
-            "import" -> ImportPanel()
-            "users" -> AdminUsersSettings(themeMode)
-            "roles" -> if (AppConfig.Features.enableRbac) RolesSettings(themeMode)
-        }
+            when (activeTab) {
+                "general" -> GeneralSettings(themeMode)
+                "firebase" -> if (AppConfig.Features.enableFirebaseSettings) FirebaseSettings(
+                    themeMode
+                )
+
+                "sso" -> if (AppConfig.Features.enableSso) SsoSettings(themeMode)
+                "slack" -> if (AppConfig.Features.enableSlack) SlackSettings(themeMode)
+                "billing" -> if (AppConfig.Features.enableBilling) BillingSettings(themeMode)
+                "webhooks" -> WebhooksSettings()
+                "export" -> ExportPanel()
+                "import" -> ImportPanel()
+                "users" -> AdminUsersSettings(themeMode)
+                "roles" -> if (AppConfig.Features.enableRbac) RolesSettings(themeMode)
+            }
         }
     }
 }
 
 @Composable
-private fun SettingsTab(themeMode: flagent.frontend.state.ThemeMode, label: String, icon: String, isActive: Boolean, onClick: () -> Unit) {
+private fun SettingsTab(
+    themeMode: flagent.frontend.state.ThemeMode,
+    label: String,
+    icon: String,
+    isActive: Boolean,
+    onClick: () -> Unit
+) {
     Button({
         style {
             display(DisplayStyle.Flex)
@@ -142,11 +251,18 @@ private fun SettingsTab(themeMode: flagent.frontend.state.ThemeMode, label: Stri
             fontSize(14.px)
             fontWeight(if (isActive) "600" else "500")
             property("transition", "all 0.15s")
-            property("border-left", if (isActive) "3px solid ${FlagentTheme.Primary}" else "3px solid transparent")
+            property(
+                "border-left",
+                if (isActive) "3px solid ${FlagentTheme.Primary}" else "3px solid transparent"
+            )
         }
         onClick { onClick() }
     }) {
-        Icon(icon, size = 18.px, color = if (isActive) FlagentTheme.Primary else FlagentTheme.textLight(themeMode))
+        Icon(
+            icon,
+            size = 18.px,
+            color = if (isActive) FlagentTheme.Primary else FlagentTheme.textLight(themeMode)
+        )
         Text(label)
     }
 }
@@ -171,7 +287,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
         }) {
             Text(LocalizedStrings.generalSettings)
         }
-        
+
         SettingItem(
             themeMode,
             title = LocalizedStrings.apiBaseUrl,
@@ -239,7 +355,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                 )
             }
         }
-        
+
         if (AppConfig.Features.enableMultiTenancy) {
             Div({
                 style {
@@ -326,7 +442,8 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                             if (clip != null && clip != js("undefined")) {
                                 clip.writeText(url)
                             }
-                        } catch (_: Throwable) { }
+                        } catch (_: Throwable) {
+                        }
                     }
                     style {
                         padding(8.px, 14.px)
@@ -361,7 +478,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
                 }
             }
         }
-        
+
         // Feature flags status
         Div({
             style {
@@ -380,7 +497,7 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
             }) {
                 Text(LocalizedStrings.enabledFeatures)
             }
-            
+
             Div({
                 style {
                     display(DisplayStyle.Grid)
@@ -390,17 +507,56 @@ private fun GeneralSettings(themeMode: flagent.frontend.state.ThemeMode) {
             }) {
                 FeatureBadge(themeMode, "Metrics", AppConfig.Features.enableMetrics)
                 FeatureBadge(themeMode, "Smart Rollout", AppConfig.Features.enableSmartRollout)
-                FeatureBadge(themeMode, "Anomaly Detection", AppConfig.Features.enableAnomalyDetection)
+                FeatureBadge(
+                    themeMode,
+                    "Anomaly Detection",
+                    AppConfig.Features.enableAnomalyDetection
+                )
                 FeatureBadge(themeMode, "Real-time Updates", AppConfig.Features.enableRealtime)
-                
+
                 if (AppConfig.isEnterprise) {
-                    FeatureBadge(themeMode, "Multi-Tenancy", AppConfig.Features.enableMultiTenancy, isEnterprise = true)
-                    FeatureBadge(themeMode, "SSO", AppConfig.Features.enableSso, isEnterprise = true)
-                    FeatureBadge(themeMode, "Billing", AppConfig.Features.enableBilling, isEnterprise = true)
-                    FeatureBadge(themeMode, "Slack", AppConfig.Features.enableSlack, isEnterprise = true)
-                    FeatureBadge(themeMode, "Advanced Analytics", AppConfig.Features.enableAdvancedAnalytics, isEnterprise = true)
-                    FeatureBadge(themeMode, "Audit Logs", AppConfig.Features.enableAuditLogs, isEnterprise = true)
-                    FeatureBadge(themeMode, "RBAC", AppConfig.Features.enableRbac, isEnterprise = true)
+                    FeatureBadge(
+                        themeMode,
+                        "Multi-Tenancy",
+                        AppConfig.Features.enableMultiTenancy,
+                        isEnterprise = true
+                    )
+                    FeatureBadge(
+                        themeMode,
+                        "SSO",
+                        AppConfig.Features.enableSso,
+                        isEnterprise = true
+                    )
+                    FeatureBadge(
+                        themeMode,
+                        "Billing",
+                        AppConfig.Features.enableBilling,
+                        isEnterprise = true
+                    )
+                    FeatureBadge(
+                        themeMode,
+                        "Slack",
+                        AppConfig.Features.enableSlack,
+                        isEnterprise = true
+                    )
+                    FeatureBadge(
+                        themeMode,
+                        "Advanced Analytics",
+                        AppConfig.Features.enableAdvancedAnalytics,
+                        isEnterprise = true
+                    )
+                    FeatureBadge(
+                        themeMode,
+                        "Audit Logs",
+                        AppConfig.Features.enableAuditLogs,
+                        isEnterprise = true
+                    )
+                    FeatureBadge(
+                        themeMode,
+                        "RBAC",
+                        AppConfig.Features.enableRbac,
+                        isEnterprise = true
+                    )
                 }
             }
         }
@@ -418,7 +574,11 @@ private fun LanguageOptionButton(
         style {
             padding(8.px, 14.px)
             borderRadius(999.px)
-            border(1.px, LineStyle.Solid, if (isActive) FlagentTheme.Primary else FlagentTheme.inputBorder(themeMode))
+            border(
+                1.px,
+                LineStyle.Solid,
+                if (isActive) FlagentTheme.Primary else FlagentTheme.inputBorder(themeMode)
+            )
             backgroundColor(if (isActive) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
             color(if (isActive) Color.white else FlagentTheme.text(themeMode))
             cursor("pointer")
@@ -432,12 +592,17 @@ private fun LanguageOptionButton(
 }
 
 @Composable
-private fun SettingItem(themeMode: flagent.frontend.state.ThemeMode, title: String, description: String, value: String) {
+private fun SettingItem(
+    themeMode: flagent.frontend.state.ThemeMode,
+    title: String,
+    description: String,
+    value: String
+) {
     Div({
         style {
             marginBottom(20.px)
             paddingBottom(20.px)
-                property("border-bottom", "1px solid ${FlagentTheme.inputBorder(themeMode)}")
+            property("border-bottom", "1px solid ${FlagentTheme.inputBorder(themeMode)}")
         }
     }) {
         Div({
@@ -475,14 +640,23 @@ private fun SettingItem(themeMode: flagent.frontend.state.ThemeMode, title: Stri
 }
 
 @Composable
-private fun FeatureBadge(themeMode: flagent.frontend.state.ThemeMode, name: String, enabled: Boolean, isEnterprise: Boolean = false) {
+private fun FeatureBadge(
+    themeMode: flagent.frontend.state.ThemeMode,
+    name: String,
+    enabled: Boolean,
+    isEnterprise: Boolean = false
+) {
     Div({
         style {
             display(DisplayStyle.Flex)
             alignItems(AlignItems.Center)
             gap(6.px)
             padding(8.px, 12.px)
-            backgroundColor(if (enabled) FlagentTheme.successBg(themeMode) else FlagentTheme.inputBg(themeMode))
+            backgroundColor(
+                if (enabled) FlagentTheme.successBg(themeMode) else FlagentTheme.inputBg(
+                    themeMode
+                )
+            )
             borderRadius(6.px)
             fontSize(13.px)
         }
@@ -513,11 +687,11 @@ private fun FeatureBadge(themeMode: flagent.frontend.state.ThemeMode, name: Stri
 @Composable
 private fun SsoSettings(themeMode: flagent.frontend.state.ThemeMode) {
     val viewModel = remember { flagent.frontend.viewmodel.SsoViewModel() }
-    
+
     LaunchedEffect(Unit) {
         viewModel.loadProviders()
     }
-    
+
     Div({
         style {
             backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -603,7 +777,11 @@ private fun SsoSettings(themeMode: flagent.frontend.state.ThemeMode) {
                     }
                 }) {
                     Div {
-                        Div({ style { fontWeight("500"); color(FlagentTheme.text(themeMode)) } }) { Text(provider.name) }
+                        Div({ style { fontWeight("500"); color(FlagentTheme.text(themeMode)) } }) {
+                            Text(
+                                provider.name
+                            )
+                        }
                         Div({ style { fontSize(14.px); color(FlagentTheme.textLight(themeMode)) } }) {
                             Text("${provider.type} • ${if (provider.enabled) LocalizedStrings.enabled else LocalizedStrings.disabled}")
                         }
@@ -622,7 +800,7 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
     val testSending = remember { mutableStateOf(false) }
     val testResult = remember { mutableStateOf<String?>(null) }
     val scope = remember { CoroutineScope(Dispatchers.Main) }
-    
+
     LaunchedEffect(Unit) {
         slackLoading.value = true
         slackError.value = null
@@ -634,7 +812,7 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
             slackLoading.value = false
         }
     }
-    
+
     Div({
         style {
             backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -669,7 +847,7 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
                     color(FlagentTheme.textLight(themeMode))
                 }
             }) { Text(LocalizedStrings.loading) }
-        } else         if (slackError.value != null) {
+        } else if (slackError.value != null) {
             Div({
                 style {
                     padding(12.px)
@@ -720,9 +898,12 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
                             testResult.value = null
                             try {
                                 val res = ApiClient.sendSlackTestNotification()
-                                testResult.value = if (res.success) (res.message ?: "Test notification sent.") else (res.error ?: "Failed to send.")
+                                testResult.value = if (res.success) (res.message
+                                    ?: "Test notification sent.") else (res.error
+                                    ?: "Failed to send.")
                             } catch (e: Exception) {
-                                testResult.value = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                                testResult.value =
+                                    ErrorHandler.getUserMessage(ErrorHandler.handle(e))
                             } finally {
                                 testSending.value = false
                             }
@@ -730,7 +911,11 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
                     }
                     style {
                         padding(10.px, 20.px)
-                        backgroundColor(if (status.enabled && !testSending.value) FlagentTheme.Primary else FlagentTheme.inputBg(themeMode))
+                        backgroundColor(
+                            if (status.enabled && !testSending.value) FlagentTheme.Primary else FlagentTheme.inputBg(
+                                themeMode
+                            )
+                        )
                         color(Color.white)
                         border(0.px)
                         borderRadius(6.px)
@@ -748,7 +933,11 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
                             padding(10.px)
                             borderRadius(6.px)
                             fontSize(14.px)
-                            color(if (msg.contains("sent") || msg.contains("success")) FlagentTheme.Success else FlagentTheme.textLight(themeMode))
+                            color(
+                                if (msg.contains("sent") || msg.contains("success")) FlagentTheme.Success else FlagentTheme.textLight(
+                                    themeMode
+                                )
+                            )
                         }
                     }) {
                         Text(msg)
@@ -762,11 +951,11 @@ private fun SlackSettings(themeMode: flagent.frontend.state.ThemeMode) {
 @Composable
 private fun BillingSettings(themeMode: flagent.frontend.state.ThemeMode) {
     val viewModel = remember { flagent.frontend.viewmodel.BillingViewModel() }
-    
+
     LaunchedEffect(Unit) {
         viewModel.loadSubscription()
     }
-    
+
     Div({
         style {
             backgroundColor(FlagentTheme.cardBg(themeMode))
@@ -836,10 +1025,24 @@ private fun BillingSettings(themeMode: flagent.frontend.state.ThemeMode) {
                     marginBottom(15.px)
                 }
             }) {
-                Div({ style { fontWeight("600"); marginBottom(8.px); color(FlagentTheme.text(themeMode)) } }) {
+                Div({
+                    style {
+                        fontWeight("600"); marginBottom(8.px); color(
+                        FlagentTheme.text(
+                            themeMode
+                        )
+                    )
+                    }
+                }) {
                     Text("${LocalizedStrings.plan}: ${sub.plan.name} (${sub.status})")
                 }
-                Div({ style { fontSize(14.px); color(FlagentTheme.textLight(themeMode)); marginBottom(8.px) } }) {
+                Div({
+                    style {
+                        fontSize(14.px); color(FlagentTheme.textLight(themeMode)); marginBottom(
+                        8.px
+                    )
+                    }
+                }) {
                     Text("${LocalizedStrings.currentPeriod}: ${sub.currentPeriodStart} — ${sub.currentPeriodEnd}")
                 }
                 if (sub.cancelAtPeriodEnd) {

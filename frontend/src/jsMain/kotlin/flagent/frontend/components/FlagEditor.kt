@@ -247,7 +247,7 @@ fun FlagEditor(flagId: Int?) {
                                 onCheckedChange = { checked ->
                                     CoroutineScope(Dispatchers.Main).launch {
                                         try {
-                                            val updated = ApiClient.setFlagEnabled(flagId!!, checked)
+                                            val updated = ApiClient.setFlagEnabled(flagId, checked)
                                             flag.value = updated
                                         } catch (_: Exception) {
                                         }

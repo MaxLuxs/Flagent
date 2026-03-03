@@ -4,8 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import flagent.frontend.components.Icon
+import flagent.frontend.api.ApiClient
+import flagent.frontend.api.PublicSignupRequest
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
 import flagent.frontend.navigation.Router
@@ -13,7 +16,11 @@ import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.state.ThemeMode
 import flagent.frontend.theme.AppGradientBackground
 import flagent.frontend.theme.FlagentTheme
+import kotlinx.browser.document
+import kotlinx.browser.window
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.dom.*
 
 /**
@@ -51,6 +58,13 @@ fun MarketingLanding() {
                 attr("data-reveal", "true")
             }) {
                 HeroSection()
+            }
+            Div(attrs = {
+                id("start-free-trial")
+                classes("reveal-on-scroll")
+                attr("data-reveal", "true")
+            }) {
+                StartFreeTrialSection()
             }
             Div(attrs = {
                 classes("reveal-on-scroll")
@@ -427,58 +441,205 @@ private fun HeroSection() {
                 Text("Open source · Docs")
             }
         }
-        Div(attrs = {
-            classes("hero-mockup")
+    }
+}
+
+@Composable
+private fun StartFreeTrialSection() {
+    val scope = rememberCoroutineScope()
+    var companyName by remember { mutableStateOf("") }
+    var ownerEmail by remember { mutableStateOf("") }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var signupMessage by remember { mutableStateOf<String?>(null) }
+    var signupError by remember { mutableStateOf<String?>(null) }
+
+    Div(attrs = {
+        classes("hero-mockup")
+        style {
+            marginTop(32.px)
+            property("margin-left", "auto")
+            property("margin-right", "auto")
+            maxWidth(720.px)
+            property("border-radius", "18px")
+            property("border", "1px solid rgba(148,163,184,0.4)")
+            property("box-shadow", "0 24px 48px rgba(15,23,42,0.8)")
+            padding(28.px)
+            backgroundColor(Color("rgba(15,23,42,0.96)"))
+        }
+    }) {
+        H2(attrs = {
             style {
-                marginTop(48.px)
-                property("margin-left", "auto")
-                property("margin-right", "auto")
-                maxWidth(900.px)
-                property("border-radius", "12px")
-                property("border", "1px solid rgba(255,255,255,0.12)")
-                property("box-shadow", "0 24px 48px rgba(0,0,0,0.4)")
-                overflow("hidden")
-                property("animation", "fadeIn 0.8s ease-out 0.2s both")
+                fontSize(24.px)
+                fontWeight(600)
+                color(Color.white)
+                marginBottom(8.px)
             }
         }) {
-            Div(attrs = {
+            Text("Start free trial")
+        }
+        P(attrs = {
+            style {
+                fontSize(14.px)
+                color(Color("rgba(226,232,240,0.85)"))
+                marginBottom(20.px)
+            }
+        }) {
+            Text("Spin up a tenant with magic-link login for the owner. No credit card required.")
+        }
+        Div(attrs = {
+            style {
+                display(DisplayStyle.Flex)
+                flexWrap(FlexWrap.Wrap)
+                gap(12.px)
+                justifyContent(JustifyContent.Center)
+                marginBottom(16.px)
+            }
+        }) {
+            Input(InputType.Text, attrs = {
+                value(companyName)
+                onInput { companyName = it.target.value }
                 style {
                     padding(12.px, 16.px)
-                    property("background", "rgba(0,0,0,0.3)")
-                    property("border-bottom", "1px solid rgba(255,255,255,0.08)")
-                    display(DisplayStyle.Flex)
-                    alignItems(AlignItems.Center)
-                    gap(8.px)
+                    minWidth(220.px)
+                    maxWidth(260.px)
+                    borderRadius(10.px)
+                    border(0.px)
+                    backgroundColor(Color("rgba(15,23,42,0.9)"))
+                    color(Color.white)
+                    fontSize(14.px)
                 }
-            }) {
-                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(FlagentTheme.Error) } }) {}
-                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(FlagentTheme.Warning) } }) {}
-                Div(attrs = { style { width(12.px); height(12.px); borderRadius(50.percent); backgroundColor(FlagentTheme.Success) } }) {}
-                Span(attrs = { style { marginLeft(16.px); fontSize(12.px); color(Color("rgba(255,255,255,0.5)")) } }) { Text("Flagent Dashboard") }
-            }
-            Div(attrs = {
+                attr("placeholder", "Company name")
+            })
+            Input(InputType.Email, attrs = {
+                value(ownerEmail)
+                onInput { ownerEmail = it.target.value }
                 style {
-                    padding(0.px)
-                    property("background", "linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.9) 100%)")
+                    padding(12.px, 16.px)
+                    minWidth(220.px)
+                    maxWidth(260.px)
+                    borderRadius(10.px)
+                    border(0.px)
+                    backgroundColor(Color("rgba(15,23,42,0.9)"))
+                    color(Color.white)
+                    fontSize(14.px)
+                }
+                attr("placeholder", "Work email")
+            })
+        }
+        Div(attrs = {
+            style {
+                display(DisplayStyle.Flex)
+                flexWrap(FlexWrap.Wrap)
+                gap(12.px)
+                justifyContent(JustifyContent.Center)
+                marginBottom(8.px)
+            }
+        }) {
+            Button(attrs = {
+                style {
+                    padding(14.px, 32.px)
+                    backgroundColor(Color.white)
+                    color(FlagentTheme.Primary)
+                    border(0.px)
+                    borderRadius(999.px)
+                    cursor("pointer")
+                    fontSize(15.px)
+                    fontWeight(600)
                     display(DisplayStyle.Flex)
-                    flexDirection(FlexDirection.Column)
                     alignItems(AlignItems.Center)
                     justifyContent(JustifyContent.Center)
-                    overflow("hidden")
+                    gap(8.px)
+                    property("box-shadow", "0 12px 30px rgba(15,23,42,0.6)")
+                    property("transition", "all 0.2s ease")
+                    opacity(if (isSubmitting) 0.7 else 1.0)
+                }
+                onClick {
+                    if (companyName.isBlank() || ownerEmail.isBlank()) {
+                        signupError = "Enter company name and work email"
+                        signupMessage = null
+                        return@onClick
+                    }
+                    scope.launch {
+                        isSubmitting = true
+                        signupError = null
+                        try {
+                            val slug = companyName.lowercase()
+                                .replace(Regex("[^a-z0-9]+"), "-")
+                                .trim('-')
+                                .ifBlank { "tenant-${kotlin.js.Date().getTime().toLong()}" }
+                            ApiClient.publicSignup(
+                                PublicSignupRequest(
+                                    key = slug,
+                                    name = companyName,
+                                    plan = null,
+                                    ownerEmail = ownerEmail
+                                )
+                            )
+                            signupMessage = "Check your email for a magic login link."
+                        } catch (e: Throwable) {
+                            val appError = flagent.frontend.util.ErrorHandler.handle(e)
+                            signupError = flagent.frontend.util.ErrorHandler.getUserMessage(appError)
+                            signupMessage = null
+                        } finally {
+                            isSubmitting = false
+                        }
+                    }
                 }
             }) {
-                Img(
-                    src = "/screenshot-dashboard.png",
-                    attrs = {
-                        style {
-                            width(100.percent)
-                            property("max-width", "900px")
-                            property("object-fit", "contain")
-                            property("display", "block")
-                        }
-                        attr("alt", "Flagent Dashboard")
+                Icon("rocket_launch", size = 18.px, color = FlagentTheme.Primary)
+                Text(" ")
+                Text("Start free trial")
+            }
+            Button(attrs = {
+                style {
+                    padding(14.px, 32.px)
+                    backgroundColor(Color("rgba(15,23,42,0.9)"))
+                    color(Color("rgba(248,250,252,0.95)"))
+                    border(1.px, LineStyle.Solid, Color("rgba(148,163,184,0.8)"))
+                    borderRadius(999.px)
+                    cursor("pointer")
+                    fontSize(14.px)
+                    fontWeight(500)
+                    display(DisplayStyle.Flex)
+                    alignItems(AlignItems.Center)
+                    justifyContent(JustifyContent.Center)
+                    gap(8.px)
+                    property("transition", "all 0.2s ease")
+                }
+                onClick {
+                    if (companyName.isBlank()) {
+                        signupError = "Enter company name"
+                        signupMessage = null
+                        return@onClick
                     }
-                )
+                    val slug = companyName.lowercase()
+                        .replace(Regex("[^a-z0-9]+"), "-")
+                        .trim('-')
+                        .ifBlank { "tenant-${kotlin.js.Date().getTime().toLong()}" }
+                    val base = AppConfig.apiBaseUrl
+                    val path = "/public/oauth/google/login?state=signup:$slug"
+                    val url = if (base.isEmpty() || base == "http://localhost" || base == "https://localhost") {
+                        "${window.location.origin}$path"
+                    } else {
+                        "$base$path"
+                    }
+                    window.location.href = url
+                }
+            }) {
+                Icon("login", size = 18.px, color = Color("rgba(248,250,252,0.95)"))
+                Text(" ")
+                Text("Continue with Google")
+            }
+        }
+        if (signupMessage != null || signupError != null) {
+            P(attrs = {
+                style {
+                    marginTop(4.px)
+                    fontSize(13.px)
+                    color(if (signupError != null) Color("rgba(248,113,113,1)") else Color("rgba(187,247,208,1)"))
+                }
+            }) {
+                Text(signupError ?: signupMessage ?: "")
             }
         }
     }

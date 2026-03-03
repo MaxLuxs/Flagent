@@ -113,6 +113,18 @@ sealed class Route {
         const val PATH = "/login"
     }
 
+    object SignupVerify : Route() {
+        const val PATH = "/signup/verify"
+    }
+
+    object SignupGoogleVerify : Route() {
+        const val PATH = "/signup/google/callback"
+    }
+
+    object SsoCallback : Route() {
+        const val PATH = "/sso/callback"
+    }
+
     object Pricing : Route() {
         const val PATH = "/pricing"
     }
@@ -210,6 +222,9 @@ object Router {
                 if (projectId != null && appId != null) Route.ApplicationDetail(projectId, appId) else Route.Projects
             }
             p == Route.Login.PATH -> Route.Login
+            p == Route.SignupVerify.PATH -> Route.SignupVerify
+            p == Route.SignupGoogleVerify.PATH -> Route.SignupGoogleVerify
+            p == Route.SsoCallback.PATH -> Route.SsoCallback
             p == Route.Pricing.PATH -> Route.Pricing
             p == Route.Blog.PATH -> Route.Blog
 
@@ -277,6 +292,9 @@ object Router {
             is Route.ProjectDetail -> this.path()
             is Route.ApplicationDetail -> this.path()
             is Route.Login -> Route.Login.PATH
+            is Route.SignupVerify -> Route.SignupVerify.PATH
+            is Route.SignupGoogleVerify -> Route.SignupGoogleVerify.PATH
+            is Route.SsoCallback -> Route.SsoCallback.PATH
             is Route.Pricing -> Route.Pricing.PATH
             is Route.Blog -> Route.Blog.PATH
         }

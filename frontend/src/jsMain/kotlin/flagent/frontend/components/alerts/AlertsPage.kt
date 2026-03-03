@@ -12,9 +12,7 @@ import flagent.frontend.viewmodel.AnomalyViewModel
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
-/**
- * Alerts Page - глобальный список всех алертов
- */
+/** Alerts Page – global list of all anomaly alerts. */
 @Composable
 fun AlertsPage() {
     if (!AppConfig.Features.enableAnomalyDetection) {

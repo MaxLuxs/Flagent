@@ -94,6 +94,15 @@ class AuthViewModel {
         isAuthenticated = false
         AppLogger.info(TAG, "User logged out")
     }
+
+    fun setAuthenticated(token: String, user: User) {
+        localStorage.setItem(TOKEN_KEY, token)
+        localStorage.setItem(USER_KEY, Json.encodeToString(User.serializer(), user))
+        currentUser = user
+        isAuthenticated = true
+        error = null
+        AppLogger.info(TAG, "User authenticated via external flow: ${user.email}")
+    }
     
     fun getAuthToken(): String? {
         return localStorage.getItem(TOKEN_KEY)

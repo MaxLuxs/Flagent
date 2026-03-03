@@ -35,9 +35,7 @@ private enum class MetricsPeriod(val rangeMs: Long, val bucketMs: Long) {
     P7D(7 * 86400_000, 6 * 3600_000)
 }
 
-/**
- * Dashboard - главная страница с общей статистикой
- */
+/** Dashboard page with global stats and quick navigation. */
 @Composable
 fun Dashboard(tenantViewModel: TenantViewModel? = null) {
     val themeMode = LocalThemeMode.current
@@ -67,7 +65,7 @@ fun Dashboard(tenantViewModel: TenantViewModel? = null) {
             block = {
                 coroutineScope {
                     val flagsDeferred = async {
-                        // preload=true нужен для подсчёта flagsWithSegments / flagsWithVariants на дашборде
+                        // preload=true is required to compute flagsWithSegments / flagsWithVariants on the dashboard
                         val (loadedFlags, _) = ApiClient.getFlags(preload = true)
                         loadedFlags
                     }
@@ -833,7 +831,7 @@ private fun HealthStatusCard(
         (metricsOverview?.totalEvaluations ?: 0L) == 0L
 
     val (indicatorColor, statusText) = when {
-        hasHighSeverityAlerts -> FlagentTheme.Warning to LocalizedStrings.healthAnomaliesCount(anomalyViewModel!!.alerts.size)
+        hasHighSeverityAlerts -> FlagentTheme.Warning to LocalizedStrings.healthAnomaliesCount(anomalyViewModel.alerts.size)
         noEvaluationsInPeriod -> FlagentTheme.Warning to LocalizedStrings.healthNoEvaluations
         else -> FlagentTheme.Success to LocalizedStrings.healthStatusOk
     }
