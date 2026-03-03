@@ -229,7 +229,7 @@ private fun AppShell(
                 is Route.Settings -> flagent.frontend.components.settings.SettingsPage()
                 is Route.Tenants -> flagent.frontend.components.tenants.TenantsList(tenantViewModel = vm)
                 is Route.Projects, is Route.ProjectDetail, is Route.ApplicationDetail -> flagent.frontend.components.projects.ProjectsPage()
-                is Route.Login, is Route.SignupVerify, is Route.SignupGoogleVerify, is Route.Pricing, is Route.Blog -> {}
+                is Route.Login, is Route.SignupVerify, is Route.SignupGoogleVerify, is Route.SsoCallback, is Route.Pricing, is Route.Blog -> {}
             }
         }
     }
@@ -301,6 +301,62 @@ private fun SignupVerifyPage(authViewModel: AuthViewModel) {
             }
         } else {
             P { Text("Redirecting to your dashboard...") }
+        }
+    }
+}
+
+@Composable
+private fun SsoCallbackPage(authViewModel: AuthViewModel) {
+    var done by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (done) return@LaunchedEffect
+        val search = window.location.search
+        val params = org.w3c.dom.url.URLSearchParams(search)
+        val ssoToken = params.get("sso_token")?.trim().orEmpty()
+        val userId = params.get("user_id")?.trim().orEmpty()
+        val email = params.get("email")?.trim().orEmpty()
+        val tenantId = params.get("tenant_id")?.trim().orEmpty()
+        val name = params.get("name")?.trim()
+
+        if (ssoToken.isBlank() || userId.isBlank() || email.isBlank()) {
+            error = "Missing sign-in data. Please try logging in again."
+            return@LaunchedEffect
+        }
+
+        val user = User(id = userId, email = email, name = name.takeIf { !it.isNullOrBlank() })
+        authViewModel.setAuthenticated(ssoToken, user)
+        if (tenantId.isNotBlank()) {
+            localStorage.setItem("current_tenant", tenantId)
+        }
+        window.history.replaceState(null, "", Route.SsoCallback.PATH)
+        done = true
+        Router.navigateTo(Route.Dashboard)
+    }
+
+    Div(attrs = {
+        style {
+            minHeight(100.vh)
+            display(DisplayStyle.Flex)
+            flexDirection(FlexDirection.Column)
+            alignItems(AlignItems.Center)
+            justifyContent(JustifyContent.Center)
+            padding(24.px)
+        }
+    }) {
+        if (error != null) {
+            H2 { Text("Sign-in problem") }
+            P(attrs = {
+                style { property("color", "#ef4444") }
+            }) { Text(error!!) }
+            Button(attrs = {
+                style { marginTop(16.px) }
+                onClick { Router.navigateTo(Route.Login) }
+            }) { Text("Back to login") }
+        } else {
+            H2 { Text("Completing sign-in...") }
+            P { Text("Redirecting to your dashboard.") }
         }
     }
 }
