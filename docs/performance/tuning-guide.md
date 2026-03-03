@@ -1,7 +1,5 @@
 # Performance Tuning Guide
 
-> [English](tuning-guide.md)
-
 Guide to tuning Flagent performance based on load testing results.
 
 **Note:** Metrics, anomaly, and smart rollout indices/tables apply when using the corresponding features (Core metrics or Enterprise). Evaluation and flag CRUD are always relevant for OSS.
