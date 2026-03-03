@@ -84,7 +84,7 @@ fun ToggleSwitch(
                     if (checked) "translateX(${translateX}px)" else "translateX(0px)"
                 )
                 property("transition", "transform 0.22s cubic-bezier(0.4, 0, 0.2, 1)")
-                property("box-shadow", "0 2px 4px rgba(0,0,0,0.2)")
+                property("box-shadow", FlagentTheme.ShadowCard)
                 property("flex-shrink", "0")
             }
         })

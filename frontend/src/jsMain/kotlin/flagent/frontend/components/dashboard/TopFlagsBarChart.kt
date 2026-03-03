@@ -75,10 +75,9 @@ private fun createBarChart(
     }.toTypedArray()
     val data = topFlags.map { it.evaluationCount.toInt() }.toTypedArray()
     val Chart = js("window.Chart")
-    val isDark = themeMode == ThemeMode.Dark
-    val gridColor = if (isDark) "rgba(255,255,255,0.1)" else "rgba(0,0,0,0.08)"
-    val tickColor = if (isDark) "rgba(255,255,255,0.7)" else "rgba(0,0,0,0.6)"
-    val titleColor = if (isDark) "rgba(255,255,255,0.9)" else "rgba(0,0,0,0.85)"
+    val gridColor = FlagentTheme.cardBorder(themeMode).toString()
+    val tickColor = FlagentTheme.text(themeMode).toString()
+    val titleColor = FlagentTheme.text(themeMode).toString()
     val barColor = FlagentTheme.Primary.toString()
 
     val config = js("""({
