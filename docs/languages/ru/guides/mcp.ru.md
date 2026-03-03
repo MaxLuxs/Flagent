@@ -1,7 +1,5 @@
 # MCP (Model Context Protocol) для Flagent
 
-> [English](../../guides/mcp.md)
-
 Flagent предоставляет **MCP-сервер**, чтобы AI-ассистенты (Cursor, Claude, GigaChat и др.) могли читать и управлять feature flags, выполнять evaluation и анализировать эксперименты.
 
 ## Включение MCP

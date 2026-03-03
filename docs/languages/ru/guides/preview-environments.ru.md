@@ -1,7 +1,5 @@
 # Preview Environments
 
-> [English](../../guides/preview-environments.md)
-
 Настройка feature flags для preview/PR окружений (Vercel, Netlify, Cloudflare Pages).
 
 ## Резервированные ключи entityContext

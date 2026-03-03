@@ -1,7 +1,5 @@
 # Trunk-Based Development with Flagent
 
-> [English](trunk-based-development.md)
-
 Guidelines for using Flagent in trunk-based workflow: feature branches → feature flags.
 
 ## Convention: branch → flag key

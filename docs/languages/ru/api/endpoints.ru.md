@@ -1,7 +1,5 @@
 # API Endpoints
 
-> [English](../../api/endpoints.md)
-
 ## Базовый путь
 
 Все endpoint используют базовый путь `/api/v1`.

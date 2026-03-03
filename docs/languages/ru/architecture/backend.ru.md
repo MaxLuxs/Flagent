@@ -1,7 +1,5 @@
 # Архитектура Backend (Ktor)
 
-> [English](../../architecture/backend.md)
-
 ## Обзор
 
 Backend построен на Ktor с использованием Kotlin Coroutines для асинхронности.
