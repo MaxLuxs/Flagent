@@ -44,11 +44,14 @@ fun MarketingLanding() {
         }) {
             LandingBackgroundShapes(themeMode)
             Div(attrs = {
+                classes("landing-content")
                 style {
                     position(Position.Relative)
                     padding(48.px, 24.px)
                     maxWidth(1100.px)
                     property("margin", "0 auto")
+                    property("width", "100%")
+                    property("box-sizing", "border-box")
                     property("z-index", "1")
                 }
             }) {

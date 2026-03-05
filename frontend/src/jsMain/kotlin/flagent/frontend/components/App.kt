@@ -120,6 +120,7 @@ fun App() {
             is Route.Login -> Route.Home.PATH
             is Route.SignupVerify -> Route.SignupVerify.PATH
             is Route.SignupGoogleVerify -> Route.SignupGoogleVerify.PATH
+            is Route.SsoCallback -> Route.SsoCallback.PATH
         }
         sessionStorage.setItem(AUTH_RETURN_URL_KEY, returnPath)
         Router.navigateTo(Route.Login)

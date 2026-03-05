@@ -115,6 +115,7 @@ fun ShellLayout(
                 }
             }) {
                 Div(attrs = {
+                    classes("app-content-area")
                     style {
                         flex(1)
                         overflow("auto")

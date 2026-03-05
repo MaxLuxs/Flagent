@@ -2,9 +2,15 @@ package flagent.frontend.components.analytics
 
 import androidx.compose.runtime.*
 import flagent.api.model.FlagResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import flagent.api.model.TagResponse
 import flagent.frontend.api.AnalyticsOverviewResponse
 import flagent.frontend.api.ApiClient
+import flagent.frontend.api.FunnelRequest
+import flagent.frontend.api.FunnelResultResponse
+import flagent.frontend.api.FunnelStepRequest
 import flagent.frontend.api.GlobalMetricsOverviewResponse
 import flagent.frontend.api.TimeSeriesEntryResponse
 import flagent.frontend.components.Icon
@@ -56,6 +62,20 @@ fun AnalyticsPage() {
     var flagsSortAscending by remember { mutableStateOf(true) }
 
     var isLoadingEvents by remember { mutableStateOf(false) }
+    var eventsFilterPlatform by remember { mutableStateOf("") }
+    var eventsFilterAppVersion by remember { mutableStateOf("") }
+    var eventsFilterEventName by remember { mutableStateOf("") }
+
+    val funnelSteps = remember { mutableStateListOf<String>() }
+    var funnelNewStepName by remember { mutableStateOf("") }
+    var funnelEntityDimension by remember { mutableStateOf("USER_ID") }
+    var funnelTimeRange by remember { mutableStateOf("7d") }
+    var funnelPlatform by remember { mutableStateOf("") }
+    var funnelAppVersion by remember { mutableStateOf("") }
+    var funnelResult by remember { mutableStateOf<FunnelResultResponse?>(null) }
+    var funnelError by remember { mutableStateOf<String?>(null) }
+    var funnelLoading by remember { mutableStateOf(false) }
+    val funnelScope = remember { CoroutineScope(Dispatchers.Main) }
 
     val endTime = remember(timeRange) { (kotlin.js.Date().getTime() as Number).toLong() }
     val startTime = remember(timeRange) { endTime - timeRangeToMs(timeRange) }
@@ -78,7 +98,7 @@ fun AnalyticsPage() {
         )
     }
 
-    LaunchedEffect(activeTab, timeRange, compareWithPrevious) {
+    LaunchedEffect(activeTab, timeRange, compareWithPrevious, eventsFilterPlatform, eventsFilterAppVersion, eventsFilterEventName) {
         when (activeTab) {
             "overview" -> {
                 if (AppConfig.Features.enableMetrics) {
@@ -113,11 +133,17 @@ fun AnalyticsPage() {
             "events" -> {
                 isLoadingEvents = true
                 try {
+                    val platform = eventsFilterPlatform.takeIf { it.isNotBlank() }
+                    val appVersion = eventsFilterAppVersion.takeIf { it.isNotBlank() }
+                    val eventName = eventsFilterEventName.takeIf { it.isNotBlank() }
                     analyticsOverview = ApiClient.getAnalyticsOverview(
                         startTime = startTime,
                         endTime = endTime,
                         topLimit = 20,
-                        timeBucketMs = bucketMs
+                        timeBucketMs = bucketMs,
+                        platform = platform,
+                        appVersion = appVersion,
+                        eventName = eventName
                     )
                     if (compareWithPrevious) {
                         val prevEnd = startTime
@@ -126,7 +152,10 @@ fun AnalyticsPage() {
                             startTime = prevStart,
                             endTime = prevEnd,
                             topLimit = 20,
-                            timeBucketMs = bucketMs
+                            timeBucketMs = bucketMs,
+                            platform = platform,
+                            appVersion = appVersion,
+                            eventName = eventName
                         )
                     } else {
                         analyticsOverviewPrevious = null
@@ -162,6 +191,7 @@ fun AnalyticsPage() {
         }) {
             TabButton(themeMode, LocalizedStrings.overviewTab, activeTab == "overview") { activeTab = "overview" }
             TabButton(themeMode, LocalizedStrings.eventsTab, activeTab == "events") { activeTab = "events" }
+            TabButton(themeMode, "Funnels", activeTab == "funnels") { activeTab = "funnels" }
             if (hasOverview) {
                 TabButton(themeMode, LocalizedStrings.byFlagsTab, activeTab == "flags") { activeTab = "flags" }
             }
@@ -234,6 +264,69 @@ fun AnalyticsPage() {
                 }
                 if (activeTab == "events" && analyticsOverview != null) {
                     AnalyticsEventsExportButtons(themeMode, analyticsOverview!!, analyticsOverviewPrevious)
+                }
+            }
+            if (activeTab == "events") {
+                Div({
+                    style {
+                        display(DisplayStyle.Flex)
+                        flexWrap(FlexWrap.Wrap)
+                        alignItems(AlignItems.Center)
+                        gap(12.px)
+                        marginBottom(16.px)
+                    }
+                }) {
+                    Span({
+                        style {
+                            fontSize(13.px)
+                            color(FlagentTheme.textLight(themeMode))
+                            marginRight(4.px)
+                        }
+                    }) {
+                        Text("Filters:")
+                    }
+                    Input(InputType.Text) {
+                        value(eventsFilterPlatform)
+                        onInput { eventsFilterPlatform = it.target.value }
+                        attr("placeholder", "Platform (e.g. android, ios, web)")
+                        style {
+                            padding(6.px, 10.px)
+                            borderRadius(6.px)
+                            border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
+                            fontSize(13.px)
+                            width(140.px)
+                        }
+                    }
+                    Input(InputType.Text) {
+                        value(eventsFilterAppVersion)
+                        onInput { eventsFilterAppVersion = it.target.value }
+                        attr("placeholder", "App version")
+                        style {
+                            padding(6.px, 10.px)
+                            borderRadius(6.px)
+                            border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
+                            fontSize(13.px)
+                            width(120.px)
+                        }
+                    }
+                    Input(InputType.Text) {
+                        value(eventsFilterEventName)
+                        onInput { eventsFilterEventName = it.target.value }
+                        attr("placeholder", "Event name")
+                        style {
+                            padding(6.px, 10.px)
+                            borderRadius(6.px)
+                            border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                            backgroundColor(FlagentTheme.inputBg(themeMode))
+                            color(FlagentTheme.text(themeMode))
+                            fontSize(13.px)
+                            width(160.px)
+                        }
+                    }
                 }
             }
         }
@@ -576,6 +669,310 @@ fun AnalyticsPage() {
                             }
                         }) {
                             Text(LocalizedStrings.noAnalyticsEventsYet)
+                        }
+                    }
+                }
+            }
+        } else if (activeTab == "funnels") {
+            Div({
+                style {
+                    display(DisplayStyle.Flex)
+                    flexDirection(FlexDirection.Column)
+                    gap(24.px)
+                }
+            }) {
+                Div({
+                    style {
+                        backgroundColor(FlagentTheme.cardBg(themeMode))
+                        borderRadius(8.px)
+                        padding(20.px)
+                        property("box-shadow", FlagentTheme.ShadowCard)
+                    }
+                }) {
+                    H3({
+                        style {
+                            fontSize(16.px)
+                            fontWeight("600")
+                            color(FlagentTheme.text(themeMode))
+                            margin(0.px)
+                            marginBottom(16.px)
+                        }
+                    }) {
+                        Text("Funnel steps")
+                    }
+                    Div({
+                        style {
+                            display(DisplayStyle.Flex)
+                            flexWrap(FlexWrap.Wrap)
+                            alignItems(AlignItems.Center)
+                            gap(8.px)
+                            marginBottom(12.px)
+                        }
+                    }) {
+                        Input(InputType.Text) {
+                            value(funnelNewStepName)
+                            onInput { funnelNewStepName = it.target.value }
+                            attr("placeholder", "Event name (e.g. screen_view, purchase)")
+                            style {
+                                padding(8.px, 12.px)
+                                borderRadius(6.px)
+                                border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                color(FlagentTheme.text(themeMode))
+                                fontSize(14.px)
+                                width(220.px)
+                            }
+                        }
+                        Button({
+                            style {
+                                padding(8.px, 16.px)
+                                backgroundColor(FlagentTheme.Primary)
+                                color(Color.white)
+                                border(0.px)
+                                borderRadius(6.px)
+                                cursor("pointer")
+                                fontSize(14.px)
+                            }
+                            onClick {
+                                val name = funnelNewStepName.trim()
+                                if (name.isNotEmpty()) {
+                                    funnelSteps.add(name)
+                                    funnelNewStepName = ""
+                                }
+                            }
+                        }) {
+                            Text("Add step")
+                        }
+                    }
+                    if (funnelSteps.isNotEmpty()) {
+                        Div({
+                            style {
+                                display(DisplayStyle.Flex)
+                                flexWrap(FlexWrap.Wrap)
+                                gap(8.px)
+                                marginBottom(16.px)
+                            }
+                        }) {
+                            funnelSteps.forEachIndexed { index, name ->
+                                Span({
+                                    style {
+                                        display(DisplayStyle.Flex)
+                                        alignItems(AlignItems.Center)
+                                        gap(6.px)
+                                        padding(6.px, 10.px)
+                                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                                        borderRadius(6.px)
+                                        fontSize(13.px)
+                                        color(FlagentTheme.text(themeMode))
+                                    }
+                                }) {
+                                    Text("${index + 1}. $name")
+                                    Button({
+                                        style {
+                                            padding(2.px, 6.px)
+                                            fontSize(12.px)
+                                            backgroundColor(FlagentTheme.Error)
+                                            color(Color.white)
+                                            border(0.px)
+                                            borderRadius(4.px)
+                                            cursor("pointer")
+                                        }
+                                        onClick { funnelSteps.removeAt(index) }
+                                    }) {
+                                        Text("Remove")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Div({
+                        style {
+                            display(DisplayStyle.Flex)
+                            flexWrap(FlexWrap.Wrap)
+                            alignItems(AlignItems.Center)
+                            gap(12.px)
+                            marginBottom(16.px)
+                        }
+                    }) {
+                        Span({ style { fontSize(13.px); color(FlagentTheme.textLight(themeMode)) } }) {
+                            Text("Entity:")
+                        }
+                        Select({
+                            attr("value", funnelEntityDimension)
+                            onInput { funnelEntityDimension = (it.target as org.w3c.dom.HTMLSelectElement).value }
+                            style {
+                                padding(6.px, 10.px)
+                                borderRadius(6.px)
+                                border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                color(FlagentTheme.text(themeMode))
+                                fontSize(13.px)
+                            }
+                        }) {
+                            Option(value = "USER_ID") { Text("User ID") }
+                            Option(value = "SESSION_ID") { Text("Session ID") }
+                        }
+                        Span({ style { fontSize(13.px); color(FlagentTheme.textLight(themeMode)); marginLeft(8.px) } }) {
+                            Text("Period:")
+                        }
+                        listOf("24h" to "24h", "7d" to "7d", "30d" to "30d").forEach { (value, label) ->
+                            Button({
+                                style {
+                                    padding(6.px, 12.px)
+                                    border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    borderRadius(6.px)
+                                    cursor("pointer")
+                                    fontSize(13.px)
+                                    backgroundColor(if (funnelTimeRange == value) FlagentTheme.Primary else Color.transparent)
+                                    color(if (funnelTimeRange == value) Color.white else FlagentTheme.text(themeMode))
+                                }
+                                onClick { funnelTimeRange = value }
+                            }) {
+                                Text(label)
+                            }
+                        }
+                        Input(InputType.Text) {
+                            value(funnelPlatform)
+                            onInput { funnelPlatform = it.target.value }
+                            attr("placeholder", "Platform (optional)")
+                            style {
+                                padding(6.px, 10.px)
+                                borderRadius(6.px)
+                                border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                color(FlagentTheme.text(themeMode))
+                                fontSize(13.px)
+                                width(100.px)
+                            }
+                        }
+                        Input(InputType.Text) {
+                            value(funnelAppVersion)
+                            onInput { funnelAppVersion = it.target.value }
+                            attr("placeholder", "App version (optional)")
+                            style {
+                                padding(6.px, 10.px)
+                                borderRadius(6.px)
+                                border(1.px, LineStyle.Solid, FlagentTheme.inputBorder(themeMode))
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                color(FlagentTheme.text(themeMode))
+                                fontSize(13.px)
+                                width(110.px)
+                            }
+                        }
+                    }
+                    if (funnelError != null) {
+                        Div({
+                            style {
+                                padding(12.px)
+                                backgroundColor(FlagentTheme.errorBg(themeMode))
+                                borderRadius(6.px)
+                                color(FlagentTheme.errorText(themeMode))
+                                fontSize(13.px)
+                                marginBottom(12.px)
+                            }
+                        }) {
+                            Text(funnelError!!)
+                        }
+                    }
+                    Button({
+                        if (funnelSteps.isEmpty() || funnelLoading) attr("disabled", "true")
+                        style {
+                            padding(10.px, 20.px)
+                            backgroundColor(FlagentTheme.Primary)
+                            color(Color.white)
+                            border(0.px)
+                            borderRadius(6.px)
+                            cursor("pointer")
+                            fontSize(14.px)
+                        }
+                        onClick {
+                            funnelError = null
+                            funnelResult = null
+                            funnelLoading = true
+                            val end = (kotlin.js.Date().getTime() as Number).toLong()
+                            val start = end - timeRangeToMs(funnelTimeRange)
+                            val request = FunnelRequest(
+                                steps = funnelSteps.map { FunnelStepRequest(eventName = it) },
+                                startMs = start,
+                                endMs = end,
+                                entityDimension = funnelEntityDimension,
+                                platform = funnelPlatform.takeIf { it.isNotBlank() },
+                                appVersion = funnelAppVersion.takeIf { it.isNotBlank() }
+                            )
+                            funnelScope.launch {
+                                try {
+                                    funnelResult = ApiClient.postFunnel(request)
+                                } catch (e: Throwable) {
+                                    funnelError = ErrorHandler.getUserMessage(ErrorHandler.handle(e))
+                                }
+                                funnelLoading = false
+                            }
+                        }
+                    }) {
+                        Text(if (funnelLoading) "Computing…" else "Compute funnel")
+                    }
+                }
+                funnelResult?.let { result ->
+                    Div({
+                        style {
+                            backgroundColor(FlagentTheme.cardBg(themeMode))
+                            borderRadius(8.px)
+                            padding(20.px)
+                            property("box-shadow", FlagentTheme.ShadowCard)
+                        }
+                    }) {
+                        H3({
+                            style {
+                                fontSize(16.px)
+                                fontWeight("600")
+                                color(FlagentTheme.text(themeMode))
+                                margin(0.px)
+                                marginBottom(16.px)
+                            }
+                        }) {
+                            Text("Result")
+                        }
+                        Div({
+                            style {
+                                display(DisplayStyle.Flex)
+                                flexDirection(FlexDirection.Column)
+                                gap(12.px)
+                            }
+                        }) {
+                            result.steps.forEach { step ->
+                                Div({
+                                    style {
+                                        display(DisplayStyle.Flex)
+                                        justifyContent(JustifyContent.SpaceBetween)
+                                        alignItems(AlignItems.Center)
+                                        padding(12.px, 16.px)
+                                        backgroundColor(FlagentTheme.inputBg(themeMode))
+                                        borderRadius(6.px)
+                                        border(1.px, LineStyle.Solid, FlagentTheme.cardBorder(themeMode))
+                                    }
+                                }) {
+                                    Span({
+                                        style {
+                                            fontWeight("600")
+                                            fontSize(14.px)
+                                            color(FlagentTheme.text(themeMode))
+                                        }
+                                    }) {
+                                        Text("${step.stepIndex + 1}. ${step.eventName}")
+                                    }
+                                    Span({
+                                        style {
+                                            fontSize(14.px)
+                                            color(FlagentTheme.textLight(themeMode))
+                                        }
+                                    }) {
+                                        Text("${step.reachedCount} reached")
+                                        if (step.stepIndex > 0) {
+                                            Text(" · ${(step.conversionFromPrevious * 100).toString().take(5)}% from previous")
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

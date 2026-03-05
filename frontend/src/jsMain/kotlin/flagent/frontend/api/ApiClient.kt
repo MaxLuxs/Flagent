@@ -81,6 +81,9 @@ object ApiClient {
         }
     }
     
+    private fun encodeURLParameter(value: String): String =
+        js("encodeURIComponent")(value).toString()
+
     internal fun getApiPath(path: String): String {
         val baseUrl = AppConfig.apiBaseUrl
         return if (baseUrl.isEmpty() || baseUrl == "http://localhost" || baseUrl == "https://localhost") {
@@ -754,18 +757,48 @@ object ApiClient {
 
     /**
      * Get analytics events overview (Firebase-level: totalEvents, uniqueUsers, topEvents, timeSeries, dauByDay).
+     * Optional filters: platform, appVersion, eventName.
      */
     suspend fun getAnalyticsOverview(
         startTime: Long? = null,
         endTime: Long? = null,
         topLimit: Int = 20,
-        timeBucketMs: Long = 3600_000
+        timeBucketMs: Long = 3600_000,
+        platform: String? = null,
+        appVersion: String? = null,
+        eventName: String? = null
     ): AnalyticsOverviewResponse {
         val end = endTime ?: (kotlin.js.Date().getTime().toLong())
         val start = startTime ?: (end - 86400_000)
-        val url = "${getApiPath("/analytics/overview")}?start=$start&end=$end&topLimit=$topLimit&timeBucketMs=$timeBucketMs"
+        val url = buildString {
+            append(getApiPath("/analytics/overview"))
+            append("?start=$start&end=$end&topLimit=$topLimit&timeBucketMs=$timeBucketMs")
+            platform?.takeIf { it.isNotBlank() }?.let { append("&platform=${encodeURLParameter(it)}") }
+            appVersion?.takeIf { it.isNotBlank() }?.let { append("&appVersion=${encodeURLParameter(it)}") }
+            eventName?.takeIf { it.isNotBlank() }?.let { append("&eventName=${encodeURLParameter(it)}") }
+        }
         return client.get(url).body()
     }
+
+    /**
+     * Get crash overview: totalCrashes, timeSeries, byPlatform, byAppVersion.
+     */
+    suspend fun getCrashesOverview(
+        startTime: Long,
+        endTime: Long,
+        timeBucketMs: Long = 3600_000
+    ): CrashOverviewResponse {
+        val url = "${getApiPath("/crashes/overview")}?start=$startTime&end=$endTime&timeBucketMs=$timeBucketMs"
+        return client.get(url).body()
+    }
+
+    /**
+     * Compute funnel: steps (event sequence), entity dimension, time range.
+     */
+    suspend fun postFunnel(request: FunnelRequest): FunnelResultResponse =
+        client.post(getApiPath("/analytics/funnel")) {
+            setBody(request)
+        }.body()
 
     /**
      * Get global metrics overview: time series (evaluations per bucket) and top flags.
