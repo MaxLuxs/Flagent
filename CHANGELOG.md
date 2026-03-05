@@ -9,9 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 (No changes yet)
 
-## [0.1.6] - 2025-02-08
+## [0.1.7] - 2026-03-05
 
-(No changes yet)
+### Added
+- Backend analytics funnels service and migration for analytics events flag/variant linkage
+- Crash and analytics repositories and services wired into routes and application startup
+- Frontend analytics dashboard and crash dashboard pages with charts and metrics
+- Golden-path script and CLI improvements for end-to-end demo flows
+
+### Changed
+- Evaluation routes and services: stricter JSON models, evaluation response mapping and tests
+- Error handling middleware: JSON 4xx handling for API paths and more robust application tests
+- Marketing/landing pages, blog, and docs updated to reflect analytics and dashboards
+
+### Fixed
+- Evaluation tests and application module tests to reflect new error handling and evaluation shape
+- Recorder tests (Kafka, Kinesis, PubSub) and evaluation event repository tests for new metrics paths
+
+## [0.1.6] - 2025-02-08
 
 ## [0.1.5] - 2025-02-08
 
@@ -75,7 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Added CodeQL security scanning workflow
 
-[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/MaxLuxs/Flagent/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/MaxLuxs/Flagent/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/MaxLuxs/Flagent/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/MaxLuxs/Flagent/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/MaxLuxs/Flagent/compare/v0.1.0...v0.1.4

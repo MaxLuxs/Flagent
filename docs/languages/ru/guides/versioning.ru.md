@@ -11,17 +11,17 @@
 
 **Fallback:** если файл `VERSION` отсутствует, Gradle использует `0.1.0`. Скрипт sync требует наличия `VERSION` и завершается с ошибкой при отсутствии или пустом файле.
 
-**Выпуск новой версии:**
+**Выпуск новой версии (пример: 0.1.7):**
 ```bash
 # Один раз после клонирования
 ./scripts/install-hooks.sh
 
-# При релизе (подставьте свою версию вместо 0.1.6)
-echo "0.1.6" > VERSION
+# При релизе (подставьте свою версию вместо 0.1.7)
+echo "0.1.7" > VERSION
 ./scripts/sync-version.sh   # обязательно
 git add -A
-git commit -m "chore: release 0.1.6"
-git tag v0.1.6
+git commit -m "chore: release 0.1.7"
+git tag v0.1.7
 git push origin main --tags
 ```
 
