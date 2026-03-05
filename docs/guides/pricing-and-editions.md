@@ -29,7 +29,7 @@ Flagent is **feature flags + A/B experiments + analytics + crash analytics + int
 | | On-premise, multi-tenancy | — | — | ✓ |
 | **Security** | RBAC | Basic | Basic | Custom roles |
 | | SSO (SAML, OIDC) | — | — | ✓ |
-| | Audit log | Basic | Basic | Advanced |
+| | Audit log | — | Basic | Advanced |
 | **Support** | Community | ✓ | ✓ | ✓ |
 | | Priority support | — | ✓ | ✓ |
 | | 99.9% uptime SLA | — | ✓ | ✓ |
@@ -37,15 +37,15 @@ Flagent is **feature flags + A/B experiments + analytics + crash analytics + int
 
 *✓ = included, — = not included*
 
+**Audit log:** Open Source does not persist audit events. SaaS (when available) and Enterprise provide who-changed-what audit trails; Enterprise adds advanced retention and filtering.
+
 ## Flagent Cloud (SaaS) — planned
 
-Flagent Cloud is **not yet launched**. Planned tiers: Starter (entry), Pro (higher limits, SLA), Team (multi-tenant). **Contact us for a consultation** if you're interested.
-
-Star the [GitHub repo](https://github.com/MaxLuxs/Flagent) or watch [Issues](https://github.com/MaxLuxs/Flagent/issues) for updates on SaaS availability.
+Flagent Cloud is **not yet launched**. Planned tiers: Starter (entry), Pro (higher limits, SLA), Team (multi-tenant). To get notified when Flagent Cloud is available, [join the waitlist](https://github.com/MaxLuxs/Flagent/issues/new?template=cloud_waitlist) or star the repo and watch [Releases](https://github.com/MaxLuxs/Flagent/releases).
 
 ## Enterprise
 
-Custom contracts: dedicated support, custom development, on-premise deployment, training, SLA. Contact: **max.developer.luxs@gmail.com**.
+See [Enterprise](enterprise.md) for full capabilities and contact. Custom contracts: dedicated support, custom development, on-premise deployment, training, SLA.
 
 ## Roadmap and sponsorship
 

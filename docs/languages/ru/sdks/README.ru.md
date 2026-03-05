@@ -1,7 +1,5 @@
 # Flagent SDK
 
-> [English](../../sdks/README.md)
-
 Официальные клиентские SDK для Flagent: evaluation feature flags, A/B тесты и динамическая конфигурация в приложении.
 
 ## Обзор

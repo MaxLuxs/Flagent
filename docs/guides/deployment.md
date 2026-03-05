@@ -173,6 +173,28 @@ export FLAGENT_EVAL_DEBUG_ENABLED=false
 export FLAGENT_EVAL_LOGGING_ENABLED=true
 ```
 
+### Production Security Checklist
+
+- Ensure **all traffic to Flagent goes through HTTPS** (reverse proxy or ingress with TLS).
+- Do **not** use default admin credentials or demo JWT secrets in production.
+- Store **JWT secrets and database credentials** in a secrets manager (Kubernetes Secrets, cloud secret store, etc.), not in source control.
+- Restrict access to the **admin UI** to trusted networks / VPN or SSO (when using Enterprise SSO).
+- Enable structured logging (`FLAGENT_LOGRUS_FORMAT=json`) and forward logs to a centralized system.
+
+### Upgrade Path
+
+Flagent runs database migrations automatically on startup.
+
+Recommended upgrade flow:
+
+1. **Backup the database** (PostgreSQL/MySQL dump or snapshot).
+2. **Pull the new image** (or build a new JAR/distribution).
+3. **Restart Flagent** (Docker / Compose / Kubernetes rolling update).
+4. Monitor logs for `Flyway migrations completed` or `Database migrations completed (SchemaUtils)`.
+5. If something goes wrong, **restore from backup** and roll back to the previous image.
+
+Migrations are designed to be **backwards compatible** across minor/patch versions; avoid skipping many major versions at once.
+
 ## Kubernetes Deployment
 
 Flagent is stateless and can be deployed to Kubernetes. Here's a basic Kubernetes configuration:

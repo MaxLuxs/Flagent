@@ -11,6 +11,33 @@ Flagent is an open-source feature flag and experimentation platform that helps y
 - **Target Users** - Show features to specific user segments
 - **Move Fast** - Deploy code to production without risk
 
+## Golden path: run Flagent + Ktor sample in one go
+
+From the repository root, run:
+
+```bash
+./scripts/run-golden-path.sh
+```
+
+Or with Make: `make golden-path`
+
+This will:
+
+1. Start Flagent via Docker Compose (backend on port 18000).
+2. Wait for health (`GET /api/v1/health`).
+3. Optionally seed one flag `new_payment_flow` (requires `jq`).
+4. Start the Ktor sample app on port 8080.
+
+**Result:** Flagent UI at [http://localhost:18000](http://localhost:18000), sample API at [http://localhost:8080](http://localhost:8080). Example:
+
+```bash
+curl -s "http://localhost:8080/feature/new_payment_flow?entityID=user1"
+```
+
+To only start Flagent (no seed, no sample): `./scripts/run-golden-path.sh --no-seed --no-sample`. To start Flagent and sample but skip seeding: `./scripts/run-golden-path.sh --no-seed`.
+
+---
+
 ## Quick Start (5 minutes)
 
 ### 1. Start Flagent Server

@@ -16,8 +16,13 @@
         <div class="container">
             <div class="nav-content">
                 <div class="logo">
-                    <a href="index.html" style="text-decoration: none;"><span class="logo-text">Flagent</span></a>
+                    <a href="index.html" class="logo-link"><span class="logo-text">Flagent</span></a>
                 </div>
+                <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+                    <span class="nav-toggle-bar"></span>
+                    <span class="nav-toggle-bar"></span>
+                    <span class="nav-toggle-bar"></span>
+                </button>
                 <div class="nav-links">
                     <a href="index.html">Home</a>
                     <a href="../quickstart.html">Quick Start</a>
@@ -78,45 +83,19 @@
             </div>
             <div class="hero-visual">
                 <div class="hero-visual-inner">
-                    <svg class="hero-illustration" viewBox="0 0 560 320" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <defs>
-                            <linearGradient id="heroGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#0EA5E9"/>
-                                <stop offset="100%" style="stop-color:#14B8A6"/>
-                            </linearGradient>
-                            <linearGradient id="heroGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color:#F8FAFC"/>
-                                <stop offset="100%" style="stop-color:#E2E8F0"/>
-                            </linearGradient>
-                            <filter id="heroShadow" x="-20%" y="-20%" width="140%" height="140%">
-                                <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.08"/>
-                            </filter>
-                        </defs>
-                        <rect x="40" y="20" width="480" height="280" rx="12" fill="url(#heroGrad2)" filter="url(#heroShadow)" stroke="#E2E8F0" stroke-width="1"/>
-                        <rect x="40" y="20" width="480" height="36" rx="12" fill="white" stroke="#E2E8F0" stroke-width="1"/>
-                        <circle cx="64" cy="38" r="6" fill="#E2E8F0"/>
-                        <circle cx="84" cy="38" r="6" fill="#E2E8F0"/>
-                        <circle cx="104" cy="38" r="6" fill="#E2E8F0"/>
-                        <rect x="180" y="32" width="180" height="12" rx="6" fill="#E2E8F0"/>
-                        <rect x="64" y="72" width="432" height="24" rx="4" fill="white" stroke="#E2E8F0"/>
-                        <rect x="64" y="104" width="432" height="24" rx="4" fill="white" stroke="#E2E8F0"/>
-                        <rect x="64" y="136" width="432" height="24" rx="4" fill="white" stroke="#E2E8F0"/>
-                        <rect x="64" y="168" width="432" height="24" rx="4" fill="white" stroke="#E2E8F0"/>
-                        <circle cx="440" cy="84" r="10" fill="#10B981"/>
-                        <rect x="428" y="78" width="14" height="12" rx="6" fill="white"/>
-                        <circle cx="440" cy="116" r="10" fill="#E2E8F0"/>
-                        <circle cx="434" cy="116" r="4" fill="white"/>
-                        <circle cx="440" cy="148" r="10" fill="#10B981"/>
-                        <rect x="428" y="142" width="14" height="12" rx="6" fill="white"/>
-                        <rect x="80" y="78" width="120" height="8" rx="4" fill="#94A3B8"/>
-                        <rect x="80" y="110" width="100" height="8" rx="4" fill="#94A3B8"/>
-                        <rect x="80" y="142" width="140" height="8" rx="4" fill="#94A3B8"/>
-                        <rect x="80" y="174" width="80" height="8" rx="4" fill="#94A3B8"/>
-                        <rect x="64" y="208" width="432" height="4" rx="2" fill="url(#heroGrad1)"/>
-                        <rect x="64" y="220" width="200" height="12" rx="4" fill="#0EA5E9" opacity="0.2"/>
-                        <rect x="272" y="220" width="120" height="12" rx="4" fill="#14B8A6" opacity="0.2"/>
-                        <rect x="400" y="220" width="96" height="12" rx="4" fill="#0EA5E9" opacity="0.15"/>
-                    </svg>
+                    <div class="mac-window">
+                        <div class="mac-window-titlebar">
+                            <div class="mac-traffic-lights">
+                                <span class="mac-dot mac-dot-red"></span>
+                                <span class="mac-dot mac-dot-yellow"></span>
+                                <span class="mac-dot mac-dot-green"></span>
+                            </div>
+                            <span class="mac-window-title">Flagent — Feature Flags</span>
+                        </div>
+                        <div class="mac-window-content">
+                            <img src="../assets/screenshots/screenshot-flags-list.png" alt="Flagent Feature Flags — list and filters" class="hero-illustration hero-screenshot" />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -146,27 +125,27 @@
             </div>
             <div class="why-grid">
                 <div class="why-card">
-                    <div class="why-icon">⚙️</div>
+                    <div class="why-icon" aria-hidden="true"></div>
                     <h3>Backend</h3>
                     <p>Ktor backend with Clean Architecture. PostgreSQL, MySQL, SQLite. Kafka, Kinesis, PubSub recorders.</p>
                 </div>
                 <div class="why-card">
-                    <div class="why-icon">🖥️</div>
+                    <div class="why-icon" aria-hidden="true"></div>
                     <h3>Frontend</h3>
                     <p>Compose for Web admin UI. Dashboard, flags editor, experiments, analytics, debug console.</p>
                 </div>
                 <div class="why-card">
-                    <div class="why-icon">📦</div>
+                    <div class="why-icon" aria-hidden="true"></div>
                     <h3>SDKs</h3>
                     <p>Kotlin, JavaScript/TS, Swift, Python, Go. Base + Enhanced (offline eval, SSE) + Debug UI. Kotlin includes an OpenFeature-style KMP client when you want a vendor-agnostic API surface.</p>
                 </div>
                 <div class="why-card">
-                    <div class="why-icon">🔌</div>
+                    <div class="why-icon" aria-hidden="true"></div>
                     <h3>ktor-flagent</h3>
                     <p>First-class Ktor plugin for server-side evaluation. Middleware, caching, health checks.</p>
                 </div>
                 <div class="why-card">
-                    <div class="why-icon">📚</div>
+                    <div class="why-icon" aria-hidden="true"></div>
                     <h3>Samples & Guides</h3>
                     <p>Kotlin, Ktor, Spring Boot, Android, Swift, JavaScript samples. Deployment, configuration docs.</p>
                 </div>
@@ -181,13 +160,13 @@
                 <h2 class="section-title">Quick Start</h2>
                 <p class="section-subtitle">Get Flagent running in under 5 minutes. No database setup required for Docker.</p>
             </div>
-            <div class="cta-box" style="max-width: 700px; margin: 0 auto;">
-                <div class="cta-code" style="margin-bottom: 1.5rem;">
+            <div class="quickstart-inline">
+                <div class="cta-code quickstart-code-block">
                     <pre><code>docker run -p 18000:18000 ghcr.io/maxluxs/flagent</code></pre>
                 </div>
-                <p style="margin-bottom: 1rem; color: var(--color-text-light); font-size: 0.95rem;">Open <a href="http://localhost:18000" target="_blank" rel="noopener">http://localhost:18000</a> — UI included. Default credentials: <code>admin@local</code> / <code>admin</code></p>
-                <p style="margin-bottom: 1.5rem; color: var(--color-text-light); font-size: 0.95rem;">For dev with hot reload: <code>./gradlew run</code> (backend 18000 + frontend 8080)</p>
-                <div class="hero-buttons" style="justify-content: center;">
+                <p class="quickstart-note">Open <a href="http://localhost:18000" target="_blank" rel="noopener">http://localhost:18000</a> — UI included. Default credentials: <code>admin@local</code> / <code>admin</code></p>
+                <p class="quickstart-note quickstart-note-last">For dev with hot reload: <code>./gradlew run</code> (backend 18000 + frontend 8080)</p>
+                <div class="hero-buttons hero-buttons-center">
                     <a href="../quickstart.html" class="btn-primary-large">Full Quick Start →</a>
                     <a href="../docs.html#/guides/getting-started.md" class="btn-secondary-large">Getting Started Guide</a>
                 </div>
@@ -202,39 +181,39 @@
                 <h2 class="section-title">Documentation & Guides</h2>
                 <p class="section-subtitle">Guides for setup, configuration, deployment, and contributing.</p>
             </div>
-            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                <a href="../docs.html#/guides/getting-started.md" class="feature-card" style="text-decoration: none; color: inherit;">
-                    <div class="feature-icon">🚀</div>
+            <div class="features-grid features-grid-docs">
+                <a href="../docs.html#/guides/getting-started.md" class="feature-card link-card">
+                    <div class="feature-icon" aria-hidden="true"></div>
                     <h3 class="feature-title">Getting Started</h3>
                     <p class="feature-description">Setup and first run</p>
                 </a>
-                <a href="../docs.html#/guides/configuration.md" class="feature-card" style="text-decoration: none; color: inherit;">
-                    <div class="feature-icon">⚙️</div>
+                <a href="../docs.html#/guides/configuration.md" class="feature-card link-card">
+                    <div class="feature-icon" aria-hidden="true"></div>
                     <h3 class="feature-title">Configuration</h3>
                     <p class="feature-description">Env vars, DB, auth</p>
                 </a>
-                <a href="../docs.html#/guides/deployment.md" class="feature-card" style="text-decoration: none; color: inherit;">
-                    <div class="feature-icon">🐳</div>
+                <a href="../docs.html#/guides/deployment.md" class="feature-card link-card">
+                    <div class="feature-icon" aria-hidden="true"></div>
                     <h3 class="feature-title">Deployment</h3>
                     <p class="feature-description">Docker, Compose, K8s</p>
                 </a>
-                <a href="../docs.html#/guides/contributing.md" class="feature-card" style="text-decoration: none; color: inherit;">
-                    <div class="feature-icon">🤝</div>
+                <a href="../docs.html#/guides/contributing.md" class="feature-card link-card">
+                    <div class="feature-icon" aria-hidden="true"></div>
                     <h3 class="feature-title">Contributing</h3>
                     <p class="feature-description">How to contribute</p>
                 </a>
-                <a href="../docs.html#/guides/roadmap.md" class="feature-card" style="text-decoration: none; color: inherit;">
-                    <div class="feature-icon">🗺️</div>
+                <a href="../docs.html#/guides/roadmap.md" class="feature-card link-card">
+                    <div class="feature-icon" aria-hidden="true"></div>
                     <h3 class="feature-title">Roadmap</h3>
                     <p class="feature-description">Done and planned</p>
                 </a>
-                <a href="../api-docs.html" class="feature-card" style="text-decoration: none; color: inherit;">
-                    <div class="feature-icon">📖</div>
+                <a href="../api-docs.html" class="feature-card link-card">
+                    <div class="feature-icon" aria-hidden="true"></div>
                     <h3 class="feature-title">API Reference</h3>
                     <p class="feature-description">Swagger UI</p>
                 </a>
-                <a href="api/openapi.yaml" class="feature-card" style="text-decoration: none; color: inherit;">
-                    <div class="feature-icon">📄</div>
+                <a href="api/openapi.yaml" class="feature-card link-card">
+                    <div class="feature-icon" aria-hidden="true"></div>
                     <h3 class="feature-title">OpenAPI Spec</h3>
                     <p class="feature-description">YAML spec</p>
                 </a>
@@ -285,9 +264,9 @@
                 <h2 class="section-title">Flagent Cloud</h2>
                 <p class="section-subtitle">Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags, analytics, and A/B testing as a service.</p>
             </div>
-            <div class="cta-box" style="max-width: 560px; margin: 0 auto; opacity: 0.95;">
-                <p style="color: var(--color-text-light); margin-bottom: 1rem;"><strong>Flagent Cloud (SaaS) is not launched yet.</strong> Launch is planned only; we have no set date. Self-hosted Flagent is available today — use Quick Start above.</p>
-                <p style="color: var(--color-text-light); margin-bottom: 1.5rem;">Want to be notified when SaaS is available? Star the repo or watch <a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener">GitHub Issues</a> for updates.</p>
+            <div class="cta-box cloud-teaser-box">
+                <p class="cloud-teaser-text"><strong>Flagent Cloud (SaaS) is not launched yet.</strong> Launch is planned only; we have no set date. Self-hosted Flagent is available today — use Quick Start above.</p>
+                <p class="cloud-teaser-text cloud-teaser-text-last">Want to be notified when SaaS is available? Star the repo or watch <a href="https://github.com/MaxLuxs/Flagent/issues" target="_blank" rel="noopener">GitHub Issues</a> for updates.</p>
                 <a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener" class="btn-secondary-large btn-github">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                     Star on GitHub
@@ -349,7 +328,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Flagent. Open source under Apache 2.0</p>
+                <p>&copy; 2026 Flagent. Open source under Apache 2.0</p>
             </div>
         </div>
     </footer>

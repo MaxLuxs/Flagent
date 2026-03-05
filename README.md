@@ -37,11 +37,14 @@
   <p>
     <a href="#-quick-start">Quick Start</a> •
     <a href="https://maxluxs.github.io/Flagent/guides/getting-started.md">Documentation</a> •
+    <a href="docs/guides/why-flagent.md">Why Flagent</a> •
     <a href="#-key-features">Features</a> •
     <a href="#-sdks">SDKs</a> •
     <a href="#-use-cases">Use Cases</a> •
     <a href="docs/guides/pricing-and-editions.md">Pricing & editions</a> •
-    <a href="docs/guides/roadmap.md">Roadmap</a>
+    <a href="docs/guides/enterprise.md">Enterprise</a> •
+    <a href="docs/guides/roadmap.md">Roadmap</a> •
+    <a href="docs/blog/index.html">Blog</a>
   </p>
 </div>
 
@@ -86,6 +89,9 @@ docker pull ghcr.io/maxluxs/flagent
 docker run -d --name flagent -p 18000:18000 \
   -e FLAGENT_DB_DBDRIVER="sqlite3" \
   -e FLAGENT_DB_DBCONNECTIONSTR=":memory:" \
+  -e FLAGENT_ADMIN_EMAIL="admin@local" \
+  -e FLAGENT_ADMIN_PASSWORD="admin" \
+  -e FLAGENT_JWT_AUTH_SECRET="dev-secret-at-least-32-characters-long" \
   ghcr.io/maxluxs/flagent
 
 # Open Flagent UI
@@ -103,6 +109,9 @@ docker run -d --name flagent -p 18000:18000 \
   -v flagent-db:/data \
   -e FLAGENT_DB_DBDRIVER="sqlite3" \
   -e FLAGENT_DB_DBCONNECTIONSTR="/data/flagent.sqlite" \
+  -e FLAGENT_ADMIN_EMAIL="admin@local" \
+  -e FLAGENT_ADMIN_PASSWORD="admin" \
+  -e FLAGENT_JWT_AUTH_SECRET="dev-secret-at-least-32-characters-long" \
   ghcr.io/maxluxs/flagent
 
 # Open Flagent UI

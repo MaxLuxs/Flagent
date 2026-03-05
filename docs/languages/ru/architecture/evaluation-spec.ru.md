@@ -1,7 +1,5 @@
 # Спецификация evaluation Flagent
 
-> [English](../../architecture/evaluation-spec.md)
-
 Каноническая спецификация для evaluation флагов, rollout и проверки ограничений. Все реализации (backend, shared evaluator, Kotlin/Go Enhanced SDK) должны следовать этой спецификации для одинаковых результатов.
 
 ## 1. Вход для хеша (rollout)

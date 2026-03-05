@@ -484,6 +484,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial language
     changeLanguage(currentLang);
     
+    // Mobile nav toggle
+    var navToggle = document.querySelector('.nav-toggle');
+    var navbar = document.querySelector('.navbar');
+    if (navToggle && navbar) {
+        navToggle.addEventListener('click', function() {
+            var open = navbar.classList.toggle('nav-open');
+            navToggle.setAttribute('aria-expanded', open);
+            navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        });
+        document.querySelectorAll('.nav-links a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                navbar.classList.remove('nav-open');
+                navToggle.setAttribute('aria-expanded', 'false');
+                navToggle.setAttribute('aria-label', 'Open menu');
+            });
+        });
+    }
+    
     // Add click handlers to language buttons
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', function() {

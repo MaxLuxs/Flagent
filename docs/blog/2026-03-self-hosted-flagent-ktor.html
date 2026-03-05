@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Self-hosted feature flags and experiments without the pain: Flagent + Ktor in 5 minutes. One UI, one API, no SaaS lock-in.">
+    <title>Self-hosted feature flags and experiments: Flagent + Ktor — Flagent Blog</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .article-page { padding: var(--spacing-2xl) 0; max-width: 720px; margin: 0 auto; }
+        .article-header { margin-bottom: var(--spacing-xl); }
+        .article-header h1 { font-size: 1.75rem; line-height: 1.3; margin-bottom: 0.5rem; }
+        .article-meta { color: var(--color-text-lighter); font-size: 0.875rem; margin-bottom: var(--spacing-md); }
+        .article-body { font-size: 1.0625rem; line-height: 1.7; }
+        .article-body h2 { font-size: 1.25rem; margin-top: var(--spacing-xl); margin-bottom: 0.5rem; }
+        .article-body p { margin-bottom: 1rem; }
+        .article-body code { background: var(--color-bg-alt); padding: 0.15em 0.4em; border-radius: var(--radius-sm); font-size: 0.9em; }
+        .article-body pre { background: var(--color-bg-dark); padding: var(--spacing-md); border-radius: var(--radius-md); overflow-x: auto; margin-bottom: 1rem; }
+        .article-body pre code { background: none; padding: 0; }
+        .article-body ul, .article-body ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .article-body li { margin-bottom: 0.35rem; }
+        .article-body h3 { font-size: 1.1rem; margin-top: var(--spacing-lg); margin-bottom: 0.5rem; }
+        .article-body strong { font-weight: 600; }
+        .back-link { display: inline-block; margin-bottom: var(--spacing-lg); color: var(--color-primary); text-decoration: none; font-size: 0.95rem; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <a href="../gh_pages/index.html" style="text-decoration: none;"><span class="logo-text">Flagent</span></a>
+                </div>
+                <div class="nav-links">
+                    <a href="../gh_pages/index.html">Home</a>
+                    <a href="../quickstart.html">Quick Start</a>
+                    <a href="../sdk.html">SDKs</a>
+                    <a href="../api-docs.html">API</a>
+                    <a href="../docs.html">Docs</a>
+                    <a href="index.html" style="font-weight: 600;">Blog</a>
+                    <a href="https://github.com/MaxLuxs/Flagent" class="nav-github" target="_blank" rel="noopener">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="article-page">
+        <div class="container">
+            <a href="index.html" class="back-link">← Blog</a>
+
+            <article>
+                <header class="article-header">
+                    <h1>Self-hosted feature flags and experiments without the pain: Flagent + Ktor</h1>
+                    <div class="article-meta">4 Mar 2026</div>
+                </header>
+
+                <div class="article-body">
+                    <p>Self-hosted feature flags give you control and data residency, but many teams assume it means maintaining a second platform, custom integrations, and ops overhead. In practice, the decision is often <strong>strategic</strong>: who owns the release process, where evaluation data lives, and how the system scales from a single team to many services and environments. Flagent is built so you can run flags and A/B experiments in <strong>one place</strong>, with one UI and one API, and plug Ktor (or other Kotlin services) in with minimal setup — without turning feature flags into a separate “product” that needs its own ops playbook. This post walks through when to choose self-hosted, what you get in one deploy, how to run and integrate Flagent in production, and how to grow from a pilot to a platform.</p>
+
+                    <h2>When to choose self-hosted</h2>
+                    <p>SaaS flag services (LaunchDarkly, Unleash Cloud, etc.) are easy to start: sign up, get an API key, and go. They make sense for small teams or when you want zero ops. The trade-offs become visible as you scale or tighten compliance:</p>
+                    <ul>
+                        <li><strong>Data and compliance</strong> — Your flag state and evaluation data live in the vendor’s cloud. For regulated industries (finance, healthcare, government) or strict data residency (EU-only, on-prem), self-hosted keeps everything inside your boundary. Audit trails and “who changed what” stay in your control.</li>
+                        <li><strong>Cost at scale</strong> — SaaS pricing often scales with monthly active users (MAU) or evaluation count. At high traffic, the bill can grow quickly. Self-hosted is a fixed cost (your VMs/containers and DB); you can run high throughput without per-request fees. For platform teams serving many product teams, that predictability matters.</li>
+                        <li><strong>Vendor lock-in</strong> — Migrating off a SaaS provider means changing SDKs, config, and workflows across all services. With Flagent you own the deployment and the data; you can export flags (YAML/JSON) and move to another host or fork the code. No “exit tax” when requirements change.</li>
+                        <li><strong>Multi-environment and on-prem</strong> — Staging, production, and air-gapped or on-prem deployments are easier when you deploy the same artifact yourself. You control versions, patches, and network topology (e.g. Flagent only on internal network).</li>
+                    </ul>
+                    <p>Flagent keeps the “you run it” part small: a single JVM backend (Ktor), PostgreSQL/MySQL/SQLite, and an admin UI (Compose for Web). No separate analytics or experiment product to wire together — flags, experiments, evaluation counts, and basic analytics live in the same deploy. One binary, one DB, one UI.</p>
+
+                    <h2>What you get in one deploy</h2>
+                    <ul>
+                        <li><strong>Feature flags</strong> — Create flags in the UI or via API; enable/disable, segment by rules (region, tier, etc.), and gradual rollout by percentage.</li>
+                        <li><strong>A/B experiments</strong> — Variants, distributions, and deterministic bucketing (MurmurHash3). Same user always gets the same variant.</li>
+                        <li><strong>Evaluation counts and analytics</strong> — Ingest evaluation events and optional custom events; see counts per flag and over time in the UI.</li>
+                        <li><strong>Crash ingestion</strong> — Send crash reports from SDKs; list them in the UI and (in Enterprise) tie crashes to flags for safer rollouts.</li>
+                        <li><strong>Webhooks and GitOps</strong> — Notify external systems on flag changes; export/import YAML/JSON; CLI for <code>flags list</code>, <code>flags create</code>, <code>eval</code>, and sync in CI.</li>
+                    </ul>
+
+                    <h2>From pilot to platform</h2>
+                    <p>A typical path: one team adopts Flagent for a single Ktor service and a few flags (e.g. new payment flow). Once the rollout and kill-switch workflow prove useful, other teams plug in the same Flagent instance: they create their own flags and segments, and evaluation is consistent across services. You then add staging/production instances (or separate DBs per env), use the CLI and GitOps for CI, and treat Flagent as shared platform infrastructure. Ownership stays clear: platform/SRE runs the service; product teams own their flag keys and rollout decisions. Flagent’s API keys and (in Enterprise) audit log support that split.</p>
+
+                    <h2>5-minute setup: Docker</h2>
+                    <p>Run Flagent with Docker. You must pass admin credentials and a JWT secret or the UI login won’t work. For local dev, the below is enough; for production, use strong secrets and a real DB (see Production below).</p>
+                    <pre><code>docker run -d -p 18000:18000 \
+  -e FLAGENT_DB_DBDRIVER=sqlite3 \
+  -e FLAGENT_DB_DBCONNECTIONSTR=/data/flagent.sqlite \
+  -e FLAGENT_ADMIN_EMAIL=admin@local \
+  -e FLAGENT_ADMIN_PASSWORD=admin \
+  -e FLAGENT_JWT_AUTH_SECRET=dev-secret-at-least-32-characters-long \
+  -v flagent-db:/data \
+  ghcr.io/maxluxs/flagent</code></pre>
+                    <p>Open <code>http://localhost:18000</code>, log in with <code>admin@local</code> / <code>admin</code>. Create a flag (e.g. key <code>new_payment_flow</code>) in the UI. For production-like setup with PostgreSQL, use Docker Compose:</p>
+                    <pre><code>git clone https://github.com/MaxLuxs/Flagent.git && cd Flagent
+docker compose up -d</code></pre>
+                    <p>Same UI and API; data persists in PostgreSQL.</p>
+
+                    <h2>Golden path: one command (Flagent + Ktor sample)</h2>
+                    <p>From the Flagent repo root you can start both Flagent and the Ktor sample app in one go:</p>
+                    <pre><code>./scripts/run-golden-path.sh</code></pre>
+                    <p>This starts Flagent (Docker Compose), waits for health, optionally seeds the <code>new_payment_flow</code> flag, and runs the Ktor sample on port 8080. Result: Flagent UI at <code>http://localhost:18000</code>, sample at <code>http://localhost:8080</code>. Try:</p>
+                    <pre><code>curl -s "http://localhost:8080/feature/new_payment_flow?entityID=user1"</code></pre>
+                    <p>See <a href="../guides/getting-started.md">Getting Started</a> for details and the <code>--no-seed</code> / <code>--no-sample</code> options.</p>
+
+                    <h2>Ktor integration in 3 steps</h2>
+                    <h3>Step 1: Add the plugin and configure</h3>
+                    <p>In your Ktor <code>Application.module()</code>, install the Flagent plugin and set the base URL (and optional API key for multi-tenant):</p>
+                    <pre><code>installFlagent {
+    flagentBaseUrl = "http://localhost:18000"
+    enableEvaluation = true
+    enableCache = true
+    cacheTtlMs = 60_000
+}</code></pre>
+
+                    <h3>Step 2: Get the client and evaluate in a route</h3>
+                    <pre><code>get("/pay") {
+    val entityID = call.request.queryParameters["entityID"] ?: "guest"
+    val client = call.application.getFlagentClient() ?: return@get call.respond(503, "Flagent unavailable")
+    val result = client.evaluate(
+        EvaluationRequest(flagKey = "new_payment_flow", entityID = entityID, entityType = "user")
+    )
+    when (result.variantKey) {
+        "treatment" -> call.respond(mapOf("flow" to "new"))
+        else -> call.respond(mapOf("flow" to "legacy"))
+    }
+}</code></pre>
+
+                    <h3>Step 3: Control rollout in the UI</h3>
+                    <p>In Flagent UI, create the flag, add variants (<code>control</code>, <code>treatment</code>), and add a segment with e.g. 10% rollout to <code>treatment</code>. No code change — you move to 50% or 100% by editing the segment. If something breaks, disable the flag: everyone gets <code>control</code> immediately (kill switch).</p>
+
+                    <h2>Gradual rollout and kill switch in practice</h2>
+                    <p>A typical flow: ship the new payment code behind a flag, start with 10% of users on <code>treatment</code>, watch metrics, then 50%, then 100%. If error rate or support tickets spike, disable the flag in the UI — no redeploy. The full walkthrough with screenshots and curl examples is in the tutorial <a href="../tutorials/gradual-rollout-ktor-payment.md">Gradual rollout of new payment on Ktor in 30 minutes</a>.</p>
+
+                    <h2>Production: security and resilience</h2>
+                    <p>For production deployments, treat Flagent like any critical service:</p>
+                    <ul>
+                        <li><strong>Secrets</strong> — Set <code>FLAGENT_JWT_AUTH_SECRET</code> and admin password via env or secret manager; never commit them. Rotate periodically.</li>
+                        <li><strong>TLS</strong> — Put Flagent behind a reverse proxy (e.g. nginx, Caddy) or load balancer that terminates TLS. Internal services can call Flagent over the internal network.</li>
+                        <li><strong>Backups</strong> — Back up the DB (PostgreSQL/MySQL/SQLite) on a schedule. Flag state is small; restores are straightforward. Exporting flags to YAML/JSON (CLI or API) gives you a human-readable backup and GitOps source of truth.</li>
+                        <li><strong>Availability</strong> — Run at least two replicas behind a load balancer if you need HA; use a shared DB. The Ktor plugin caches evaluation results with a TTL, so brief Flagent unavailability may not affect already-cached evaluations — but plan for “Flagent down” with fallback behavior in your app (e.g. default to control variant).</li>
+                    </ul>
+                    <p>See <a href="../guides/deployment.md">Deployment</a> for the full production checklist and upgrade path.</p>
+
+                    <h2>CLI for automation and CI</h2>
+                    <p>Flagent ships a CLI script (<code>scripts/flagent-cli.sh</code>) so you can list flags, create flags, and evaluate from the command line or CI. That enables scripts, GitOps pipelines, and “smoke tests” (e.g. after deploy, <code>eval</code> a known flag and assert the variant).</p>
+                    <pre><code>./scripts/flagent-cli.sh flags list --url http://localhost:18000
+./scripts/flagent-cli.sh flags create --key my_feature --description "My feature" --enabled --url http://localhost:18000
+./scripts/flagent-cli.sh eval --flag-key my_feature --entity-id user1 --url http://localhost:18000</code></pre>
+                    <p>Requires <code>curl</code> and <code>jq</code>. See <a href="../guides/cli-reference.md">CLI Reference</a> and <a href="../guides/gitops.md">GitOps</a> for export/import and branch-based flag creation.</p>
+
+                    <h2>Summary</h2>
+                    <p>Self-hosted feature flags are a strategic choice: control over data and compliance, predictable cost at scale, no vendor lock-in, and the ability to run the same stack in every environment. Flagent gives you one self-hosted platform — flags, experiments, analytics, crash list, webhooks, and GitOps — in one UI and one API. Docker gets you running in minutes; the Ktor plugin plugs evaluation into your routes in three steps. Use the golden path script to try Flagent and a sample app together, then follow the gradual-rollout tutorial for a real payment-flow scenario. For production, follow the deployment guide: strong secrets, TLS, backups, and optional HA. From a single-team pilot to a multi-team platform, you keep one stack, one language, and your data.</p>
+                    <ul>
+                        <li><a href="../guides/getting-started.md">Getting Started</a> — Quick start and golden path.</li>
+                        <li><a href="../guides/deployment.md">Deployment</a> — Production security, TLS, backups, upgrade path.</li>
+                        <li><a href="../tutorials/gradual-rollout-ktor-payment.md">Tutorial: Ktor payment rollout (30 min)</a> — Step-by-step with code and UI.</li>
+                        <li><a href="../guides/why-flagent.md">Why Flagent</a> — Comparison with other platforms.</li>
+                    </ul>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Flagent</h4>
+                    <p class="footer-description">Open source feature flagging, A/B testing, and dynamic configuration. Kotlin/Ktor, Apache 2.0.</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Documentation</h4>
+                    <ul class="footer-links">
+                        <li><a href="../docs.html">Docs</a></li>
+                        <li><a href="../gh_pages/index.html">Home</a></li>
+                        <li><a href="index.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a></li>
+                        <li><a href="https://github.com/sponsors/MaxLuxs" target="_blank" rel="noopener">Sponsor</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Flagent. Open source under Apache 2.0</p>
+            </div>
+        </div>
+    </footer>
+    <script src="../script.js"></script>
+</body>
+</html>

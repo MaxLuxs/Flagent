@@ -1,7 +1,5 @@
 # Flagent VS Code Extension
 
-> [English](../../guides/vscode-extension.md)
-
 Просмотр feature flags в боковой панели VS Code / Cursor. Использует сгенерированный из OpenAPI клиент `@flagent/client`.
 
 ## Установка

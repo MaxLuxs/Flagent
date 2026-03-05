@@ -60,6 +60,8 @@ Full format: [Import API](../api/endpoints.md#import).
 
 ## CLI
 
+The script requires `curl` and `jq` (for export/import, flags, and eval). Full reference: [CLI Reference](cli-reference.md).
+
 ### Export
 
 ```bash
@@ -71,6 +73,22 @@ Full format: [Import API](../api/endpoints.md#import).
 ```bash
 ./scripts/flagent-cli.sh import --url https://flagent.example.com --file flags.yaml --api-key sk-xxx
 ```
+
+### Flags list / create / eval
+
+```bash
+# List flags (table or JSON)
+./scripts/flagent-cli.sh flags list --url http://localhost:18000
+./scripts/flagent-cli.sh flags list --url http://localhost:18000 --output json
+
+# Create a flag
+./scripts/flagent-cli.sh flags create --key my_flag --description "My feature" --url http://localhost:18000
+
+# Evaluate a flag
+./scripts/flagent-cli.sh eval --flag-key my_flag --entity-id user1 --url http://localhost:18000
+```
+
+See [CLI Reference](cli-reference.md) for all options.
 
 ### Create flag from branch (Trunk-based)
 

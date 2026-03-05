@@ -1,7 +1,5 @@
 # Trunk-Based Development с Flagent
 
-> [English](../../guides/trunk-based-development.md)
-
 Рекомендации по использованию Flagent в trunk-based workflow: feature ветки → feature flags.
 
 ## Конвенция: ветка → ключ флага

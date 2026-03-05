@@ -2,6 +2,14 @@
 
 Static blog for GitHub Pages. One listing page + one HTML file per post (and per language if needed).
 
+## Posts
+
+| Date | Title | File |
+|------|-------|------|
+| 4 Mar 2026 | Feature flags the Kotlin way | [2026-03-feature-flags-kotlin-way.html](2026-03-feature-flags-kotlin-way.html) |
+| 4 Mar 2026 | Self-hosted feature flags and experiments: Flagent + Ktor | [2026-03-self-hosted-flagent-ktor.html](2026-03-self-hosted-flagent-ktor.html) |
+| 15 Feb 2026 | Why I built Flagent: feature flags that actually fit | [2026-02-15-intro-en.html](2026-02-15-intro-en.html) |
+
 ## Adding a new post
 
 1. **Create the post file(s)**  

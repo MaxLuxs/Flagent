@@ -133,13 +133,17 @@ body::before {
 .logo {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-md, 12px);
 }
 
 .logo::before {
     content: '';
-    width: 32px;
-    height: 32px;
+    display: block;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
     border-radius: 9999px;
     background: url("assets/flagent.png") center/contain no-repeat;
     box-shadow: var(--shadow-md);
@@ -177,6 +181,48 @@ body::before {
 .nav-links a.active {
     color: var(--color-primary);
     font-weight: 600;
+}
+
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--color-text);
+    transition: background var(--transition-base);
+}
+
+.nav-toggle:hover {
+    background: var(--color-bg-alt);
+}
+
+.nav-toggle-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    margin: 0 auto;
+    transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+.navbar.nav-open .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.navbar.nav-open .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+}
+
+.navbar.nav-open .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
 }
 
 .nav-github {
@@ -247,9 +293,8 @@ body::before {
     width: 200%;
     height: 200%;
     background: 
-        radial-gradient(circle at 25% 25%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 75% 75%, rgba(20, 184, 166, 0.08) 0%, transparent 50%);
-    animation: float 20s ease-in-out infinite;
+        radial-gradient(circle at 25% 25%, rgba(14, 165, 233, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(20, 184, 166, 0.06) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
 }
@@ -290,6 +335,74 @@ body::before {
     justify-content: center;
     margin-bottom: var(--spacing-2xl);
     flex-wrap: wrap;
+}
+
+.hero-buttons-center {
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.logo-link {
+    text-decoration: none;
+}
+
+.features-grid-docs {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.feature-card.link-card {
+    text-decoration: none;
+    color: inherit;
+}
+
+.quickstart-inline {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.quickstart-code-block {
+    margin-bottom: 1.5rem;
+}
+
+.quickstart-note {
+    margin-bottom: 1rem;
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+}
+
+.quickstart-note-last {
+    margin-bottom: 1.5rem;
+}
+
+.quickstart-note code {
+    background: var(--color-bg-dark);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+}
+
+.quickstart-inline .cta-code {
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+}
+
+.quickstart-inline .cta-code pre {
+    color: var(--color-text);
+}
+
+.cloud-teaser-box {
+    max-width: 560px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.cloud-teaser-text {
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+}
+
+.cloud-teaser-text-last {
+    margin-bottom: 1.5rem;
 }
 
 .btn-primary-large {
@@ -395,6 +508,81 @@ body::before {
     width: 100%;
     height: auto;
     max-height: 320px;
+}
+
+/* macOS-style window frame — как на лендинге: колонка titlebar + content */
+.mac-window {
+    display: flex;
+    flex-direction: column;
+    background: #ebecee;
+    border-radius: 12px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.mac-window-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 16px 0 12px;
+    background: linear-gradient(180deg, #ebebef 0%, #d1d1d6 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+}
+
+.mac-traffic-lights {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.mac-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.mac-dot-red   { background: #ff5f57; }
+.mac-dot-yellow { background: #febc2e; }
+.mac-dot-green { background: #28c840; }
+
+.mac-window-title {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    color: #3d3d3d;
+    font-weight: 500;
+}
+
+.mac-window-content {
+    flex: 0 1 auto;
+    min-height: 200px;
+    max-height: 360px;
+    overflow: hidden;
+    border-radius: 0 0 11px 11px;
+    background: #1e1e1e;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.mac-window-content .hero-illustration,
+.mac-window-content .hero-screenshot {
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    object-fit: contain;
+    object-position: top center;
+    display: block;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    vertical-align: top;
 }
 
 .btn-github {
@@ -548,18 +736,15 @@ body.pricing-page::before {
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
     margin-bottom: 1.25rem;
-    background: var(--color-bg-alt);
-    color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    opacity: 0.9;
 }
 
 .pricing-card.highlighted .pricing-icon {
-    background: rgba(14, 165, 233, 0.12);
-    color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    opacity: 1;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
 }
 
 .pricing-card .pricing-badge {
@@ -787,8 +972,13 @@ body.pricing-page::before {
 }
 
 .feature-icon {
-    font-size: 1.75rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     margin-bottom: var(--spacing-sm);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    opacity: 0.9;
+    flex-shrink: 0;
 }
 
 .section-header {
@@ -1198,12 +1388,44 @@ body.pricing-page::before {
         font-size: 2rem;
     }
     
-    .nav-links {
-        gap: var(--spacing-md);
+    .navbar .nav-content {
+        position: relative;
     }
     
-    .nav-links a:not(.btn-primary):not(.nav-github):not(.lang-switcher) {
+    .nav-toggle {
+        display: flex;
+    }
+    
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        padding: var(--spacing-md);
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
         display: none;
+    }
+    
+    .navbar.nav-open .nav-links {
+        display: flex;
+    }
+    
+    .nav-links a {
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+    }
+    
+    .nav-links a:hover {
+        background: var(--color-bg-alt);
+    }
+    
+    .lang-switcher {
+        margin: 0.25rem 0;
     }
     
     .hero-buttons,

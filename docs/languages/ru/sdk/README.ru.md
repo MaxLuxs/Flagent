@@ -1,7 +1,5 @@
 # Flagent SDK (клиентские библиотеки)
 
-> [English](../../../sdks/README.md)
-
 SDK для Flagent API — платформы feature flags, A/B тестирования и динамической конфигурации. Базовый путь API: `/api/v1`.
 
 ## Доступные SDK

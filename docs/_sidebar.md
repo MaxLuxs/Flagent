@@ -6,6 +6,7 @@
   * [Deployment](guides/deployment.md)
 
 * **Guides**
+  * [Why Flagent](guides/why-flagent.md)
   * [Admin and Tenants](guides/admin-and-tenants.md)
   * [Demo Data (Full Tenant)](guides/demo-data.md)
   * [Security: Tenant API Keys](guides/security-tenant-api-keys.md)
@@ -13,8 +14,11 @@
   * [Compatibility](guides/compatibility.md)
   * [FAQ](guides/faq.md)
   * [Pricing and editions](guides/pricing-and-editions.md)
+  * [Enterprise](guides/enterprise.md)
+  * [Enterprise paid pilot](guides/enterprise-pilot.md)
   * [Use Cases](guides/use-cases.md)
   * [GitOps](guides/gitops.md)
+  * [CLI Reference](guides/cli-reference.md)
   * [Preview Environments](guides/preview-environments.md)
   * [Trunk-Based Development](guides/trunk-based-development.md)
   * [Build-Time Verification](guides/build-time-verification.md)
@@ -34,6 +38,8 @@
   * [SDK Integration](examples/sdk-integration.md)
   * [Examples](examples/README.md)
   * [Gradual Rollout](tutorials/gradual-rollout.md)
+  * [Tutorial: Ktor Payment Rollout (30 min)](tutorials/gradual-rollout-ktor-payment.md)
+  * [Gradual Rollout: Ktor Payment (30 min)](tutorials/gradual-rollout-ktor-payment.md)
 
 * **Architecture & Features**
   * [Backend](architecture/backend.md)
