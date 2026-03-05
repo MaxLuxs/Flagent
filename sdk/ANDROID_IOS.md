@@ -19,7 +19,7 @@
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-client:0.1.6")
+    implementation("com.flagent:kotlin-client:0.1.7")
 }
 ```
 
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
 
 Добавьте в `Package.swift` или через Xcode:
 ```swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.6")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.7")
 ```
 
 #### Использование в iOS
@@ -104,7 +104,7 @@ openapi-generator-cli generate \
     -i "$OPENAPI_SPEC" \
     -g kotlin \
     -o "$OUTPUT_DIR" \
-    --additional-properties=library=multiplatform,packageName=com.flagent.client,groupId=com.flagent,artifactId=flagent-kmp-client,artifactVersion=0.1.6,serializationLibrary=kotlinx_serialization,dateLibrary=kotlinx-datetime
+    --additional-properties=library=multiplatform,packageName=com.flagent.client,groupId=com.flagent,artifactId=flagent-kmp-client,artifactVersion=0.1.7,serializationLibrary=kotlinx_serialization,dateLibrary=kotlinx-datetime
 ```
 
 3. **Настроить build.gradle.kts** для KMP:
@@ -167,7 +167,7 @@ kotlin {
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-client:0.1.6")
+    implementation("com.flagent:kotlin-client:0.1.7")
 }
 ```
 

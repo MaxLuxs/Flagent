@@ -26,7 +26,7 @@ boolean on = client.isEnabled("new_feature", "user123", null, null);
 Gradle:
 
 ```kotlin
-implementation("com.flagent:kotlin-enhanced:0.1.6")
+implementation("com.flagent:kotlin-enhanced:0.1.7")
 ```
 
 Maven:
@@ -35,7 +35,7 @@ Maven:
 <dependency>
   <groupId>com.flagent</groupId>
   <artifactId>kotlin-enhanced</artifactId>
-  <version>0.1.6</version>
+  <version>0.1.7</version>
 </dependency>
 ```
 
@@ -85,14 +85,14 @@ Add dependency (when published):
 <dependency>
   <groupId>com.flagent</groupId>
   <artifactId>flagent-java-client</artifactId>
-  <version>0.1.6</version>
+  <version>0.1.7</version>
 </dependency>
 ```
 
 Or with Gradle:
 
 ```kotlin
-implementation("com.flagent:flagent-java-client:0.1.6")
+implementation("com.flagent:flagent-java-client:0.1.7")
 ```
 
 Example:

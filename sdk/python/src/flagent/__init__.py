@@ -22,7 +22,7 @@ from .exceptions import (
 # Re-export generated models for advanced usage
 from flagent._generated.models import Flag, EvalContext
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 __all__ = [
     "create_client",
     "FlagentClient",

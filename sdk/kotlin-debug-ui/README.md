@@ -8,7 +8,7 @@ Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-debug-ui:0.1.6")
+    implementation("com.flagent:kotlin-debug-ui:0.1.7")
 }
 ```
 

@@ -137,7 +137,7 @@ Evaluate the flag from your app. Pick your platform (anchors): [Kotlin](#kotlin)
 **Install:**
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-client:0.1.6")  // use version from VERSION or Releases
+    implementation("com.flagent:kotlin-client:0.1.7")  // use version from VERSION or Releases
 }
 ```
 
@@ -177,7 +177,7 @@ for a full example of this integration.
 
 **Install:**
 ```kotlin
-implementation("com.flagent:ktor-flagent:0.1.6")
+implementation("com.flagent:ktor-flagent:0.1.7")
 ```
 
 **Minimal code:**
@@ -200,7 +200,7 @@ val result = client?.evaluate(EvaluationRequest(flagKey = "my_first_flag", entit
 
 **Install:**
 ```kotlin
-implementation("com.flagent:flagent-spring-boot-starter:0.1.6")
+implementation("com.flagent:flagent-spring-boot-starter:0.1.7")
 ```
 
 **Minimal code (e.g. in a controller):**
@@ -263,7 +263,7 @@ asyncio.run(main())
 
 **Install (Swift Package Manager):**
 ```swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.6")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.7")
 ```
 
 **Minimal code:**
@@ -545,7 +545,7 @@ Use the version from the root [`VERSION`](https://github.com/MaxLuxs/Flagent/blo
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-client:0.1.6")
+    implementation("com.flagent:kotlin-client:0.1.7")
 }
 ```
 
@@ -585,7 +585,7 @@ const client = new FlagentClient({
 
 ```swift
 // Package.swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.6")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.7")
 ```
 
 ```swift

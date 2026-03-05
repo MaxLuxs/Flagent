@@ -38,7 +38,7 @@ navigate to the folder of your consuming project and run one of the following co
 _published:_
 
 ```
-npm install @flagent/client@0.1.6 --save
+npm install @flagent/client@0.1.7 --save
 ```
 
 _unPublished (not recommended):_
