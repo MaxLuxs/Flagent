@@ -1,10 +1,10 @@
 package flagent.route
 
+import flagent.domain.entity.Segment
 import flagent.repository.Database
 import flagent.repository.impl.*
-import flagent.service.SegmentService
 import flagent.service.FlagSnapshotService
-import io.ktor.client.call.*
+import flagent.service.SegmentService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -13,7 +13,11 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlin.test.*
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.serialization.json.*
 
 class SegmentRoutesTest {
@@ -199,5 +203,127 @@ class SegmentRoutesTest {
         } finally {
             Database.close()
         }
+    }
+
+    @Test
+    fun `GET segment by id returns 404 when not found`() = testApplication {
+        val segmentService = mockk<SegmentService>()
+        coEvery { segmentService.getSegment(10) } returns null
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureSegmentRoutes(segmentService)
+            }
+        }
+
+        val response = client.get("/api/v1/flags/1/segments/10")
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `GET segment by id returns 400 when segment belongs to another flag`() = testApplication {
+        val segmentService = mockk<SegmentService>()
+        coEvery { segmentService.getSegment(10) } returns Segment(id = 10, flagId = 999, description = "s", rank = 0, rolloutPercent = 100)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureSegmentRoutes(segmentService)
+            }
+        }
+
+        val response = client.get("/api/v1/flags/1/segments/10")
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("does not belong to this flag"))
+    }
+
+    @Test
+    fun `PUT segment with invalid ids returns 400`() = testApplication {
+        val segmentService = mockk<SegmentService>(relaxed = true)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureSegmentRoutes(segmentService)
+            }
+        }
+
+        val response1 = client.put("/api/v1/flags/notanum/segments/1") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"description":"d","rolloutPercent":10}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response1.status)
+
+        val response2 = client.put("/api/v1/flags/1/segments/notanum") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"description":"d","rolloutPercent":10}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response2.status)
+    }
+
+    @Test
+    fun `DELETE segment with invalid ids returns 400`() = testApplication {
+        val segmentService = mockk<SegmentService>(relaxed = true)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureSegmentRoutes(segmentService)
+            }
+        }
+
+        val response1 = client.delete("/api/v1/flags/notanum/segments/1")
+        assertEquals(HttpStatusCode.BadRequest, response1.status)
+
+        val response2 = client.delete("/api/v1/flags/1/segments/notanum")
+        assertEquals(HttpStatusCode.BadRequest, response2.status)
+    }
+
+    @Test
+    fun `DELETE segment returns 400 when segment belongs to another flag`() = testApplication {
+        val segmentService = mockk<SegmentService>()
+        coEvery { segmentService.getSegment(10) } returns Segment(id = 10, flagId = 2, description = "s", rank = 0, rolloutPercent = 100)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureSegmentRoutes(segmentService)
+            }
+        }
+
+        val response = client.delete("/api/v1/flags/1/segments/10")
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("does not belong to this flag"))
+    }
+
+    @Test
+    fun `PUT segments reorder with invalid flag id returns 400`() = testApplication {
+        val segmentService = mockk<SegmentService>(relaxed = true)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+            routing {
+                configureSegmentRoutes(segmentService)
+            }
+        }
+
+        val response = client.put("/api/v1/flags/notanum/segments/reorder") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"segmentIDs":[1,2,3]}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
     }
 }

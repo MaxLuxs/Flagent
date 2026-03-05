@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.flagent"
-// Fallback when not building from source: com.flagent:kotlin-enhanced:0.1.6
+// Fallback when not building from source: com.flagent:kotlin-enhanced:0.1.7
 
 repositories {
     mavenCentral()

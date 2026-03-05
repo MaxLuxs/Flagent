@@ -1,11 +1,17 @@
 package flagent.cache.impl
 
+import flagent.config.AppConfig
 import flagent.domain.entity.Flag
 import flagent.domain.entity.Tag
 import flagent.domain.repository.IFlagRepository
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -14,6 +20,17 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EvalCacheTest {
+
+    @BeforeTest
+    fun mockAppConfig() {
+        mockkObject(AppConfig)
+        every { AppConfig.evalOnlyMode } returns false
+    }
+
+    @AfterTest
+    fun unmockAppConfig() {
+        unmockkObject(AppConfig)
+    }
 
     @Test
     fun `constructor throws when both repository and fetcher are null`() {

@@ -260,6 +260,10 @@ When requesting features, please include:
 
 Create an issue on [GitHub](https://github.com/MaxLuxs/Flagent/issues) with the label `enhancement`.
 
+## Flagent Cloud waitlist
+
+To register interest in Flagent Cloud (managed SaaS when it launches), [open an issue with the Cloud waitlist template](https://github.com/MaxLuxs/Flagent/issues/new?template=cloud_waitlist.md). Optionally add the label `flagent-cloud-waitlist` in the repo if you maintain it.
+
 ## Code of Conduct
 
 ### Our Standards

@@ -26,28 +26,9 @@ private val logger = KotlinLogging.logger {}
 class PubSubRecorder(
     private val projectId: String = AppConfig.recorderPubsubProjectID,
     private val topicName: String = AppConfig.recorderPubsubTopicName,
-    private val keyFile: String = AppConfig.recorderPubsubKeyFile
+    private val keyFile: String = AppConfig.recorderPubsubKeyFile,
+    private val publisher: Publisher = buildPublisher(projectId, topicName, keyFile)
 ) : DataRecorder {
-    private val publisher: Publisher
-
-    init {
-        val topic = TopicName.of(projectId, topicName)
-
-        val publisherBuilder = Publisher.newBuilder(topic)
-
-        // Configure credentials if key file is provided
-        if (keyFile.isNotEmpty()) {
-            try {
-                val credentials = GoogleCredentials.fromStream(FileInputStream(keyFile))
-                publisherBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-            } catch (e: Exception) {
-                logger.error(e) { "Failed to load Pub/Sub credentials from key file" }
-                throw RuntimeException("Failed to initialize Pub/Sub publisher", e)
-            }
-        }
-
-        publisher = publisherBuilder.build()
-    }
 
     override suspend fun record(result: EvalResult) {
         withContext(Dispatchers.IO) {
@@ -110,3 +91,21 @@ class PubSubRecorder(
         publisher.shutdown()
     }
 }
+
+internal fun buildPublisher(projectId: String, topicName: String, keyFile: String): Publisher {
+    val topic = TopicName.of(projectId, topicName)
+    val builder = Publisher.newBuilder(topic)
+
+    if (keyFile.isNotEmpty()) {
+        try {
+            val credentials = GoogleCredentials.fromStream(FileInputStream(keyFile))
+            builder.setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to load Pub/Sub credentials from key file" }
+            throw RuntimeException("Failed to initialize Pub/Sub publisher", e)
+        }
+    }
+
+    return builder.build()
+}
+

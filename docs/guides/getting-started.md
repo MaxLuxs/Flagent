@@ -1,7 +1,5 @@
 # Getting Started with Flagent
 
-> [English](getting-started.md)
-
 Welcome to Flagent! This guide will help you get started with feature flags and experimentation in less than 10 minutes.
 
 ## What is Flagent?
@@ -12,6 +10,33 @@ Flagent is an open-source feature flag and experimentation platform that helps y
 - **Run Experiments** - A/B test new features with statistical rigor
 - **Target Users** - Show features to specific user segments
 - **Move Fast** - Deploy code to production without risk
+
+## Golden path: run Flagent + Ktor sample in one go
+
+From the repository root, run:
+
+```bash
+./scripts/run-golden-path.sh
+```
+
+Or with Make: `make golden-path`
+
+This will:
+
+1. Start Flagent via Docker Compose (backend on port 18000).
+2. Wait for health (`GET /api/v1/health`).
+3. Optionally seed one flag `new_payment_flow` (requires `jq`).
+4. Start the Ktor sample app on port 8080.
+
+**Result:** Flagent UI at [http://localhost:18000](http://localhost:18000), sample API at [http://localhost:8080](http://localhost:8080). Example:
+
+```bash
+curl -s "http://localhost:8080/feature/new_payment_flow?entityID=user1"
+```
+
+To only start Flagent (no seed, no sample): `./scripts/run-golden-path.sh --no-seed --no-sample`. To start Flagent and sample but skip seeding: `./scripts/run-golden-path.sh --no-seed`.
+
+---
 
 ## Quick Start (5 minutes)
 
@@ -112,7 +137,7 @@ Evaluate the flag from your app. Pick your platform (anchors): [Kotlin](#kotlin)
 **Install:**
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-client:0.1.6")  // use version from VERSION or Releases
+    implementation("com.flagent:kotlin-client:0.1.7")  // use version from VERSION or Releases
 }
 ```
 
@@ -152,7 +177,7 @@ for a full example of this integration.
 
 **Install:**
 ```kotlin
-implementation("com.flagent:ktor-flagent:0.1.6")
+implementation("com.flagent:ktor-flagent:0.1.7")
 ```
 
 **Minimal code:**
@@ -175,7 +200,7 @@ val result = client?.evaluate(EvaluationRequest(flagKey = "my_first_flag", entit
 
 **Install:**
 ```kotlin
-implementation("com.flagent:flagent-spring-boot-starter:0.1.6")
+implementation("com.flagent:flagent-spring-boot-starter:0.1.7")
 ```
 
 **Minimal code (e.g. in a controller):**
@@ -238,7 +263,7 @@ asyncio.run(main())
 
 **Install (Swift Package Manager):**
 ```swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.6")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.7")
 ```
 
 **Minimal code:**
@@ -520,7 +545,7 @@ Use the version from the root [`VERSION`](https://github.com/MaxLuxs/Flagent/blo
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:kotlin-client:0.1.6")
+    implementation("com.flagent:kotlin-client:0.1.7")
 }
 ```
 
@@ -560,7 +585,7 @@ const client = new FlagentClient({
 
 ```swift
 // Package.swift
-.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.6")
+.package(url: "https://github.com/MaxLuxs/Flagent.git", from: "0.1.7")
 ```
 
 ```swift

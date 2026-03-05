@@ -29,6 +29,7 @@ import flagent.service.UserService
 import flagent.service.ConstraintService
 import flagent.service.CrashReportService
 import flagent.service.CoreMetricsService
+import flagent.service.FunnelAnalyticsService
 import flagent.service.DistributionService
 import flagent.service.EvaluationService
 import flagent.service.ExportService
@@ -89,6 +90,7 @@ data class AppServices(
     val exportService: ExportService,
     val importService: ImportService,
     val analyticsEventsService: AnalyticsEventsService,
+    val funnelAnalyticsService: FunnelAnalyticsService,
     val crashReportService: CrashReportService,
     val coreMetricsService: CoreMetricsService?
 )
@@ -236,6 +238,7 @@ fun createServices(
         repos.flagRepository
     )
     val analyticsEventsService = AnalyticsEventsService(repos.analyticsEventRepository)
+    val funnelAnalyticsService = FunnelAnalyticsService(repos.analyticsEventRepository)
     val crashReportService = CrashReportService(repos.crashReportRepository)
 
     return AppServices(
@@ -253,6 +256,7 @@ fun createServices(
         exportService,
         importService,
         analyticsEventsService,
+        funnelAnalyticsService,
         crashReportService,
         recordingAndMetrics.coreMetricsService
     )

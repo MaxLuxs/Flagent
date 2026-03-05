@@ -190,7 +190,7 @@ class EvaluationService(
         if (AppConfig.firebaseAnalyticsEnabled) {
             firebaseAnalyticsReporter?.recordAsync(result)
         }
-        evaluationEventRecorder?.record(flag.id, result.timestamp, clientId)
+        evaluationEventRecorder?.record(flag.id, result.variantID, result.timestamp, clientId)
 
         return result
     }

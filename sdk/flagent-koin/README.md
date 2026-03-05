@@ -8,7 +8,7 @@ Version: see root [VERSION](https://github.com/MaxLuxs/Flagent/blob/main/VERSION
 
 ```kotlin
 dependencies {
-    implementation("com.flagent:flagent-koin:0.1.6")
+    implementation("com.flagent:flagent-koin:0.1.7")
     implementation("io.insert-koin:koin-android:4.0.0")  // for Android
     implementation("io.insert-koin:koin-androidx-compose:4.0.0")  // for Compose ViewModel
 }

@@ -14,6 +14,7 @@ import io.ktor.server.routing.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.mockk
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -154,5 +155,262 @@ class AdminUserRoutesTest {
             header(HttpHeaders.Authorization, "Bearer $token")
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `POST admin users with invalid body returns 400`() = testApplication {
+        val userService = createUserServiceWithAdminUser()
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+
+        val response = client.post("/admin/users") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody("{invalid-json")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Invalid request body"))
+    }
+
+    @Test
+    fun `POST admin users with blank email or password returns 400`() = testApplication {
+        val userService = createUserServiceWithAdminUser()
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+
+        val response = client.post("/admin/users") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"","password":""}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Email and password are required"))
+    }
+
+    @Test
+    fun `POST admin users maps IllegalArgumentException to 400`() = testApplication {
+        val repo = mockk<IUserRepository>(relaxed = true)
+        coEvery { repo.findByEmail("admin@test.com") } returns User(id = 1, email = "admin@test.com", name = "Admin", passwordHash = "hash")
+        coEvery { repo.create(any()) } throws IllegalArgumentException("duplicate")
+        val userService = UserService(repo)
+
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+
+        val response = client.post("/admin/users") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"new@test.com","password":"pwd"}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `GET admin user by id returns 404 when not found`() = testApplication {
+        val repo = mockk<IUserRepository>(relaxed = true)
+        coEvery { repo.findByEmail("admin@test.com") } returns User(id = 1, email = "admin@test.com", name = "Admin", passwordHash = "hash")
+        coEvery { repo.findById(1) } returns null
+        val userService = UserService(repo)
+
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+        val response = client.get("/admin/users/1") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `PUT admin user with invalid body returns 400`() = testApplication {
+        val userService = createUserServiceWithAdminUser()
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+        val response = client.put("/admin/users/1") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody("{invalid")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `PUT admin user maps NoSuchElementException to 404`() = testApplication {
+        val repo = mockk<IUserRepository>(relaxed = true)
+        val adminHash = BCrypt.hashpw("secret123", BCrypt.gensalt())
+        val adminUser = User(id = 1, email = "admin@test.com", name = "Admin", passwordHash = adminHash)
+        coEvery { repo.findByEmail("admin@test.com") } returns adminUser
+        coEvery { repo.findById(1) } returns adminUser
+        coEvery { repo.update(any()) } throws NoSuchElementException("user not found")
+        val userService = UserService(repo)
+
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+        val response = client.put("/admin/users/1") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody("""{"name":"New Name"}""")
+        }
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `DELETE admin user maps NoSuchElementException to 404`() = testApplication {
+        val repo = mockk<IUserRepository>(relaxed = true)
+        val adminHash = BCrypt.hashpw("secret123", BCrypt.gensalt())
+        val adminUser = User(id = 1, email = "admin@test.com", name = "Admin", passwordHash = adminHash)
+        coEvery { repo.findByEmail("admin@test.com") } returns adminUser
+        coEvery { repo.findById(1) } returns adminUser
+        coJustRun { repo.softDelete(1) }
+        coEvery { repo.softDelete(2) } throws NoSuchElementException("user not found")
+        val userService = UserService(repo)
+
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+        val response = client.delete("/admin/users/2") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `POST admin users block and unblock invalid id returns 400`() = testApplication {
+        val userService = createUserServiceWithAdminUser()
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+        val blockResponse = client.post("/admin/users/notanum/block") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        assertEquals(HttpStatusCode.BadRequest, blockResponse.status)
+        val unblockResponse = client.post("/admin/users/notanum/unblock") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        assertEquals(HttpStatusCode.BadRequest, unblockResponse.status)
+    }
+
+    @Test
+    fun `POST admin users block maps NoSuchElementException to 404`() = testApplication {
+        val repo = mockk<IUserRepository>(relaxed = true)
+        val adminHash = BCrypt.hashpw("secret123", BCrypt.gensalt())
+        val adminUser = User(id = 1, email = "admin@test.com", name = "Admin", passwordHash = adminHash)
+        coEvery { repo.findByEmail("admin@test.com") } returns adminUser
+        coEvery { repo.findById(1) } returns null
+        coEvery { repo.setBlockedAt(1, any()) } throws NoSuchElementException("user not found")
+        val userService = UserService(repo)
+
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; encodeDefaults = true }) }
+            install(Authentication) { addJwtProvider() }
+            routing {
+                configureAuthRoutes(userService)
+                configureAdminUserRoutes(userService)
+            }
+        }
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"email":"admin@test.com","password":"secret123"}""")
+        }
+        val token = Json.parseToJsonElement(loginResponse.bodyAsText()).jsonObject["token"]?.jsonPrimitive?.content
+            ?: fail("no token")
+        val response = client.post("/admin/users/1/block") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        assertEquals(HttpStatusCode.NotFound, response.status)
     }
 }

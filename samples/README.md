@@ -2,6 +2,16 @@
 
 This folder contains sample applications demonstrating Flagent SDK and plugins for various platforms and programming languages.
 
+## Golden path (one command)
+
+From the **repository root**, run Flagent and the Ktor sample in one go:
+
+```bash
+./scripts/run-golden-path.sh
+```
+
+Or: `make golden-path`. This starts Flagent (Docker Compose), waits for health, optionally seeds the `new_payment_flow` flag, and runs the Ktor sample. Flagent UI: http://localhost:18000, sample: http://localhost:8080. See [Getting Started](../docs/guides/getting-started.md#golden-path-run-flagent--ktor-sample-in-one-go).
+
 ## Available Samples
 
 ### Android Sample (`android/`)
@@ -128,11 +138,24 @@ Ktor application sample demonstrating Flagent Ktor plugin usage.
 
 ## Common Requirements
 
-Before running any sample, ensure the Flagent backend server is running:
+Before running any sample, ensure the Flagent backend server is running.
+
+**One-command option (from repo root):** run Flagent and the Ktor sample together:
 
 ```bash
-cd backend
-./gradlew run
+./scripts/run-golden-path.sh
+```
+
+Flagent UI at `http://localhost:18000`, Ktor sample at `http://localhost:8080`. See [Getting Started — Golden path](../docs/guides/getting-started.md#golden-path-run-flagent--ktor-sample-in-one-go).
+
+**Manual:** start the backend, then run the sample:
+
+```bash
+# From repo root: start Flagent (Docker)
+docker compose up -d
+
+# Or from backend dir: run from source
+cd backend && ./gradlew run
 ```
 
 The server will start on `http://localhost:18000` by default.

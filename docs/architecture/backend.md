@@ -1,7 +1,5 @@
 # Backend Architecture (Ktor)
 
-> [English](backend.md)
-
 ## Overview
 
 The backend is built on Ktor with Kotlin Coroutines for async I/O. It follows Clean Architecture with clear layer separation.

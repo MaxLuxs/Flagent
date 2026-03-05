@@ -4,9 +4,11 @@ import androidx.compose.runtime.*
 import flagent.api.model.FlagResponse
 import flagent.frontend.api.ApiClient
 import flagent.frontend.api.CrashReportResponse
+import flagent.frontend.api.CrashOverviewResponse
 import flagent.frontend.components.Icon
 import flagent.frontend.components.common.EmptyState
 import flagent.frontend.components.common.SkeletonLoader
+import flagent.frontend.components.metrics.OverviewChart
 import flagent.frontend.api.MetricType
 import flagent.frontend.config.AppConfig
 import flagent.frontend.navigation.Route
@@ -49,7 +51,10 @@ fun CrashDashboard() {
     var isLoadingCrashes by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var crashReportsError by remember { mutableStateOf<String?>(null) }
-    var activeTab by remember { mutableStateOf("reports") }
+    var activeTab by remember { mutableStateOf("overview") }
+    var crashOverview by remember { mutableStateOf<CrashOverviewResponse?>(null) }
+    var crashOverviewError by remember { mutableStateOf<String?>(null) }
+    var isLoadingOverview by remember { mutableStateOf(false) }
     var reportsRefreshTrigger by remember { mutableStateOf(0) }
     var timeRange by remember { mutableStateOf("24h") }
     var groupByType by remember { mutableStateOf(false) }
@@ -94,6 +99,33 @@ fun CrashDashboard() {
     }
 
     LaunchedEffect(activeTab, reportsRefreshTrigger, timeRange) {
+        if (activeTab == "overview") {
+            isLoadingOverview = true
+            crashOverviewError = null
+            try {
+                ErrorHandler.withErrorHandling(
+                    block = {
+                        val bucketMs = when (timeRange) {
+                            "24h" -> 3600_000L
+                            "7d" -> 86400_000L
+                            "30d" -> 86400_000L
+                            else -> 3600_000L
+                        }
+                        crashOverview = ApiClient.getCrashesOverview(
+                            startTime = startTime,
+                            endTime = endTime,
+                            timeBucketMs = bucketMs
+                        )
+                    },
+                    onError = { err ->
+                        crashOverviewError = ErrorHandler.getUserMessage(err)
+                        crashOverview = null
+                    }
+                )
+            } finally {
+                isLoadingOverview = false
+            }
+        }
         if (activeTab == "reports") {
             isLoadingCrashes = true
             crashReportsError = null
@@ -170,6 +202,18 @@ fun CrashDashboard() {
                     borderRadius(6.px)
                     cursor("pointer")
                     fontSize(14.px)
+                    backgroundColor(if (activeTab == "overview") FlagentTheme.Primary else Color.transparent)
+                    color(if (activeTab == "overview") Color.white else FlagentTheme.text(themeMode))
+                }
+                onClick { activeTab = "overview" }
+            }) { Text("Overview") }
+            Button({
+                style {
+                    padding(8.px, 16.px)
+                    border(0.px)
+                    borderRadius(6.px)
+                    cursor("pointer")
+                    fontSize(14.px)
                     backgroundColor(if (activeTab == "reports") FlagentTheme.Primary else Color.transparent)
                     color(if (activeTab == "reports") Color.white else FlagentTheme.text(themeMode))
                 }
@@ -195,8 +239,8 @@ fun CrashDashboard() {
             }) { Text(flagent.frontend.i18n.LocalizedStrings.byFlagsCrashRate) }
         }
 
-        // Time range and group-by (reports tab)
-        if (activeTab == "reports") {
+        // Time range (overview and reports tabs)
+        if (activeTab == "overview" || activeTab == "reports") {
             Div({
                 style {
                     display(DisplayStyle.Flex)
@@ -230,25 +274,206 @@ fun CrashDashboard() {
                         Text(label)
                     }
                 }
-                Input(InputType.Checkbox) {
-                    id("crash-group-by")
-                    checked(groupByType)
-                    onInput { groupByType = it.target.checked }
-                }
-                Label(attrs = {
-                    attr("for", "crash-group-by")
-                    style {
-                        fontSize(13.px)
-                        color(FlagentTheme.text(themeMode))
-                        cursor("pointer")
+                if (activeTab == "reports") {
+                    Input(InputType.Checkbox) {
+                        id("crash-group-by")
+                        checked(groupByType)
+                        onInput { groupByType = it.target.checked }
                     }
-                }) {
-                    Text(LocalizedStrings.groupByType)
+                    Label(attrs = {
+                        attr("for", "crash-group-by")
+                        style {
+                            fontSize(13.px)
+                            color(FlagentTheme.text(themeMode))
+                            cursor("pointer")
+                        }
+                    }) {
+                        Text(LocalizedStrings.groupByType)
+                    }
                 }
             }
         }
 
-        if (activeTab == "reports") {
+        if (activeTab == "overview") {
+            if (crashOverviewError != null) {
+                Div({
+                    style {
+                        padding(16.px)
+                        backgroundColor(FlagentTheme.errorBg(themeMode))
+                        borderRadius(6.px)
+                        color(FlagentTheme.errorText(themeMode))
+                        fontSize(14.px)
+                        marginBottom(16.px)
+                    }
+                }) {
+                    Text(crashOverviewError!!)
+                }
+            } else if (isLoadingOverview) {
+                SkeletonLoader(height = 200.px)
+            } else if (crashOverview != null) {
+                val ov = crashOverview!!
+                Div({
+                    style {
+                        display(DisplayStyle.Flex)
+                        flexDirection(FlexDirection.Column)
+                        gap(24.px)
+                    }
+                }) {
+                    Div({
+                        style {
+                            display(DisplayStyle.Grid)
+                            property("grid-template-columns", "repeat(auto-fit, minmax(200px, 1fr))")
+                            gap(16.px)
+                        }
+                    }) {
+                        Div({
+                            style {
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                borderRadius(8.px)
+                                padding(16.px)
+                                property("box-shadow", FlagentTheme.ShadowCard)
+                            }
+                        }) {
+                            P({
+                                style {
+                                    fontSize(12.px)
+                                    color(FlagentTheme.textLight(themeMode))
+                                    margin(0.px)
+                                    marginBottom(4.px)
+                                }
+                            }) {
+                                Text("Total crashes")
+                            }
+                            P({
+                                style {
+                                    fontSize(24.px)
+                                    fontWeight("600")
+                                    color(FlagentTheme.text(themeMode))
+                                    margin(0.px)
+                                }
+                            }) {
+                                Text(ov.totalCrashes.toString())
+                            }
+                        }
+                    }
+                    if (ov.timeSeries.isNotEmpty()) {
+                        Div({
+                            style {
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                borderRadius(8.px)
+                                padding(20.px)
+                                property("box-shadow", FlagentTheme.ShadowCard)
+                            }
+                        }) {
+                            OverviewChart(ov.timeSeries, "Crashes over time")
+                        }
+                    }
+                    if (ov.byPlatform.isNotEmpty()) {
+                        Div({
+                            style {
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                borderRadius(8.px)
+                                padding(20.px)
+                                property("box-shadow", FlagentTheme.ShadowCard)
+                            }
+                        }) {
+                            H3({
+                                style {
+                                    fontSize(16.px)
+                                    fontWeight("600")
+                                    marginBottom(12.px)
+                                    color(FlagentTheme.text(themeMode))
+                                }
+                            }) {
+                                Text("By platform")
+                            }
+                            Div({
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    flexDirection(FlexDirection.Column)
+                                    gap(8.px)
+                                }
+                            }) {
+                                ov.byPlatform.forEach { e ->
+                                    Div({
+                                        style {
+                                            display(DisplayStyle.Flex)
+                                            justifyContent(JustifyContent.SpaceBetween)
+                                            alignItems(AlignItems.Center)
+                                            padding(8.px, 12.px)
+                                            backgroundColor(FlagentTheme.cardBg(themeMode))
+                                            borderRadius(6.px)
+                                        }
+                                    }) {
+                                        Span({ style { color(FlagentTheme.text(themeMode)); fontSize(14.px) } }) {
+                                            Text(e.key)
+                                        }
+                                        Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px) } }) {
+                                            Text(e.count.toString())
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (ov.byAppVersion.isNotEmpty()) {
+                        Div({
+                            style {
+                                backgroundColor(FlagentTheme.inputBg(themeMode))
+                                borderRadius(8.px)
+                                padding(20.px)
+                                property("box-shadow", FlagentTheme.ShadowCard)
+                            }
+                        }) {
+                            H3({
+                                style {
+                                    fontSize(16.px)
+                                    fontWeight("600")
+                                    marginBottom(12.px)
+                                    color(FlagentTheme.text(themeMode))
+                                }
+                            }) {
+                                Text("By app version")
+                            }
+                            Div({
+                                style {
+                                    display(DisplayStyle.Flex)
+                                    flexDirection(FlexDirection.Column)
+                                    gap(8.px)
+                                }
+                            }) {
+                                ov.byAppVersion.forEach { e ->
+                                    Div({
+                                        style {
+                                            display(DisplayStyle.Flex)
+                                            justifyContent(JustifyContent.SpaceBetween)
+                                            alignItems(AlignItems.Center)
+                                            padding(8.px, 12.px)
+                                            backgroundColor(FlagentTheme.cardBg(themeMode))
+                                            borderRadius(6.px)
+                                        }
+                                    }) {
+                                        Span({ style { color(FlagentTheme.text(themeMode)); fontSize(14.px) } }) {
+                                            Text(e.key)
+                                        }
+                                        Span({ style { color(FlagentTheme.textLight(themeMode)); fontSize(14.px) } }) {
+                                            Text(e.count.toString())
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (ov.totalCrashes == 0L) {
+                        EmptyState(
+                            icon = "bug_report",
+                            title = "No crashes in this period",
+                            description = "Crash overview will show time series and breakdown by platform and app version."
+                        )
+                    }
+                }
+            }
+        } else if (activeTab == "reports") {
             if (crashReportsError != null) {
                 Div({
                     style {

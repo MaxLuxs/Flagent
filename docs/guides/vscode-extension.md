@@ -1,7 +1,5 @@
 # Flagent VS Code Extension
 
-> [English](vscode-extension.md)
-
 View feature flags in VS Code / Cursor Explorer sidebar. Uses OpenAPI-generated client `@flagent/client`.
 
 ## Installation

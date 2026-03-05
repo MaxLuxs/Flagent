@@ -1,7 +1,5 @@
 # Build-Time Verification
 
-> [English](../../guides/build-time-verification.md)
-
 Gradle-плагин проверяет, что ключи флагов, используемые в коде, существуют в Flagent (через API или локальный файл).
 
 ## Установка

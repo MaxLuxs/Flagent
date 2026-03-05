@@ -121,6 +121,21 @@ data class CrashListResponse(
     val total: Long
 )
 
+/** Crash overview: time series and breakdown by platform / app version (GET /crashes/overview). */
+@Serializable
+data class CrashOverviewResponse(
+    val totalCrashes: Long,
+    val timeSeries: List<TimeSeriesEntryResponse>,
+    val byPlatform: List<CrashCountEntryResponse>,
+    val byAppVersion: List<CrashCountEntryResponse>
+)
+
+@Serializable
+data class CrashCountEntryResponse(
+    val key: String,
+    val count: Long
+)
+
 /** Per-flag evaluation stats from Core (OSS) - API evaluation count only. */
 @Serializable
 data class FlagEvaluationStatsResponse(
@@ -170,6 +185,42 @@ data class VariantConversionStatsResponse(
     val conversionRate: Double,
     val confidenceIntervalLow: Double,
     val confidenceIntervalHigh: Double
+)
+
+/** Funnel step request (event name + optional param filter). */
+@Serializable
+data class FunnelStepRequest(
+    val eventName: String,
+    val eventParamFilter: Map<String, String>? = null
+)
+
+/** Funnel request for POST /analytics/funnel. */
+@Serializable
+data class FunnelRequest(
+    val steps: List<FunnelStepRequest>,
+    val startMs: Long,
+    val endMs: Long,
+    val entityDimension: String = "USER_ID",
+    val platform: String? = null,
+    val appVersion: String? = null,
+    val flagId: Int? = null,
+    val variantId: Int? = null,
+    val tenantId: String? = null
+)
+
+/** Funnel step result (reached count, conversion from previous). */
+@Serializable
+data class FunnelStepResultResponse(
+    val stepIndex: Int,
+    val eventName: String,
+    val reachedCount: Int,
+    val conversionFromPrevious: Double
+)
+
+/** Funnel result. */
+@Serializable
+data class FunnelResultResponse(
+    val steps: List<FunnelStepResultResponse>
 )
 
 /** A/B experiment insights: conversion by variant, significance, recommendation */

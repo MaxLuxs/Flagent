@@ -34,12 +34,35 @@ data class PutWebhookRequest(
     val enabled: Boolean = true
 )
 
+@Serializable
+data class WebhookResponse(
+    val id: Int,
+    val url: String,
+    val events: List<String>,
+    val secret: String? = null,
+    val enabled: Boolean,
+    val tenantId: String? = null,
+    val createdAt: Long,
+    val updatedAt: Long
+)
+
+private fun Webhook.toResponse(): WebhookResponse = WebhookResponse(
+    id = id,
+    url = url,
+    events = events,
+    secret = secret,
+    enabled = enabled,
+    tenantId = tenantId,
+    createdAt = createdAt,
+    updatedAt = updatedAt
+)
+
 fun Routing.configureWebhookRoutes(webhookService: WebhookService) {
     route(ApiConstants.API_BASE_PATH) {
         route("/webhooks") {
             get {
                 val webhooks = webhookService.findAll()
-                call.respond(webhooks)
+                call.respond(webhooks.map { it.toResponse() })
             }
             post {
                 val request = call.receive<CreateWebhookRequest>()
@@ -62,7 +85,7 @@ fun Routing.configureWebhookRoutes(webhookService: WebhookService) {
                     enabled = request.enabled
                 )
                 val created = webhookService.create(webhook)
-                call.respond(HttpStatusCode.Created, created)
+                call.respond(HttpStatusCode.Created, created.toResponse())
             }
             route("/{webhookId}") {
                 get {
@@ -70,7 +93,7 @@ fun Routing.configureWebhookRoutes(webhookService: WebhookService) {
                         ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid webhook ID")
                     val webhook = webhookService.findById(id)
                         ?: return@get call.respond(HttpStatusCode.NotFound, "Webhook not found")
-                    call.respond(webhook)
+                    call.respond(webhook.toResponse())
                 }
                 put {
                     val id = call.parameters["webhookId"]?.toIntOrNull()
@@ -98,7 +121,7 @@ fun Routing.configureWebhookRoutes(webhookService: WebhookService) {
                             enabled = request.enabled
                         )
                     )
-                    call.respond(updated)
+                    call.respond(updated.toResponse())
                 }
                 delete {
                     val id = call.parameters["webhookId"]?.toIntOrNull()

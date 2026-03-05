@@ -13,6 +13,7 @@ import flagent.frontend.theme.AppGradientBackground
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.viewmodel.AuthViewModel
 import kotlinx.browser.window
+import org.w3c.dom.url.URLSearchParams
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.AlignItems
 import org.jetbrains.compose.web.css.Color
@@ -77,6 +78,13 @@ fun LoginForm(
     val password = remember { mutableStateOf("") }
     val passwordVisible = remember { mutableStateOf(false) }
     val rememberMe = remember { mutableStateOf(false) }
+    // Optional tenant key from URL (?tenant=my-tenant) for Google OAuth state
+    val tenantKeyFromUrl = remember {
+        runCatching {
+            val params = URLSearchParams(window.location.search)
+            params.get("tenant") ?: ""
+        }.getOrDefault("")
+    }
 
     AppGradientBackground {
         Div({
@@ -678,6 +686,55 @@ fun LoginForm(
                             }) {
                                 Icon("login", size = 18.px, color = FlagentTheme.PrimaryLight)
                                 Text(LocalizedStrings.loginWithSso)
+                            }
+                        }
+                        // Optional Google OAuth for public SaaS: sign in to specific tenant by key from URL
+                        if (tenantKeyFromUrl.isNotBlank()) {
+                            Div({
+                                style {
+                                    paddingTop(10.px)
+                                }
+                            }) {
+                                Button({
+                                    onClick {
+                                        val base = AppConfig.apiBaseUrl
+                                        // tenantKey is already validated on backend (^[a-z0-9-]+$), no escaping needed
+                                        val path = "/public/oauth/google/login?state=$tenantKeyFromUrl"
+                                        val url =
+                                            if (base.isEmpty() || base == "http://localhost" || base == "https://localhost") {
+                                                "${window.location.origin}$path"
+                                            } else {
+                                                "$base$path"
+                                            }
+                                        window.location.href = url
+                                    }
+                                    style {
+                                        width(100.percent)
+                                        padding(12.px, 16.px)
+                                        backgroundColor(Color("rgba(15,23,42,0.85)"))
+                                        color(Color("rgba(248,250,252,0.95)"))
+                                        border(1.px, LineStyle.Solid, Color("rgba(148,163,184,0.8)"))
+                                        borderRadius(10.px)
+                                        cursor("pointer")
+                                        fontSize(14.px)
+                                        fontWeight(500)
+                                        display(DisplayStyle.Flex)
+                                        alignItems(AlignItems.Center)
+                                        justifyContent(JustifyContent.Center)
+                                        gap(8.px)
+                                        property("transition", "all 0.2s ease")
+                                    }
+                                    onMouseEnter {
+                                        val el = it.target as HTMLElement
+                                        el.style.backgroundColor = "rgba(15,23,42,1)"
+                                    }
+                                    onMouseLeave {
+                                        (it.target as HTMLElement).style.backgroundColor = "rgba(15,23,42,0.85)"
+                                    }
+                                }) {
+                                    Icon("login", size = 18.px, color = Color("rgba(248,250,252,0.95)"))
+                                    Text("Sign in with Google")
+                                }
                             }
                         }
                     }

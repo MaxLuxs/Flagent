@@ -26,11 +26,13 @@ fun LandingFooter() {
     val subscribing = remember { mutableStateOf(false) }
 
     Div(attrs = {
+        classes("landing-footer-wrap")
         style {
             padding(48.px, 24.px)
             property("border-top", "1px solid rgba(255,255,255,0.08)")
             property("background", "rgba(0,0,0,0.2)")
             property("font-family", "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif")
+            property("box-sizing", "border-box")
         }
     }) {
         Div(attrs = {

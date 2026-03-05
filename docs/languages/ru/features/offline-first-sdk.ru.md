@@ -1,7 +1,5 @@
 # Offline-First SDK
 
-> [English](../../features/offline-first-sdk.md)
-
 ## Обзор
 
 Offline-First SDK позволяет приложениям работать с feature flags даже без интернет-соединения. Флаги кэшируются локально и синхронизируются автоматически при восстановлении связи.

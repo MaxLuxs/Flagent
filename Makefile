@@ -44,6 +44,22 @@ docker-build-run:
 	@docker build -t flagent:local . && docker run -d -p 18000:18000 --name flagent-local flagent:local
 	@echo "Flagent running at http://localhost:18000 (admin@local / admin)"
 
+.PHONY: run-flagent
+run-flagent:
+	@echo "Starting Flagent via Docker Compose..."
+	@docker compose up -d
+	@echo "Flagent at http://localhost:18000 (admin@local / admin)"
+
+.PHONY: run-sample-ktor
+run-sample-ktor:
+	@echo "Running Ktor sample on port 8080 (requires Flagent at http://localhost:18000)..."
+	@./gradlew :sample-ktor:runSample --no-daemon
+
+.PHONY: golden-path
+golden-path:
+	@chmod +x scripts/run-golden-path.sh
+	@./scripts/run-golden-path.sh
+
 .PHONY: lint
 lint:
 	@echo "Running linters..."
@@ -71,6 +87,9 @@ help:
 	@echo "  make docker-build      - Build Docker image"
 	@echo "  make docker-run        - Run Docker container"
 	@echo "  make docker-build-run  - Build and run Docker (detached, http://localhost:18000)"
+	@echo "  make run-flagent       - Start Flagent (docker compose up -d)"
+	@echo "  make run-sample-ktor   - Run Ktor sample (port 8080)"
+	@echo "  make golden-path       - One command: Flagent + seed + Ktor sample"
 	@echo "  make lint          - Run linters"
 	@echo "  make test-coverage - Generate test coverage report"
 	@echo "  make serve-docs    - Serve documentation locally"

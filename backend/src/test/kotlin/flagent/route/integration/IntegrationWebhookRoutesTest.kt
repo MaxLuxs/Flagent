@@ -1,5 +1,6 @@
 package flagent.route.integration
 
+import flagent.config.AppConfig
 import flagent.domain.entity.Flag
 import flagent.service.FlagService
 import flagent.service.command.CreateFlagCommand
@@ -14,6 +15,7 @@ import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Disabled
@@ -94,6 +96,56 @@ class IntegrationWebhookRoutesTest {
         }
 
         assertEquals(HttpStatusCode.OK, response.status)
+        coVerify(exactly = 0) { flagService.createFlag(any(), any()) }
+    }
+
+    @Test
+    fun `POST github webhook returns 200 when auto-create disabled`() = testApplication {
+        val flagService = mockk<FlagService>(relaxed = true)
+
+        mockkObject(AppConfig)
+        io.mockk.every { AppConfig.githubAutoCreateFlag } returns false
+
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            routing { configureIntegrationWebhookRoutes(flagService) }
+        }
+
+        val payload = """{"action":"opened","pull_request":{"head":{"ref":"feature/foo"}}}"""
+        val response = client.post("/api/v1/integrations/github/webhook") {
+            contentType(ContentType.Application.Json)
+            setBody(payload)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = response.bodyAsText()
+        assertTrue(body.contains("GitHub auto-create disabled"))
+        coVerify(exactly = 0) { flagService.createFlag(any(), any()) }
+    }
+
+    @Test
+    fun `POST github webhook rejects invalid signature`() = testApplication {
+        val flagService = mockk<FlagService>(relaxed = true)
+
+        mockkObject(AppConfig)
+        io.mockk.every { AppConfig.githubAutoCreateFlag } returns true
+        io.mockk.every { AppConfig.githubWebhookSecret } returns "secret"
+
+        application {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            routing { configureIntegrationWebhookRoutes(flagService) }
+        }
+
+        val payload = """{"action":"opened","pull_request":{"head":{"ref":"feature/foo"}}}"""
+        val response = client.post("/api/v1/integrations/github/webhook") {
+            contentType(ContentType.Application.Json)
+            header("X-Hub-Signature-256", "sha256=deadbeef")
+            setBody(payload)
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val body = response.bodyAsText()
+        assertTrue(body.contains("Invalid signature"))
         coVerify(exactly = 0) { flagService.createFlag(any(), any()) }
     }
 }

@@ -51,8 +51,8 @@ class EvaluationEventRepositoryTest {
         val flag = flagRepo.create(Flag(key = "test_flag", description = "Test", enabled = true))
         val now = System.currentTimeMillis()
         val events = listOf(
-            EvaluationEventRecord(flag.id, now),
-            EvaluationEventRecord(flag.id, now + 1000)
+            EvaluationEventRecord(flag.id, null, now),
+            EvaluationEventRecord(flag.id, null, now + 1000)
         )
         eventRepo.saveBatch(events)
 
@@ -74,9 +74,9 @@ class EvaluationEventRepositoryTest {
         val base = 1_700_000_000_000L // fixed timestamp
         eventRepo.saveBatch(
             listOf(
-                EvaluationEventRecord(flag.id, base),
-                EvaluationEventRecord(flag.id, base + 1000),
-                EvaluationEventRecord(flag.id, base + 100_000) // outside range
+                EvaluationEventRecord(flag.id, null, base),
+                EvaluationEventRecord(flag.id, null, base + 1000),
+                EvaluationEventRecord(flag.id, null, base + 100_000) // outside range
             )
         )
 
@@ -92,10 +92,10 @@ class EvaluationEventRepositoryTest {
         val base = System.currentTimeMillis() - 60_000
         eventRepo.saveBatch(
             listOf(
-                EvaluationEventRecord(f1.id, base),
-                EvaluationEventRecord(f1.id, base + 1),
-                EvaluationEventRecord(f2.id, base + 2),
-                EvaluationEventRecord(f3.id, base + 3)
+                EvaluationEventRecord(f1.id, null, base),
+                EvaluationEventRecord(f1.id, null, base + 1),
+                EvaluationEventRecord(f2.id, null, base + 2),
+                EvaluationEventRecord(f3.id, null, base + 3)
             )
         )
 
@@ -113,9 +113,9 @@ class EvaluationEventRepositoryTest {
         val base = (System.currentTimeMillis() / bucketMs) * bucketMs
         eventRepo.saveBatch(
             listOf(
-                EvaluationEventRecord(flag.id, base),
-                EvaluationEventRecord(flag.id, base + 1000),
-                EvaluationEventRecord(flag.id, base + 2 * bucketMs)
+                EvaluationEventRecord(flag.id, null, base),
+                EvaluationEventRecord(flag.id, null, base + 1000),
+                EvaluationEventRecord(flag.id, null, base + 2 * bucketMs)
             )
         )
 
@@ -146,9 +146,9 @@ class EvaluationEventRepositoryTest {
 
         eventRepo.saveBatch(
             listOf(
-                EvaluationEventRecord(flag.id, oldTs),
-                EvaluationEventRecord(flag.id, oldTs + 1000),
-                EvaluationEventRecord(flag.id, recentTs)
+                EvaluationEventRecord(flag.id, null, oldTs),
+                EvaluationEventRecord(flag.id, null, oldTs + 1000),
+                EvaluationEventRecord(flag.id, null, recentTs)
             )
         )
 
@@ -167,10 +167,10 @@ class EvaluationEventRepositoryTest {
         val base = System.currentTimeMillis() - 60_000
         eventRepo.saveBatch(
             listOf(
-                EvaluationEventRecord(flag.id, base, "client-a"),
-                EvaluationEventRecord(flag.id, base + 1, "client-a"),
-                EvaluationEventRecord(flag.id, base + 2, "client-b"),
-                EvaluationEventRecord(flag.id, base + 3, null)
+                EvaluationEventRecord(flag.id, null, base, "client-a"),
+                EvaluationEventRecord(flag.id, null, base + 1, "client-a"),
+                EvaluationEventRecord(flag.id, null, base + 2, "client-b"),
+                EvaluationEventRecord(flag.id, null, base + 3, null)
             )
         )
         val usage = eventRepo.getUsageByClient(flag.id, base - 1000, base + 10_000)

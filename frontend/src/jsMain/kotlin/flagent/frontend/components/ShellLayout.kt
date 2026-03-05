@@ -115,6 +115,7 @@ fun ShellLayout(
                 }
             }) {
                 Div(attrs = {
+                    classes("app-content-area")
                     style {
                         flex(1)
                         overflow("auto")
@@ -151,7 +152,7 @@ private fun TopNavbar(
 ) {
     val scope = rememberCoroutineScope()
     val themeMode = LocalThemeMode.current
-    val version = remember { mutableStateOf("v0.1.6") }
+    val version = remember { mutableStateOf("v0.1.7") }
     LaunchedEffect(Unit) {
         try {
             val info = ApiClient.getInfo()
@@ -369,7 +370,7 @@ private fun TopNavbar(
 @Composable
 private fun ShellFooter() {
     val themeMode = LocalThemeMode.current
-    val version = remember { mutableStateOf("v0.1.6") }
+    val version = remember { mutableStateOf("v0.1.7") }
     LaunchedEffect(Unit) {
         try {
             val info = ApiClient.getInfo()

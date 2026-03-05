@@ -14,9 +14,9 @@ import kotlinx.serialization.json.JsonPrimitive
  * Serializes kotlin.time.Instant as epoch milliseconds (Long).
  * Deserializes from Long (epoch ms) or ISO-8601 string (backend may use either).
  *
- * Не регистрируется в ApiClient.JSON_DEFAULT (на JVM при инициализации возникала ошибка).
- * Если бэкенд отдаёт даты числом (epoch ms), создайте свой [Json] с serializersModule и передавайте
- * его в конструктор API (например FlagApi(jsonSerializer = myJson)).
+ * Not registered in ApiClient.JSON_DEFAULT (on JVM there was an initialization error).
+ * If backend returns dates as numbers (epoch ms), create your own [Json] with serializersModule
+ * and pass it into the API constructor (e.g. FlagApi(jsonSerializer = myJson)).
  */
 object InstantEpochMillisecondsSerializer : KSerializer<Instant> {
     override val descriptor: SerialDescriptor =

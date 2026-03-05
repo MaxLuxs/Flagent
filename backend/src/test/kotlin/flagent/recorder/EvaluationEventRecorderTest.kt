@@ -27,8 +27,8 @@ class EvaluationEventRecorderTest {
 
     @Test
     fun record_queuesEvent() = runBlocking {
-        recorder.record(1, 1_700_000_000_000L)
-        recorder.record(2, 1_700_000_000_001L)
+        recorder.record(1, null, 1_700_000_000_000L)
+        recorder.record(2, null, 1_700_000_000_001L)
 
         delay(2500)
 
@@ -37,7 +37,7 @@ class EvaluationEventRecorderTest {
 
     @Test
     fun record_withClientId_passesClientIdToBatch_oss() = runBlocking {
-        recorder.record(1, 1_700_000_000_000L, "e2e-mobile-client")
+        recorder.record(1, null, 1_700_000_000_000L, "e2e-mobile-client")
         delay(2500)
         coVerify(atLeast = 1) {
             repository.saveBatch(match { batch ->
@@ -48,7 +48,7 @@ class EvaluationEventRecorderTest {
 
     @Test
     fun stop_doesNotThrow() {
-        recorder.record(1, System.currentTimeMillis())
+        recorder.record(1, null, System.currentTimeMillis())
         recorder.stop()
     }
 }

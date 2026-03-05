@@ -11,7 +11,7 @@ private const val LOCALE_STORAGE_KEY = "flagent_locale"
  * Used by LocalizedStrings for runtime language switching.
  */
 object LanguageState {
-    val current = mutableStateOf("ru")
+    val current = mutableStateOf("en")
 
     init {
         val stored = localStorage.getItem(LOCALE_STORAGE_KEY)

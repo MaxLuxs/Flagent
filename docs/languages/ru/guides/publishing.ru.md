@@ -1,7 +1,5 @@
 # Публикация расширений Flagent
 
-> [English](../../guides/publishing.md)
-
 Публикация Gradle-плагина и VS Code расширения.
 
 ---

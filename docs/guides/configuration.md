@@ -1,7 +1,5 @@
 # Configuration
 
-> [English](configuration.md)
-
 Flagent can be configured using environment variables. All configuration options are loaded at startup from environment variables.
 
 ## Environment Variables

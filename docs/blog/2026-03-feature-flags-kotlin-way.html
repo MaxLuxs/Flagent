@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Feature flags the Kotlin way: type-safety, coroutines, and a native platform. Why Flagent fits Kotlin and Ktor teams.">
+    <title>Feature flags the Kotlin way — Flagent Blog</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .article-page { padding: var(--spacing-2xl) 0; max-width: 720px; margin: 0 auto; }
+        .article-header { margin-bottom: var(--spacing-xl); }
+        .article-header h1 { font-size: 1.75rem; line-height: 1.3; margin-bottom: 0.5rem; }
+        .article-meta { color: var(--color-text-lighter); font-size: 0.875rem; margin-bottom: var(--spacing-md); }
+        .article-body { font-size: 1.0625rem; line-height: 1.7; }
+        .article-body h2 { font-size: 1.25rem; margin-top: var(--spacing-xl); margin-bottom: 0.5rem; }
+        .article-body p { margin-bottom: 1rem; }
+        .article-body code { background: var(--color-bg-alt); padding: 0.15em 0.4em; border-radius: var(--radius-sm); font-size: 0.9em; }
+        .article-body pre { background: var(--color-bg-dark); padding: var(--spacing-md); border-radius: var(--radius-md); overflow-x: auto; margin-bottom: 1rem; }
+        .article-body pre code { background: none; padding: 0; }
+        .article-body ul, .article-body ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .article-body li { margin-bottom: 0.35rem; }
+        .article-body h3 { font-size: 1.1rem; margin-top: var(--spacing-lg); margin-bottom: 0.5rem; }
+        .article-body strong { font-weight: 600; }
+        .back-link { display: inline-block; margin-bottom: var(--spacing-lg); color: var(--color-primary); text-decoration: none; font-size: 0.95rem; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <a href="../gh_pages/index.html" style="text-decoration: none;"><span class="logo-text">Flagent</span></a>
+                </div>
+                <div class="nav-links">
+                    <a href="../gh_pages/index.html">Home</a>
+                    <a href="../quickstart.html">Quick Start</a>
+                    <a href="../sdk.html">SDKs</a>
+                    <a href="../api-docs.html">API</a>
+                    <a href="../docs.html">Docs</a>
+                    <a href="index.html" style="font-weight: 600;">Blog</a>
+                    <a href="https://github.com/MaxLuxs/Flagent" class="nav-github" target="_blank" rel="noopener">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="article-page">
+        <div class="container">
+            <a href="index.html" class="back-link">← Blog</a>
+
+            <article>
+                <header class="article-header">
+                    <h1>Feature flags the Kotlin way</h1>
+                    <div class="article-meta">4 Mar 2026</div>
+                </header>
+
+                <div class="article-body">
+                    <p>Feature flags let you ship code behind a switch: turn a feature on or off without a new deploy, run A/B tests, and roll back in seconds when something goes wrong. What started as a “dev tool” has become a <strong>platform capability</strong>: product teams use flags to ship faster and experiment; platform and SRE teams use them to control risk and rollout across many services; compliance and audit need a clear record of who changed what and when. The choice of <em>how</em> you run and integrate flags — especially when your backend is Kotlin and Ktor — affects the whole stack: type safety, request lifecycle, and whether you treat flags as first-class or as an afterthought.</p>
+                    <p>If your stack is Kotlin and Ktor but the flag service is built for another ecosystem, you get polyglot SDKs, stringly-typed keys, blocking or callback-based APIs, and no native place in your request pipeline. This post explains why a <strong>Kotlin-native</strong> approach pays off at the level of a single service and at the level of a platform, and how to use Flagent in a Ktor app with real code and real trade-offs.</p>
+
+                    <h2>Why feature flags matter (beyond a single release)</h2>
+                    <p>Without flags, every release is all-or-nothing: you merge, deploy, and hope. With flags you can:</p>
+                    <ul>
+                        <li><strong>Ship safely</strong> — Deploy code with the feature off, then enable it for 1%, 10%, or 100% of users from the admin UI. No redeploy to roll back: flip the flag off. At scale this becomes a <em>release valve</em>: one bad deploy doesn’t force a full revert; you disable the offending feature and fix forward.</li>
+                        <li><strong>Run experiments</strong> — Assign users to variants (e.g. control vs treatment) deterministically. Same user always gets the same variant; you measure impact instead of guessing. Over time, experiments become a habit: every big change can be validated with data before full rollout.</li>
+                        <li><strong>Target by context</strong> — Show a feature only to certain regions, tiers, or segments using rules (e.g. <code>country == "US"</code>, <code>tier in ["premium"]</code>). Useful for canary by region, beta for internal users, or compliance (e.g. don’t show feature X in EU until legal signs off).</li>
+                    </ul>
+                    <p>Once multiple teams and services depend on flags, the system becomes part of your <strong>platform</strong>: you need stable evaluation semantics, clear ownership of flag keys, and a way to avoid “flag sprawl” (hundreds of stale flags). A Kotlin-native platform gives you one language and one mental model from backend to admin UI to (with KMP) mobile — and keeps evaluation in the same process and coroutine world as your routes. The catch with a non-native service: stringly-typed keys, blocking or callback-based APIs, and no first-class integration with your request lifecycle. That’s where Kotlin-native pays off.</p>
+
+                    <h2>Why Kotlin-native matters</h2>
+                    <p>When the platform and SDKs are Kotlin-first, you get concrete benefits:</p>
+                    <ul>
+                        <li><strong>Type safety</strong> — Flag keys and evaluation context can be typed (e.g. generated <code>FlagKeys</code> or enums). The IDE autocompletes and the compiler catches typos before runtime. No more <code>isEnabled("new_paymnet_flow")</code> shipping to production.</li>
+                        <li><strong>Coroutines</strong> — Evaluation and config refresh fit naturally into <code>suspend</code> functions and structured concurrency. No callback soup, no blocking calls in request handlers. The Ktor plugin uses the same coroutine context as your routes.</li>
+                        <li><strong>Ktor ecosystem</strong> — A Ktor plugin means evaluation runs inside your request pipeline. You get <code>getFlagentClient()</code> from the application or call and call <code>evaluate(flagKey, entityId, context)</code> without managing a separate client or connection pool. Same process, same lifecycle.</li>
+                        <li><strong>One language</strong> — Backend (Ktor), admin UI (Compose for Web), and mobile (Kotlin Multiplatform) speak the same language. No “feature-flag DSL” or second-class SDK: it’s just Kotlin and your existing patterns.</li>
+                    </ul>
+
+                    <h2>How Flagent fits</h2>
+                    <p>Flagent is the first Kotlin-native feature-flag platform: the backend is Ktor, the admin UI is Compose for Web, and the SDKs are Kotlin-first (including KMP for Android and multiplatform). You get flags, A/B experiments, segments, targeting, and evaluation counts in one deploy. For server-side evaluation you add the Ktor plugin and use it in a route.</p>
+
+                    <h3>1. Add the plugin (Gradle)</h3>
+                    <p>Include the Flagent Ktor plugin and point it at your Flagent server. From a typical Ktor project:</p>
+                    <pre><code>// build.gradle.kts
+dependencies {
+    implementation("io.ktor:ktor-server-core-jvm:2.x.x")
+    implementation("io.maxluxs.flagent:ktor-flagent:0.x.x")  // or local project
+}</code></pre>
+
+                    <h3>2. Install and configure in Application</h3>
+                    <pre><code>// Application.kt
+fun Application.module() {
+    install(ContentNegotiation) { json() }
+    installFlagent {
+        flagentBaseUrl = environment.config.property("flagent.baseUrl").getString()
+        enableEvaluation = true
+        enableCache = true
+        cacheTtlMs = 60_000
+    }
+    routing {
+        // your routes
+    }
+}</code></pre>
+
+                    <h3>3. Evaluate in a route</h3>
+                    <p>Inside any route, get the client and branch on the result. Example: payment flow with two variants (<code>control</code> = legacy, <code>treatment</code> = new).</p>
+                    <pre><code>get("/pay") {
+    val entityID = call.request.queryParameters["entityID"] ?: "guest-${UUID.randomUUID()}"
+    val client = call.application.getFlagentClient()
+    if (client == null) {
+        call.respond(HttpStatusCode.ServiceUnavailable, mapOf("error" to "Flagent not available"))
+        return@get
+    }
+    val request = EvaluationRequest(
+        flagKey = "new_payment_flow",
+        entityID = entityID,
+        entityType = "user"
+    )
+    val result = client.evaluate(request)
+    when (result.variantKey) {
+        "treatment" -> call.respond(mapOf("flow" to "new", "message" to "Using new payment"))
+        else -> call.respond(mapOf("flow" to "legacy", "message" to "Using legacy payment"))
+    }
+}</code></pre>
+                    <p>Evaluation is deterministic (MurmurHash3 bucketing): same <code>entityID</code> and rules always yield the same variant. You control rollout percentage and targeting in the Flagent UI; no code change to move from 10% to 100%.</p>
+
+                    <h3>Server-side vs client-side</h3>
+                    <p>In Ktor you typically use <strong>server-side</strong> evaluation: each request calls Flagent (or the in-app cache). Latency is low because the plugin caches flag state with a configurable TTL; when the cache is hot, evaluation is in-memory. For mobile or client-heavy apps, the Kotlin SDK supports <strong>client-side evaluation</strong>: fetch a snapshot once, evaluate locally on every <code>isEnabled()</code> with no network round-trip. Real-time updates over SSE keep the snapshot in sync when you change flags in the admin. Same API concepts — flags, segments, variants — whether you evaluate on the server or on the device. Choosing server vs client is a product and architecture decision: server gives you a single source of truth and no flag state on the device; client gives you offline resilience and zero latency after the first fetch.</p>
+
+                    <h3>When evaluation fails or Flagent is down</h3>
+                    <p>In production you want a clear policy when the flag service is unreachable. With the Ktor plugin you can check <code>getFlagentClient() == null</code> (e.g. misconfiguration or startup failure) and respond with 503 or a safe default. When the client exists but the network call fails (timeout, 5xx), the plugin and SDK can be configured to fall back to cached state or to a default variant. Design your routes so that “Flagent unavailable” doesn’t break the whole request: e.g. fall back to <code>control</code> or a known-safe path and log for alerting. That way a brief Flagent outage doesn’t become a full user-facing outage.</p>
+
+                    <h2>Build-time verification (optional)</h2>
+                    <p>To avoid typos in flag keys, use the Flagent Gradle plugin to generate <code>FlagKeys</code> from a YAML or from annotations. The build fails if you reference a key that doesn’t exist. See the docs on <a href="../guides/build-time-verification.md">build-time verification</a> for strict mode and generated keys.</p>
+
+                    <h2>From one service to a platform</h2>
+                    <p>Starting with one Ktor service and a handful of flags is enough to get value. As you add more services (or more teams), keep flag keys and semantics consistent: use a naming convention (e.g. <code>area_feature_name</code>), document who owns which flags, and periodically clean up flags that are 100% rolled out and no longer needed. Flagent’s OpenFeature-compatible API and optional build-time verification help keep references in sync across repos. One Kotlin-native platform means one place to train people, one audit log, and one way to reason about “what’s on for whom.”</p>
+
+                    <h2>Try it</h2>
+                    <ul>
+                        <li><a href="../guides/getting-started.md">Getting Started</a> — 5-minute setup with Docker, create a flag, and call the API or SDK.</li>
+                        <li><a href="../tutorials/gradual-rollout-ktor-payment.md">Tutorial: Gradual rollout on Ktor</a> — New payment flow in 30 minutes: 10% → 50% → 100% and a kill switch.</li>
+                        <li><a href="../guides/why-flagent.md">Why Flagent</a> — Value props and comparison with LaunchDarkly, Unleash, and OpenFeature.</li>
+                        <li>Run Flagent and the Ktor sample in one command: <code>./scripts/run-golden-path.sh</code> from the repo root (see Getting Started “Golden path”).</li>
+                    </ul>
+                    <p>You get one platform, one language, and no second-class SDK. It’s just Kotlin — from a single app to many.</p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Flagent</h4>
+                    <p class="footer-description">Open source feature flagging, A/B testing, and dynamic configuration. Kotlin/Ktor, Apache 2.0.</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Documentation</h4>
+                    <ul class="footer-links">
+                        <li><a href="../docs.html">Docs</a></li>
+                        <li><a href="../gh_pages/index.html">Home</a></li>
+                        <li><a href="index.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MaxLuxs/Flagent" target="_blank" rel="noopener">GitHub</a></li>
+                        <li><a href="https://github.com/sponsors/MaxLuxs" target="_blank" rel="noopener">Sponsor</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Flagent. Open source under Apache 2.0</p>
+            </div>
+        </div>
+    </footer>
+    <script src="../script.js"></script>
+</body>
+</html>

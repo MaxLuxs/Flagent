@@ -1,6 +1,6 @@
 {
   "name": "flagent-react-native-sample",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "Flagent React Native SDK sample",
   "scripts": {

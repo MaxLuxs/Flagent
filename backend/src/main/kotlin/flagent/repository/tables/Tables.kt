@@ -145,6 +145,7 @@ object Webhooks : IntIdTable("webhooks") {
 object EvaluationEvents : LongIdTable("evaluation_events") {
     val flagId = integer("flag_id").index("idx_eval_events_flag")
     val timestampMs = long("timestamp_ms").index("idx_eval_events_timestamp")
+    val variantId = integer("variant_id").nullable().index("idx_eval_events_variant")
     val clientId = varchar("client_id", 255).nullable().index("idx_eval_events_client_id")
     init {
         index(false, flagId, timestampMs)
@@ -157,6 +158,8 @@ object EvaluationEvents : LongIdTable("evaluation_events") {
 object AnalyticsEvents : LongIdTable("analytics_events") {
     val eventName = varchar("event_name", 128).index("idx_analytics_event_name")
     val eventParams = text("event_params").nullable() // JSON
+    val flagId = integer("flag_id").nullable().index("idx_analytics_flag")
+    val variantId = integer("variant_id").nullable().index("idx_analytics_variant")
     val userId = varchar("user_id", 255).nullable().index("idx_analytics_user")
     val sessionId = varchar("session_id", 255).nullable().index("idx_analytics_session")
     val platform = varchar("platform", 32).nullable() // android, ios, web

@@ -1,7 +1,5 @@
 # Publishing Flagent Extensions
 
-> [English](publishing.md)
-
 How to publish Gradle plugin and VS Code extension.
 
 ---

@@ -1,5 +1,3 @@
-<p align="center"><strong><a href="../../README.md">English</a></strong></p>
-
 # Flagent
 
 **Ship Features Safely. Experiment Confidently.** — первый Kotlin-native сервис feature flags: type-safe, coroutine-first флаги и эксперименты; опционально Smart Rollout и обнаружение аномалий (Enterprise).

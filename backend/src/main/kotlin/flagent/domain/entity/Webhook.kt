@@ -1,11 +1,8 @@
 package flagent.domain.entity
 
-import kotlinx.serialization.Serializable
-
 /**
  * Webhook - configuration for outgoing webhook notifications.
  */
-@Serializable
 data class Webhook(
     val id: Int = 0,
     val url: String,

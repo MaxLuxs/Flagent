@@ -67,10 +67,20 @@ class EvaluationEventRecorder(
         }
     }
 
-    /** @param clientId optional, from X-Client-Id header for "who uses this flag" analytics */
-    fun record(flagId: Int, timestampMs: Long, clientId: String? = null) {
+    /**
+     * @param clientId optional, from X-Client-Id header for \"who uses this flag\" analytics
+     * @param variantId optional, for per-variant evaluation metrics
+     */
+    fun record(flagId: Int, variantId: Int?, timestampMs: Long, clientId: String? = null) {
         try {
-            channel.trySend(EvaluationEventRecord(flagId, timestampMs, clientId?.takeIf { it.isNotBlank() }))
+            channel.trySend(
+                EvaluationEventRecord(
+                    flagId = flagId,
+                    variantId = variantId,
+                    timestampMs = timestampMs,
+                    clientId = clientId?.takeIf { it.isNotBlank() }
+                )
+            )
         } catch (e: Exception) {
             logger.error(e) { "Failed to queue evaluation event" }
         }

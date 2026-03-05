@@ -72,8 +72,8 @@ For production, use published packages. Version: see root [VERSION](https://gith
 
 ```yaml
 dependencies:
-  flagent_client: ^0.1.6
-  flagent_enhanced: ^0.1.6
+  flagent_client: ^0.1.7
+  flagent_enhanced: ^0.1.7
 ```
 
 ## License

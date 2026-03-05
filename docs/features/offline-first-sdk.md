@@ -1,7 +1,5 @@
 # Offline-First SDK
 
-> [English](offline-first-sdk.md)
-
 ## Overview
 
 The Offline-First SDK lets applications use feature flags without an internet connection. Flags are cached locally and synced automatically when the connection is restored.

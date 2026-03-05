@@ -55,6 +55,9 @@ stripe = "31.2.0"
 # Firebase / Google
 google-auth = "1.28.0"
 
+# Mail
+mail = "2.0.1"
+
 # MCP (Model Context Protocol)
 mcp = "0.8.3"
 
@@ -197,6 +200,9 @@ kotlin-sdk-server = { module = "io.modelcontextprotocol:kotlin-sdk-server", vers
 
 # Firebase / Google Auth
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "google-auth" }
+
+# Mail
+jakarta-mail = { module = "com.sun.mail:jakarta.mail", version.ref = "mail" }
 
 # Utilities
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }

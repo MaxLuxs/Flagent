@@ -16,11 +16,15 @@ cd docs && python3 -m http.server 8080
 | I want to… | Go to |
 |------------|-------|
 | **Run Flagent in 5 min** | [Quick Start](quickstart.html) — set DB and admin env (see [Configuration](guides/configuration.md)) |
+| **Understand why Flagent** | [Why Flagent](guides/why-flagent.md) — value props and comparison |
 | **See all SDKs** | [SDKs Overview](sdk.html) |
 | **Try the API** | [API Reference](api-docs.html) |
 | **Use the Admin UI** | [Frontend UI Guide](guides/frontend-ui.md) |
 | **Try the UI with demo data** | [Demo Data](guides/demo-data.md) |
 | **Read step-by-step** | [Getting Started](guides/getting-started.md) |
+| **Tutorial: gradual rollout (Ktor)** | [Gradual Rollout New Payment (30 min)](tutorials/gradual-rollout-ktor-payment.md) |
+| **Performance** | [Benchmarks](performance/benchmarks.md) — evaluation API baselines and how to reproduce |
+| **30-min Ktor tutorial** | [Gradual Rollout: Ktor Payment](tutorials/gradual-rollout-ktor-payment.md) |
 
 ---
 
@@ -35,7 +39,9 @@ cd docs && python3 -m http.server 8080
 
 ## Flagent Cloud — Coming Soon
 
-Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags and A/B testing as a service. [Home](index.html)
+Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature flags and A/B testing as a service. [Join the waitlist](https://github.com/MaxLuxs/Flagent/issues/new?template=cloud_waitlist.md) to get notified when it's available. [Home](index.html)
+
+**Blog:** [Blog index](blog/index.html) — product updates and guides (e.g. [Feature flags the Kotlin way](blog/2026-03-feature-flags-kotlin-way.html), [Self-hosted Flagent + Ktor](blog/2026-03-self-hosted-flagent-ktor.html)).
 
 ---
 
@@ -50,6 +56,7 @@ Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature
 | Compatibility | [Guide](guides/compatibility.md) |
 | FAQ | [Guide](guides/faq.md) |
 | MCP (AI Assistants) | [Guide](guides/mcp.md) |
+| Enterprise | [Guide](guides/enterprise.md) |
 | Use Cases | [Guide](guides/use-cases.md) |
 | GitOps | [Guide](guides/gitops.md) |
 | Preview Environments | [Guide](guides/preview-environments.md) |
@@ -73,6 +80,7 @@ Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature
 | **Examples** | [examples/README.md](examples/README.md) |
 | **SDK Integration** | [examples/sdk-integration.md](examples/sdk-integration.md) — Ktor, Spring, Kotlin, JS, Swift |
 | Tutorial: Gradual Rollout | [tutorials/gradual-rollout.md](tutorials/gradual-rollout.md) |
+| Tutorial: Ktor Payment (30 min) | [tutorials/gradual-rollout-ktor-payment.md](tutorials/gradual-rollout-ktor-payment.md) |
 
 ---
 
@@ -86,7 +94,7 @@ Managed Flagent in the cloud — no setup, no maintenance. Fully managed feature
 | Offline-First SDK | [features/offline-first-sdk.md](features/offline-first-sdk.md) |
 | Performance Optimizations | [features/performance-optimizations.md](features/performance-optimizations.md) |
 | Real-Time Updates | [features/real-time-updates.md](features/real-time-updates.md) |
-| Benchmarks | [performance/benchmarks.md](performance/benchmarks.md) |
+| Benchmarks | [performance/benchmarks.md](performance/benchmarks.md) — Evaluation API: sub-ms to low-ms latency at thousands of req/s; [reproduce](performance/benchmarks.md#reproduce-these-numbers) |
 | Tuning | [performance/tuning-guide.md](performance/tuning-guide.md) |
 
 ---

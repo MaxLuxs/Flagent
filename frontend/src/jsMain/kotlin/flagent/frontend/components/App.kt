@@ -16,12 +16,16 @@ import flagent.frontend.state.LocalGlobalState
 import flagent.frontend.state.LocalThemeMode
 import flagent.frontend.state.ThemeMode
 import flagent.frontend.state.ThemeState
+import flagent.frontend.state.User
 import flagent.frontend.theme.FlagentTheme
 import flagent.frontend.util.AppLogger
+import flagent.frontend.util.ErrorHandler
 import flagent.frontend.viewmodel.AuthViewModel
 import flagent.frontend.viewmodel.TenantViewModel
+import flagent.frontend.api.ApiClient
 import kotlinx.browser.localStorage
 import kotlinx.browser.sessionStorage
+import kotlinx.browser.window
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
@@ -85,7 +89,7 @@ fun App() {
             }
         }
         if (!requiresAuth) return@LaunchedEffect
-        if (route is Route.Login) return@LaunchedEffect
+        if (route is Route.Login || route is Route.SignupVerify || route is Route.SignupGoogleVerify || route is Route.SsoCallback) return@LaunchedEffect
         // When showMarketingLanding: Home, Pricing, Blog are public - no redirect
         if (showMarketingLanding && (route is Route.Home || route is Route.Pricing || route is Route.Blog)) return@LaunchedEffect
         val token = localStorage.getItem(AUTH_TOKEN_KEY)
@@ -114,6 +118,9 @@ fun App() {
             is Route.ProjectDetail -> route.path()
             is Route.ApplicationDetail -> route.path()
             is Route.Login -> Route.Home.PATH
+            is Route.SignupVerify -> Route.SignupVerify.PATH
+            is Route.SignupGoogleVerify -> Route.SignupGoogleVerify.PATH
+            is Route.SsoCallback -> Route.SsoCallback.PATH
         }
         sessionStorage.setItem(AUTH_RETURN_URL_KEY, returnPath)
         Router.navigateTo(Route.Login)
@@ -136,6 +143,15 @@ fun App() {
                         Router.navigateToPath(returnUrl)
                     }
                 )
+            }
+            is Route.SignupVerify -> {
+                SignupVerifyPage(authViewModel = authViewModel)
+            }
+            is Route.SignupGoogleVerify -> {
+                GoogleSignupVerifyPage(authViewModel = authViewModel)
+            }
+            is Route.SsoCallback -> {
+                SsoCallbackPage(authViewModel = authViewModel)
             }
             is Route.Home -> if (showMarketingLanding) {
                 MarketingLanding()
@@ -214,8 +230,207 @@ private fun AppShell(
                 is Route.Settings -> flagent.frontend.components.settings.SettingsPage()
                 is Route.Tenants -> flagent.frontend.components.tenants.TenantsList(tenantViewModel = vm)
                 is Route.Projects, is Route.ProjectDetail, is Route.ApplicationDetail -> flagent.frontend.components.projects.ProjectsPage()
-                is Route.Login, is Route.Pricing, is Route.Blog -> {}
+                is Route.Login, is Route.SignupVerify, is Route.SignupGoogleVerify, is Route.SsoCallback, is Route.Pricing, is Route.Blog -> {}
             }
         }
     }
 }
+
+@Composable
+private fun SignupVerifyPage(authViewModel: AuthViewModel) {
+    var isLoading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        val search = window.location.search
+        val token = kotlin.runCatching {
+            val params = org.w3c.dom.url.URLSearchParams(search)
+            params.get("token") ?: ""
+        }.getOrDefault("")
+
+        if (token.isBlank()) {
+            error = "Missing token"
+            isLoading = false
+            return@LaunchedEffect
+        }
+
+        try {
+            val response = ApiClient.verifySignup(token)
+            val user = User(
+                id = response.user.id.toString(),
+                email = response.user.email,
+                name = null
+            )
+            authViewModel.setAuthenticated(response.sessionToken, user)
+            Router.navigateTo(Route.Dashboard)
+        } catch (e: Throwable) {
+            val appError = ErrorHandler.handle(e)
+            error = ErrorHandler.getUserMessage(appError)
+        } finally {
+            isLoading = false
+        }
+    }
+
+    Div(attrs = {
+        style {
+            minHeight(100.vh)
+            display(DisplayStyle.Flex)
+            flexDirection(FlexDirection.Column)
+            alignItems(AlignItems.Center)
+            justifyContent(JustifyContent.Center)
+            padding(24.px)
+        }
+    }) {
+        H2 { Text("Completing signup...") }
+        if (isLoading) {
+            P { Text("Verifying your magic link, please wait.") }
+        } else if (error != null) {
+            P(attrs = {
+                style {
+                    property("color", "#ef4444")
+                }
+            }) {
+                Text(error!!)
+            }
+            Button(attrs = {
+                style {
+                    marginTop(16.px)
+                }
+                onClick { Router.navigateTo(Route.Login) }
+            }) {
+                Text("Back to login")
+            }
+        } else {
+            P { Text("Redirecting to your dashboard...") }
+        }
+    }
+}
+
+@Composable
+private fun SsoCallbackPage(authViewModel: AuthViewModel) {
+    var done by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (done) return@LaunchedEffect
+        val search = window.location.search
+        val params = org.w3c.dom.url.URLSearchParams(search)
+        val ssoToken = params.get("sso_token")?.trim().orEmpty()
+        val userId = params.get("user_id")?.trim().orEmpty()
+        val email = params.get("email")?.trim().orEmpty()
+        val tenantId = params.get("tenant_id")?.trim().orEmpty()
+        val name = params.get("name")?.trim()
+
+        if (ssoToken.isBlank() || userId.isBlank() || email.isBlank()) {
+            error = "Missing sign-in data. Please try logging in again."
+            return@LaunchedEffect
+        }
+
+        val user = User(id = userId, email = email, name = name.takeIf { !it.isNullOrBlank() })
+        authViewModel.setAuthenticated(ssoToken, user)
+        if (tenantId.isNotBlank()) {
+            localStorage.setItem("current_tenant", tenantId)
+        }
+        window.history.replaceState(null, "", Route.SsoCallback.PATH)
+        done = true
+        Router.navigateTo(Route.Dashboard)
+    }
+
+    Div(attrs = {
+        style {
+            minHeight(100.vh)
+            display(DisplayStyle.Flex)
+            flexDirection(FlexDirection.Column)
+            alignItems(AlignItems.Center)
+            justifyContent(JustifyContent.Center)
+            padding(24.px)
+        }
+    }) {
+        if (error != null) {
+            H2 { Text("Sign-in problem") }
+            P(attrs = {
+                style { property("color", "#ef4444") }
+            }) { Text(error!!) }
+            Button(attrs = {
+                style { marginTop(16.px) }
+                onClick { Router.navigateTo(Route.Login) }
+            }) { Text("Back to login") }
+        } else {
+            H2 { Text("Completing sign-in...") }
+            P { Text("Redirecting to your dashboard.") }
+        }
+    }
+}
+
+@Composable
+private fun GoogleSignupVerifyPage(authViewModel: AuthViewModel) {
+    var isLoading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        val search = window.location.search
+        val (code, state) = kotlin.runCatching {
+            val params = org.w3c.dom.url.URLSearchParams(search)
+            val codeVal = params.get("code") ?: ""
+            val stateVal = params.get("state")
+            codeVal to stateVal
+        }.getOrDefault("" to null)
+
+        if (code.isBlank()) {
+            error = "Missing code"
+            isLoading = false
+            return@LaunchedEffect
+        }
+
+        try {
+            val response = ApiClient.completeGoogleSignup(code, state)
+            val user = User(
+                id = response.user.id.toString(),
+                email = response.user.email,
+                name = null
+            )
+            authViewModel.setAuthenticated(response.sessionToken, user)
+            Router.navigateTo(Route.Dashboard)
+        } catch (e: Throwable) {
+            val appError = ErrorHandler.handle(e)
+            error = ErrorHandler.getUserMessage(appError)
+        } finally {
+            isLoading = false
+        }
+    }
+
+    Div(attrs = {
+        style {
+            minHeight(100.vh)
+            display(DisplayStyle.Flex)
+            flexDirection(FlexDirection.Column)
+            alignItems(AlignItems.Center)
+            justifyContent(JustifyContent.Center)
+            padding(24.px)
+        }
+    }) {
+        H2 { Text("Completing Google sign-in...") }
+        if (isLoading) {
+            P { Text("Verifying your Google login, please wait.") }
+        } else if (error != null) {
+            P(attrs = {
+                style {
+                    property("color", "#ef4444")
+                }
+            }) {
+                Text(error!!)
+            }
+            Button(attrs = {
+                style {
+                    marginTop(16.px)
+                }
+                onClick { Router.navigateTo(Route.Login) }
+            }) {
+                Text("Back to login")
+            }
+        } else {
+            P { Text("Redirecting to your dashboard...") }
+        }
+    }
+}
+
