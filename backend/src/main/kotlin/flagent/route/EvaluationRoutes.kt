@@ -12,6 +12,7 @@ import flagent.api.model.SegmentDebugLogResponse
 import flagent.service.EvalResult
 import flagent.service.EvaluationService
 import io.ktor.http.HttpStatusCode
+import kotlinx.serialization.json.JsonPrimitive
 import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -136,12 +137,14 @@ private fun mapEvalResultToResponse(result: EvalResult): EvaluationResponse {
         variantID = result.variantID,
         variantKey = result.variantKey,
         variantAttachment = result.variantAttachment?.entries?.associate {
-            it.key to it.value.toString()
+            it.key to ((it.value as? JsonPrimitive)?.content ?: it.value.toString())
         },
         evalContext = EvalContextResponse(
             entityID = result.evalContext.entityID,
             entityType = result.evalContext.entityType,
-            entityContext = result.evalContext.entityContext?.mapValues { it.value.toString() }
+            entityContext = result.evalContext.entityContext?.mapValues { (_, v) ->
+                (v as? JsonPrimitive)?.content ?: v.toString()
+            }
         ),
         evalDebugLog = result.evalDebugLog?.let {
             EvalDebugLogResponse(

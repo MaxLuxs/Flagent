@@ -1,11 +1,15 @@
 package flagent.route
 
+import flagent.api.model.EntityRequest
 import flagent.api.model.EvaluationBatchRequest
-import flagent.api.model.EvaluationBatchRequestEntity
+import flagent.api.model.EvaluationRequest
 import flagent.service.EvalContext
 import flagent.service.EvalDebugLog
 import flagent.service.EvalResult
 import flagent.service.EvaluationService
+import flagent.service.SegmentDebugLog
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -40,15 +44,15 @@ class EvaluationRoutesTest {
             segmentID = 1,
             variantID = 1,
             variantKey = "on",
-            variantAttachment = mapOf("a" to "b"),
+            variantAttachment = buildJsonObject { put("a", "b") },
             evalContext = EvalContext(
                 entityID = "e1",
                 entityType = "user",
-                entityContext = mapOf("region" to "US")
+                entityContext = buildJsonObject { put("region", "US") }
             ),
             evalDebugLog = EvalDebugLog(
                 message = "ok",
-                segmentDebugLogs = listOf(EvalDebugLog.SegmentDebugLog(segmentID = 1, message = "hit"))
+                segmentDebugLogs = listOf(SegmentDebugLog(segmentID = 1, message = "hit"))
             ),
             timestamp = 123L
         )
@@ -79,12 +83,12 @@ class EvaluationRoutesTest {
             contentType(ContentType.Application.Json)
             setBody(
                 json.encodeToString(
-                    mapOf(
-                        "flagID" to 1,
-                        "entityID" to "e1",
-                        "entityType" to "user",
-                        "entityContext" to mapOf("region" to "US"),
-                        "enableDebug" to true
+                    EvaluationRequest(
+                        flagID = 1,
+                        entityID = "e1",
+                        entityType = "user",
+                        entityContext = mapOf("region" to "US"),
+                        enableDebug = true
                     )
                 )
             )
@@ -92,7 +96,7 @@ class EvaluationRoutesTest {
 
         assertEquals(HttpStatusCode.OK, resp.status)
         val body = json.parseToJsonElement(resp.bodyAsText()).jsonObject
-        assertEquals(1, body["flagID"]!!.jsonPrimitive.int)
+        assertEquals(1, body["flagID"]!!.jsonPrimitive.content.toInt())
         assertEquals("test_flag", body["flagKey"]!!.jsonPrimitive.content)
         assertEquals("on", body["variantKey"]!!.jsonPrimitive.content)
         val ctx = body["evalContext"]!!.jsonObject
@@ -130,7 +134,7 @@ class EvaluationRoutesTest {
             flagKeys = emptyList(),
             flagTags = emptyList(),
             flagTagsOperator = null,
-            entities = listOf(EvaluationBatchRequestEntity(entityID = "e1", entityType = null, entityContext = null)),
+            entities = listOf(EntityRequest(entityID = "e1", entityType = null, entityContext = null)),
             enableDebug = false
         )
 
@@ -221,7 +225,7 @@ class EvaluationRoutesTest {
             flagTags = listOf("tag-a"),
             flagTagsOperator = "ALL",
             entities = listOf(
-                EvaluationBatchRequestEntity(entityID = "e1", entityType = "user", entityContext = mapOf("k" to JsonPrimitive("v")))
+                EntityRequest(entityID = "e1", entityType = "user", entityContext = mapOf("k" to "v"))
             ),
             enableDebug = true
         )
@@ -237,91 +241,5 @@ class EvaluationRoutesTest {
         val arr = body["evaluationResults"] as JsonArray
         // 1 by tags + 1 by id + 1 by key = 3
         assertEquals(3, arr.size)
-    }
-}
-
-package flagent.route
-
-import flagent.cache.impl.EvalCache
-import flagent.domain.usecase.EvaluateFlagUseCase
-import flagent.repository.Database
-import flagent.repository.impl.FlagRepository
-import flagent.service.EvaluationService
-import flagent.service.adapter.SharedFlagEvaluatorAdapter
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.routing.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.testing.*
-import kotlin.test.*
-import kotlinx.serialization.json.*
-
-class EvaluationRoutesTest {
-    @Test
-    fun testEvaluationEndpoint() = testApplication {
-        Database.init()
-        try {
-            val flagRepository = FlagRepository()
-            val evalCache = EvalCache(flagRepository)
-            evalCache.start()
-            val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
-            val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
-            
-            application {
-                install(ContentNegotiation) {
-                    json(Json { ignoreUnknownKeys = true })
-                }
-                routing {
-                    configureEvaluationRoutes(evaluationService)
-                }
-            }
-            
-            val response = client.post("/api/v1/evaluation") {
-                contentType(ContentType.Application.Json)
-                setBody("""{"flagID":1,"entityID":"test-entity"}""")
-            }
-            
-            assertEquals(HttpStatusCode.OK, response.status)
-            val json = Json.parseToJsonElement(response.bodyAsText())
-            assertTrue(json.jsonObject.containsKey("flagID"))
-        } finally {
-            Database.close()
-        }
-    }
-    
-    @Test
-    fun testEvaluationBatchEndpoint() = testApplication {
-        Database.init()
-        try {
-            val flagRepository = FlagRepository()
-            val evalCache = EvalCache(flagRepository)
-            evalCache.start()
-            val evaluateFlagUseCase = EvaluateFlagUseCase(SharedFlagEvaluatorAdapter())
-            val evaluationService = EvaluationService(evalCache, evaluateFlagUseCase)
-            
-            application {
-                install(ContentNegotiation) {
-                    json(Json { ignoreUnknownKeys = true })
-                }
-                routing {
-                    configureEvaluationRoutes(evaluationService)
-                }
-            }
-            
-            val response = client.post("/api/v1/evaluation/batch") {
-                contentType(ContentType.Application.Json)
-                setBody("""{"entities":[{"entityID":"test-entity"}],"flagIDs":[1]}""")
-            }
-            
-            assertEquals(HttpStatusCode.OK, response.status)
-            val json = Json.parseToJsonElement(response.bodyAsText())
-            assertTrue(json.jsonObject.containsKey("evaluationResults"))
-        } finally {
-            Database.close()
-        }
     }
 }

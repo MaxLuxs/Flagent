@@ -110,7 +110,7 @@ class EvaluationServiceTest {
         }
 
         assertEquals(1, result.flagID)
-        verify(exactly = 1) { evaluationEventRecorder.record(1, result.timestamp) }
+        verify(exactly = 1) { evaluationEventRecorder.record(1, result.variantID, result.timestamp) }
     }
     
     @Test

@@ -21,6 +21,8 @@ class AnalyticsEventRepository {
                     AnalyticsEvents.insert {
                         it[AnalyticsEvents.eventName] = e.eventName
                         it[AnalyticsEvents.eventParams] = e.eventParams
+                        it[AnalyticsEvents.flagId] = e.flagId
+                        it[AnalyticsEvents.variantId] = e.variantId
                         it[AnalyticsEvents.userId] = e.userId
                         it[AnalyticsEvents.sessionId] = e.sessionId
                         it[AnalyticsEvents.platform] = e.platform
@@ -37,13 +39,25 @@ class AnalyticsEventRepository {
         endMs: Long,
         topLimit: Int = 20,
         timeBucketMs: Long = 3600_000,
-        tenantId: String? = null
+        tenantId: String? = null,
+        platform: String? = null,
+        appVersion: String? = null,
+        eventName: String? = null
     ): AnalyticsOverviewResult = withContext(Dispatchers.IO) {
         Database.transaction {
             val tenantCond = tenantId?.let { AnalyticsEvents.tenantId eq it } ?: AnalyticsEvents.tenantId.isNull()
-            val whereOp = (AnalyticsEvents.timestampMs greaterEq startMs) and
+            var whereOp = (AnalyticsEvents.timestampMs greaterEq startMs) and
                 (AnalyticsEvents.timestampMs lessEq endMs) and
                 tenantCond
+            platform?.takeIf { it.isNotBlank() }?.let { p ->
+                whereOp = whereOp and (AnalyticsEvents.platform eq p)
+            }
+            appVersion?.takeIf { it.isNotBlank() }?.let { v ->
+                whereOp = whereOp and (AnalyticsEvents.appVersion eq v)
+            }
+            eventName?.takeIf { it.isNotBlank() }?.let { n ->
+                whereOp = whereOp and (AnalyticsEvents.eventName eq n)
+            }
 
             val rows = AnalyticsEvents
                 .select(AnalyticsEvents.eventName, AnalyticsEvents.timestampMs, AnalyticsEvents.userId)
@@ -87,6 +101,57 @@ class AnalyticsEventRepository {
     }
 
     /**
+     * Load events for funnel analysis: event names in steps, optional filters.
+     * Returns rows ordered by timestamp for in-memory funnel computation.
+     */
+    suspend fun getEventsForFunnel(
+        startMs: Long,
+        endMs: Long,
+        eventNames: List<String>,
+        platform: String? = null,
+        appVersion: String? = null,
+        flagId: Int? = null,
+        variantId: Int? = null,
+        tenantId: String? = null
+    ): List<FunnelEventRow> = withContext(Dispatchers.IO) {
+        if (eventNames.isEmpty()) return@withContext emptyList()
+        Database.transaction {
+            val tenantCond = tenantId?.let { AnalyticsEvents.tenantId eq it } ?: AnalyticsEvents.tenantId.isNull()
+            var whereOp = (AnalyticsEvents.timestampMs greaterEq startMs) and
+                (AnalyticsEvents.timestampMs lessEq endMs) and
+                tenantCond and
+                (AnalyticsEvents.eventName inList eventNames.distinct())
+            platform?.takeIf { it.isNotBlank() }?.let { p ->
+                whereOp = whereOp and (AnalyticsEvents.platform eq p)
+            }
+            appVersion?.takeIf { it.isNotBlank() }?.let { v ->
+                whereOp = whereOp and (AnalyticsEvents.appVersion eq v)
+            }
+            flagId?.let { whereOp = whereOp and (AnalyticsEvents.flagId eq it) }
+            variantId?.let { whereOp = whereOp and (AnalyticsEvents.variantId eq it) }
+            AnalyticsEvents
+                .select(
+                    AnalyticsEvents.eventName,
+                    AnalyticsEvents.eventParams,
+                    AnalyticsEvents.userId,
+                    AnalyticsEvents.sessionId,
+                    AnalyticsEvents.timestampMs
+                )
+                .where { whereOp }
+                .orderBy(AnalyticsEvents.timestampMs)
+                .map {
+                    FunnelEventRow(
+                        eventName = it[AnalyticsEvents.eventName],
+                        eventParams = it[AnalyticsEvents.eventParams],
+                        userId = it[AnalyticsEvents.userId],
+                        sessionId = it[AnalyticsEvents.sessionId],
+                        timestampMs = it[AnalyticsEvents.timestampMs]
+                    )
+                }
+        }
+    }
+
+    /**
      * Delete analytics events older than cutoffMs (for retention/cleanup).
      * @return number of deleted rows
      */
@@ -99,10 +164,21 @@ class AnalyticsEventRepository {
     }
 }
 
+/** Single row for funnel computation (event name, params, entity ids, timestamp). */
+data class FunnelEventRow(
+    val eventName: String,
+    val eventParams: String?,
+    val userId: String?,
+    val sessionId: String?,
+    val timestampMs: Long
+)
+
 @Serializable
 data class AnalyticsEventRecord(
     val eventName: String,
     val eventParams: String? = null,
+    val flagId: Int? = null,
+    val variantId: Int? = null,
     val userId: String? = null,
     val sessionId: String? = null,
     val platform: String? = null,

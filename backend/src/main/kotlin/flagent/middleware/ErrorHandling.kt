@@ -4,6 +4,7 @@ import flagent.config.AppConfig
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.path
 import io.ktor.server.response.*
 import io.sentry.Sentry
 import mu.KotlinLogging
@@ -43,6 +44,16 @@ fun Application.configureErrorHandling() {
                 HttpStatusCode.InternalServerError,
                 mapOf("error" to "Internal server error")
             )
+        }
+
+        status(HttpStatusCode.NotFound) { call, _ ->
+            val path = call.request.path()
+            if (path.startsWith("/api/")) {
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    mapOf("error" to "Not found")
+                )
+            }
         }
     }
 }

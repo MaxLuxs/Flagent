@@ -19,6 +19,7 @@ import flagent.middleware.configureStatsDMetrics
 import flagent.repository.Database
 import flagent.route.configureAdminUserRoutes
 import flagent.route.configureAnalyticsEventsRoutes
+import flagent.route.configureAnalyticsFunnelRoutes
 import flagent.route.configureAuthRoutes
 import flagent.route.configureConstraintRoutes
 import flagent.route.configureCoreMetricsRoutes
@@ -226,7 +227,7 @@ fun Application.module() {
                 } else {
                     // When JWT is disabled, /admin/* returns 404 with clear message so UI shows it instead of generic "Resource not found"
                     route("/admin") {
-                        route("{...}") {
+                        route("{path...}") {
                             get {
                                 call.respondText(
                                     """{"error":"Admin user management is not enabled. Set FLAGENT_JWT_AUTH_ENABLED=true and configure FLAGENT_JWT_AUTH_SECRET (min 32 chars)."}""",
@@ -268,6 +269,7 @@ fun Application.module() {
                 }
 
                 configureAnalyticsEventsRoutes(services.analyticsEventsService)
+                configureAnalyticsFunnelRoutes(services.funnelAnalyticsService)
 
                 // Tenant, billing, SSO, AI rollouts: registered by enterprise when present
                 enterpriseConfigurator.configureRoutes(this, backendContext)
@@ -285,46 +287,6 @@ fun Application.module() {
                 )
             }
 
-            // Catch-all for unmatched /api paths: return 404 JSON instead of falling through to staticFiles (index.html)
-            route("/api") {
-                route("{...}") {
-                    get {
-                        call.respondText(
-                            """{"error":"Not found"}""",
-                            ContentType.Application.Json,
-                            HttpStatusCode.NotFound
-                        )
-                    }
-                    post {
-                        call.respondText(
-                            """{"error":"Not found"}""",
-                            ContentType.Application.Json,
-                            HttpStatusCode.NotFound
-                        )
-                    }
-                    put {
-                        call.respondText(
-                            """{"error":"Not found"}""",
-                            ContentType.Application.Json,
-                            HttpStatusCode.NotFound
-                        )
-                    }
-                    delete {
-                        call.respondText(
-                            """{"error":"Not found"}""",
-                            ContentType.Application.Json,
-                            HttpStatusCode.NotFound
-                        )
-                    }
-                    patch {
-                        call.respondText(
-                            """{"error":"Not found"}""",
-                            ContentType.Application.Json,
-                            HttpStatusCode.NotFound
-                        )
-                    }
-                }
-            }
         }
 
         // Apply WebPrefix if configured

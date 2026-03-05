@@ -16,6 +16,7 @@ import flagent.repository.impl.FlagSnapshotRepository
 import flagent.repository.impl.SegmentRepository
 import flagent.repository.impl.TagRepository
 import flagent.repository.impl.UserRepository
+import flagent.repository.impl.VariantRepository
 import flagent.repository.impl.WebhookRepository
 import flagent.route.RealtimeEventBus
 import flagent.service.*

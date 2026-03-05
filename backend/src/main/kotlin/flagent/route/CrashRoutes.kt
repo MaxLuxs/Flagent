@@ -142,6 +142,31 @@ fun Routing.configureCrashRoutes(crashReportService: CrashReportService) {
                 )
             }
         }
+
+        get("/crashes/overview") {
+            try {
+                val start = call.request.queryParameters["start"]?.toLongOrNull()
+                    ?: run {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing start"))
+                        return@get
+                    }
+                val end = call.request.queryParameters["end"]?.toLongOrNull()
+                    ?: run {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing end"))
+                        return@get
+                    }
+                val timeBucketMs = call.request.queryParameters["timeBucketMs"]?.toLongOrNull() ?: 3600_000
+                val tenantId: String? = null
+                val overview = crashReportService.getOverview(tenantId, start, end, timeBucketMs)
+                call.respond(HttpStatusCode.OK, overview)
+            } catch (e: Exception) {
+                logger.error("GET /crashes/overview failed", e)
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Failed to get crash overview")
+                )
+            }
+        }
     }
 }
 

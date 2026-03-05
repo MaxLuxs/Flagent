@@ -21,9 +21,10 @@ class EvaluationEventRepository {
         Database.transaction {
             events.forEach { ev ->
                 EvaluationEvents.insert {
-                    it[EvaluationEvents.flagId] = ev.flagId
-                    it[EvaluationEvents.timestampMs] = ev.timestampMs
-                    ev.clientId?.let { cid -> it[EvaluationEvents.clientId] = cid.take(255) }
+                    it[flagId] = ev.flagId
+                    it[timestampMs] = ev.timestampMs
+                    it[variantId] = ev.variantId
+                    ev.clientId?.let { cid -> it[clientId] = cid.take(255) }
                 }
             }
         }
@@ -162,6 +163,7 @@ class EvaluationEventRepository {
 
 data class EvaluationEventRecord(
     val flagId: Int,
+    val variantId: Int? = null,
     val timestampMs: Long,
     val clientId: String? = null
 )

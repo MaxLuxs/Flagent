@@ -5,6 +5,7 @@ import flagent.repository.Database
 import flagent.repository.tables.CrashReports
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.ResultRow
@@ -89,6 +90,46 @@ class CrashReportRepository {
         CrashReports.select(CrashReports.id).where { whereOp }.count().toLong()
     }
 
+    suspend fun getOverview(
+        tenantId: String?,
+        startMs: Long,
+        endMs: Long,
+        timeBucketMs: Long = 3600_000
+    ): CrashOverviewResult = dbQuery {
+        val tenantCond = tenantId?.let { CrashReports.tenantId eq it } ?: CrashReports.tenantId.isNull()
+        val whereOp = (CrashReports.timestamp greaterEq startMs) and
+            (CrashReports.timestamp lessEq endMs) and
+            tenantCond
+        val rows = CrashReports
+            .select(CrashReports.timestamp, CrashReports.platform, CrashReports.appVersion)
+            .where { whereOp }
+            .map { Triple(it[CrashReports.timestamp], it[CrashReports.platform], it[CrashReports.appVersion]) }
+        val totalCrashes = rows.size.toLong()
+        val timeSeries = rows
+            .groupBy { (ts, _, _) -> (ts / timeBucketMs) * timeBucketMs }
+            .map { (bucket, list) -> CrashTimeSeriesEntry(bucket, list.size.toLong()) }
+            .sortedBy { it.timestamp }
+        val byPlatform = rows
+            .groupBy { (_, platform, _) -> platform }
+            .mapValues { (_, list) -> list.size.toLong() }
+            .toList()
+            .sortedByDescending { it.second }
+            .map { (platform, count) -> CrashCountEntry(platform, count) }
+        val byAppVersion = rows
+            .groupBy { (_, _, appVersion) -> appVersion ?: "" }
+            .mapValues { (_, list) -> list.size.toLong() }
+            .toList()
+            .filter { it.first.isNotBlank() }
+            .sortedByDescending { it.second }
+            .map { (appVersion, count) -> CrashCountEntry(appVersion, count) }
+        CrashOverviewResult(
+            totalCrashes = totalCrashes,
+            timeSeries = timeSeries,
+            byPlatform = byPlatform,
+            byAppVersion = byAppVersion
+        )
+    }
+
     private fun ResultRow.toCrashReport(): CrashReport {
         val activeFlagKeysRaw = this[CrashReports.activeFlagKeys]
         val activeFlagKeys = activeFlagKeysRaw?.let {
@@ -113,3 +154,23 @@ class CrashReportRepository {
         )
     }
 }
+
+@Serializable
+data class CrashOverviewResult(
+    val totalCrashes: Long,
+    val timeSeries: List<CrashTimeSeriesEntry>,
+    val byPlatform: List<CrashCountEntry>,
+    val byAppVersion: List<CrashCountEntry>
+)
+
+@Serializable
+data class CrashTimeSeriesEntry(
+    val timestamp: Long,
+    val count: Long
+)
+
+@Serializable
+data class CrashCountEntry(
+    val key: String,
+    val count: Long
+)

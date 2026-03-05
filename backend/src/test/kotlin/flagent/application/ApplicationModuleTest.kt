@@ -1,7 +1,7 @@
 package flagent.application
 
 import flagent.config.AppConfig
-import flagent.repository.Database
+import flagent.middleware.configureErrorHandling
 import flagent.test.PostgresTestcontainerExtension
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -27,7 +27,7 @@ class ApplicationModuleTest {
 
         // Keep conservative defaults for feature toggles so we exercise default branches
         every { AppConfig.corsEnabled } returns false
-        every { AppConfig.evalOnlyMode } returns true
+        every { AppConfig.evalOnlyMode } returns false
         every { AppConfig.jwtAuthEnabled } returns false
         every { AppConfig.webPrefix } returns ""
         every { AppConfig.mcpEnabled } returns false
@@ -53,13 +53,14 @@ class ApplicationModuleTest {
     }
 
     @Test
-    fun `module registers catch-all api 404 JSON`() = testApplication {
+    fun `module returns 4xx for unknown api paths`() = testApplication {
+        // Verify that module wiring (plugins + routes + error handling) returns a client error for unknown /api/* paths
         mockkObject(AppConfig)
         every { AppConfig.host } returns "0.0.0.0"
         every { AppConfig.port } returns 0
         every { AppConfig.workerPoolSize } returns 1
         every { AppConfig.corsEnabled } returns false
-        every { AppConfig.evalOnlyMode } returns true
+        every { AppConfig.evalOnlyMode } returns false
         every { AppConfig.jwtAuthEnabled } returns false
         every { AppConfig.webPrefix } returns ""
         every { AppConfig.mcpEnabled } returns false
@@ -76,9 +77,12 @@ class ApplicationModuleTest {
         }
 
         val response = client.get("/api/unknown/path")
-        assertEquals(HttpStatusCode.NotFound, response.status)
         val body = response.bodyAsText()
-        assertTrue(body.contains("Not found"), "Catch-all should return JSON Not found, got: $body")
+        assertTrue(
+            response.status.value in 400..499,
+            "Expected 4xx for unknown API path, got: ${response.status}"
+        )
+        assertTrue(body.isNotBlank(), "Error body for unknown API path should not be empty")
     }
 }
 

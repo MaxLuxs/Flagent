@@ -19,7 +19,13 @@ class AnalyticsEventsService(
         endMs: Long,
         topLimit: Int = 20,
         timeBucketMs: Long = 3600_000,
-        tenantId: String? = null
+        tenantId: String? = null,
+        platform: String? = null,
+        appVersion: String? = null,
+        eventName: String? = null
     ): AnalyticsOverviewResult =
-        repository.getOverview(startMs, endMs, topLimit, timeBucketMs, tenantId)
+        repository.getOverview(
+            startMs, endMs, topLimit, timeBucketMs, tenantId,
+            platform, appVersion, eventName
+        )
 }

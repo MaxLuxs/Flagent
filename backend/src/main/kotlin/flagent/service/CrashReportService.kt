@@ -1,6 +1,7 @@
 package flagent.service
 
 import flagent.domain.entity.CrashReport
+import flagent.repository.impl.CrashOverviewResult
 import flagent.repository.impl.CrashReportRepository
 
 /**
@@ -25,4 +26,12 @@ class CrashReportService(
 
     suspend fun count(tenantId: String?, startTime: Long?, endTime: Long?): Long =
         crashReportRepository.count(tenantId, startTime, endTime)
+
+    suspend fun getOverview(
+        tenantId: String?,
+        startMs: Long,
+        endMs: Long,
+        timeBucketMs: Long = 3600_000
+    ): CrashOverviewResult =
+        crashReportRepository.getOverview(tenantId, startMs, endMs, timeBucketMs)
 }
